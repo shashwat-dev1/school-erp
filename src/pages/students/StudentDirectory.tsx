@@ -61,8 +61,12 @@ export const StudentDirectory: React.FC = () => {
       setIsLoading(true);
       setError(null);
       try {
+        const isClassTeacher = currentUser?.role === 'class_teacher';
+        const defaultClass = isClassTeacher ? (currentUser.assignedClassId || 'class-10-a') : 'all';
+        setSelectedClass(defaultClass);
+
         const [studentRes, classRes] = await Promise.all([
-          provider.getStudents({ limit: 100 }),
+          provider.getStudents({ limit: 1000 }),
           provider.getClasses(),
         ]);
         if (!isMounted) return;
@@ -328,14 +332,29 @@ export const StudentDirectory: React.FC = () => {
             value={selectedClass}
             onChange={e => setSelectedClass(e.target.value)}
             className="hhs-select"
-            style={{ width: '160px' }}
+            style={{ width: '170px' }}
           >
-            <option value="all">All Classes</option>
-            {classes.map(c => (
-              <option key={c.id} value={c.id}>
-                {c.label}
+            {currentUser?.role !== 'class_teacher' && (
+              <option value="all">
+                {currentUser?.role === 'subject_teacher' ? 'All Assigned Classes' : 'All 20 Classes'}
               </option>
-            ))}
+            )}
+            {classes
+              .filter(c => {
+                if (!currentUser) return true;
+                if (currentUser.role === 'class_teacher') {
+                  return c.id === currentUser.assignedClassId;
+                }
+                if (currentUser.role === 'subject_teacher') {
+                  return currentUser.assignedClasses?.includes(c.id);
+                }
+                return true;
+              })
+              .map(c => (
+                <option key={c.id} value={c.id}>
+                  {c.label}
+                </option>
+              ))}
           </select>
 
           {/* Attendance Compliance Filter */}

@@ -564,9 +564,9 @@ export class FirestoreRepository implements DataProvider {
     return snap.data() as IncidentRecord;
   }
 
-  public async getRiskWatchlist(): Promise<any[]> {
+  public async getRiskWatchlist(classId?: string): Promise<any[]> {
     ensureFirebaseReady();
-    const res = await this.getStudents();
+    const res = await this.getStudents(classId ? { classId } : undefined);
     return res.items
       .filter(s => s.activeFlags && s.activeFlags.length > 0)
       .map(s => ({

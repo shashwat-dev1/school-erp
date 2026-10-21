@@ -3,7 +3,12 @@ import { useNavigate } from 'react-router-dom';
 import { ShieldAlert, ArrowLeft, Home } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 
-export const AccessDenied: React.FC = () => {
+interface AccessDeniedProps {
+  title?: string;
+  message?: string;
+}
+
+export const AccessDenied: React.FC<AccessDeniedProps> = ({ title, message }) => {
   const navigate = useNavigate();
   const { currentUser } = useAuth();
 
@@ -41,11 +46,15 @@ export const AccessDenied: React.FC = () => {
       </span>
 
       <h1 className="hhs-headline-lg" style={{ marginBottom: '8px' }}>
-        Desk Authorization Policy
+        {title || 'Desk Authorization Policy'}
       </h1>
 
       <p className="hhs-body-md" style={{ color: 'var(--hhs-text-secondary)', marginBottom: '24px' }}>
-        Your current role (<strong>{currentUser?.role || 'Unassigned'}</strong>) does not hold clearance for this institutional screen. School policy strictly enforces separation of concerns between Principal, Registrar, Class Tutors, and Faculty.
+        {message || (
+          <>
+            Your current role (<strong>{currentUser?.role || 'Unassigned'}</strong>) does not hold clearance for this institutional screen. School policy strictly enforces separation of concerns between Principal, Registrar, Class Tutors, and Faculty.
+          </>
+        )}
       </p>
 
       <div style={{ display: 'flex', gap: '12px' }}>

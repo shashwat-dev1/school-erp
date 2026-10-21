@@ -156,7 +156,7 @@ export interface DataProvider {
   updateIncident(incidentId: string, updates: Partial<IncidentRecord>, actor: StaffUser): Promise<IncidentRecord>;
 
   // Risk Watchlist & Explainable Rules
-  getRiskWatchlist(): Promise<RiskWatchlistItem[]>;
+  getRiskWatchlist(classId?: string): Promise<RiskWatchlistItem[]>;
 
   // Audit Ledger
   getAuditEvents(filter?: AuditFilter): Promise<AuditEvent[]>;

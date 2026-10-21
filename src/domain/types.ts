@@ -8,7 +8,13 @@
 // ============================================================================
 // 1. Staff & Authentication
 // ============================================================================
-export type StaffRole = 'principal' | 'office_admin' | 'class_teacher' | 'subject_teacher';
+export type StaffRole =
+  | 'principal'
+  | 'office_admin'
+  | 'office_staff'
+  | 'class_teacher'
+  | 'subject_teacher'
+  | 'admin';
 
 export interface StaffUser {
   id: string; // Firebase Auth UID or Synthetic Demo ID

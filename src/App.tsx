@@ -2,12 +2,13 @@ import React from 'react';
 import { Routes, Route, Navigate } from 'react-router-dom';
 import { AppShell } from './components/layout/AppShell';
 import { RoleGuard } from './components/auth/RoleGuard';
+import { SectionGuard } from './components/auth/SectionGuard';
 
 // Public Auth
 import { StaffLogin } from './pages/auth/StaffLogin';
 
-// Operational Hub
-import { OperationsHub } from './pages/dashboard/OperationsHub';
+// Dynamic Role-Aware Dashboard Router
+import { RoleDashboardRouter } from './pages/dashboard/RoleDashboardRouter';
 
 // Student Master Dossiers
 import { StudentDirectory } from './pages/students/StudentDirectory';
@@ -68,31 +69,91 @@ export const App: React.FC = () => {
           </RoleGuard>
         }
       >
-        {/* Operations Hub (Dashboard) */}
-        <Route index element={<OperationsHub />} />
+        {/* Dynamic Role-Aware Landing Workspace */}
+        <Route index element={<RoleDashboardRouter />} />
 
         {/* Student Master Ledger & Profiles */}
         <Route path="students" element={<StudentDirectory />} />
         <Route path="students/:id" element={<StudentDetail />} />
 
-        {/* Attendance Operations & Dual-Custody */}
-        <Route path="attendance" element={<AttendanceDashboard />} />
-        <Route path="attendance/register/:classId" element={<DailyAttendanceRegister />} />
-        <Route path="attendance/corrections" element={<AttendanceCorrections />} />
+        {/* Whole-School Attendance (Principal & Office Admin only) */}
+        <Route
+          path="attendance"
+          element={
+            <RoleGuard allowedRoles={['principal', 'office_admin']}>
+              <AttendanceDashboard />
+            </RoleGuard>
+          }
+        />
+
+        {/* Daily Classroom Register (Guarded by Section Clearance) */}
+        <Route
+          path="attendance/register/:classId"
+          element={
+            <SectionGuard action="mark_attendance">
+              <DailyAttendanceRegister />
+            </SectionGuard>
+          }
+        />
+
+        {/* Attendance Corrections (Principal & Class Teachers) */}
+        <Route
+          path="attendance/corrections"
+          element={
+            <RoleGuard allowedRoles={['principal', 'class_teacher']}>
+              <AttendanceCorrections />
+            </RoleGuard>
+          }
+        />
 
         {/* Classes & Section Rosters */}
-        <Route path="classes" element={<ClassesDirectory />} />
-        <Route path="classes/:classId/students" element={<SectionRoster />} />
-        <Route path="classes/:classId/performance" element={<ClassPerformanceLedger />} />
-        <Route path="performance/classes/:classId" element={<ClassPerformanceLedger />} />
+        <Route
+          path="classes"
+          element={
+            <RoleGuard allowedRoles={['principal', 'office_admin']}>
+              <ClassesDirectory />
+            </RoleGuard>
+          }
+        />
+        <Route
+          path="classes/:classId/students"
+          element={
+            <SectionGuard>
+              <SectionRoster />
+            </SectionGuard>
+          }
+        />
+        <Route
+          path="classes/:classId/performance"
+          element={
+            <SectionGuard>
+              <ClassPerformanceLedger />
+            </SectionGuard>
+          }
+        />
+        <Route
+          path="performance/classes/:classId"
+          element={
+            <SectionGuard>
+              <ClassPerformanceLedger />
+            </SectionGuard>
+          }
+        />
 
         {/* Assessment Cycles & Marks Sheets */}
         <Route path="assessments" element={<AssessmentList />} />
         <Route path="academics/assessments" element={<AssessmentList />} />
         <Route path="academics/marks/:assessmentId" element={<MarksEntryRegister />} />
 
-        {/* Performance Risk Watchlist */}
-        <Route path="risk-watchlist" element={<RiskWatchlist />} />
+        {/* Performance Risk Watchlist (Principal, Office Admin, Class Teacher) */}
+        <Route
+          path="risk-watchlist"
+          element={
+            <RoleGuard allowedRoles={['principal', 'office_admin', 'class_teacher']}>
+              <RiskWatchlist />
+            </RoleGuard>
+          }
+        />
 
         {/* Behaviour & Proctorial Care */}
         <Route path="behaviour" element={<BehaviourDirectory />} />
@@ -101,8 +162,22 @@ export const App: React.FC = () => {
         <Route path="reports" element={<ReportsHub />} />
         <Route path="reports/report-card/:studentId" element={<StudentReportCard />} />
         <Route path="reports/ptm-slip/:studentId" element={<PTMSlip />} />
-        <Route path="reports/attendance" element={<AttendanceReport />} />
-        <Route path="reports/academic-comparison" element={<AcademicComparisonReport />} />
+        <Route
+          path="reports/attendance"
+          element={
+            <RoleGuard allowedRoles={['principal', 'office_admin', 'class_teacher']}>
+              <AttendanceReport />
+            </RoleGuard>
+          }
+        />
+        <Route
+          path="reports/academic-comparison"
+          element={
+            <RoleGuard allowedRoles={['principal', 'office_admin']}>
+              <AcademicComparisonReport />
+            </RoleGuard>
+          }
+        />
 
         {/* Staff Administration & Allocations */}
         <Route
@@ -137,13 +212,20 @@ export const App: React.FC = () => {
             </RoleGuard>
           }
         />
-        <Route path="admin/roles" element={<RolePermissionMatrix />} />
+        <Route
+          path="admin/roles"
+          element={
+            <RoleGuard allowedRoles={['principal', 'office_admin']}>
+              <RolePermissionMatrix />
+            </RoleGuard>
+          }
+        />
 
-        {/* Institutional Settings */}
+        {/* Institutional Settings & Identity (Principal Governance Only) */}
         <Route
           path="settings/system-config"
           element={
-            <RoleGuard allowedRoles={['principal', 'office_admin']}>
+            <RoleGuard allowedRoles={['principal']}>
               <SystemSettings />
             </RoleGuard>
           }
@@ -151,7 +233,7 @@ export const App: React.FC = () => {
         <Route
           path="admin/system-config"
           element={
-            <RoleGuard allowedRoles={['principal', 'office_admin']}>
+            <RoleGuard allowedRoles={['principal']}>
               <SystemSettings />
             </RoleGuard>
           }
@@ -159,7 +241,7 @@ export const App: React.FC = () => {
         <Route
           path="settings/academic-years"
           element={
-            <RoleGuard allowedRoles={['principal', 'office_admin']}>
+            <RoleGuard allowedRoles={['principal']}>
               <AcademicYearSettings />
             </RoleGuard>
           }
@@ -167,7 +249,7 @@ export const App: React.FC = () => {
         <Route
           path="settings/assessment-types"
           element={
-            <RoleGuard allowedRoles={['principal', 'office_admin']}>
+            <RoleGuard allowedRoles={['principal']}>
               <AssessmentTypeSettings />
             </RoleGuard>
           }
@@ -181,7 +263,7 @@ export const App: React.FC = () => {
           }
         />
 
-        {/* Security Audit Log */}
+        {/* Security Audit Log (Principal Only) */}
         <Route
           path="audit-log"
           element={

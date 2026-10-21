@@ -11,11 +11,13 @@ import type {
   ClassSection,
   Subject,
 } from '../../domain/types';
+import { Permissions } from '../../domain/permissions';
 import {
   Save,
   CheckCircle2,
   Download,
   ShieldCheck,
+  Lock,
 } from 'lucide-react';
 
 interface MarkRowDraft {
@@ -42,8 +44,12 @@ export const MarksEntryRegister: React.FC = () => {
   const [selectedCycleId, setSelectedCycleId] = useState<string>(
     assessmentId || 'assess-ut2-2025'
   );
-  const [selectedClassId, setSelectedClassId] = useState<string>('class-10-a');
-  const [selectedSubjectId, setSelectedSubjectId] = useState<string>('subj-math');
+  const [selectedClassId, setSelectedClassId] = useState<string>(
+    currentUser?.assignedClassId || currentUser?.assignedClasses?.[0] || 'class-10-a'
+  );
+  const [selectedSubjectId, setSelectedSubjectId] = useState<string>(
+    currentUser?.assignedSubjects?.[0] || 'sub-math-10'
+  );
 
   // Active register state
   const [activeCycle, setActiveCycle] = useState<AssessmentCycle | null>(null);
@@ -89,6 +95,51 @@ export const MarksEntryRegister: React.FC = () => {
     };
   }, [provider]);
 
+  // Scoped classes & subjects based on user assignment
+  const availableClasses = useMemo(() => {
+    if (!currentUser) return [];
+    if (currentUser.role === 'principal' || currentUser.role === 'admin' || currentUser.role === 'office_staff') {
+      return classes;
+    }
+    const permittedIds = new Set<string>();
+    if (currentUser.assignedClassId) permittedIds.add(currentUser.assignedClassId);
+    if (currentUser.assignedClasses) currentUser.assignedClasses.forEach(id => permittedIds.add(id));
+    return classes.filter(c => permittedIds.has(c.id));
+  }, [classes, currentUser]);
+
+  const availableSubjects = useMemo(() => {
+    if (!currentUser) return [];
+    if (currentUser.role === 'principal' || currentUser.role === 'admin') {
+      return subjects;
+    }
+    if (currentUser.role === 'subject_teacher') {
+      const permittedIds = new Set(currentUser.assignedSubjects || []);
+      return subjects.filter(s => permittedIds.has(s.id));
+    }
+    return subjects;
+  }, [subjects, currentUser]);
+
+  // Adjust selection when available options change
+  useEffect(() => {
+    if (availableClasses.length > 0 && !availableClasses.some(c => c.id === selectedClassId)) {
+      setSelectedClassId(availableClasses[0].id);
+    }
+  }, [availableClasses, selectedClassId]);
+
+  useEffect(() => {
+    if (availableSubjects.length > 0 && !availableSubjects.some(s => s.id === selectedSubjectId)) {
+      setSelectedSubjectId(availableSubjects[0].id);
+    }
+  }, [availableSubjects, selectedSubjectId]);
+
+  const canAccess = useMemo(() => {
+    return Permissions.canAccessSubjectMarks(currentUser, selectedClassId, selectedSubjectId);
+  }, [currentUser, selectedClassId, selectedSubjectId]);
+
+  const canEdit = useMemo(() => {
+    return Permissions.canEditMarks(currentUser, selectedClassId, selectedSubjectId);
+  }, [currentUser, selectedClassId, selectedSubjectId]);
+
   // Load Register & Students for selected tuple (Cycle, Class, Subject)
   useEffect(() => {
     let isMounted = true;
@@ -96,6 +147,14 @@ export const MarksEntryRegister: React.FC = () => {
       setIsLoading(true);
       setError(null);
       setSuccessMsg(null);
+
+      if (!canAccess) {
+        setIsLoading(false);
+        setError('Access Restricted: You are not assigned to evaluate or view marks for this class/subject combination.');
+        setMarksRows([]);
+        return;
+      }
+
       try {
         const [cycle, cls, subj, studList, existingReg] = await Promise.all([
           provider.getAssessmentCycleById(selectedCycleId),
@@ -138,7 +197,7 @@ export const MarksEntryRegister: React.FC = () => {
     return () => {
       isMounted = false;
     };
-  }, [provider, selectedCycleId, selectedClassId, selectedSubjectId]);
+  }, [provider, selectedCycleId, selectedClassId, selectedSubjectId, canAccess]);
 
   const maxMarks = activeCycle?.maxMarks || 25;
   const passMarks = Math.round(maxMarks * 0.33);
@@ -327,7 +386,25 @@ export const MarksEntryRegister: React.FC = () => {
               <Download size={15} />
               <span>Export CSV</span>
             </button>
-            {!isFinalized ? (
+            {!canEdit ? (
+              <div
+                style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '6px',
+                  padding: '6px 12px',
+                  borderRadius: 'var(--hhs-radius-base)',
+                  backgroundColor: 'var(--hhs-surface-muted)',
+                  color: 'var(--hhs-text-secondary)',
+                  fontWeight: 600,
+                  fontSize: '0.82rem',
+                  border: '1px solid var(--hhs-border-subtle)',
+                }}
+              >
+                <Lock size={15} />
+                <span>Read-Only Archive</span>
+              </div>
+            ) : !isFinalized ? (
               <>
                 <button
                   onClick={() => executeSave(false)}
@@ -432,7 +509,7 @@ export const MarksEntryRegister: React.FC = () => {
             onChange={e => setSelectedClassId(e.target.value)}
             style={{ width: 'auto', minWidth: '140px' }}
           >
-            {classes.map(c => (
+            {availableClasses.map(c => (
               <option key={c.id} value={c.id}>
                 {c.label}
               </option>
@@ -450,7 +527,7 @@ export const MarksEntryRegister: React.FC = () => {
             onChange={e => setSelectedSubjectId(e.target.value)}
             style={{ width: 'auto', minWidth: '160px' }}
           >
-            {subjects.map(s => (
+            {availableSubjects.map(s => (
               <option key={s.id} value={s.id}>
                 {s.name} ({s.code})
               </option>
@@ -603,7 +680,7 @@ export const MarksEntryRegister: React.FC = () => {
                       <div style={{ display: 'inline-flex', alignItems: 'center', gap: '4px' }}>
                         <input
                           type="number"
-                          disabled={row.isAbsent || isFinalized}
+                          disabled={!canEdit || row.isAbsent || isFinalized}
                           min={0}
                           max={maxMarks}
                           step="0.5"
@@ -617,7 +694,7 @@ export const MarksEntryRegister: React.FC = () => {
                             fontWeight: 700,
                             color: isError ? 'var(--hhs-danger-text)' : 'inherit',
                             borderColor: isError ? 'var(--hhs-danger)' : undefined,
-                            backgroundColor: row.isAbsent ? 'var(--hhs-surface-muted)' : 'var(--hhs-surface)',
+                            backgroundColor: row.isAbsent || !canEdit ? 'var(--hhs-surface-muted)' : 'var(--hhs-surface)',
                           }}
                         />
                         <span style={{ fontSize: '0.78rem', color: 'var(--hhs-text-muted)' }}>
@@ -633,10 +710,10 @@ export const MarksEntryRegister: React.FC = () => {
                     <td style={{ textAlign: 'center' }}>
                       <input
                         type="checkbox"
-                        disabled={isFinalized}
+                        disabled={!canEdit || isFinalized}
                         checked={row.isAbsent}
                         onChange={e => handleAbsentToggle(row.studentId, e.target.checked)}
-                        style={{ width: '16px', height: '16px', cursor: isFinalized ? 'not-allowed' : 'pointer' }}
+                        style={{ width: '16px', height: '16px', cursor: (!canEdit || isFinalized) ? 'not-allowed' : 'pointer' }}
                         title="Mark student as Absent (ABS)"
                       />
                     </td>
@@ -669,7 +746,7 @@ export const MarksEntryRegister: React.FC = () => {
                     <td>
                       <input
                         type="text"
-                        disabled={isFinalized}
+                        disabled={!canEdit || isFinalized}
                         className="hhs-input"
                         value={row.remarks}
                         onChange={e => handleRemarksChange(row.studentId, e.target.value)}

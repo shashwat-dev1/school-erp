@@ -63,6 +63,10 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     setIsLoading(true);
     setError(null);
     try {
+      if (!email.trim() || !pass.trim()) {
+        throw new Error('Please enter both your institutional email and password.');
+      }
+
       if (isDemoMode()) {
         const found = initialStaff.find(
           s => s.email.toLowerCase() === email.toLowerCase().trim()
@@ -71,19 +75,18 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
           setCurrentUser(found);
           localStorage.setItem('hanujai_demo_user_id', found.id);
         } else {
-          // Allow login with any recognized role or fallback to default
-          const fallback = initialStaff[0];
-          setCurrentUser(fallback);
-          localStorage.setItem('hanujai_demo_user_id', fallback.id);
+          throw new Error('Staff account not found with this email address. Please select an authorized demo persona or verify credentials.');
         }
       } else if (auth) {
-        const cred = await signInWithEmailAndPassword(auth, email, pass);
+        const cred = await signInWithEmailAndPassword(auth, email.trim(), pass);
         const provider = getDataProvider();
         const staffDoc = await provider.getCurrentStaffUser(cred.user.uid);
         if (!staffDoc) {
           throw new Error('No staff record linked to this authenticated account.');
         }
         setCurrentUser(staffDoc);
+      } else {
+        throw new Error('Firebase Authentication services are offline or unconfigured. Run in Demo Mode or configure .env.local.');
       }
     } catch (err: unknown) {
       const msg = err instanceof Error ? err.message : 'Invalid credentials. Please verify username and password.';

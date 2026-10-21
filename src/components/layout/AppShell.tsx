@@ -1,47 +1,37 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Outlet } from 'react-router-dom';
 import { Sidebar } from './Sidebar';
 import { Topbar } from './Topbar';
 
 export const AppShell: React.FC = () => {
+  const [isMobileSidebarOpen, setIsMobileSidebarOpen] = useState(false);
+
   return (
     <div style={{ display: 'flex', minHeight: '100vh', backgroundColor: 'var(--hhs-canvas)' }}>
-      {/* Fixed Left Sidebar */}
-      <Sidebar />
+      {/* Responsive Left Sidebar */}
+      <Sidebar
+        isMobileOpen={isMobileSidebarOpen}
+        onClose={() => setIsMobileSidebarOpen(false)}
+      />
 
       {/* Main Operational Canvas */}
-      <div
-        style={{
-          marginLeft: 'var(--hhs-sidebar-width)',
-          flex: 1,
-          display: 'flex',
-          flexDirection: 'column',
-          minWidth: 0,
-        }}
-      >
-        <Topbar />
+      <div className="hhs-main-layout">
+        <Topbar onToggleSidebar={() => setIsMobileSidebarOpen(!isMobileSidebarOpen)} />
 
-        <main
-          style={{
-            flex: 1,
-            padding: '24px 32px',
-            maxWidth: '1280px',
-            width: '100%',
-            margin: '0 auto',
-            boxSizing: 'border-box',
-          }}
-        >
+        <main className="hhs-main-canvas">
           <Outlet />
         </main>
 
         <footer
           style={{
-            padding: '16px 32px',
+            padding: '16px 24px',
             borderTop: '1px solid var(--hhs-border)',
             backgroundColor: 'var(--hhs-surface)',
             fontSize: '0.74rem',
             color: 'var(--hhs-text-secondary)',
             display: 'flex',
+            flexWrap: 'wrap',
+            gap: '8px',
             justifyContent: 'space-between',
             alignItems: 'center',
           }}

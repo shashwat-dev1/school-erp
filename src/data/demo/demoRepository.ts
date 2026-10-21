@@ -1109,11 +1109,12 @@ class DemoRepository implements DataProvider {
   }
 
   // Risk Watchlist
-  public async getRiskWatchlist(): Promise<RiskWatchlistItem[]> {
+  public async getRiskWatchlist(classId?: string): Promise<RiskWatchlistItem[]> {
     const store = this.loadStore();
     const watchlist: RiskWatchlistItem[] = [];
 
     store.students.forEach(s => {
+      if (classId && s.classId !== classId) return;
       if (s.activeFlags && s.activeFlags.length > 0) {
         const flag0 = s.activeFlags[0];
         let primaryTrigger = flag0.title;
@@ -1130,7 +1131,7 @@ class DemoRepository implements DataProvider {
           attendanceRate: s.attendancePercentage,
           academicDropPercent,
           flagCount: s.activeFlags.length,
-          mentorAssigned: 'Shri Rajeshwar Choudhary',
+          mentorAssigned: s.classId === 'class-10-a' ? 'Shri Rajeshwar Choudhary' : 'Assigned Class Tutor',
           followUpStatus: flag0.code === 'ATT-01' ? 'pending' : 'in_progress',
         });
       }

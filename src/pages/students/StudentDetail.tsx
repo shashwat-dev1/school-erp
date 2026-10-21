@@ -9,6 +9,7 @@ import { Modal } from '../../components/ui/Modal';
 import { LoadingState } from '../../components/feedback/LoadingState';
 import { ErrorBanner } from '../../components/feedback/ErrorBanner';
 import type { StudentRecord, AuditEvent, IncidentRecord, MarksRegister } from '../../domain/types';
+import { Permissions } from '../../domain/permissions';
 import {
   User,
   GraduationCap,
@@ -65,6 +66,12 @@ export const StudentDetail: React.FC = () => {
           setError('Student record not found in active academic session.');
           return;
         }
+
+        if (!Permissions.canViewStudent(currentUser, studentDoc)) {
+          setError(`Desk Clearance Boundary: Your current role (${currentUser?.role}) is not authorized to access student dossiers outside your assigned section or subject allocations.`);
+          return;
+        }
+
         setStudent(studentDoc);
         setEditForm({
           firstName: studentDoc.firstName,

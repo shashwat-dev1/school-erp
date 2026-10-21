@@ -1,10 +1,14 @@
 import React, { useState } from 'react';
 import { useAuth } from '../../context/AuthContext';
 import { useData } from '../../context/DataContext';
-import { LogOut, RotateCcw, ShieldCheck, ChevronDown, User } from 'lucide-react';
+import { LogOut, RotateCcw, ShieldCheck, ChevronDown, User, Menu } from 'lucide-react';
 import type { StaffRole } from '../../domain/types';
 
-export const Topbar: React.FC = () => {
+interface TopbarProps {
+  onToggleSidebar?: () => void;
+}
+
+export const Topbar: React.FC<TopbarProps> = ({ onToggleSidebar }) => {
   const { currentUser, logout, switchDemoRole } = useAuth();
   const { dataMode, resetDemoData } = useData();
   const [userMenuOpen, setUserMenuOpen] = useState(false);
@@ -12,7 +16,7 @@ export const Topbar: React.FC = () => {
 
   const roles: Array<{ key: StaffRole; label: string }> = [
     { key: 'principal', label: 'Principal / Admin' },
-    { key: 'office_admin', label: 'Office Admin (Registrar)' },
+    { key: 'office_staff', label: 'Office Staff (Registrar)' },
     { key: 'class_teacher', label: 'Class Teacher (Class 10-A)' },
     { key: 'subject_teacher', label: 'Subject Teacher (Mathematics)' },
   ];
@@ -38,8 +42,25 @@ export const Topbar: React.FC = () => {
         zIndex: 30,
       }}
     >
-      {/* Left: Active Academic Session & Campus Pill */}
+      {/* Left: Mobile hamburger & Active Academic Session */}
       <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+        {onToggleSidebar && (
+          <button
+            onClick={onToggleSidebar}
+            className="hhs-btn hhs-btn-secondary"
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              padding: '6px',
+              height: '32px',
+              width: '32px',
+            }}
+            aria-label="Toggle navigation menu"
+          >
+            <Menu size={18} />
+          </button>
+        )}
         <span
           className="hhs-badge hhs-badge-primary"
           style={{ fontSize: '0.72rem', padding: '4px 10px', height: 'auto' }}
