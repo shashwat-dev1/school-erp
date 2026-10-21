@@ -14,6 +14,8 @@ export interface StaffUser {
   id: string; // Firebase Auth UID or Synthetic Demo ID
   email: string;
   name: string;
+  displayName?: string;           // Convenient alias
+  fullName?: string;              // Convenient alias
   role: StaffRole;
   employeeCode: string;
   designation: string;
@@ -23,6 +25,7 @@ export interface StaffUser {
   assignedClassId?: string;       // e.g. 'class-10-a' for Class Teachers
   assignedClassLabel?: string;    // e.g. 'Class 10-A'
   assignedSubjects?: string[];    // Array of subject IDs
+  assignedSubjectIds?: string[];  // Convenient alias
   assignedClasses?: string[];     // Array of class IDs where teacher teaches
   status: 'active' | 'on_leave' | 'suspended';
   createdAt: string;
@@ -44,6 +47,16 @@ export interface SchoolSettings {
   contactPhone: string;
   activeAcademicYearId: string;
   attendancePolicy: AttendancePolicy;
+
+  // Convenient Aliases
+  schoolName?: string;
+  schoolLocation?: string;
+  schoolAddress?: string;
+  schoolEmail?: string;
+  schoolPhone?: string;
+  cbseAffiliationNumber?: string;
+  cbseSchoolCode?: string;
+  timezone?: string;
 }
 
 export interface AttendancePolicy {
@@ -52,6 +65,13 @@ export interface AttendancePolicy {
   gracePeriodMinutes: number;      // 15
   minimumAttendancePercentage: number; // 75.0 (CBSE Compliance Threshold)
   dualCustodyCorrectionRequired: boolean; // true
+
+  // Convenient Aliases
+  windowStartTime?: string;
+  windowEndTime?: string;
+  allowTeacherLateCorrection?: boolean;
+  requirePrincipalApproval?: boolean;
+  cbseMinimumThresholdPercent?: number;
 }
 
 // ============================================================================
@@ -60,6 +80,7 @@ export interface AttendancePolicy {
 export interface AcademicYear {
   id: string;                      // 'year-2025-2026'
   label: string;                   // '2025–2026'
+  name?: string;                   // Alias for label
   startDate: string;               // '2025-04-01'
   endDate: string;                 // '2026-03-31'
   isCurrent: boolean;
@@ -80,8 +101,10 @@ export interface AcademicTerm {
 export interface ClassSection {
   id: string;                      // 'class-10-a'
   grade: number;                   // 1 to 10
+  gradeLevel?: number;             // Alias for grade
   section: 'A' | 'B';
   label: string;                   // 'Class 10-A'
+  name?: string;                   // Alias for label
   academicYearId: string;
   classTeacherId: string;
   classTeacherName: string;
@@ -147,8 +170,10 @@ export interface StudentRecord {
   
   // Operational Metrics (Computed)
   attendancePercentage: number;    // e.g. 94.2
+  attendanceSummary?: { overallPercentage: number };
   academicAverage: number;         // e.g. 82.5
   activeFlags: StudentFlag[];
+  careFlags?: Array<{ code: string; label?: string; description?: string }>;
   
   createdAt: string;
   updatedAt: string;
@@ -232,13 +257,15 @@ export interface AssessmentCycle {
   id: string;                      // 'assess-ut1-2025'
   type: AssessmentType;
   title: string;                   // 'Unit Test 1'
+  name?: string;                   // Alias for title
+  term?: 'term1' | 'term2';
   academicYearId: string;
   startDate: string;
   endDate: string;
   maxMarks: number;                // e.g. 25 for UT, 80 for Annual
   passingMarks: number;            // e.g. 9 for UT, 27 for Annual
   weightagePercent: number;        // e.g. 10
-  status: 'scheduled' | 'active_marking' | 'locked';
+  status: 'scheduled' | 'active_marking' | 'locked' | 'published' | 'draft';
 }
 
 export interface StudentMarkEntry {
@@ -264,7 +291,7 @@ export interface MarksRegister {
   passingMarks: number;
   teacherId: string;
   teacherName: string;
-  status: 'draft' | 'submitted' | 'verified_locked';
+  status: 'draft' | 'submitted' | 'verified_locked' | 'finalized';
   lastSavedAt: string;
   submittedAt?: string;
   entries: StudentMarkEntry[];
@@ -290,6 +317,7 @@ export interface IncidentRecord {
   actionTaken?: string;
   loggedByStaffId: string;
   loggedByStaffName: string;
+  loggedByName?: string;           // Alias for loggedByStaffName
   loggedByStaffRole: StaffRole;
   createdAt: string;
   parentNotified: boolean;
@@ -324,6 +352,11 @@ export interface AuditEvent {
   oldValue?: unknown;
   newValue?: unknown;
   clientIp?: string;
+  // Aliases for UI flexibility
+  eventType?: string;
+  targetEntity?: string;
+  ipAddress?: string;
+  diff?: { before?: unknown; after?: unknown };
 }
 
 // ============================================================================

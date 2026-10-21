@@ -10,6 +10,7 @@ import { getDataMode, type DataMode } from '../config/firebase';
 interface DataContextType {
   provider: DataProvider;
   dataMode: DataMode;
+  isDemo: boolean;
   resetDemoData: () => Promise<void>;
 }
 
@@ -18,6 +19,7 @@ const DataContext = createContext<DataContextType | undefined>(undefined);
 export const DataContextProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const dataMode = getDataMode();
   const provider = useMemo(() => getDataProvider(), []);
+  const isDemo = dataMode === 'demo';
 
   const resetDemoData = async () => {
     if (dataMode === 'demo' && demoRepository.resetDemoData) {
@@ -27,7 +29,7 @@ export const DataContextProvider: React.FC<{ children: React.ReactNode }> = ({ c
   };
 
   return (
-    <DataContext.Provider value={{ provider, dataMode, resetDemoData }}>
+    <DataContext.Provider value={{ provider, dataMode, isDemo, resetDemoData }}>
       {children}
     </DataContext.Provider>
   );

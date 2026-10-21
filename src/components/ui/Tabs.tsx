@@ -17,6 +17,7 @@ export interface TabsProps {
 export const Tabs: React.FC<TabsProps> = ({ tabs, activeTab, onChange, className = '' }) => {
   return (
     <div
+      role="tablist"
       className={className}
       style={{
         display: 'flex',
@@ -31,6 +32,8 @@ export const Tabs: React.FC<TabsProps> = ({ tabs, activeTab, onChange, className
         return (
           <button
             key={tab.id}
+            role="tab"
+            aria-selected={isActive}
             onClick={() => onChange(tab.id)}
             style={{
               display: 'inline-flex',

@@ -14,6 +14,7 @@ import type {
 } from '../provider';
 import type {
   SchoolSettings,
+  AttendancePolicy,
   AcademicYear,
   ClassSection,
   Subject,
@@ -420,6 +421,163 @@ export class FirestoreRepository implements DataProvider {
     );
     const snap = await getDocs(q);
     return snap.docs.map(d => d.data() as AuditEvent);
+  }
+
+  public async updateSchoolSettings(settings: Partial<SchoolSettings>, _actor: StaffUser): Promise<SchoolSettings> {
+    ensureFirebaseReady();
+    const ref = doc(db!, 'schoolSettings', 'hhs-settings-jaipur');
+    await updateDoc(ref, settings);
+    const snap = await getDoc(ref);
+    return snap.data() as SchoolSettings;
+  }
+
+  public async updateAttendancePolicy(policy: Partial<AttendancePolicy>, _actor: StaffUser): Promise<AttendancePolicy> {
+    ensureFirebaseReady();
+    const ref = doc(db!, 'schoolSettings', 'hhs-settings-jaipur');
+    await updateDoc(ref, { attendancePolicy: policy });
+    const snap = await getDoc(ref);
+    return (snap.data() as SchoolSettings).attendancePolicy;
+  }
+
+  public async getAcademicYears(): Promise<AcademicYear[]> {
+    ensureFirebaseReady();
+    const snap = await getDocs(collection(db!, 'academicYears'));
+    return snap.docs.map(d => d.data() as AcademicYear);
+  }
+
+  public async updateAcademicYear(yearId: string, updates: Partial<AcademicYear>, _actor: StaffUser): Promise<AcademicYear> {
+    ensureFirebaseReady();
+    const ref = doc(db!, 'academicYears', yearId);
+    await updateDoc(ref, updates);
+    const snap = await getDoc(ref);
+    return snap.data() as AcademicYear;
+  }
+
+  public async getStaffMemberById(staffId: string): Promise<StaffUser | null> {
+    ensureFirebaseReady();
+    const snap = await getDoc(doc(db!, 'staff', staffId));
+    return snap.exists() ? (snap.data() as StaffUser) : null;
+  }
+
+  public async createStaffMember(input: Partial<StaffUser>, _actor: StaffUser): Promise<StaffUser> {
+    ensureFirebaseReady();
+    const id = `staff-${Date.now()}`;
+    const staff = { id, ...input } as StaffUser;
+    await setDoc(doc(db!, 'staff', id), staff);
+    return staff;
+  }
+
+  public async updateStaffMember(staffId: string, updates: Partial<StaffUser>, _actor: StaffUser): Promise<StaffUser> {
+    ensureFirebaseReady();
+    const ref = doc(db!, 'staff', staffId);
+    await updateDoc(ref, updates);
+    const snap = await getDoc(ref);
+    return snap.data() as StaffUser;
+  }
+
+  public async updateClassTeacher(classId: string, teacherId: string, teacherName: string, _actor: StaffUser): Promise<ClassSection> {
+    ensureFirebaseReady();
+    const ref = doc(db!, 'classes', classId);
+    await updateDoc(ref, { classTeacherId: teacherId, classTeacherName: teacherName });
+    const snap = await getDoc(ref);
+    return snap.data() as ClassSection;
+  }
+
+  public async createSubject(subject: Partial<Subject>, _actor: StaffUser): Promise<Subject> {
+    ensureFirebaseReady();
+    const id = `sub-${Date.now()}`;
+    const sub = { id, ...subject } as Subject;
+    await setDoc(doc(db!, 'subjects', id), sub);
+    return sub;
+  }
+
+  public async assignSubjectTeacher(assignment: Partial<SubjectAssignment>, _actor: StaffUser): Promise<SubjectAssignment> {
+    ensureFirebaseReady();
+    const id = `assign-${Date.now()}`;
+    const assign = { id, ...assignment } as SubjectAssignment;
+    await setDoc(doc(db!, 'subjectAssignments', id), assign);
+    return assign;
+  }
+
+  public async getStudentAuditHistory(studentId: string): Promise<AuditEvent[]> {
+    ensureFirebaseReady();
+    const q = query(
+      collection(db!, 'auditEvents'),
+      where('targetId', '==', studentId),
+      orderBy('timestamp', 'desc')
+    );
+    const snap = await getDocs(q);
+    return snap.docs.map(d => d.data() as AuditEvent);
+  }
+
+  public async getAttendanceSessions(date?: string): Promise<AttendanceSession[]> {
+    ensureFirebaseReady();
+    const targetDate = date || new Date().toISOString().split('T')[0];
+    const q = query(collection(db!, 'attendanceSessions'), where('date', '==', targetDate));
+    const snap = await getDocs(q);
+    return snap.docs.map(d => d.data() as AttendanceSession);
+  }
+
+  public async getAssessmentCycleById(cycleId: string): Promise<AssessmentCycle | null> {
+    ensureFirebaseReady();
+    const snap = await getDoc(doc(db!, 'assessments', cycleId));
+    return snap.exists() ? (snap.data() as AssessmentCycle) : null;
+  }
+
+  public async createAssessmentCycle(cycle: Partial<AssessmentCycle>, _actor: StaffUser): Promise<AssessmentCycle> {
+    ensureFirebaseReady();
+    const id = `assess-${Date.now()}`;
+    const c = { id, ...cycle } as AssessmentCycle;
+    await setDoc(doc(db!, 'assessments', id), c);
+    return c;
+  }
+
+  public async updateAssessmentCycle(cycleId: string, updates: Partial<AssessmentCycle>, _actor: StaffUser): Promise<AssessmentCycle> {
+    ensureFirebaseReady();
+    const ref = doc(db!, 'assessments', cycleId);
+    await updateDoc(ref, updates);
+    const snap = await getDoc(ref);
+    return snap.data() as AssessmentCycle;
+  }
+
+  public async getConsolidatedClassMarks(classId: string, assessmentId: string = 'assess-ut1-2025'): Promise<any> {
+    ensureFirebaseReady();
+    const cls = await this.getClassById(classId);
+    const students = await this.getClassStudents(classId);
+    const subjects = await this.getSubjects();
+    const assessment = await this.getAssessmentCycleById(assessmentId);
+    return {
+      classSection: cls!,
+      assessmentCycle: assessment!,
+      subjects,
+      students,
+      matrix: {},
+      subjectAverages: {},
+    };
+  }
+
+  public async updateIncident(incidentId: string, updates: Partial<IncidentRecord>, _actor: StaffUser): Promise<IncidentRecord> {
+    ensureFirebaseReady();
+    const ref = doc(db!, 'incidents', incidentId);
+    await updateDoc(ref, updates);
+    const snap = await getDoc(ref);
+    return snap.data() as IncidentRecord;
+  }
+
+  public async getRiskWatchlist(): Promise<any[]> {
+    ensureFirebaseReady();
+    const res = await this.getStudents();
+    return res.items
+      .filter(s => s.activeFlags && s.activeFlags.length > 0)
+      .map(s => ({
+        student: s,
+        primaryTrigger: s.activeFlags[0]?.title || 'Care Alert',
+        consecutiveAbsences: 0,
+        attendanceRate: s.attendancePercentage,
+        academicDropPercent: 0,
+        flagCount: s.activeFlags.length,
+        followUpStatus: 'pending',
+      }));
   }
 }
 

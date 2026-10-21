@@ -13,6 +13,8 @@ import {
   Settings,
   BookOpen,
   UserCheck,
+  Layers,
+  AlertTriangle,
 } from 'lucide-react';
 import logoSvg from '../../assets/logo.svg';
 
@@ -49,8 +51,16 @@ export const Sidebar: React.FC = () => {
         <img
           src={logoSvg}
           alt="HanuJai High School Crest"
-          style={{ height: '42px', width: 'auto', display: 'block' }}
+          style={{ height: '40px', width: 'auto', display: 'block' }}
         />
+        <div style={{ display: 'flex', flexDirection: 'column' }}>
+          <span style={{ fontWeight: 800, fontSize: '0.95rem', color: 'var(--hhs-primary)', letterSpacing: '-0.02em', lineHeight: 1.1 }}>
+            HanuJai ERP
+          </span>
+          <span style={{ fontSize: '0.68rem', color: 'var(--hhs-text-secondary)', textTransform: 'uppercase', letterSpacing: '0.04em' }}>
+            Jaipur Central
+          </span>
+        </div>
       </div>
 
       {/* Role Scope Banner */}
@@ -91,7 +101,7 @@ export const Sidebar: React.FC = () => {
           </li>
 
           {/* Classes & Sections (Principal, Admin, Class Teacher) */}
-          {(role === 'principal' || role === 'office_admin') && (
+          {role !== 'subject_teacher' && (
             <li>
               <SidebarItem to="/classes" icon={<BookOpen size={16} />} label="Classes & Sections" />
             </li>
@@ -104,20 +114,20 @@ export const Sidebar: React.FC = () => {
                 <SidebarItem
                   to="/classes/class-10-a/students"
                   icon={<Users size={16} />}
-                  label="10-A Student Roster"
+                  label="10-A Roll Roster"
                 />
               </li>
               <li>
                 <SidebarItem
                   to="/classes/class-10-a/performance"
                   icon={<FileCheck2 size={16} />}
-                  label="10-A Consolidated Marks"
+                  label="10-A Performance"
                 />
               </li>
             </>
           )}
 
-          {/* Student Directory (All, scoped in view) */}
+          {/* Student Directory (All) */}
           <li>
             <SidebarItem to="/students" icon={<GraduationCap size={16} />} label="Student Records" />
           </li>
@@ -128,7 +138,7 @@ export const Sidebar: React.FC = () => {
               <SidebarItem
                 to={role === 'class_teacher' ? '/attendance/register/class-10-a' : '/attendance'}
                 icon={<CalendarCheck size={16} />}
-                label={role === 'class_teacher' ? 'Mark 10-A Attendance' : 'Attendance Register'}
+                label={role === 'class_teacher' ? 'Mark 10-A Roll' : 'Attendance Register'}
               />
             </li>
           )}
@@ -147,18 +157,29 @@ export const Sidebar: React.FC = () => {
           {/* Assessments & Marks Entry */}
           <li>
             <SidebarItem
-              to="/assessments"
+              to={role === 'subject_teacher' ? '/academics/marks/assess-ut2-2025' : '/assessments'}
               icon={<FileCheck2 size={16} />}
               label={role === 'subject_teacher' ? 'Enter Marks (Math)' : 'Assessment Cycles'}
             />
           </li>
+
+          {/* Risk Watchlist (Principal, Office Admin, Class Teacher) */}
+          {role !== 'subject_teacher' && (
+            <li>
+              <SidebarItem
+                to="/risk-watchlist"
+                icon={<AlertTriangle size={16} />}
+                label="Risk Watchlist"
+              />
+            </li>
+          )}
 
           {/* Behaviour & Discipline */}
           <li>
             <SidebarItem to="/behaviour" icon={<AlertOctagon size={16} />} label="Incident & Care Log" />
           </li>
 
-          {/* Reports & Watchlist */}
+          {/* Institutional Reports */}
           <li>
             <SidebarItem to="/reports" icon={<FileText size={16} />} label="Institutional Reports" />
           </li>
@@ -176,18 +197,30 @@ export const Sidebar: React.FC = () => {
                   fontWeight: 700,
                 }}
               >
-                Governance & Audit
+                Governance &amp; Setup
               </div>
               <li>
-                <SidebarItem to="/admin/staff" icon={<Users size={16} />} label="Staff Directory" />
+                <SidebarItem to="/staff" icon={<Users size={16} />} label="Staff Directory" />
+              </li>
+              <li>
+                <SidebarItem to="/admin/class-teachers" icon={<UserCheck size={16} />} label="Class Tutors" />
+              </li>
+              <li>
+                <SidebarItem to="/admin/subject-teachers" icon={<Layers size={16} />} label="Subject Matrix" />
+              </li>
+              <li>
+                <SidebarItem to="/admin/roles" icon={<BookOpen size={16} />} label="RBAC Policy Matrix" />
               </li>
               {role === 'principal' && (
                 <>
                   <li>
-                    <SidebarItem to="/admin/audit-log" icon={<ShieldAlert size={16} />} label="System Audit Log" />
+                    <SidebarItem to="/audit-log" icon={<ShieldAlert size={16} />} label="System Audit Log" />
                   </li>
                   <li>
-                    <SidebarItem to="/admin/system-config" icon={<Settings size={16} />} label="School Policy Setup" />
+                    <SidebarItem to="/settings/system-config" icon={<Settings size={16} />} label="School Identity &amp; Setup" />
+                  </li>
+                  <li>
+                    <SidebarItem to="/settings/attendance-policy" icon={<CalendarCheck size={16} />} label="Attendance Policy" />
                   </li>
                 </>
               )}

@@ -102,8 +102,6 @@ describe('HanuJai ERP Foundation — Core Workflows', () => {
   });
 
   it('restricts unauthorized routes using RoleGuard', async () => {
-    // In demo mode, default user is Principal (who has access to admin/staff).
-    // Let's test non-existent route shows NotFound
     render(
       <MemoryRouter initialEntries={['/invalid-unknown-screen']}>
         <AuthProvider>
@@ -116,6 +114,97 @@ describe('HanuJai ERP Foundation — Core Workflows', () => {
 
     await waitFor(() => {
       expect(screen.getByText(/Record or Screen Not Found/i)).toBeInTheDocument();
+    });
+  });
+
+  it('renders Student Profile with all 5 operational dossier tabs', async () => {
+    render(
+      <MemoryRouter initialEntries={['/students/STU-10A-01']}>
+        <AuthProvider>
+          <DataContextProvider>
+            <App />
+          </DataContextProvider>
+        </AuthProvider>
+      </MemoryRouter>
+    );
+
+    await waitFor(() => {
+      expect(screen.getAllByText(/Aarav Singhania/i)[0]).toBeInTheDocument();
+      expect(screen.getByText(/Profile Overview/i)).toBeInTheDocument();
+      expect(screen.getByText(/Academic Performance/i)).toBeInTheDocument();
+      expect(screen.getByText(/Attendance Records/i)).toBeInTheDocument();
+      expect(screen.getAllByText(/Pastoral Care/i)[0]).toBeInTheDocument();
+      expect(screen.getByText(/Change History/i)).toBeInTheDocument();
+    });
+  });
+
+  it('renders Assessment Directory and Marks Entry Register', async () => {
+    render(
+      <MemoryRouter initialEntries={['/assessments']}>
+        <AuthProvider>
+          <DataContextProvider>
+            <App />
+          </DataContextProvider>
+        </AuthProvider>
+      </MemoryRouter>
+    );
+
+    await waitFor(() => {
+      expect(screen.getByText(/Assessment Cycles & Marks Entry/i)).toBeInTheDocument();
+      expect(screen.getByText(/Configure Assessment/i)).toBeInTheDocument();
+    });
+  });
+
+  it('renders Class Performance Matrix and Risk Watchlist', async () => {
+    render(
+      <MemoryRouter initialEntries={['/performance/classes/class-10-a']}>
+        <AuthProvider>
+          <DataContextProvider>
+            <App />
+          </DataContextProvider>
+        </AuthProvider>
+      </MemoryRouter>
+    );
+
+    await waitFor(() => {
+      expect(screen.getByText(/Consolidated Subject Performance Matrix/i)).toBeInTheDocument();
+      expect(screen.getByText(/Cohort Aggregate Mean/i)).toBeInTheDocument();
+      expect(screen.getByText(/Export Ledger CSV/i)).toBeInTheDocument();
+    });
+  });
+
+  it('renders Reports Hub and Official Report Card', async () => {
+    render(
+      <MemoryRouter initialEntries={['/reports']}>
+        <AuthProvider>
+          <DataContextProvider>
+            <App />
+          </DataContextProvider>
+        </AuthProvider>
+      </MemoryRouter>
+    );
+
+    await waitFor(() => {
+      expect(screen.getByText(/Statutory & Operational Reports Directory/i)).toBeInTheDocument();
+      expect(screen.getByText(/Formal CBSE Student Academic Report Card/i)).toBeInTheDocument();
+      expect(screen.getByText(/Parent-Teacher Meeting \(PTM\) Progress Slip/i)).toBeInTheDocument();
+    });
+  });
+
+  it('renders System Settings with Demo Data Reset capability', async () => {
+    render(
+      <MemoryRouter initialEntries={['/settings/system-config']}>
+        <AuthProvider>
+          <DataContextProvider>
+            <App />
+          </DataContextProvider>
+        </AuthProvider>
+      </MemoryRouter>
+    );
+
+    await waitFor(() => {
+      expect(screen.getByText(/Institutional System & Identity Configuration/i)).toBeInTheDocument();
+      expect(screen.getByText(/Reset to Clean Demo Data/i)).toBeInTheDocument();
     });
   });
 });

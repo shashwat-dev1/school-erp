@@ -42,3 +42,6 @@ test-results/
 
 # TypeScript build info
 *.tsbuildinfo
+*.config.js
+*.config.d.ts
+

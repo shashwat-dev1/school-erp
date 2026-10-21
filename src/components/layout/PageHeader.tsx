@@ -12,6 +12,7 @@ export interface PageHeaderProps {
   breadcrumbs?: BreadcrumbItem[];
   actions?: React.ReactNode;
   badge?: React.ReactNode;
+  roleScope?: string;
 }
 
 export const PageHeader: React.FC<PageHeaderProps> = ({
@@ -20,6 +21,7 @@ export const PageHeader: React.FC<PageHeaderProps> = ({
   breadcrumbs,
   actions,
   badge,
+  roleScope,
 }) => {
   return (
     <div
@@ -73,8 +75,13 @@ export const PageHeader: React.FC<PageHeaderProps> = ({
         }}
       >
         <div>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
             <h1 className="hhs-headline-lg">{title}</h1>
+            {roleScope && (
+              <span className="hhs-badge hhs-badge-primary">
+                {roleScope}
+              </span>
+            )}
             {badge && <span>{badge}</span>}
           </div>
           {subtitle && (

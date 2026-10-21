@@ -2,21 +2,64 @@ import React from 'react';
 import { Routes, Route, Navigate } from 'react-router-dom';
 import { AppShell } from './components/layout/AppShell';
 import { RoleGuard } from './components/auth/RoleGuard';
+
+// Public Auth
 import { StaffLogin } from './pages/auth/StaffLogin';
+
+// Operational Hub
 import { OperationsHub } from './pages/dashboard/OperationsHub';
+
+// Student Master Dossiers
 import { StudentDirectory } from './pages/students/StudentDirectory';
+import { StudentDetail } from './pages/students/StudentDetail';
+
+// Attendance Registers & Dual-Custody
+import { AttendanceDashboard } from './pages/attendance/AttendanceDashboard';
 import { DailyAttendanceRegister } from './pages/attendance/DailyAttendanceRegister';
+import { AttendanceCorrections } from './pages/attendance/AttendanceCorrections';
+
+// Classes & Academic Structure
+import { ClassesDirectory } from './pages/admin/ClassesDirectory';
+import { SectionRoster } from './pages/admin/SectionRoster';
+import { ClassTeacherAssignments } from './pages/admin/ClassTeacherAssignments';
+import { SubjectFacultyAssignments } from './pages/admin/SubjectFacultyAssignments';
+import { RolePermissionMatrix } from './pages/admin/RolePermissionMatrix';
+import { StaffDirectory } from './pages/admin/StaffDirectory';
+
+// Assessment Cycles & Marks Entry
+import { AssessmentList } from './pages/academics/AssessmentList';
+import { MarksEntryRegister } from './pages/academics/MarksEntryRegister';
+import { ClassPerformanceLedger } from './pages/performance/ClassPerformanceLedger';
+
+// Risk Watchlist & Pastoral Care
+import { RiskWatchlist } from './pages/risk/RiskWatchlist';
+import { BehaviourDirectory } from './pages/behaviour/BehaviourDirectory';
+
+// Statutory Reports & Print Dossiers
+import { ReportsHub } from './pages/reports/ReportsHub';
+import { StudentReportCard } from './pages/reports/StudentReportCard';
+import { PTMSlip } from './pages/reports/PTMSlip';
+import { AttendanceReport } from './pages/reports/AttendanceReport';
+import { AcademicComparisonReport } from './pages/reports/AcademicComparisonReport';
+
+// Settings & Security Governance
+import { SystemSettings } from './pages/settings/SystemSettings';
+import { AcademicYearSettings } from './pages/settings/AcademicYearSettings';
+import { AssessmentTypeSettings } from './pages/settings/AssessmentTypeSettings';
+import { AttendancePolicySettings } from './pages/settings/AttendancePolicySettings';
+import { AuditLogDirectory } from './pages/audit/AuditLogDirectory';
+
+// Errors
 import { AccessDenied } from './pages/error/AccessDenied';
 import { NotFound } from './pages/error/NotFound';
-import { PhasePlaceholder } from './pages/common/PhasePlaceholder';
 
 export const App: React.FC = () => {
   return (
     <Routes>
-      {/* Public Authentication Route */}
+      {/* Public Authentication */}
       <Route path="/login" element={<StaffLogin />} />
 
-      {/* Protected Institutional Routes in AppShell */}
+      {/* Authenticated Institutional Shell */}
       <Route
         path="/"
         element={
@@ -28,137 +71,122 @@ export const App: React.FC = () => {
         {/* Operations Hub (Dashboard) */}
         <Route index element={<OperationsHub />} />
 
-        {/* Student Master Ledger */}
+        {/* Student Master Ledger & Profiles */}
         <Route path="students" element={<StudentDirectory />} />
+        <Route path="students/:id" element={<StudentDetail />} />
 
-        {/* Daily Attendance Registers */}
-        <Route path="attendance" element={<DailyAttendanceRegister />} />
+        {/* Attendance Operations & Dual-Custody */}
+        <Route path="attendance" element={<AttendanceDashboard />} />
         <Route path="attendance/register/:classId" element={<DailyAttendanceRegister />} />
-        <Route
-          path="attendance/corrections"
-          element={
-            <PhasePlaceholder
-              moduleName="Attendance Late Corrections & Dual Custody"
-              phaseNumber={2}
-              description="Formal workflow for principal/tutor dual-custody verification of post-window attendance adjustments."
-              deliverables={[
-                'Mandatory justification audit logging',
-                'Principal approval queue',
-                'Lock state verification',
-                'CBSE compliance timestamping',
-              ]}
-            />
-          }
-        />
+        <Route path="attendance/corrections" element={<AttendanceCorrections />} />
 
-        {/* Classes & Sections */}
-        <Route
-          path="classes"
-          element={
-            <PhasePlaceholder
-              moduleName="Class & Section Roster Management"
-              phaseNumber={2}
-              description="Class 1 to 10 sections A & B roster configuration, classroom allocations, and tutor assignments."
-              deliverables={[
-                'Section strength monitoring (max 40 students)',
-                'Tutor assignment matrix',
-                'Student roll generation',
-                'Room scheduling',
-              ]}
-            />
-          }
-        />
-        <Route
-          path="classes/:classId/students"
-          element={<StudentDirectory />}
-        />
-        <Route
-          path="classes/:classId/performance"
-          element={
-            <PhasePlaceholder
-              moduleName="Consolidated Class Performance Ledger"
-              phaseNumber={3}
-              description="Cross-subject performance ledger tracking Term 1 and Term 2 progression against historical benchmarks."
-              deliverables={[
-                'Multi-subject consolidated grade grid',
-                'Explainable care rule triggers',
-                'CBSE grading scale calculations',
-                'Cohort ranking and percentiles',
-              ]}
-            />
-          }
-        />
+        {/* Classes & Section Rosters */}
+        <Route path="classes" element={<ClassesDirectory />} />
+        <Route path="classes/:classId/students" element={<SectionRoster />} />
+        <Route path="classes/:classId/performance" element={<ClassPerformanceLedger />} />
+        <Route path="performance/classes/:classId" element={<ClassPerformanceLedger />} />
 
-        {/* Assessment Cycles & Marks Entry */}
+        {/* Assessment Cycles & Marks Sheets */}
+        <Route path="assessments" element={<AssessmentList />} />
+        <Route path="academics/assessments" element={<AssessmentList />} />
+        <Route path="academics/marks/:assessmentId" element={<MarksEntryRegister />} />
+
+        {/* Performance Risk Watchlist */}
+        <Route path="risk-watchlist" element={<RiskWatchlist />} />
+
+        {/* Behaviour & Proctorial Care */}
+        <Route path="behaviour" element={<BehaviourDirectory />} />
+
+        {/* Institutional Reports & Print Views */}
+        <Route path="reports" element={<ReportsHub />} />
+        <Route path="reports/report-card/:studentId" element={<StudentReportCard />} />
+        <Route path="reports/ptm-slip/:studentId" element={<PTMSlip />} />
+        <Route path="reports/attendance" element={<AttendanceReport />} />
+        <Route path="reports/academic-comparison" element={<AcademicComparisonReport />} />
+
+        {/* Staff Administration & Allocations */}
         <Route
-          path="assessments"
+          path="staff"
           element={
-            <PhasePlaceholder
-              moduleName="Assessment Cycles & Marks Register"
-              phaseNumber={3}
-              description="Continuous term assessments, periodic tests, and subject teacher marks entry workflows."
-              deliverables={[
-                'Subject-wise mark sheet with draft & finalize states',
-                'Absentee mark validation',
-                'Auto-tabulation of totals and grades',
-                'Direct report card generation',
-              ]}
-            />
+            <RoleGuard allowedRoles={['principal', 'office_admin']}>
+              <StaffDirectory />
+            </RoleGuard>
           }
         />
-
-        {/* Behaviour & Discipline */}
-        <Route
-          path="behaviour"
-          element={
-            <PhasePlaceholder
-              moduleName="Incident & Student Care Registry"
-              phaseNumber={3}
-              description="Objective behavioral observations, commendations, disciplinary notices, and pastoral care tracking."
-              deliverables={[
-                'Explainable care flags integration',
-                'Guardian notification history',
-                'Dual-custody disciplinary actions',
-                'Confidential counselor notes',
-              ]}
-            />
-          }
-        />
-
-        {/* Institutional Reports */}
-        <Route
-          path="reports"
-          element={
-            <PhasePlaceholder
-              moduleName="Institutional Reports & CBSE Compliance"
-              phaseNumber={4}
-              description="Mandatory state board filings, Pariksha Sangam exports, and demographic reports."
-              deliverables={[
-                'CBSE Form A & B compliance registers',
-                'Below 75% attendance audit certificates',
-                'End-of-term student report cards',
-                'Staff workload summaries',
-              ]}
-            />
-          }
-        />
-
-        {/* Administration & Governance (Principal / Office Admin) */}
         <Route
           path="admin/staff"
           element={
             <RoleGuard allowedRoles={['principal', 'office_admin']}>
-              <PhasePlaceholder
-                moduleName="Staff Directory & Role Provisioning"
-                phaseNumber={4}
-                description="Staff accounts, desk assignments, and Firebase Auth UID bindings."
-                deliverables={[
-                  'Staff credential provisioning',
-                  'Teacher class/subject assignment',
-                  'Clearance level auditing',
-                  'Departmental rosters',
-                ]}
-              />
+              <StaffDirectory />
+            </RoleGuard>
+          }
+        />
+        <Route
+          path="admin/class-teachers"
+          element={
+            <RoleGuard allowedRoles={['principal', 'office_admin']}>
+              <ClassTeacherAssignments />
+            </RoleGuard>
+          }
+        />
+        <Route
+          path="admin/subject-teachers"
+          element={
+            <RoleGuard allowedRoles={['principal', 'office_admin']}>
+              <SubjectFacultyAssignments />
+            </RoleGuard>
+          }
+        />
+        <Route path="admin/roles" element={<RolePermissionMatrix />} />
+
+        {/* Institutional Settings */}
+        <Route
+          path="settings/system-config"
+          element={
+            <RoleGuard allowedRoles={['principal', 'office_admin']}>
+              <SystemSettings />
+            </RoleGuard>
+          }
+        />
+        <Route
+          path="admin/system-config"
+          element={
+            <RoleGuard allowedRoles={['principal', 'office_admin']}>
+              <SystemSettings />
+            </RoleGuard>
+          }
+        />
+        <Route
+          path="settings/academic-years"
+          element={
+            <RoleGuard allowedRoles={['principal', 'office_admin']}>
+              <AcademicYearSettings />
+            </RoleGuard>
+          }
+        />
+        <Route
+          path="settings/assessment-types"
+          element={
+            <RoleGuard allowedRoles={['principal', 'office_admin']}>
+              <AssessmentTypeSettings />
+            </RoleGuard>
+          }
+        />
+        <Route
+          path="settings/attendance-policy"
+          element={
+            <RoleGuard allowedRoles={['principal']}>
+              <AttendancePolicySettings />
+            </RoleGuard>
+          }
+        />
+
+        {/* Security Audit Log */}
+        <Route
+          path="audit-log"
+          element={
+            <RoleGuard allowedRoles={['principal']}>
+              <AuditLogDirectory />
             </RoleGuard>
           }
         />
@@ -166,35 +194,7 @@ export const App: React.FC = () => {
           path="admin/audit-log"
           element={
             <RoleGuard allowedRoles={['principal']}>
-              <PhasePlaceholder
-                moduleName="System Audit & Security Log"
-                phaseNumber={4}
-                description="Tamper-evident system audit trail recording every mutation, login, and policy override."
-                deliverables={[
-                  'Immutable append-only audit events',
-                  'IP address and user agent logging',
-                  'Security anomaly alerts',
-                  'DPDP Act data access verification',
-                ]}
-              />
-            </RoleGuard>
-          }
-        />
-        <Route
-          path="admin/system-config"
-          element={
-            <RoleGuard allowedRoles={['principal']}>
-              <PhasePlaceholder
-                moduleName="School Policy & Academic Setup"
-                phaseNumber={4}
-                description="School calendar, attendance window timings, CBSE affiliation parameters, and grading rules."
-                deliverables={[
-                  'Daily attendance window configuration (07:45–09:15)',
-                  'Term dates and holiday schedule',
-                  'Dual-custody verification toggles',
-                  'Institution identity settings',
-                ]}
-              />
+              <AuditLogDirectory />
             </RoleGuard>
           }
         />
