@@ -1,0 +1,597 @@
+<!DOCTYPE html>
+
+<html lang="en"><head><meta charset="utf-8"/><meta content="width=device-width, initial-scale=1.0" name="viewport"/><meta content="web_dashboard" name="shell-type"/><link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@100..900&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/><style>@layer base{html,body{margin:0;padding:0;}body{overscroll-behavior:none;}main>:first-child{margin-top:0!important;}main>:last-child{margin-bottom:0!important;}}::-webkit-scrollbar{display:none;}</style><script src="https://cdn.tailwindcss.com"></script><script id="tailwind-config">tailwind.config={darkMode:"class",theme:{extend:{colors:{"on-tertiary-fixed-variant":"#822624","primary":"#184237","secondary":"#7e5624","outline":"#717975","surface-dim":"#d0dddb","on-secondary":"#ffffff","background":"#f0fcfa","outline-variant":"#c0c8c4","on-secondary-fixed-variant":"#633f0d","on-primary":"#ffffff","tertiary":"#721a1a","secondary-fixed":"#ffddba","inverse-on-surface":"#e7f3f1","on-tertiary":"#ffffff","primary-fixed-dim":"#a5cfc1","secondary-fixed-dim":"#f2bd80","primary-fixed":"#c0ecdd","surface-container-lowest":"#ffffff","error-container":"#ffdad6","surface":"#f0fcfa","tertiary-fixed-dim":"#ffb3ad","tertiary-fixed":"#ffdad7","tertiary-container":"#91312e","on-tertiary-container":"#ffb2ac","surface-container-low":"#eaf6f4","surface-container-highest":"#d9e5e3","surface-bright":"#f0fcfa","surface-tint":"#3e665a","surface-container":"#e4f0ee","error":"#ba1a1a","surface-container-high":"#deebe9","on-primary-fixed":"#002019","secondary-container":"#fec78a","on-background":"#131e1d","on-tertiary-fixed":"#410004","on-error":"#ffffff","surface-variant":"#d9e5e3","inverse-surface":"#273331","on-primary-fixed-variant":"#264e43","primary-container":"#31594e","on-primary-container":"#a3cec0","on-secondary-fixed":"#2b1700","inverse-primary":"#a5cfc1","on-secondary-container":"#79511f","on-error-container":"#93000a","on-surface-variant":"#414845","on-surface":"#131e1d"},borderRadius:{"DEFAULT":"0.125rem","lg":"0.25rem","xl":"0.5rem","full":"0.75rem"},spacing:{"space-md":"0.75rem","margin-desktop":"2rem","space-xs":"0.25rem","gutter-desktop":"1.5rem","space-xl":"1.5rem","margin":"1rem","space-lg":"1rem","space-sm":"0.5rem","gutter":"1rem"},fontFamily:{"tabular-data":["Inter"],"body-lg":["Inter"],"label-sm":["Inter"],"headline-md":["Inter"],"headline-xl":["Inter"],"body-md":["Inter"],"body-sm":["Inter"],"headline-lg":["Inter"],"label-md":["Inter"],"headline-sm":["Inter"]},fontSize:{"tabular-data":["0.875rem",{"lineHeight":"1.25rem","letterSpacing":"0em","fontWeight":"400"}],"body-lg":["1rem",{"lineHeight":"1.5rem","letterSpacing":"0em","fontWeight":"400"}],"label-sm":["0.75rem",{"lineHeight":"1rem","letterSpacing":"0.025em","fontWeight":"600"}],"headline-md":["1.25rem",{"lineHeight":"1.75rem","letterSpacing":"-0.01em","fontWeight":"600"}],"headline-xl":["2rem",{"lineHeight":"2.5rem","letterSpacing":"-0.02em","fontWeight":"600"}],"body-md":["0.875rem",{"lineHeight":"1.25rem","letterSpacing":"0em","fontWeight":"400"}],"body-sm":["0.75rem",{"lineHeight":"1.125rem","letterSpacing":"0.005em","fontWeight":"400"}],"headline-lg":["1.5rem",{"lineHeight":"2rem","letterSpacing":"-0.015em","fontWeight":"600"}],"label-md":["0.875rem",{"lineHeight":"1.25rem","letterSpacing":"0.01em","fontWeight":"500"}],"headline-sm":["1.125rem",{"lineHeight":"1.5rem","letterSpacing":"0em","fontWeight":"600"}]}}}}</script></head><body class="bg-surface text-on-surface font-body-md text-body-md min-h-screen"><header class="fixed top-0 left-0 right-0 h-16 bg-surface-container-lowest shadow-[0_1px_4px_rgba(24,66,55,0.06)] z-50"><div class="h-16 w-full px-gutter-desktop flex items-center justify-between gap-space-lg"><div class="flex items-center gap-space-md"><img alt="HanuJai High School Crest" class="h-8 w-auto object-contain" src="https://lh3.googleusercontent.com/aida/AEtjO1XaQgiPfNIvW8D6_3ZLBk4GvIWZyWUGf7f7Dg04WfKedS7T3FYw-mhsFM8L3Pin9d7cVlXEHRmHsJCXDiazcnfVd6Tqv7VaLKe6RpNPCfZCc-Dvi1ZWD9M7WXsa4L-HwKss71_bIYIpzj-9xBLaHNmcz14vnYMCAa0kwivrop5es2kGVOT3zySzIYFxOHFNY5uKkyIZP7HWwhvOrMEpr5GgCcXnWgmWinAmafQcI3UYj4xiBvva4lvTdoE"/><div class="flex flex-col"><div class="flex items-center gap-space-sm"><span class="font-headline-sm text-headline-sm text-primary tracking-tight">HanuJai High School, Jaipur</span><span class="px-space-xs py-0.5 rounded-lg bg-surface-container text-on-surface-variant font-label-sm text-label-sm">AY 2024–25 (Term II)</span></div><span class="font-body-sm text-body-sm text-on-surface-variant">Staff Administration ERP</span></div></div><div class="flex-1 max-w-lg mx-space-xl hidden md:flex items-center"><div class="w-full flex items-center px-space-md py-1.5 rounded-lg bg-surface-container-low text-on-surface-variant focus-within:bg-surface-container-lowest focus-within:text-on-surface"><span class="material-symbols-outlined text-outline mr-space-sm text-[18px]">search</span><input class="w-full bg-transparent border-0 p-0 text-on-surface placeholder:text-outline font-body-sm text-body-sm focus:ring-0 focus:outline-none" placeholder="Search student, staff, class, admission..." type="text"/><kbd class="px-1.5 py-0.5 bg-surface-container rounded font-label-sm text-label-sm text-on-surface-variant">Ctrl+K</kbd></div></div><div class="flex items-center gap-space-md"><button class="relative p-space-xs rounded-lg text-on-surface-variant hover:bg-surface-container hover:text-on-surface transition-colors"><span class="material-symbols-outlined text-[20px]">notifications</span><span class="absolute top-1 right-1 w-2 h-2 rounded-full bg-error"></span></button><div class="flex items-center gap-space-sm pl-space-sm"><div class="w-8 h-8 rounded-full bg-primary flex items-center justify-center"><span class="material-symbols-outlined text-on-primary text-[18px]">person</span></div><div class="hidden xl:flex flex-col text-left"><span class="font-label-md text-label-md text-on-surface leading-tight">Dr. K. S. Rathore</span><span class="font-body-sm text-body-sm text-on-surface-variant leading-tight">Principal / Inst. Admin</span></div></div></div></div></header><aside class="fixed left-0 top-16 h-[calc(100vh-4rem)] w-64 bg-surface-container-lowest shadow-[1px_0_4px_rgba(24,66,55,0.04)] z-40 flex flex-col justify-between overflow-y-auto"><div class="py-space-md flex flex-col gap-space-md"><div class="flex flex-col"><div class="px-gutter mb-space-sm text-on-surface-variant font-label-sm text-label-sm uppercase tracking-wider">Administrative Modules</div><nav class="flex flex-col gap-1 px-space-sm" data-active-classes="bg-primary-container text-on-primary font-label-md rounded-lg shadow-sm"><a class="flex items-center px-space-md py-2 rounded-lg text-on-surface-variant font-body-md text-body-md hover:bg-surface-container hover:text-on-surface transition-all" data-path="dashboard" href="#"><span>Dashboard</span></a><a class="flex items-center px-space-md py-2 rounded-lg text-on-surface-variant font-body-md text-body-md hover:bg-surface-container hover:text-on-surface transition-all" data-path="students" href="#"><span>Students</span></a><a class="flex items-center px-space-md py-2 rounded-lg text-on-surface-variant font-body-md text-body-md hover:bg-surface-container hover:text-on-surface transition-all" data-path="attendance" href="#"><span>Attendance</span></a><a class="flex items-center px-space-md py-2 rounded-lg text-on-surface-variant font-body-md text-body-md hover:bg-surface-container hover:text-on-surface transition-all" data-path="academics" href="#"><span>Academics</span></a><a class="flex items-center px-space-md py-2 rounded-lg text-on-surface-variant font-body-md text-body-md hover:bg-surface-container hover:text-on-surface transition-all" data-path="performance" href="#"><span>Performance</span></a><a class="flex items-center px-space-md py-2 rounded-lg text-on-surface-variant font-body-md text-body-md hover:bg-surface-container hover:text-on-surface transition-all" data-path="behaviour" href="#"><span>Behaviour</span></a><a class="flex items-center px-space-md py-2 rounded-lg text-on-surface-variant font-body-md text-body-md hover:bg-surface-container hover:text-on-surface transition-all" data-path="reports" href="#"><span>Reports &amp; CBSE</span></a><a class="flex items-center px-space-md py-2 rounded-lg text-on-surface-variant font-body-md text-body-md hover:bg-surface-container hover:text-on-surface transition-all" data-path="administration" href="#"><span>Administration</span></a><a class="flex items-center px-space-md py-2 rounded-lg text-on-surface-variant font-body-md text-body-md hover:bg-surface-container hover:text-on-surface transition-all" data-path="school-administration-audit-log" href="#"><span>School Administration Audit Log</span></a><a class="flex items-center px-space-md py-2 rounded-lg text-on-surface-variant font-body-md text-body-md hover:bg-surface-container hover:text-on-surface transition-all" data-path="record-change-detail-marks-attendance-dual-custody-diff" href="#"><span>Record Change Detail (Marks/Attendance Dual-Custody Diff)</span></a><a class="flex items-center px-space-md py-2 rounded-lg text-on-surface-variant font-body-md text-body-md hover:bg-surface-container hover:text-on-surface transition-all" data-path="student-chronological-change-history" href="#"><span>Student Chronological Change History</span></a></nav></div><div class="flex flex-col"><div class="px-gutter mb-space-sm text-on-surface-variant font-label-sm text-label-sm uppercase tracking-wider">School Configuration</div><nav class="flex flex-col gap-1 px-space-sm" data-active-classes="bg-primary-container text-on-primary font-label-md rounded-lg shadow-sm"><a class="flex items-center px-space-md py-2 rounded-lg text-on-surface-variant font-body-md text-body-md hover:bg-surface-container hover:text-on-surface transition-all" data-path="academic-year-management" href="#"><span>Academic Year Management</span></a><a class="flex items-center px-space-md py-2 rounded-lg text-on-surface-variant font-body-md text-body-md hover:bg-surface-container hover:text-on-surface transition-all" data-path="assessment-types-configuration" href="#"><span>Assessment Configuration</span></a><a class="flex items-center px-space-md py-2 rounded-lg text-on-surface-variant font-body-md text-body-md hover:bg-surface-container hover:text-on-surface transition-all" data-path="attendance-marking-policy" href="#"><span>Attendance Marking Policy</span></a><a class="flex items-center px-space-md py-2 rounded-lg text-on-surface-variant font-body-md text-body-md hover:bg-surface-container hover:text-on-surface transition-all" data-path="system-configuration-confirmation-audit" href="#"><span>System Configuration Confirmation &amp; Audit</span></a></nav></div></div><div class="p-space-md bg-surface-container-low m-space-sm rounded-lg flex flex-col gap-space-xs"><div class="flex items-center gap-space-xs text-primary font-label-sm text-label-sm"><span class="material-symbols-outlined text-[16px]">verified</span><span>CBSE Affiliation: #1730249</span></div><div class="font-body-sm text-body-sm text-on-surface-variant">Jaipur Zone • Active Node</div></div></aside><div class="pl-64"><main class="w-full pt-16 bg-surface min-h-screen"><div class="flex flex-col w-full">
+<div class="px-gutter-desktop py-space-xl flex flex-col gap-space-xl max-w-7xl mx-auto w-full">
+<!-- Breadcrumb & Top Bar Navigation -->
+<div class="flex flex-wrap items-center justify-between gap-space-md">
+<nav class="flex items-center gap-space-xs text-on-surface-variant font-label-sm text-label-sm">
+<a class="hover:text-primary transition-colors flex items-center gap-1" href="#">
+<span class="material-symbols-outlined text-[16px]">admin_panel_settings</span>
+          School Administration
+        </a>
+<span class="material-symbols-outlined text-[14px]">chevron_right</span>
+<a class="hover:text-primary transition-colors" href="#">Forensic Audit Log</a>
+<span class="material-symbols-outlined text-[14px]">chevron_right</span>
+<span class="text-primary font-semibold">Dual-Custody Diff (#AUD-2025-0892-ACAD)</span>
+</nav>
+<div class="flex items-center gap-space-sm">
+<button class="px-space-md py-1.5 rounded bg-surface-container-low hover:bg-surface-container-high text-on-surface font-label-md text-label-md transition-colors flex items-center gap-space-xs">
+<span class="material-symbols-outlined text-[18px]">arrow_back</span>
+          Return to Audit Log
+        </button>
+<button class="px-space-md py-1.5 rounded bg-surface-container-lowest hover:bg-surface-container text-on-surface font-label-md text-label-md shadow-sm transition-colors flex items-center gap-space-xs">
+<span class="material-symbols-outlined text-[18px]">verified_user</span>
+          Export Receipt
+        </button>
+<button class="px-space-md py-1.5 rounded bg-primary text-on-primary hover:bg-primary-container font-label-md text-label-md shadow-sm transition-colors flex items-center gap-space-xs">
+<span class="material-symbols-outlined text-[18px]">print</span>
+          Print Certificate (PDF)
+        </button>
+</div>
+</div>
+<!-- Header & Context Banner Card -->
+<div class="bg-surface-container-lowest rounded-xl shadow-sm p-space-xl flex flex-col gap-space-lg">
+<div class="flex flex-wrap items-start justify-between gap-space-lg">
+<div class="flex flex-col gap-space-xs">
+<div class="flex items-center gap-space-sm flex-wrap">
+<span class="px-space-sm py-0.5 rounded bg-primary-container text-on-primary font-label-sm text-label-sm tracking-wide">
+              IMMUTABLE RECORD SEQUENCE #104,281
+            </span>
+<span class="px-space-sm py-0.5 rounded bg-surface-container text-on-surface-variant font-label-sm text-label-sm">
+              Event Ref: #AUD-2025-0892-ACAD
+            </span>
+<span class="px-space-sm py-0.5 rounded bg-primary-fixed text-on-primary-fixed font-label-sm text-label-sm flex items-center gap-1">
+<span class="material-symbols-outlined text-[14px]">check_circle</span>
+              Committed &amp; Countersigned (Dual-Custody Complete)
+            </span>
+</div>
+<h1 class="font-headline-lg text-headline-lg text-on-surface tracking-tight mt-1">
+            Academic Score Rectification • Mathematics Standard (041)
+          </h1>
+<p class="text-on-surface-variant font-body-md text-body-md">
+            Class 10-A • Term II Mid-Term Benchmark Examination • Jaipur Academic Division
+          </p>
+</div>
+<!-- Verification Seal Emblem -->
+<div class="hidden lg:flex items-center gap-space-md bg-surface-container-low px-space-lg py-space-sm rounded-lg">
+<div class="w-12 h-12 rounded-full bg-primary-container flex items-center justify-center text-on-primary">
+<span class="material-symbols-outlined text-[26px]">gavel</span>
+</div>
+<div class="flex flex-col text-left">
+<span class="font-label-md text-label-md text-on-surface">CBSE Section 14.1 Cleared</span>
+<span class="font-body-sm text-body-sm text-on-surface-variant">Dual-Custody Hardware Sealing</span>
+<span class="font-tabular-data text-tabular-data text-primary text-[11px] font-mono">NODE: IN-JP-CBSE-01</span>
+</div>
+</div>
+</div>
+<!-- Target Student Record Profile Strip -->
+<div class="bg-surface-container-low rounded-lg p-space-md flex flex-wrap items-center justify-between gap-space-md">
+<div class="flex items-center gap-space-md">
+<div class="w-10 h-10 rounded-full bg-secondary-container text-on-secondary-container flex items-center justify-center font-headline-sm text-headline-sm">
+            AS
+          </div>
+<div class="flex flex-col">
+<div class="flex items-center gap-space-xs">
+<span class="font-headline-sm text-headline-sm text-on-surface font-semibold">Aarav Singhania</span>
+<span class="px-1.5 py-0.5 rounded bg-surface-container text-on-surface-variant font-label-sm text-label-sm">Roll #14</span>
+<span class="px-1.5 py-0.5 rounded bg-surface-container text-on-surface-variant font-label-sm text-label-sm">Pratap House</span>
+</div>
+<span class="font-body-sm text-body-sm text-on-surface-variant">
+              Admission ID: <span class="font-mono text-on-surface font-semibold">HJ-2021-0428</span> • CBSE Reg: <span class="font-mono">RJ/1730249/2023/10A-014</span>
+</span>
+</div>
+</div>
+<div class="flex items-center gap-space-xl text-right">
+<div class="flex flex-col">
+<span class="font-label-sm text-label-sm text-on-surface-variant uppercase">Current Status</span>
+<span class="font-label-md text-label-md text-primary font-semibold flex items-center gap-1">
+<span class="w-2 h-2 rounded-full bg-primary"></span> Standard Enrolled
+            </span>
+</div>
+<div class="flex flex-col">
+<span class="font-label-sm text-label-sm text-on-surface-variant uppercase">Ledger Lock Timestamp</span>
+<span class="font-tabular-data text-tabular-data text-on-surface font-mono">14 Feb 2025 • 09:40:12 IST</span>
+</div>
+</div>
+</div>
+</div>
+<!-- Delta Summary Metric Callout -->
+<div class="grid grid-cols-1 md:grid-cols-4 gap-space-md">
+<div class="bg-surface-container-lowest p-space-lg rounded-xl shadow-sm flex flex-col justify-between">
+<span class="font-label-sm text-label-sm text-on-surface-variant uppercase tracking-wider">Evaluation Component</span>
+<span class="font-headline-md text-headline-md text-on-surface mt-1">Question 4(b)</span>
+<span class="font-body-sm text-body-sm text-on-surface-variant mt-2">Trigonometric Proof Step-Aggregation</span>
+</div>
+<div class="bg-surface-container-lowest p-space-lg rounded-xl shadow-sm flex flex-col justify-between">
+<span class="font-label-sm text-label-sm text-on-surface-variant uppercase tracking-wider">Score Variance</span>
+<div class="flex items-baseline gap-space-xs mt-1">
+<span class="font-headline-xl text-headline-xl text-primary font-bold">+2.00</span>
+<span class="font-label-md text-label-md text-primary">/ 40.0 Max</span>
+</div>
+<span class="font-body-sm text-body-sm text-on-surface-variant mt-2">+5.00% Theory Delta</span>
+</div>
+<div class="bg-surface-container-lowest p-space-lg rounded-xl shadow-sm flex flex-col justify-between">
+<span class="font-label-sm text-label-sm text-on-surface-variant uppercase tracking-wider">Revised Aggregate</span>
+<div class="flex items-baseline gap-space-xs mt-1">
+<span class="font-headline-xl text-headline-xl text-on-surface font-bold">41.0%</span>
+<span class="font-label-md text-label-md text-on-surface-variant line-through text-[13px]">39.0%</span>
+</div>
+<span class="font-body-sm text-body-sm text-primary font-semibold mt-2 flex items-center gap-1">
+<span class="material-symbols-outlined text-[16px]">check_circle</span> Passing Threshold Achieved
+        </span>
+</div>
+<div class="bg-surface-container-lowest p-space-lg rounded-xl shadow-sm flex flex-col justify-between">
+<span class="font-label-sm text-label-sm text-on-surface-variant uppercase tracking-wider">Custody Threshold</span>
+<span class="font-headline-md text-headline-md text-primary mt-1">4 of 4 Seals</span>
+<span class="font-body-sm text-body-sm text-on-surface-variant mt-2">Class Teacher + CoE + Principal FIDO2</span>
+</div>
+</div>
+<!-- Side-by-Side Change Value Diff (Pre vs Post Modification State) -->
+<div class="bg-surface-container-lowest rounded-xl shadow-sm overflow-hidden">
+<div class="p-space-lg bg-surface-container-low flex items-center justify-between">
+<div class="flex items-center gap-space-sm">
+<span class="material-symbols-outlined text-primary text-[20px]">difference</span>
+<h2 class="font-headline-sm text-headline-sm text-on-surface">Dual-State Value Comparison Ledger</h2>
+</div>
+<span class="px-space-sm py-0.5 rounded bg-surface-container text-on-surface-variant font-label-sm text-label-sm">
+          Baseline Version v1.0.4 → Committed Version v2.0.0
+        </span>
+</div>
+<div class="grid grid-cols-1 lg:grid-cols-2">
+<!-- LEFT: Pre-Modification State -->
+<div class="p-space-xl flex flex-col gap-space-lg bg-surface-container-lowest">
+<div class="flex items-center justify-between pb-space-sm">
+<div class="flex items-center gap-space-xs">
+<span class="w-3 h-3 rounded-full bg-error"></span>
+<span class="font-label-md text-label-md text-on-surface font-bold uppercase tracking-wide">
+                Original Recorded State (Pre-Diff)
+              </span>
+</div>
+<span class="px-space-xs py-0.5 rounded bg-error-container text-on-error-container font-label-sm text-label-sm font-mono">
+              DEPRECATED • SNAPSHOT ID #2841
+            </span>
+</div>
+<!-- Question Theory Sub-Breakdown -->
+<div class="flex flex-col gap-space-sm">
+<div class="p-space-md rounded-lg bg-surface-container-low flex flex-col gap-space-xs">
+<span class="font-label-sm text-label-sm text-on-surface-variant">Question 4: Trigonometric Identities &amp; Proof (Total 10M)</span>
+<div class="grid grid-cols-3 gap-2 text-center pt-1">
+<div class="bg-surface-container-lowest p-2 rounded">
+<div class="text-[11px] text-on-surface-variant font-label-sm">Part 4(a)</div>
+<div class="font-tabular-data text-tabular-data font-semibold text-on-surface">4.0 / 4.0</div>
+</div>
+<div class="bg-surface-container-lowest p-2 rounded bg-error-container/20">
+<div class="text-[11px] text-error font-label-sm">Part 4(b) (Omitted)</div>
+<div class="font-tabular-data text-tabular-data font-bold text-error">0.0 / 3.0</div>
+</div>
+<div class="bg-surface-container-lowest p-2 rounded">
+<div class="text-[11px] text-on-surface-variant font-label-sm">Part 4(c)</div>
+<div class="font-tabular-data text-tabular-data font-semibold text-on-surface">2.0 / 3.0</div>
+</div>
+</div>
+</div>
+<!-- Subject Scores Table Snapshot -->
+<div class="rounded-lg overflow-hidden bg-surface-container-low">
+<table class="w-full text-left">
+<thead class="bg-surface-container-highest text-on-surface-variant font-label-sm text-label-sm">
+<tr>
+<th class="py-2 px-3">Component Assessment</th>
+<th class="py-2 px-3 text-right">Raw Mark</th>
+<th class="py-2 px-3 text-right">Scaled Weight</th>
+</tr>
+</thead>
+<tbody class="font-tabular-data text-tabular-data divide-y divide-surface-container">
+<tr>
+<td class="py-2.5 px-3 font-medium text-on-surface">Mid-Term Theory Paper</td>
+<td class="py-2.5 px-3 text-right font-mono font-bold text-error">14.0 / 40.0</td>
+<td class="py-2.5 px-3 text-right text-on-surface-variant">35.0%</td>
+</tr>
+<tr>
+<td class="py-2.5 px-3 text-on-surface">Internal Assessment &amp; Notebook</td>
+<td class="py-2.5 px-3 text-right font-mono text-on-surface">8.0 / 10.0</td>
+<td class="py-2.5 px-3 text-right text-on-surface-variant">80.0%</td>
+</tr>
+<tr class="bg-surface-container-high/40">
+<td class="py-2.5 px-3 font-semibold text-on-surface">Combined Term II Aggregate</td>
+<td class="py-2.5 px-3 text-right font-mono font-bold text-error">19.5 / 50.0</td>
+<td class="py-2.5 px-3 text-right font-bold text-error">39.0% (Grade D)</td>
+</tr>
+</tbody>
+</table>
+</div>
+<!-- Pre-Modification Metadata Tag -->
+<div class="p-space-sm rounded bg-surface-container-low flex flex-col gap-1 text-[12px] text-on-surface-variant">
+<div class="flex items-center justify-between">
+<span>Recorded By:</span>
+<span class="font-medium text-on-surface">Dr. N. Goyal (PGT Maths)</span>
+</div>
+<div class="flex items-center justify-between">
+<span>Initial Capture Time:</span>
+<span class="font-mono text-on-surface">02 Feb 2025, 14:10:04 IST</span>
+</div>
+<div class="flex items-center justify-between">
+<span>Cryptographic Digest:</span>
+<span class="font-mono text-[10px] text-on-surface-variant truncate max-w-[200px]">SHA-256: d81a9f02c4...e881</span>
+</div>
+</div>
+</div>
+</div>
+<!-- RIGHT: Post-Modification State -->
+<div class="p-space-xl flex flex-col gap-space-lg bg-surface-container-low/30">
+<div class="flex items-center justify-between pb-space-sm">
+<div class="flex items-center gap-space-xs">
+<span class="w-3 h-3 rounded-full bg-primary"></span>
+<span class="font-label-md text-label-md text-primary font-bold uppercase tracking-wide">
+                Proposed &amp; Committed State (Active)
+              </span>
+</div>
+<span class="px-space-xs py-0.5 rounded bg-primary-fixed text-on-primary-fixed font-label-sm text-label-sm font-mono">
+              COMMITTED ACTIVE • VERSION 2.0.0
+            </span>
+</div>
+<!-- Question Theory Sub-Breakdown -->
+<div class="flex flex-col gap-space-sm">
+<div class="p-space-md rounded-lg bg-primary/5 flex flex-col gap-space-xs">
+<div class="flex items-center justify-between">
+<span class="font-label-sm text-label-sm text-on-surface-variant">Question 4: Trigonometric Identities &amp; Proof (Total 10M)</span>
+<span class="px-1.5 py-0.5 rounded bg-primary text-on-primary font-label-sm text-label-sm">+2.00 Step-Mark</span>
+</div>
+<div class="grid grid-cols-3 gap-2 text-center pt-1">
+<div class="bg-surface-container-lowest p-2 rounded">
+<div class="text-[11px] text-on-surface-variant font-label-sm">Part 4(a)</div>
+<div class="font-tabular-data text-tabular-data font-semibold text-on-surface">4.0 / 4.0</div>
+</div>
+<div class="bg-primary-fixed/50 p-2 rounded">
+<div class="text-[11px] text-primary font-label-sm font-bold">Part 4(b) (Re-tallied)</div>
+<div class="font-tabular-data text-tabular-data font-bold text-primary">2.0 / 3.0</div>
+</div>
+<div class="bg-surface-container-lowest p-2 rounded">
+<div class="text-[11px] text-on-surface-variant font-label-sm">Part 4(c)</div>
+<div class="font-tabular-data text-tabular-data font-semibold text-on-surface">2.0 / 3.0</div>
+</div>
+</div>
+</div>
+<!-- Subject Scores Table Snapshot -->
+<div class="rounded-lg overflow-hidden bg-surface-container-low">
+<table class="w-full text-left">
+<thead class="bg-surface-container-highest text-on-surface-variant font-label-sm text-label-sm">
+<tr>
+<th class="py-2 px-3">Component Assessment</th>
+<th class="py-2 px-3 text-right">Raw Mark</th>
+<th class="py-2 px-3 text-right">Scaled Weight</th>
+</tr>
+</thead>
+<tbody class="font-tabular-data text-tabular-data divide-y divide-surface-container">
+<tr class="bg-primary/5">
+<td class="py-2.5 px-3 font-medium text-on-surface flex items-center gap-1.5">
+                      Mid-Term Theory Paper
+                      <span class="material-symbols-outlined text-primary text-[14px]">trending_up</span>
+</td>
+<td class="py-2.5 px-3 text-right font-mono font-bold text-primary">16.0 / 40.0</td>
+<td class="py-2.5 px-3 text-right text-primary font-semibold">40.0%</td>
+</tr>
+<tr>
+<td class="py-2.5 px-3 text-on-surface">Internal Assessment &amp; Notebook</td>
+<td class="py-2.5 px-3 text-right font-mono text-on-surface">8.0 / 10.0</td>
+<td class="py-2.5 px-3 text-right text-on-surface-variant">80.0%</td>
+</tr>
+<tr class="bg-primary-fixed/30">
+<td class="py-2.5 px-3 font-semibold text-primary">Combined Term II Aggregate</td>
+<td class="py-2.5 px-3 text-right font-mono font-bold text-primary">20.5 / 50.0</td>
+<td class="py-2.5 px-3 text-right font-bold text-primary">41.0% (Grade C2)</td>
+</tr>
+</tbody>
+</table>
+</div>
+<!-- Post-Modification Metadata Tag -->
+<div class="p-space-sm rounded bg-surface-container-low flex flex-col gap-1 text-[12px] text-on-surface-variant">
+<div class="flex items-center justify-between">
+<span>Ratified Authorization:</span>
+<span class="font-medium text-primary">Dr. K. S. Rathore (Principal)</span>
+</div>
+<div class="flex items-center justify-between">
+<span>Ledger Commit Time:</span>
+<span class="font-mono text-on-surface">14 Feb 2025, 09:40:12 IST</span>
+</div>
+<div class="flex items-center justify-between">
+<span>Cryptographic Digest:</span>
+<span class="font-mono text-[10px] text-on-surface-variant truncate max-w-[200px]">SHA-256: 7f8c5b19...3b21004a</span>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+<!-- Grid: Rationale & Proof Evidences (Left) + Multi-Tier Authorization Timeline (Right) -->
+<div class="grid grid-cols-1 lg:grid-cols-12 gap-space-xl">
+<!-- Left Panel: Rationale & Physical Evidentiary Records (7 Cols) -->
+<div class="lg:col-span-7 flex flex-col gap-space-xl">
+<!-- Justification Panel -->
+<div class="bg-surface-container-lowest rounded-xl shadow-sm p-space-xl flex flex-col gap-space-md">
+<div class="flex items-center justify-between">
+<div class="flex items-center gap-space-sm">
+<span class="material-symbols-outlined text-primary text-[20px]">assignment_turned_in</span>
+<h2 class="font-headline-sm text-headline-sm text-on-surface">Formal Rationale &amp; Audit Grounding</h2>
+</div>
+<span class="px-space-sm py-0.5 rounded bg-surface-container text-on-surface-variant font-label-sm text-label-sm">
+              Category: Clerical Re-tabulation
+            </span>
+</div>
+<div class="p-space-md rounded-lg bg-surface-container-low text-on-surface font-body-md text-body-md leading-relaxed">
+            “During post-examination paper review requested by Class Teacher Mrs. A. Sharma, an arithmetic tally error was identified in Question 4(b) where candidate Aarav Singhania’s supplementary proof of the Pythagorean identity was verified correct on page 8 but omitted in front-sheet aggregation. Script physically inspected, remarked by Subject Head, and countersigned without alterations to student responses.”
+          </div>
+<div class="grid grid-cols-2 gap-space-md pt-space-xs text-[13px]">
+<div class="flex flex-col">
+<span class="font-label-sm text-label-sm text-on-surface-variant uppercase">Investigation Type</span>
+<span class="text-on-surface font-medium">Post-Gazette Script Re-check</span>
+</div>
+<div class="flex flex-col">
+<span class="font-label-sm text-label-sm text-on-surface-variant uppercase">Regulatory Mandate</span>
+<span class="text-on-surface font-medium">CBSE Bye-Law Rule 14.1 (Correction of Clerical Marks)</span>
+</div>
+</div>
+</div>
+<!-- Evidentiary Documents Panel -->
+<div class="bg-surface-container-lowest rounded-xl shadow-sm p-space-xl flex flex-col gap-space-md">
+<div class="flex items-center justify-between">
+<div class="flex items-center gap-space-sm">
+<span class="material-symbols-outlined text-primary text-[20px]">attach_file</span>
+<h2 class="font-headline-sm text-headline-sm text-on-surface">Attached Evidentiary Artifacts (3 Documents)</h2>
+</div>
+<span class="font-body-sm text-body-sm text-on-surface-variant">Archived in Secure Cold Storage</span>
+</div>
+<div class="flex flex-col gap-space-sm">
+<!-- Document 1: Answer Script Excerpt -->
+<div class="p-space-md rounded-lg bg-surface-container-low hover:bg-surface-container transition-colors flex items-center justify-between gap-space-md">
+<div class="flex items-center gap-space-md">
+<div class="w-10 h-10 rounded bg-surface-container-highest flex items-center justify-center text-primary">
+<span class="material-symbols-outlined text-[24px]">picture_as_pdf</span>
+</div>
+<div class="flex flex-col">
+<span class="font-label-md text-label-md text-on-surface font-semibold">
+                    Scanned Answer Script Excerpt (Page 8 - Question 4b)
+                  </span>
+<div class="flex items-center gap-space-xs text-on-surface-variant text-[12px] font-mono">
+<span>PDF • 1.4 MB</span>
+<span>•</span>
+<span>SHA-256: 7f8c...3b21</span>
+<span>•</span>
+<span class="text-primary font-medium">Scanned by Examination Cell</span>
+</div>
+</div>
+</div>
+<button class="px-space-sm py-1 rounded bg-surface-container-lowest hover:bg-surface-container-high text-on-surface font-label-sm text-label-sm shadow-sm flex items-center gap-1">
+<span class="material-symbols-outlined text-[16px]">visibility</span>
+                Inspect
+              </button>
+</div>
+<!-- Document 2: Re-tabulation Request Slip -->
+<div class="p-space-md rounded-lg bg-surface-container-low hover:bg-surface-container transition-colors flex items-center justify-between gap-space-md">
+<div class="flex items-center gap-space-md">
+<div class="w-10 h-10 rounded bg-surface-container-highest flex items-center justify-center text-primary">
+<span class="material-symbols-outlined text-[24px]">description</span>
+</div>
+<div class="flex flex-col">
+<span class="font-label-md text-label-md text-on-surface font-semibold">
+                    Formal Re-tabulation Slip #RET-10A-04
+                  </span>
+<div class="flex items-center gap-space-xs text-on-surface-variant text-[12px]">
+<span>PDF Form • 240 KB</span>
+<span>•</span>
+<span>Signed by Class Teacher Mrs. A. Sharma</span>
+</div>
+</div>
+</div>
+<button class="px-space-sm py-1 rounded bg-surface-container-lowest hover:bg-surface-container-high text-on-surface font-label-sm text-label-sm shadow-sm flex items-center gap-1">
+<span class="material-symbols-outlined text-[16px]">visibility</span>
+                Inspect
+              </button>
+</div>
+<!-- Document 3: Physical Verification Stamp -->
+<div class="p-space-md rounded-lg bg-surface-container-low hover:bg-surface-container transition-colors flex items-center justify-between gap-space-md">
+<div class="flex items-center gap-space-md">
+<div class="w-10 h-10 rounded bg-surface-container-highest flex items-center justify-center text-primary">
+<span class="material-symbols-outlined text-[24px]">verified</span>
+</div>
+<div class="flex flex-col">
+<span class="font-label-md text-label-md text-on-surface font-semibold">
+                    Physical Examination Cell Verification Stamp #EC-VER-882
+                  </span>
+<div class="flex items-center gap-space-xs text-on-surface-variant text-[12px]">
+<span>TIFF Scan • 820 KB</span>
+<span>•</span>
+<span>Sealed with Physical Institutional Emboss</span>
+</div>
+</div>
+</div>
+<button class="px-space-sm py-1 rounded bg-surface-container-lowest hover:bg-surface-container-high text-on-surface font-label-sm text-label-sm shadow-sm flex items-center gap-1">
+<span class="material-symbols-outlined text-[16px]">visibility</span>
+                Inspect
+              </button>
+</div>
+</div>
+</div>
+<!-- Secondary Attendance Parallel Diff Card -->
+<div class="bg-surface-container-lowest rounded-xl shadow-sm p-space-xl flex flex-col gap-space-md">
+<div class="flex items-center justify-between">
+<div class="flex items-center gap-space-sm">
+<span class="material-symbols-outlined text-secondary text-[20px]">calendar_today</span>
+<h2 class="font-headline-sm text-headline-sm text-on-surface">Related Parallel Attendance Condonation</h2>
+</div>
+<span class="px-space-sm py-0.5 rounded bg-secondary-fixed text-on-secondary-fixed font-label-sm text-label-sm">
+              Associated Record
+            </span>
+</div>
+<div class="p-space-md rounded-lg bg-surface-container-low flex flex-col gap-space-sm">
+<div class="flex items-center justify-between">
+<span class="font-label-md text-label-md text-on-surface font-semibold">29 Jan 2025 • Full Day Session</span>
+<span class="font-mono text-on-surface-variant text-[12px]">Ref #ATT-2025-0149</span>
+</div>
+<div class="grid grid-cols-1 md:grid-cols-2 gap-space-md text-[13px] pt-1">
+<div class="p-2.5 rounded bg-surface-container-lowest flex flex-col">
+<span class="font-label-sm text-label-sm text-error uppercase font-medium">Original Record</span>
+<span class="font-semibold text-on-surface mt-1">Unexcused Absence (8.0 Hours)</span>
+<span class="text-on-surface-variant text-[11px] mt-0.5">Recorded via automated biometric turnover</span>
+</div>
+<div class="p-2.5 rounded bg-surface-container-lowest flex flex-col">
+<span class="font-label-sm text-label-sm text-primary uppercase font-medium">Approved Adjustment</span>
+<span class="font-semibold text-primary mt-1">Medical Condonation (8.0 Hours)</span>
+<span class="text-on-surface-variant text-[11px] mt-0.5">Clinic Slip #MC-882 • Maintained 97 Total Attended Days (68.4%)</span>
+</div>
+</div>
+</div>
+</div>
+</div>
+<!-- Right Panel: Dual-Custody Signoff & Authorization Progression Timeline (5 Cols) -->
+<div class="lg:col-span-5 flex flex-col gap-space-xl">
+<div class="bg-surface-container-lowest rounded-xl shadow-sm p-space-xl flex flex-col gap-space-lg">
+<div class="flex items-center justify-between pb-space-sm">
+<div class="flex items-center gap-space-sm">
+<span class="material-symbols-outlined text-primary text-[20px]">timeline</span>
+<h2 class="font-headline-sm text-headline-sm text-on-surface">Dual-Custody Audit Chain</h2>
+</div>
+<span class="w-2.5 h-2.5 rounded-full bg-primary animate-pulse" title="Ledger Verified"></span>
+</div>
+<!-- Vertical Timeline Stepper -->
+<div class="relative flex flex-col gap-space-lg pl-6 before:absolute before:left-[11px] before:top-3 before:bottom-3 before:w-0.5 before:bg-primary">
+<!-- Step 1: Initiated by Subject Teacher -->
+<div class="relative flex flex-col gap-1">
+<div class="absolute -left-6 top-1 w-5 h-5 rounded-full bg-primary text-on-primary flex items-center justify-center text-[12px] font-bold shadow-sm">
+                1
+              </div>
+<div class="flex items-center justify-between">
+<span class="font-label-md text-label-md text-on-surface font-bold">1. Initiation &amp; Re-Tally</span>
+<span class="font-mono text-on-surface-variant text-[11px]">12 Feb 2025 • 10:15 IST</span>
+</div>
+<div class="text-[13px] font-medium text-primary">Dr. N. Goyal</div>
+<div class="text-[12px] text-on-surface-variant">PGT Mathematics (EMP-1018)</div>
+<p class="text-[12px] text-on-surface-variant bg-surface-container-low p-2 rounded mt-1">
+                Drafted amendment for Question 4(b). Uploaded scanned paper script excerpt showing untouched student working.
+              </p>
+</div>
+<!-- Step 2: Cohort Verification by Class Teacher -->
+<div class="relative flex flex-col gap-1">
+<div class="absolute -left-6 top-1 w-5 h-5 rounded-full bg-primary text-on-primary flex items-center justify-center text-[12px] font-bold shadow-sm">
+                2
+              </div>
+<div class="flex items-center justify-between">
+<span class="font-label-md text-label-md text-on-surface font-bold">2. Cohort Standing Audit</span>
+<span class="font-mono text-on-surface-variant text-[11px]">12 Feb 2025 • 11:30 IST</span>
+</div>
+<div class="text-[13px] font-medium text-primary">Mrs. Ananya Sharma</div>
+<div class="text-[12px] text-on-surface-variant">Class Teacher 10-A (EMP-1042)</div>
+<p class="text-[12px] text-on-surface-variant bg-surface-container-low p-2 rounded mt-1">
+                Verified no discrepancy in peers’ papers. Confirmed candidate’s parent intimation recorded in School ERP log.
+              </p>
+</div>
+<!-- Step 3: Statutory Clearance by Controller of Examinations -->
+<div class="relative flex flex-col gap-1">
+<div class="absolute -left-6 top-1 w-5 h-5 rounded-full bg-primary text-on-primary flex items-center justify-center text-[12px] font-bold shadow-sm">
+                3
+              </div>
+<div class="flex items-center justify-between">
+<span class="font-label-md text-label-md text-on-surface font-bold">3. Examination Cell Clearance</span>
+<span class="font-mono text-on-surface-variant text-[11px]">13 Feb 2025 • 15:20 IST</span>
+</div>
+<div class="text-[13px] font-medium text-primary">Mrs. Neeta Vashistha</div>
+<div class="text-[12px] text-on-surface-variant">Controller of Examinations (EMP-0744)</div>
+<p class="text-[12px] text-on-surface-variant bg-surface-container-low p-2 rounded mt-1">
+                Physical marksheet cross-referenced with locked room gazette sheet. Zero erasure or secondary graphite detected.
+              </p>
+</div>
+<!-- Step 4: Executive Attestation & Ledger Sealing -->
+<div class="relative flex flex-col gap-1">
+<div class="absolute -left-6 top-1 w-5 h-5 rounded-full bg-primary text-on-primary flex items-center justify-center text-[12px] font-bold shadow-sm">
+<span class="material-symbols-outlined text-[13px]">lock</span>
+</div>
+<div class="flex items-center justify-between">
+<span class="font-label-md text-label-md text-on-surface font-bold">4. Executive Ledger Sealing</span>
+<span class="font-mono text-primary text-[11px] font-semibold">14 Feb 2025 • 09:40 IST</span>
+</div>
+<div class="text-[13px] font-medium text-primary">Dr. K. S. Rathore</div>
+<div class="text-[12px] text-on-surface-variant">Principal &amp; Institutional Administrator (EMP-1001)</div>
+<div class="bg-primary-fixed/30 p-2.5 rounded mt-1 flex flex-col gap-1">
+<div class="flex items-center gap-1 text-[12px] text-on-primary-fixed font-semibold">
+<span class="material-symbols-outlined text-[16px]">token</span>
+                  FIDO2 Hardware Token Confirmed
+                </div>
+<div class="text-[11px] font-mono text-on-primary-fixed-variant truncate">
+                  Key Serial: YK-940-BIO-2024 • Sig: 9e0b17c...44a1
+                </div>
+</div>
+</div>
+</div>
+<!-- Digital Seal Summary Card -->
+<div class="bg-surface-container-low rounded-lg p-space-md flex flex-col gap-space-xs mt-space-sm">
+<span class="font-label-sm text-label-sm text-on-surface uppercase tracking-wider">Cryptographic Attestation</span>
+<div class="font-mono text-[11px] text-on-surface-variant break-all bg-surface-container-lowest p-2 rounded">
+              MERKLE_ROOT: c8f309d7a049129e7c5b41092efba89134bca881720875e52623a609d13e904b
+            </div>
+<div class="flex items-center justify-between text-[11px] text-on-surface-variant pt-1">
+<span>Timestamp Server: ntp.hanujai.ac.in</span>
+<span class="text-primary font-semibold">Zero-Knowledge Validated</span>
+</div>
+</div>
+</div>
+<!-- Institutional Protocol Notice -->
+<div class="bg-surface-container-low rounded-xl p-space-lg flex flex-col gap-space-xs">
+<div class="flex items-center gap-space-xs text-primary font-label-md text-label-md">
+<span class="material-symbols-outlined text-[18px]">policy</span>
+            CBSE Statutory Integrity Policy
+          </div>
+<p class="text-on-surface-variant text-[12px] leading-relaxed">
+            All marks modifications exceeding 1.0 raw marks in secondary education grade sheets undergo 4-tier custody verification. Altered records remain permanently flagged in CBSE Central Repository synchronization payloads.
+          </p>
+</div>
+</div>
+</div>
+<!-- Read-Only Institutional Immutability Notice (Footer Banner) -->
+<div class="bg-inverse-surface text-inverse-on-surface rounded-xl p-space-lg shadow-sm flex flex-col md:flex-row items-center justify-between gap-space-md">
+<div class="flex items-center gap-space-md">
+<div class="w-10 h-10 rounded-full bg-primary-fixed-dim/20 flex items-center justify-center text-primary-fixed">
+<span class="material-symbols-outlined text-[24px]">lock_clock</span>
+</div>
+<div class="flex flex-col">
+<span class="font-label-md text-label-md text-inverse-on-surface font-semibold">
+            Permanent Read-Only Record Commitment
+          </span>
+<span class="text-[12px] text-inverse-on-surface/80">
+            This audit differential has been permanently finalized and sealed into the Institutional Archive. It cannot be altered, rolled back, or deleted.
+          </span>
+</div>
+</div>
+<div class="flex items-center gap-space-lg">
+<div class="flex flex-col text-right font-mono text-[11px]">
+<span class="text-inverse-on-surface/60">NODE: IN-JP-CBSE-01</span>
+<span class="text-primary-fixed font-bold">STATUS: REPLICATED (3 NODES)</span>
+</div>
+<button class="px-space-md py-1.5 rounded bg-surface-container-lowest text-on-surface hover:bg-surface-container font-label-sm text-label-sm transition-colors flex items-center gap-1 shadow-sm whitespace-nowrap">
+<span class="material-symbols-outlined text-[16px]">fingerprint</span>
+          Verify Hash
+        </button>
+</div>
+</div>
+</div>
+</div>
+<script>
+  // Simple micro-interaction for document inspection previews
+  document.querySelectorAll('button').forEach(btn => {
+    btn.addEventListener('click', (e) => {
+      const btnText = btn.innerText.trim();
+      if (btnText.includes('Inspect')) {
+        const artifactName = btn.closest('.p-space-md')?.querySelector('.font-semibold')?.innerText || 'Artifact';
+        alert('Displaying Institutional Cold-Storage Artifact:\n' + artifactName + '\n\nVerification: Digital Signature matches CBSE Central Repository.');
+      } else if (btnText.includes('Export Receipt')) {
+        alert('Cryptographic receipt package (JSON-LD + X.509 Certificate) generated for transaction #AUD-2025-0892-ACAD.');
+      } else if (btnText.includes('Print Certificate')) {
+        window.print();
+      } else if (btnText.includes('Verify Hash')) {
+        alert('Ledger Node IN-JP-CBSE-01 confirms cryptographic Merkle root hash matches local institutional chain without variance.');
+      }
+    });
+  });
+</script></main></div></body></html>

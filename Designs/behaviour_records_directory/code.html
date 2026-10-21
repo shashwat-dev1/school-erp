@@ -1,0 +1,822 @@
+<!DOCTYPE html>
+
+<html lang="en"><head><meta charset="utf-8"/><meta content="width=device-width, initial-scale=1.0" name="viewport"/><meta content="web_dashboard" name="shell-type"/><link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@100..900&display=swap" rel="stylesheet"/><style>@layer base{html,body{margin:0;padding:0;}body{overscroll-behavior:none;}main>:first-child{margin-top:0!important;}main>:last-child{margin-bottom:0!important;}}::-webkit-scrollbar{display:none;}</style><script src="https://cdn.tailwindcss.com"></script><script id="tailwind-config">tailwind.config = {
+    darkMode: "class",
+    theme: {
+      extend: {
+        "colors": {
+          "on-secondary-fixed-variant": "#633f0d",
+          "tertiary-fixed": "#ffdad7",
+          "surface-tint": "#3e665a",
+          "surface-container-highest": "#d9e5e3",
+          "surface-container": "#e4f0ee",
+          "on-primary-container": "#a3cec0",
+          "secondary-fixed-dim": "#f2bd80",
+          "tertiary-container": "#91312e",
+          "on-surface": "#131e1d",
+          "on-error-container": "#93000a",
+          "inverse-surface": "#273331",
+          "tertiary": "#721a1a",
+          "error": "#ba1a1a",
+          "on-secondary-fixed": "#2b1700",
+          "on-primary": "#ffffff",
+          "primary-container": "#31594e",
+          "on-secondary-container": "#79511f",
+          "error-container": "#ffdad6",
+          "outline-variant": "#c0c8c4",
+          "surface-dim": "#d0dddb",
+          "surface": "#f0fcfa",
+          "on-tertiary-fixed": "#410004",
+          "outline": "#717975",
+          "on-tertiary": "#ffffff",
+          "secondary-container": "#fec78a",
+          "surface-variant": "#d9e5e3",
+          "on-tertiary-container": "#ffb2ac",
+          "on-tertiary-fixed-variant": "#822624",
+          "tertiary-fixed-dim": "#ffb3ad",
+          "on-primary-fixed-variant": "#264e43",
+          "background": "#f0fcfa",
+          "secondary-fixed": "#ffddba",
+          "on-surface-variant": "#414845",
+          "surface-bright": "#f0fcfa",
+          "on-error": "#ffffff",
+          "primary-fixed-dim": "#a5cfc1",
+          "primary": "#184237",
+          "primary-fixed": "#c0ecdd",
+          "inverse-primary": "#a5cfc1",
+          "secondary": "#7e5624",
+          "on-primary-fixed": "#002019",
+          "on-background": "#131e1d",
+          "inverse-on-surface": "#e7f3f1",
+          "surface-container-low": "#eaf6f4",
+          "on-secondary": "#ffffff",
+          "surface-container-lowest": "#ffffff",
+          "surface-container-high": "#deebe9"
+        },
+        "borderRadius": {
+          "DEFAULT": "0.125rem",
+          "lg": "0.25rem",
+          "xl": "0.5rem",
+          "full": "0.75rem"
+        },
+        "spacing": {
+          "margin-desktop": "2rem",
+          "space-sm": "0.5rem",
+          "space-lg": "1rem",
+          "gutter": "1rem",
+          "space-xl": "1.5rem",
+          "margin": "1rem",
+          "space-xs": "0.25rem",
+          "space-md": "0.75rem",
+          "gutter-desktop": "1.5rem"
+        },
+        "fontFamily": {
+          "label-sm": ["Inter"],
+          "headline-lg": ["Inter"],
+          "headline-xl": ["Inter"],
+          "tabular-data": ["Inter"],
+          "body-lg": ["Inter"],
+          "headline-sm": ["Inter"],
+          "body-sm": ["Inter"],
+          "label-md": ["Inter"],
+          "body-md": ["Inter"],
+          "headline-md": ["Inter"]
+        },
+        "fontSize": {
+          "label-sm": ["0.75rem", {"lineHeight": "1rem", "letterSpacing": "0.025em", "fontWeight": "600"}],
+          "headline-lg": ["1.5rem", {"lineHeight": "2rem", "letterSpacing": "-0.015em", "fontWeight": "600"}],
+          "headline-xl": ["2rem", {"lineHeight": "2.5rem", "letterSpacing": "-0.02em", "fontWeight": "600"}],
+          "tabular-data": ["0.875rem", {"lineHeight": "1.25rem", "letterSpacing": "0em", "fontWeight": "400"}],
+          "body-lg": ["1rem", {"lineHeight": "1.5rem", "letterSpacing": "0em", "fontWeight": "400"}],
+          "headline-sm": ["1.125rem", {"lineHeight": "1.5rem", "letterSpacing": "0em", "fontWeight": "600"}],
+          "body-sm": ["0.75rem", {"lineHeight": "1.125rem", "letterSpacing": "0.005em", "fontWeight": "400"}],
+          "label-md": ["0.875rem", {"lineHeight": "1.25rem", "letterSpacing": "0.01em", "fontWeight": "500"}],
+          "body-md": ["0.875rem", {"lineHeight": "1.25rem", "letterSpacing": "0em", "fontWeight": "400"}],
+          "headline-md": ["1.25rem", {"lineHeight": "1.75rem", "letterSpacing": "-0.01em", "fontWeight": "600"}]
+        }
+      }
+    }
+  }</script></head><body class="bg-surface font-body-md text-body-md text-on-surface antialiased"><aside class="fixed left-0 top-0 h-full w-64 bg-surface-container-lowest border-r border-outline-variant z-50 flex flex-col justify-between"><div class="flex flex-col"><div class="h-16 px-space-lg flex items-center gap-space-sm border-b border-outline-variant bg-surface-container-low"><div class="w-8 h-8 rounded-lg bg-primary flex items-center justify-center shrink-0 font-headline-sm text-label-md text-on-primary font-bold tracking-tight">HJ</div><div class="flex flex-col min-w-0"><span class="font-label-md text-label-md text-on-surface font-semibold truncate">HanuJai High School</span><span class="font-body-sm text-body-sm text-on-surface-variant truncate">Jaipur • Senior Wing</span></div></div><div class="px-space-md py-space-sm"><span class="font-label-sm text-label-sm text-on-surface-variant uppercase tracking-wider block px-space-sm py-space-xs">Core Modules</span></div><nav class="flex flex-col gap-space-xs px-space-md" data-active-classes="bg-primary text-on-primary font-semibold"><a class="flex items-center px-space-md h-9 rounded-lg text-on-surface-variant hover:bg-surface-container-high hover:text-on-surface transition-colors font-label-md text-label-md" data-path="dashboard" href="#">Dashboard</a><a class="flex items-center px-space-md h-9 rounded-lg text-on-surface-variant hover:bg-surface-container-high hover:text-on-surface transition-colors font-label-md text-label-md" data-path="students" href="#">Students</a><a class="flex items-center px-space-md h-9 rounded-lg text-on-surface-variant hover:bg-surface-container-high hover:text-on-surface transition-colors font-label-md text-label-md" data-path="attendance" href="#">Attendance</a><a class="flex items-center px-space-md h-9 rounded-lg text-on-surface-variant hover:bg-surface-container-high hover:text-on-surface transition-colors font-label-md text-label-md" data-path="academics" href="#">Academics</a><a class="flex items-center px-space-md h-9 rounded-lg text-on-surface-variant hover:bg-surface-container-high hover:text-on-surface transition-colors font-label-md text-label-md" data-path="performance" href="#">Performance</a><a class="flex items-center px-space-md h-9 rounded-lg bg-primary text-on-primary font-semibold transition-colors font-label-md text-label-md" data-path="behaviour" href="#">Behaviour</a><a class="flex items-center px-space-md h-9 rounded-lg text-on-surface-variant hover:bg-surface-container-high hover:text-on-surface transition-colors font-label-md text-label-md" data-path="reports-and-cbse" href="#">Reports & CBSE</a><a class="flex items-center px-space-md h-9 rounded-lg text-on-surface-variant hover:bg-surface-container-high hover:text-on-surface transition-colors font-label-md text-label-md" data-path="administration" href="#">Administration</a></nav></div><div class="p-space-md border-t border-outline-variant bg-surface-container-low"><div class="flex items-center justify-between text-on-surface-variant font-label-sm text-label-sm"><span>CBSE Affil. 1730248</span><span class="inline-flex items-center gap-1 font-tabular-data text-tabular-data text-primary"><span class="w-2 h-2 rounded-full bg-primary inline-block"></span>Active</span></div></div></aside><div class="pl-64"><header class="fixed top-0 left-64 right-0 h-16 bg-surface-container-lowest/95 backdrop-blur-md border-b border-outline-variant z-40 flex items-center justify-between px-space-xl"><div class="flex items-center gap-space-lg"><div class="flex flex-col"><h1 class="font-headline-sm text-headline-sm text-on-surface font-semibold">HanuJai High School, Jaipur</h1><div class="flex items-center gap-space-xs"><span class="font-body-sm text-body-sm text-on-surface-variant">Institutional Session:</span><span class="font-label-sm text-label-sm text-primary font-medium bg-surface-container-high px-1.5 py-0.5 rounded">AY 2024–25 (Term II)</span></div></div></div><div class="flex items-center gap-space-lg"><div class="relative w-64 md:w-80"><span class="material-symbols-outlined absolute left-space-md top-1/2 -translate-y-1/2 text-on-surface-variant text-[18px]">search</span><input class="w-full h-9 pl-9 pr-space-md bg-surface border border-outline-variant rounded font-body-sm text-body-sm text-on-surface placeholder:text-on-surface-variant focus:outline-none focus:border-primary-container transition-colors" placeholder="Search student GRN, faculty, incident ref..." type="text"/></div><button aria-label="Notifications" class="relative p-space-xs text-on-surface-variant hover:text-on-surface transition-colors rounded" type="button"><span class="material-symbols-outlined text-[20px]">notifications</span><span class="absolute top-1 right-1 w-2 h-2 bg-secondary rounded-full"></span></button><div class="h-6 w-px bg-outline-variant"></div><div class="flex items-center gap-space-md"><div class="flex flex-col text-right"><span class="font-label-md text-label-md text-on-surface font-semibold leading-tight">Mrs. Ananya Sharma</span><span class="font-body-sm text-body-sm text-on-surface-variant leading-tight">Class Teacher 10-A / Senior Wing Proctor</span></div><div class="w-8 h-8 rounded-full bg-primary flex items-center justify-center"><span class="material-symbols-outlined text-on-primary text-[18px]">person</span></div></div></div></header><main class="relative pt-16 w-full min-h-screen bg-surface"><div class="flex flex-col w-full">
+<div class="px-margin-desktop py-space-xl flex flex-col gap-space-lg">
+<!-- Top Meta & Institutional Header -->
+<div class="flex flex-col gap-space-xs">
+<nav aria-label="Breadcrumb" class="flex items-center gap-space-xs text-on-surface-variant font-label-sm text-label-sm">
+<a class="hover:text-primary transition-colors" href="#">Institutional Console</a>
+<span class="material-symbols-outlined text-[14px]">chevron_right</span>
+<a class="hover:text-primary transition-colors" href="#">Pastoral Care & Proctorial System</a>
+<span class="material-symbols-outlined text-[14px]">chevron_right</span>
+<span class="text-on-surface font-semibold">Behaviour Records Directory</span>
+</nav>
+<div class="flex flex-col md:flex-row md:items-end justify-between gap-space-md pt-space-xs">
+<div>
+<div class="flex items-center gap-space-sm">
+<h1 class="font-headline-lg text-headline-lg text-on-surface tracking-tight">Student Behaviour & Observation Ledger</h1>
+<span class="px-2 py-0.5 rounded bg-surface-container-high text-on-surface-variant font-label-sm text-label-sm">Sec-10A Master Register</span>
+</div>
+<p class="font-body-md text-body-md text-on-surface-variant mt-0.5">
+            Pastoral Care & Cohort Observation Dossier • Senior Wing (Classes IX–XII) • Proctorial Oversight
+          </p>
+</div>
+<!-- Primary Action Suite -->
+<div class="flex items-center gap-space-sm shrink-0 flex-wrap">
+<button class="h-9 px-space-md rounded bg-surface-container-lowest hover:bg-surface-container text-on-surface font-label-md text-label-md flex items-center gap-1.5 transition-colors" type="button">
+<span class="material-symbols-outlined text-[18px]">verified_user</span>
+<span>Confidentiality Audit Log</span>
+</button>
+<button class="h-9 px-space-md rounded bg-surface-container-lowest hover:bg-surface-container text-on-surface font-label-md text-label-md flex items-center gap-1.5 transition-colors" type="button">
+<span class="material-symbols-outlined text-[18px]">sim_card_download</span>
+<span>Export Summary (CSV)</span>
+</button>
+<button class="h-9 px-space-lg rounded bg-primary text-on-primary hover:bg-primary-container font-label-md text-label-md flex items-center gap-1.5 shadow-sm transition-all active:scale-[0.99]" type="button">
+<span class="material-symbols-outlined text-[18px]">add_circle</span>
+<span>Record New Observation</span>
+</button>
+</div>
+</div>
+</div>
+<!-- Statutory & Confidentiality Protocol Card -->
+<div class="bg-surface-container-lowest p-space-md rounded flex items-start gap-space-md">
+<div class="w-7 h-7 rounded bg-surface-container-high flex items-center justify-center text-primary shrink-0 mt-0.5">
+<span class="material-symbols-outlined text-[18px]">policy</span>
+</div>
+<div class="flex flex-col gap-0.5">
+<span class="font-label-sm text-label-sm text-on-surface uppercase tracking-wide">
+          Institutional Confidentiality Rule SEC-804 & CBSE Affiliation Bye-Law Bylaw 44.2
+        </span>
+<p class="font-body-sm text-body-sm text-on-surface-variant leading-relaxed">
+          Behaviour entries are recorded strictly as factual observations and empirical proctorial notes. Visibility is governed strictly through Role-Bounded Access Control (Subject Teacher, Class Proctor, Academic Council, Principal). Diagnostic, defamatory, or stigmatizing terminology is strictly prohibited across all digital dossiers.
+        </p>
+</div>
+</div>
+<!-- Summary Metrics Strip (Institutional 4-column ledger) -->
+<div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-space-md">
+<!-- Total Observations -->
+<div class="bg-surface-container-lowest p-space-md rounded flex flex-col justify-between">
+<div class="flex items-center justify-between text-on-surface-variant mb-space-sm">
+<span class="font-label-sm text-label-sm uppercase tracking-wider">Observations Logged</span>
+<span class="material-symbols-outlined text-[18px] text-primary">menu_book</span>
+</div>
+<div class="flex items-baseline gap-space-xs">
+<span class="font-headline-xl text-headline-xl text-on-surface font-bold">28</span>
+<span class="font-body-sm text-body-sm text-on-surface-variant">Term II (AY 2024–25)</span>
+</div>
+<div class="mt-space-sm pt-space-xs flex items-center justify-between text-on-surface-variant font-label-sm text-label-sm">
+<span>18 General Pastoral</span>
+<span>8 Commendations</span>
+<span>2 Formal</span>
+</div>
+</div>
+<!-- Follow-Ups Scheduled -->
+<div class="bg-surface-container-lowest p-space-md rounded flex flex-col justify-between">
+<div class="flex items-center justify-between text-on-surface-variant mb-space-sm">
+<span class="font-label-sm text-label-sm uppercase tracking-wider">Follow-Ups Scheduled</span>
+<span class="material-symbols-outlined text-[18px] text-secondary">pending_actions</span>
+</div>
+<div class="flex items-baseline gap-space-xs">
+<span class="font-headline-xl text-headline-xl text-secondary font-bold">06</span>
+<span class="font-body-sm text-body-sm text-on-surface-variant">Active Cohort Actions</span>
+</div>
+<div class="mt-space-sm pt-space-xs flex items-center justify-between text-on-surface-variant font-label-sm text-label-sm">
+<span>4 Parent Consultations</span>
+<span>2 Counselor Slots</span>
+</div>
+</div>
+<!-- Commendations & Service -->
+<div class="bg-surface-container-lowest p-space-md rounded flex flex-col justify-between">
+<div class="flex items-center justify-between text-on-surface-variant mb-space-sm">
+<span class="font-label-sm text-label-sm uppercase tracking-wider">Commendations & Merit</span>
+<span class="material-symbols-outlined text-[18px] text-primary">award_star</span>
+</div>
+<div class="flex items-baseline gap-space-xs">
+<span class="font-headline-xl text-headline-xl text-primary font-bold">08</span>
+<span class="font-body-sm text-body-sm text-on-surface-variant">Official Citations</span>
+</div>
+<div class="mt-space-sm pt-space-xs flex items-center justify-between text-on-surface-variant font-label-sm text-label-sm">
+<span>Inter-House: 4</span>
+<span>Peer Mentorship: 3</span>
+<span>Science: 1</span>
+</div>
+</div>
+<!-- Reconciled / Resolved -->
+<div class="bg-surface-container-lowest p-space-md rounded flex flex-col justify-between">
+<div class="flex items-center justify-between text-on-surface-variant mb-space-sm">
+<span class="font-label-sm text-label-sm uppercase tracking-wider">Reconciled / Resolved</span>
+<span class="material-symbols-outlined text-[18px] text-primary-container">task_alt</span>
+</div>
+<div class="flex items-baseline gap-space-xs">
+<span class="font-headline-xl text-headline-xl text-on-surface font-bold">20</span>
+<span class="font-body-sm text-body-sm text-primary font-medium">71.4% Closure Rate</span>
+</div>
+<div class="mt-space-sm pt-space-xs flex items-center justify-between text-on-surface-variant font-label-sm text-label-sm">
+<span>Target Resolution SLA: 96 Hrs</span>
+<span class="text-primary font-medium">In Compliance</span>
+</div>
+</div>
+</div>
+<!-- Triage, Filters & Segmented Controller -->
+<div class="bg-surface-container-lowest rounded flex flex-col">
+<!-- Cohort Segmented Tabs -->
+<div class="flex items-center justify-between px-space-md pt-space-md overflow-x-auto">
+<div class="flex items-center gap-space-xs shrink-0">
+<button class="h-8 px-space-md rounded font-label-md text-label-md bg-primary text-on-primary font-semibold flex items-center gap-1.5 transition-colors" type="button">
+<span>All Records</span>
+<span class="px-1.5 py-0.2 rounded bg-surface-container-high/30 font-label-sm text-label-sm">28</span>
+</button>
+<button class="h-8 px-space-md rounded font-label-md text-label-md text-on-surface-variant hover:bg-surface-container-high hover:text-on-surface flex items-center gap-1.5 transition-colors" type="button">
+<span>My Filed Notes</span>
+<span class="px-1.5 py-0.2 rounded bg-surface-container-high font-label-sm text-label-sm">12</span>
+</button>
+<button class="h-8 px-space-md rounded font-label-md text-label-md text-on-surface-variant hover:bg-surface-container-high hover:text-on-surface flex items-center gap-1.5 transition-colors" type="button">
+<span>Pending Follow-Up</span>
+<span class="px-1.5 py-0.2 rounded bg-secondary-fixed text-on-secondary-fixed font-label-sm text-label-sm">6</span>
+</button>
+<button class="h-8 px-space-md rounded font-label-md text-label-md text-on-surface-variant hover:bg-surface-container-high hover:text-on-surface flex items-center gap-1.5 transition-colors" type="button">
+<span>Commendations</span>
+<span class="px-1.5 py-0.2 rounded bg-primary-fixed text-on-primary-fixed font-label-sm text-label-sm">8</span>
+</button>
+<button class="h-8 px-space-md rounded font-label-md text-label-md text-on-surface-variant hover:bg-surface-container-high hover:text-on-surface flex items-center gap-1.5 transition-colors" type="button">
+<span class="material-symbols-outlined text-[14px]">lock</span>
+<span>Restricted / Proctorial</span>
+<span class="px-1.5 py-0.2 rounded bg-surface-container-high font-label-sm text-label-sm">2</span>
+</button>
+</div>
+<div class="flex items-center gap-space-xs text-on-surface-variant font-body-sm text-body-sm shrink-0 pl-space-md">
+<span class="material-symbols-outlined text-[16px]">sync</span>
+<span>Ledger Updated: Today, 09:30 AM</span>
+</div>
+</div>
+<!-- Multifactor Filtering Bar -->
+<div class="p-space-md grid grid-cols-1 md:grid-cols-12 gap-space-sm items-center bg-surface-container-low/50">
+<!-- Search -->
+<div class="md:col-span-4 relative">
+<span class="material-symbols-outlined absolute left-space-md top-1/2 -translate-y-1/2 text-on-surface-variant text-[18px]">search</span>
+<input class="w-full h-9 pl-9 pr-space-md bg-surface-container-lowest rounded font-body-sm text-body-sm text-on-surface placeholder:text-on-surface-variant focus:outline-none focus:ring-1 focus:ring-primary transition-all" placeholder="Search by student name, roll, GRN, or log ID..." type="text" value=""/>
+</div>
+<!-- Filter: Date Range -->
+<div class="md:col-span-2 relative">
+<select class="w-full h-9 px-space-md bg-surface-container-lowest rounded font-body-sm text-body-sm text-on-surface appearance-none pr-8 focus:outline-none focus:ring-1 focus:ring-primary">
+<option>Current Term (Jan-Feb 2025)</option>
+<option>Last 30 Days</option>
+<option>Full Session AY 2024–25</option>
+<option>Custom Date Span...</option>
+</select>
+<span class="material-symbols-outlined absolute right-space-sm top-1/2 -translate-y-1/2 text-on-surface-variant pointer-events-none text-[18px]">expand_more</span>
+</div>
+<!-- Filter: Cohort -->
+<div class="md:col-span-2 relative">
+<select class="w-full h-9 px-space-md bg-surface-container-lowest rounded font-body-sm text-body-sm text-on-surface appearance-none pr-8 focus:outline-none focus:ring-1 focus:ring-primary font-medium">
+<option>Class 10-A (My Cohort)</option>
+<option>All Senior Wing (9 to 12)</option>
+<option>Class 10-B</option>
+<option>Class 10-C</option>
+</select>
+<span class="material-symbols-outlined absolute right-space-sm top-1/2 -translate-y-1/2 text-on-surface-variant pointer-events-none text-[18px]">expand_more</span>
+</div>
+<!-- Filter: Category -->
+<div class="md:col-span-2 relative">
+<select class="w-full h-9 px-space-md bg-surface-container-lowest rounded font-body-sm text-body-sm text-on-surface appearance-none pr-8 focus:outline-none focus:ring-1 focus:ring-primary">
+<option>All Categories</option>
+<option>Academic Engagement</option>
+<option>Uniform & Campus Protocol</option>
+<option>Peer Conduct</option>
+<option>Commendation & Merit</option>
+<option>Pastoral & Wellbeing</option>
+</select>
+<span class="material-symbols-outlined absolute right-space-sm top-1/2 -translate-y-1/2 text-on-surface-variant pointer-events-none text-[18px]">expand_more</span>
+</div>
+<!-- Filter: Status -->
+<div class="md:col-span-2 relative">
+<select class="w-full h-9 px-space-md bg-surface-container-lowest rounded font-body-sm text-body-sm text-on-surface appearance-none pr-8 focus:outline-none focus:ring-1 focus:ring-primary">
+<option>All Statuses</option>
+<option>Follow-Up Scheduled</option>
+<option>Action In Progress</option>
+<option>Under Proctorial Review</option>
+<option>Resolved / Recorded</option>
+</select>
+<span class="material-symbols-outlined absolute right-space-sm top-1/2 -translate-y-1/2 text-on-surface-variant pointer-events-none text-[18px]">expand_more</span>
+</div>
+</div>
+</div>
+<!-- High-Density Record Ledger Table -->
+<div class="bg-surface-container-lowest rounded flex flex-col overflow-hidden">
+<div class="overflow-x-auto w-full">
+<table class="w-full text-left border-collapse">
+<thead>
+<tr class="bg-surface-container-high text-on-surface-variant font-label-sm text-label-sm uppercase tracking-wider h-9">
+<th class="px-space-md py-2 w-32 font-semibold" scope="col">Log ID & Timestamp</th>
+<th class="px-space-md py-2 w-48 font-semibold" scope="col">Student Identity</th>
+<th class="px-space-md py-2 min-w-[260px] font-semibold" scope="col">Observation & Empirical Context</th>
+<th class="px-space-md py-2 w-44 font-semibold" scope="col">Reporting Proctor / Staff</th>
+<th class="px-space-md py-2 min-w-[190px] font-semibold" scope="col">Immediate Action</th>
+<th class="px-space-md py-2 w-44 font-semibold" scope="col">Follow-Up State</th>
+<th class="px-space-md py-2 w-32 font-semibold text-center" scope="col">Access Tier</th>
+<th class="px-space-md py-2 w-28 text-right font-semibold" scope="col">Actions</th>
+</tr>
+</thead>
+<tbody class="divide-y-0 text-on-surface font-body-sm text-body-sm">
+<!-- Row 1: Late Assembly -->
+<tr class="hover:bg-surface-container-low transition-colors">
+<td class="px-space-md py-space-sm align-top">
+<div class="flex flex-col">
+<span class="font-tabular-data text-tabular-data font-semibold text-primary">#BEH-2025-0142</span>
+<span class="text-on-surface-variant font-tabular-data text-tabular-data">11 Feb 2025</span>
+<span class="text-on-surface-variant font-body-sm text-body-sm">08:45 AM</span>
+</div>
+</td>
+<td class="px-space-md py-space-sm align-top">
+<div class="flex flex-col">
+<span class="font-label-md text-label-md font-semibold text-on-surface">Aarav Singhania</span>
+<span class="font-body-sm text-body-sm text-on-surface-variant">Roll No. 14 • Class 10-A</span>
+<div class="mt-1">
+<span class="inline-flex items-center px-1.5 py-0.2 rounded bg-surface-container text-on-surface-variant font-label-sm text-label-sm">
+                      Pratap House
+                    </span>
+</div>
+</div>
+</td>
+<td class="px-space-md py-space-sm align-top">
+<div class="flex flex-col gap-1">
+<span class="inline-block px-2 py-0.5 rounded bg-surface-container text-on-surface-variant font-label-sm text-label-sm w-fit font-medium">
+                    Academic Engagement & Punctuality
+                  </span>
+<p class="text-on-surface leading-snug">
+                    Arrived 25 minutes late during morning assembly second time this week; stated transit delay from Civil Lines. Engaged attentively once seated in period 1.
+                  </p>
+</div>
+</td>
+<td class="px-space-md py-space-sm align-top">
+<div class="flex flex-col">
+<span class="font-label-md text-label-md text-on-surface font-medium">Mrs. Ananya Sharma</span>
+<span class="font-body-sm text-body-sm text-on-surface-variant">Class Teacher 10-A</span>
+</div>
+</td>
+<td class="px-space-md py-space-sm align-top">
+<p class="text-on-surface-variant leading-snug">
+                  Infirmary/Transit verification logged; temporary morning pass countersigned.
+                </p>
+</td>
+<td class="px-space-md py-space-sm align-top">
+<div class="flex flex-col gap-1">
+<span class="inline-flex items-center px-2 py-0.5 rounded font-label-sm text-label-sm bg-secondary-fixed text-on-secondary-fixed w-fit font-medium">
+                    Follow-Up Scheduled
+                  </span>
+<span class="font-tabular-data text-tabular-data text-on-surface-variant">Due: 14 Feb (PTM)</span>
+</div>
+</td>
+<td class="px-space-md py-space-sm align-top text-center">
+<span class="inline-block px-1.5 py-0.5 rounded bg-surface-container-high text-on-surface-variant font-label-sm text-label-sm">
+                  Standard Tier
+                </span>
+</td>
+<td class="px-space-md py-space-sm align-top text-right">
+<div class="flex items-center justify-end gap-1">
+<button class="h-7 px-2 rounded bg-surface-container hover:bg-surface-container-high text-on-surface font-label-sm text-label-sm flex items-center transition-colors" title="Review Complete Log Dossier" type="button">
+                    Review
+                  </button>
+<button class="w-7 h-7 rounded hover:bg-surface-container text-on-surface-variant flex items-center justify-center transition-colors" title="More Administrative Operations" type="button">
+<span class="material-symbols-outlined text-[16px]">more_vert</span>
+</button>
+</div>
+</td>
+</tr>
+<!-- Row 2: Kabir Vyas Math -->
+<tr class="bg-surface-container-low/30 hover:bg-surface-container-low transition-colors">
+<td class="px-space-md py-space-sm align-top">
+<div class="flex flex-col">
+<span class="font-tabular-data text-tabular-data font-semibold text-primary">#BEH-2025-0139</span>
+<span class="text-on-surface-variant font-tabular-data text-tabular-data">09 Feb 2025</span>
+<span class="text-on-surface-variant font-body-sm text-body-sm">11:20 AM</span>
+</div>
+</td>
+<td class="px-space-md py-space-sm align-top">
+<div class="flex flex-col">
+<span class="font-label-md text-label-md font-semibold text-on-surface">Kabir Vyas</span>
+<span class="font-body-sm text-body-sm text-on-surface-variant">Roll No. 31 • Class 10-A</span>
+<div class="mt-1">
+<span class="inline-flex items-center px-1.5 py-0.2 rounded bg-surface-container text-on-surface-variant font-label-sm text-label-sm">
+                      Ashoka House
+                    </span>
+</div>
+</div>
+</td>
+<td class="px-space-md py-space-sm align-top">
+<div class="flex flex-col gap-1">
+<span class="inline-block px-2 py-0.5 rounded bg-surface-container text-on-surface-variant font-label-sm text-label-sm w-fit font-medium">
+                    Academic Engagement
+                  </span>
+<p class="text-on-surface leading-snug">
+                    Unprepared with Mathematics Class 10 geometry workbook for third consecutive session; appeared withdrawn during group theorem derivation.
+                  </p>
+</div>
+</td>
+<td class="px-space-md py-space-sm align-top">
+<div class="flex flex-col">
+<span class="font-label-md text-label-md text-on-surface font-medium">Dr. N. Goyal</span>
+<span class="font-body-sm text-body-sm text-on-surface-variant">PGT Mathematics</span>
+</div>
+</td>
+<td class="px-space-md py-space-sm align-top">
+<p class="text-on-surface-variant leading-snug">
+                  Counseled individually post-class; scheduled diagnostic entry for Math Remedial Clinic #M-10A.
+                </p>
+</td>
+<td class="px-space-md py-space-sm align-top">
+<div class="flex flex-col gap-1">
+<span class="inline-flex items-center px-2 py-0.5 rounded font-label-sm text-label-sm bg-secondary-fixed text-on-secondary-fixed w-fit font-medium">
+                    Action In Progress
+                  </span>
+<span class="font-tabular-data text-tabular-data text-on-surface-variant">Remedial Clinic #M-10A</span>
+</div>
+</td>
+<td class="px-space-md py-space-sm align-top text-center">
+<span class="inline-block px-1.5 py-0.5 rounded bg-surface-container-high text-on-surface-variant font-label-sm text-label-sm">
+                  Academic Faculty
+                </span>
+</td>
+<td class="px-space-md py-space-sm align-top text-right">
+<div class="flex items-center justify-end gap-1">
+<button class="h-7 px-2 rounded bg-surface-container hover:bg-surface-container-high text-on-surface font-label-sm text-label-sm flex items-center transition-colors" type="button">
+                    Review
+                  </button>
+<button class="w-7 h-7 rounded hover:bg-surface-container text-on-surface-variant flex items-center justify-center transition-colors" type="button">
+<span class="material-symbols-outlined text-[16px]">more_vert</span>
+</button>
+</div>
+</td>
+</tr>
+<!-- Row 3: Tanvi Pareek Commendation -->
+<tr class="hover:bg-surface-container-low transition-colors">
+<td class="px-space-md py-space-sm align-top">
+<div class="flex flex-col">
+<span class="font-tabular-data text-tabular-data font-semibold text-primary">#BEH-2025-0135</span>
+<span class="text-on-surface-variant font-tabular-data text-tabular-data">07 Feb 2025</span>
+<span class="text-on-surface-variant font-body-sm text-body-sm">02:15 PM</span>
+</div>
+</td>
+<td class="px-space-md py-space-sm align-top">
+<div class="flex flex-col">
+<span class="font-label-md text-label-md font-semibold text-on-surface">Tanvi Pareek</span>
+<span class="font-body-sm text-body-sm text-on-surface-variant">Roll No. 28 • Class 10-A</span>
+<div class="mt-1">
+<span class="inline-flex items-center px-1.5 py-0.2 rounded bg-primary-fixed text-on-primary-fixed font-label-sm text-label-sm">
+                      Tagore House
+                    </span>
+</div>
+</div>
+</td>
+<td class="px-space-md py-space-sm align-top">
+<div class="flex flex-col gap-1">
+<span class="inline-block px-2 py-0.5 rounded bg-primary-fixed text-on-primary-fixed font-label-sm text-label-sm w-fit font-medium">
+                    Commendation & Leadership
+                  </span>
+<p class="text-on-surface leading-snug">
+                    Assisted peer cohort during complex physics optics setup; voluntarily spent zero-period reconciling optical bench apparatus inventory.
+                  </p>
+</div>
+</td>
+<td class="px-space-md py-space-sm align-top">
+<div class="flex flex-col">
+<span class="font-label-md text-label-md text-on-surface font-medium">Mrs. S. Banerjee</span>
+<span class="font-body-sm text-body-sm text-on-surface-variant">PGT Science</span>
+</div>
+</td>
+<td class="px-space-md py-space-sm align-top">
+<p class="text-on-surface-variant leading-snug">
+                  +10 Institutional House Merit Points officially credited to Tagore House register.
+                </p>
+</td>
+<td class="px-space-md py-space-sm align-top">
+<div class="flex flex-col gap-1">
+<span class="inline-flex items-center px-2 py-0.5 rounded font-label-sm text-label-sm bg-primary-container text-on-primary font-medium w-fit">
+                    Resolved / Recorded
+                  </span>
+<span class="font-tabular-data text-tabular-data text-on-surface-variant">Merit Logged</span>
+</div>
+</td>
+<td class="px-space-md py-space-sm align-top text-center">
+<span class="inline-block px-1.5 py-0.5 rounded bg-surface-container-high text-on-surface-variant font-label-sm text-label-sm">
+                  Public Ledger
+                </span>
+</td>
+<td class="px-space-md py-space-sm align-top text-right">
+<div class="flex items-center justify-end gap-1">
+<button class="h-7 px-2 rounded bg-surface-container hover:bg-surface-container-high text-on-surface font-label-sm text-label-sm flex items-center transition-colors" type="button">
+                    Review
+                  </button>
+<button class="w-7 h-7 rounded hover:bg-surface-container text-on-surface-variant flex items-center justify-center transition-colors" type="button">
+<span class="material-symbols-outlined text-[16px]">more_vert</span>
+</button>
+</div>
+</td>
+</tr>
+<!-- Row 4: Uniform protocol -->
+<tr class="bg-surface-container-low/30 hover:bg-surface-container-low transition-colors">
+<td class="px-space-md py-space-sm align-top">
+<div class="flex flex-col">
+<span class="font-tabular-data text-tabular-data font-semibold text-primary">#BEH-2025-0128</span>
+<span class="text-on-surface-variant font-tabular-data text-tabular-data">05 Feb 2025</span>
+<span class="text-on-surface-variant font-body-sm text-body-sm">10:00 AM</span>
+</div>
+</td>
+<td class="px-space-md py-space-sm align-top">
+<div class="flex flex-col">
+<span class="font-label-md text-label-md font-semibold text-on-surface">Devendra Choudhary</span>
+<span class="font-body-sm text-body-sm text-on-surface-variant">Roll No. 08 • Class 10-A</span>
+<div class="mt-1">
+<span class="inline-flex items-center px-1.5 py-0.2 rounded bg-surface-container text-on-surface-variant font-label-sm text-label-sm">
+                      Pratap House
+                    </span>
+</div>
+</div>
+</td>
+<td class="px-space-md py-space-sm align-top">
+<div class="flex flex-col gap-1">
+<span class="inline-block px-2 py-0.5 rounded bg-surface-container text-on-surface-variant font-label-sm text-label-sm w-fit font-medium">
+                    Uniform & Campus Protocol
+                  </span>
+<p class="text-on-surface leading-snug">
+                    Missing institutional blazer and RFID card during formal morning inspection parade.
+                  </p>
+</div>
+</td>
+<td class="px-space-md py-space-sm align-top">
+<div class="flex flex-col">
+<span class="font-label-md text-label-md text-on-surface font-medium">Mr. R. P. Chauhan</span>
+<span class="font-body-sm text-body-sm text-on-surface-variant">TGT Social Science</span>
+</div>
+</td>
+<td class="px-space-md py-space-sm align-top">
+<p class="text-on-surface-variant leading-snug">
+                  Temporary RFID day-badge granted at Bursar gate; automated notification dispatched to guardian.
+                </p>
+</td>
+<td class="px-space-md py-space-sm align-top">
+<div class="flex flex-col gap-1">
+<span class="inline-flex items-center px-2 py-0.5 rounded font-label-sm text-label-sm bg-surface-container-high text-on-surface font-medium w-fit">
+                    Resolved / Closed
+                  </span>
+<span class="font-tabular-data text-tabular-data text-on-surface-variant">Gate Slip Reconciled</span>
+</div>
+</td>
+<td class="px-space-md py-space-sm align-top text-center">
+<span class="inline-block px-1.5 py-0.5 rounded bg-surface-container-high text-on-surface-variant font-label-sm text-label-sm">
+                  Standard Tier
+                </span>
+</td>
+<td class="px-space-md py-space-sm align-top text-right">
+<div class="flex items-center justify-end gap-1">
+<button class="h-7 px-2 rounded bg-surface-container hover:bg-surface-container-high text-on-surface font-label-sm text-label-sm flex items-center transition-colors" type="button">
+                    Review
+                  </button>
+<button class="w-7 h-7 rounded hover:bg-surface-container text-on-surface-variant flex items-center justify-center transition-colors" type="button">
+<span class="material-symbols-outlined text-[16px]">more_vert</span>
+</button>
+</div>
+</td>
+</tr>
+<!-- Row 5: Confidential & Locked -->
+<tr class="bg-surface-container-low/60 hover:bg-surface-container-low transition-colors">
+<td class="px-space-md py-space-sm align-top">
+<div class="flex flex-col">
+<span class="font-tabular-data text-tabular-data font-semibold text-tertiary">#BEH-2025-0118</span>
+<span class="text-on-surface-variant font-tabular-data text-tabular-data">02 Feb 2025</span>
+<span class="text-on-surface-variant font-body-sm text-body-sm">01:10 PM</span>
+</div>
+</td>
+<td class="px-space-md py-space-sm align-top">
+<div class="flex flex-col">
+<div class="flex items-center gap-1 text-on-surface">
+<span class="material-symbols-outlined text-tertiary text-[16px]">lock</span>
+<span class="font-label-md text-label-md font-semibold italic">Confidential Student File</span>
+</div>
+<span class="font-body-sm text-body-sm text-on-surface-variant">Class 10-A • Identity Masked</span>
+<div class="mt-1">
+<span class="inline-flex items-center px-1.5 py-0.2 rounded bg-surface-container-highest text-on-surface-variant font-label-sm text-label-sm">
+                      Proctorial Lockout
+                    </span>
+</div>
+</div>
+</td>
+<td class="px-space-md py-space-sm align-top">
+<div class="flex flex-col gap-1">
+<span class="inline-block px-2 py-0.5 rounded bg-surface-container text-on-surface-variant font-label-sm text-label-sm w-fit font-medium">
+                    Pastoral Wellbeing & Support
+                  </span>
+<p class="text-on-surface-variant font-body-sm text-body-sm italic bg-surface-container-lowest p-2 rounded leading-relaxed">
+                    [Restricted Entry: Medical & Emotional Wellbeing consultation logged with Student Counselor. Visible strictly to Principal, Counselor & Class Proctor Mrs. Sharma under institutional guideline SEC-804].
+                  </p>
+</div>
+</td>
+<td class="px-space-md py-space-sm align-top">
+<div class="flex flex-col">
+<span class="font-label-md text-label-md text-on-surface font-medium">Sister M. Joseph</span>
+<span class="font-body-sm text-body-sm text-on-surface-variant">Head Pastoral Counselor</span>
+</div>
+</td>
+<td class="px-space-md py-space-sm align-top">
+<p class="text-on-surface-variant leading-snug">
+                  Closed clinical session held; collaborative guardian catch-up arranged via Wellness Bay.
+                </p>
+</td>
+<td class="px-space-md py-space-sm align-top">
+<div class="flex flex-col gap-1">
+<span class="inline-flex items-center px-2 py-0.5 rounded font-label-sm text-label-sm bg-surface-container-high text-on-surface font-semibold w-fit">
+                    Proctorial Review
+                  </span>
+<span class="font-tabular-data text-tabular-data text-on-surface-variant">Confidential Tracking</span>
+</div>
+</td>
+<td class="px-space-md py-space-sm align-top text-center">
+<span class="inline-flex items-center gap-1 px-1.5 py-0.5 rounded bg-tertiary-fixed text-on-tertiary-fixed font-label-sm text-label-sm font-semibold">
+<span class="material-symbols-outlined text-[13px]">lock</span>
+                  Tier-1 Lock
+                </span>
+</td>
+<td class="px-space-md py-space-sm align-top text-right">
+<div class="flex items-center justify-end gap-1">
+<button class="h-7 px-2 rounded bg-primary text-on-primary hover:bg-primary-container font-label-sm text-label-sm flex items-center transition-colors" type="button">
+                    Decrypt
+                  </button>
+<button class="w-7 h-7 rounded hover:bg-surface-container text-on-surface-variant flex items-center justify-center transition-colors" type="button">
+<span class="material-symbols-outlined text-[16px]">more_vert</span>
+</button>
+</div>
+</td>
+</tr>
+<!-- Row 6: Meera Shekhawat Council -->
+<tr class="hover:bg-surface-container-low transition-colors">
+<td class="px-space-md py-space-sm align-top">
+<div class="flex flex-col">
+<span class="font-tabular-data text-tabular-data font-semibold text-primary">#BEH-2025-0104</span>
+<span class="text-on-surface-variant font-tabular-data text-tabular-data">29 Jan 2025</span>
+<span class="text-on-surface-variant font-body-sm text-body-sm">12:30 PM</span>
+</div>
+</td>
+<td class="px-space-md py-space-sm align-top">
+<div class="flex flex-col">
+<span class="font-label-md text-label-md font-semibold text-on-surface">Meera Shekhawat</span>
+<span class="font-body-sm text-body-sm text-on-surface-variant">Roll No. 01 • Class 10-A</span>
+<div class="mt-1">
+<span class="inline-flex items-center px-1.5 py-0.2 rounded bg-primary-fixed text-on-primary-fixed font-label-sm text-label-sm">
+                      Tagore House
+                    </span>
+</div>
+</div>
+</td>
+<td class="px-space-md py-space-sm align-top">
+<div class="flex flex-col gap-1">
+<span class="inline-block px-2 py-0.5 rounded bg-primary-fixed text-on-primary-fixed font-label-sm text-label-sm w-fit font-medium">
+                    Commendation & Leadership
+                  </span>
+<p class="text-on-surface leading-snug">
+                    Demonstrated leadership as Student Council Head during Inter-School Debate orientation; coordinated arrival protocol for 12 external delegations.
+                  </p>
+</div>
+</td>
+<td class="px-space-md py-space-sm align-top">
+<div class="flex flex-col">
+<span class="font-label-md text-label-md text-on-surface font-medium">Mrs. Ananya Sharma</span>
+<span class="font-body-sm text-body-sm text-on-surface-variant">PGT English / Proctor</span>
+</div>
+</td>
+<td class="px-space-md py-space-sm align-top">
+<p class="text-on-surface-variant leading-snug">
+                  Official citation and nomination for HanuJai Merit Scholar Badge dispatched to Principal.
+                </p>
+</td>
+<td class="px-space-md py-space-sm align-top">
+<div class="flex flex-col gap-1">
+<span class="inline-flex items-center px-2 py-0.5 rounded font-label-sm text-label-sm bg-primary-container text-on-primary font-medium w-fit">
+                    Resolved / Commendation
+                  </span>
+<span class="font-tabular-data text-tabular-data text-on-surface-variant">Council Certified</span>
+</div>
+</td>
+<td class="px-space-md py-space-sm align-top text-center">
+<span class="inline-block px-1.5 py-0.5 rounded bg-surface-container-high text-on-surface-variant font-label-sm text-label-sm">
+                  Standard Tier
+                </span>
+</td>
+<td class="px-space-md py-space-sm align-top text-right">
+<div class="flex items-center justify-end gap-1">
+<button class="h-7 px-2 rounded bg-surface-container hover:bg-surface-container-high text-on-surface font-label-sm text-label-sm flex items-center transition-colors" type="button">
+                    Review
+                  </button>
+<button class="w-7 h-7 rounded hover:bg-surface-container text-on-surface-variant flex items-center justify-center transition-colors" type="button">
+<span class="material-symbols-outlined text-[16px]">more_vert</span>
+</button>
+</div>
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+<!-- Ledger Footer: Administrative Pagination & Classification Legend -->
+<div class="p-space-md bg-surface-container-low flex flex-col md:flex-row items-center justify-between gap-space-md">
+<!-- Visual Status Legend -->
+<div class="flex items-center flex-wrap gap-space-md text-on-surface-variant font-label-sm text-label-sm">
+<span class="font-semibold text-on-surface uppercase tracking-wide">Record Legend:</span>
+<div class="flex items-center gap-1.5">
+<span class="w-2.5 h-2.5 rounded bg-surface-container-highest"></span>
+<span>General Observation</span>
+</div>
+<div class="flex items-center gap-1.5">
+<span class="w-2.5 h-2.5 rounded bg-primary"></span>
+<span>Commendation / Merit</span>
+</div>
+<div class="flex items-center gap-1.5">
+<span class="w-2.5 h-2.5 rounded bg-secondary"></span>
+<span>Follow-up Scheduled</span>
+</div>
+<div class="flex items-center gap-1.5">
+<span class="w-2.5 h-2.5 rounded bg-tertiary"></span>
+<span>Tier-1 Confidential (RBAC)</span>
+</div>
+</div>
+<!-- Strict Pagination controls -->
+<div class="flex items-center gap-space-md font-body-sm text-body-sm text-on-surface-variant shrink-0">
+<span class="font-tabular-data text-tabular-data">
+            Showing <strong class="text-on-surface">6</strong> of <strong class="text-on-surface">28</strong> entries • Page 1 of 5
+          </span>
+<div class="flex items-center gap-1">
+<button class="w-8 h-8 rounded bg-surface-container opacity-50 cursor-not-allowed flex items-center justify-center text-on-surface-variant" disabled="" type="button">
+<span class="material-symbols-outlined text-[18px]">chevron_left</span>
+</button>
+<button class="w-8 h-8 rounded bg-primary text-on-primary font-semibold flex items-center justify-center text-label-sm font-label-sm" type="button">
+              1
+            </button>
+<button class="w-8 h-8 rounded bg-surface-container-lowest hover:bg-surface-container text-on-surface flex items-center justify-center text-label-sm font-label-sm transition-colors" type="button">
+              2
+            </button>
+<button class="w-8 h-8 rounded bg-surface-container-lowest hover:bg-surface-container text-on-surface flex items-center justify-center text-label-sm font-label-sm transition-colors" type="button">
+              3
+            </button>
+<button class="w-8 h-8 rounded bg-surface-container-lowest hover:bg-surface-container text-on-surface flex items-center justify-center text-on-surface-variant transition-colors" type="button">
+<span class="material-symbols-outlined text-[18px]">chevron_right</span>
+</button>
+</div>
+</div>
+</div>
+</div>
+<!-- Supplementary Quick Action / Cohort Insight Strip -->
+<div class="grid grid-cols-1 md:grid-cols-3 gap-space-md">
+<!-- House Performance Context -->
+<div class="bg-surface-container-lowest p-space-md rounded flex flex-col justify-between">
+<div class="flex items-center justify-between pb-space-xs mb-space-xs">
+<span class="font-label-md text-label-md font-semibold text-on-surface">House Points Standing (10-A)</span>
+<span class="material-symbols-outlined text-primary text-[18px]">shield</span>
+</div>
+<div class="flex flex-col gap-space-xs mt-space-xs font-body-sm text-body-sm">
+<div class="flex justify-between items-center">
+<span class="text-on-surface">Tagore House</span>
+<span class="font-tabular-data text-tabular-data font-semibold text-primary">+45 pts</span>
+</div>
+<div class="w-full bg-surface-container-high h-1.5 rounded-full overflow-hidden">
+<div class="bg-primary h-full w-[78%]"></div>
+</div>
+<div class="flex justify-between items-center pt-1">
+<span class="text-on-surface">Pratap House</span>
+<span class="font-tabular-data text-tabular-data font-semibold text-secondary">+30 pts</span>
+</div>
+<div class="w-full bg-surface-container-high h-1.5 rounded-full overflow-hidden">
+<div class="bg-secondary h-full w-[52%]"></div>
+</div>
+</div>
+</div>
+<!-- Proctorial Note Quick Draft -->
+<div class="bg-surface-container-lowest p-space-md rounded flex flex-col justify-between">
+<div class="flex items-center justify-between pb-space-xs mb-space-xs">
+<span class="font-label-md text-label-md font-semibold text-on-surface">Proctorial Notice Memo</span>
+<span class="material-symbols-outlined text-on-surface-variant text-[18px]">edit_note</span>
+</div>
+<p class="font-body-sm text-body-sm text-on-surface-variant leading-relaxed">
+          Upcoming Periodic Assessment II requires parent notification review for 4 students with attendance variance.
+        </p>
+<div class="pt-space-sm flex items-center justify-between">
+<span class="font-label-sm text-label-sm text-on-surface-variant">Class Committee: 16 Feb</span>
+<a class="font-label-sm text-label-sm text-primary font-semibold hover:underline" href="#">Draft Notice →</a>
+</div>
+</div>
+<!-- Verification Seal & Compliance State -->
+<div class="bg-surface-container-lowest p-space-md rounded flex flex-col justify-between">
+<div class="flex items-center justify-between pb-space-xs mb-space-xs">
+<span class="font-label-md text-label-md font-semibold text-on-surface">Ledger Verification Sign-off</span>
+<span class="material-symbols-outlined text-primary text-[18px]">verified</span>
+</div>
+<div class="flex flex-col gap-0.5 font-body-sm text-body-sm text-on-surface-variant">
+<span>Lead Proctor: <strong>Mrs. Ananya Sharma</strong></span>
+<span>Vice Principal Countersign: <strong class="text-primary font-medium">Approved (08 Feb)</strong></span>
+<span class="font-tabular-data text-tabular-data text-[11px] mt-1 text-on-surface-variant">Digital Signature Ref: #HJH-SEC-804-2025-T2</span>
+</div>
+<div class="pt-space-sm">
+<span class="inline-flex items-center gap-1 font-label-sm text-label-sm text-primary font-medium">
+<span class="w-1.5 h-1.5 rounded-full bg-primary"></span>
+            Institutional Register Synchronized
+          </span>
+</div>
+</div>
+</div>
+</div>
+</div></main></div></body></html>

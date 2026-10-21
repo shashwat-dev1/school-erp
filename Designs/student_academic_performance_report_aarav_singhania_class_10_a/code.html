@@ -1,0 +1,986 @@
+<!DOCTYPE html>
+
+<html lang="en"><head><meta charset="utf-8"/><meta content="width=device-width, initial-scale=1.0" name="viewport"/><meta content="web_dashboard" name="shell-type"/><link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/><style>@layer base{html,body{margin:0;padding:0;}body{overscroll-behavior:none;}main>:first-child{margin-top:0!important;}main>:last-child{margin-bottom:0!important;}}::-webkit-scrollbar{display:none;}</style><script src="https://cdn.tailwindcss.com"></script><script id="tailwind-config">tailwind.config = {
+    darkMode: "class",
+    theme: {
+      extend: {
+        "colors": {
+          "on-secondary-fixed-variant": "#633f0d",
+          "tertiary-fixed": "#ffdad7",
+          "surface-tint": "#3e665a",
+          "surface-container-highest": "#d9e5e3",
+          "surface-container": "#e4f0ee",
+          "on-primary-container": "#a3cec0",
+          "secondary-fixed-dim": "#f2bd80",
+          "tertiary-container": "#91312e",
+          "on-surface": "#131e1d",
+          "on-error-container": "#93000a",
+          "inverse-surface": "#273331",
+          "tertiary": "#721a1a",
+          "error": "#ba1a1a",
+          "on-secondary-fixed": "#2b1700",
+          "on-primary": "#ffffff",
+          "primary-container": "#31594e",
+          "on-secondary-container": "#79511f",
+          "error-container": "#ffdad6",
+          "outline-variant": "#c0c8c4",
+          "surface-dim": "#d0dddb",
+          "surface": "#f0fcfa",
+          "on-tertiary-fixed": "#410004",
+          "outline": "#717975",
+          "on-tertiary": "#ffffff",
+          "secondary-container": "#fec78a",
+          "surface-variant": "#d9e5e3",
+          "on-tertiary-container": "#ffb2ac",
+          "on-tertiary-fixed-variant": "#822624",
+          "tertiary-fixed-dim": "#ffb3ad",
+          "on-primary-fixed-variant": "#264e43",
+          "background": "#f0fcfa",
+          "secondary-fixed": "#ffddba",
+          "on-surface-variant": "#414845",
+          "surface-bright": "#f0fcfa",
+          "on-error": "#ffffff",
+          "primary-fixed-dim": "#a5cfc1",
+          "primary": "#184237",
+          "primary-fixed": "#c0ecdd",
+          "inverse-primary": "#a5cfc1",
+          "secondary": "#7e5624",
+          "on-primary-fixed": "#002019",
+          "on-background": "#131e1d",
+          "inverse-on-surface": "#e7f3f1",
+          "surface-container-low": "#eaf6f4",
+          "on-secondary": "#ffffff",
+          "surface-container-lowest": "#ffffff",
+          "surface-container-high": "#deebe9"
+        },
+        "borderRadius": {
+          "DEFAULT": "0.125rem",
+          "lg": "0.25rem",
+          "xl": "0.5rem",
+          "full": "0.75rem"
+        },
+        "spacing": {
+          "margin-desktop": "2rem",
+          "space-sm": "0.5rem",
+          "space-lg": "1rem",
+          "gutter": "1rem",
+          "space-xl": "1.5rem",
+          "margin": "1rem",
+          "space-xs": "0.25rem",
+          "space-md": "0.75rem",
+          "gutter-desktop": "1.5rem"
+        },
+        "fontFamily": {
+          "label-sm": [
+            "Inter"
+          ],
+          "headline-lg": [
+            "Inter"
+          ],
+          "headline-xl": [
+            "Inter"
+          ],
+          "tabular-data": [
+            "Inter"
+          ],
+          "body-lg": [
+            "Inter"
+          ],
+          "headline-sm": [
+            "Inter"
+          ],
+          "body-sm": [
+            "Inter"
+          ],
+          "label-md": [
+            "Inter"
+          ],
+          "body-md": [
+            "Inter"
+          ],
+          "headline-md": [
+            "Inter"
+          ]
+        },
+        "fontSize": {
+          "label-sm": [
+            "0.75rem",
+            {
+              "lineHeight": "1rem",
+              "letterSpacing": "0.025em",
+              "fontWeight": "600"
+            }
+          ],
+          "headline-lg": [
+            "1.5rem",
+            {
+              "lineHeight": "2rem",
+              "letterSpacing": "-0.015em",
+              "fontWeight": "600"
+            }
+          ],
+          "headline-xl": [
+            "2rem",
+            {
+              "lineHeight": "2.5rem",
+              "letterSpacing": "-0.02em",
+              "fontWeight": "600"
+            }
+          ],
+          "tabular-data": [
+            "0.875rem",
+            {
+              "lineHeight": "1.25rem",
+              "letterSpacing": "0em",
+              "fontWeight": "400"
+            }
+          ],
+          "body-lg": [
+            "1rem",
+            {
+              "lineHeight": "1.5rem",
+              "letterSpacing": "0em",
+              "fontWeight": "400"
+            }
+          ],
+          "headline-sm": [
+            "1.125rem",
+            {
+              "lineHeight": "1.5rem",
+              "letterSpacing": "0em",
+              "fontWeight": "600"
+            }
+          ],
+          "body-sm": [
+            "0.75rem",
+            {
+              "lineHeight": "1.125rem",
+              "letterSpacing": "0.005em",
+              "fontWeight": "400"
+            }
+          ],
+          "label-md": [
+            "0.875rem",
+            {
+              "lineHeight": "1.25rem",
+              "letterSpacing": "0.01em",
+              "fontWeight": "500"
+            }
+          ],
+          "body-md": [
+            "0.875rem",
+            {
+              "lineHeight": "1.25rem",
+              "letterSpacing": "0em",
+              "fontWeight": "400"
+            }
+          ],
+          "headline-md": [
+            "1.25rem",
+            {
+              "lineHeight": "1.75rem",
+              "letterSpacing": "-0.01em",
+              "fontWeight": "600"
+            }
+          ]
+        }
+      }
+    }
+  }</script></head><body class="bg-surface font-body-md text-body-md text-on-surface antialiased"><aside class="fixed left-0 top-0 h-full w-64 bg-surface-container-lowest border-r border-outline-variant z-50 flex flex-col justify-between"><div class="flex flex-col"><div class="h-16 px-space-lg flex items-center gap-space-sm border-b border-outline-variant bg-surface-container-low"><div class="w-8 h-8 rounded-lg bg-primary-container flex items-center justify-center shrink-0"><span class="material-symbols-outlined text-on-primary text-[20px]">account_balance</span></div><div class="flex flex-col min-w-0"><span class="font-label-md text-label-md text-on-surface font-semibold truncate">HanuJai ERP</span><span class="font-body-sm text-body-sm text-on-surface-variant truncate">Administrative Portal</span></div></div><div class="px-space-md py-space-sm"><span class="font-label-sm text-label-sm text-on-surface-variant uppercase tracking-wider block px-space-sm py-space-xs">Core Modules</span></div><nav class="flex flex-col gap-space-xs px-space-md" data-active-classes="bg-primary-container text-on-primary font-semibold border border-primary-container"><a class="flex items-center gap-space-sm px-space-md h-9 rounded-lg text-on-surface-variant hover:bg-surface-container-high hover:text-on-surface transition-colors font-label-md text-label-md" data-path="dashboard" href="#"><span class="material-symbols-outlined text-[18px]">dashboard</span><span>Dashboard</span></a><a class="flex items-center gap-space-sm px-space-md h-9 rounded-lg text-on-surface-variant hover:bg-surface-container-high hover:text-on-surface transition-colors font-label-md text-label-md" data-path="students" href="#"><span class="material-symbols-outlined text-[18px]">group</span><span>Students</span></a><a class="flex items-center gap-space-sm px-space-md h-9 rounded-lg text-on-surface-variant hover:bg-surface-container-high hover:text-on-surface transition-colors font-label-md text-label-md" data-path="attendance" href="#"><span class="material-symbols-outlined text-[18px]">event_available</span><span>Attendance</span></a><a class="flex items-center gap-space-sm px-space-md h-9 rounded-lg text-on-surface-variant hover:bg-surface-container-high hover:text-on-surface transition-colors font-label-md text-label-md" data-path="academics" href="#"><span class="material-symbols-outlined text-[18px]">menu_book</span><span>Academics</span></a><a aria-current="page" class="flex items-center gap-space-sm px-space-md h-9 rounded-lg transition-colors bg-primary-container text-on-primary font-semibold border border-primary-container" data-path="performance" href="#"><span class="material-symbols-outlined text-[18px]">analytics</span><span>Performance</span></a><a class="flex items-center gap-space-sm px-space-md h-9 rounded-lg text-on-surface-variant hover:bg-surface-container-high hover:text-on-surface transition-colors font-label-md text-label-md" data-path="behaviour" href="#"><span class="material-symbols-outlined text-[18px]">fact_check</span><span>Behaviour</span></a><a class="flex items-center gap-space-sm px-space-md h-9 rounded-lg text-on-surface-variant hover:bg-surface-container-high hover:text-on-surface transition-colors font-label-md text-label-md" data-path="reports-and-cbse" href="#"><span class="material-symbols-outlined text-[18px]">assignment_turned_in</span><span>Reports &amp; CBSE</span></a><a class="flex items-center gap-space-sm px-space-md h-9 rounded-lg text-on-surface-variant hover:bg-surface-container-high hover:text-on-surface transition-colors font-label-md text-label-md" data-path="administration" href="#"><span class="material-symbols-outlined text-[18px]">admin_panel_settings</span><span>Administration</span></a></nav></div><div class="p-space-md border-t border-outline-variant bg-surface-container-low"><div class="flex items-center justify-between text-on-surface-variant font-label-sm text-label-sm"><span>CBSE Affil. 1730248</span><span class="inline-flex items-center gap-1 font-tabular-data text-tabular-data text-primary"><span class="w-2 h-2 rounded-full bg-primary inline-block"></span>Active</span></div></div></aside><div class="pl-64"><header class="fixed top-0 left-64 right-0 h-16 bg-surface-container-lowest/95 backdrop-blur-md border-b border-outline-variant z-40 flex items-center justify-between px-space-xl"><div class="flex items-center gap-space-lg"><div class="flex flex-col"><h1 class="font-headline-sm text-headline-sm text-on-surface font-semibold">HanuJai High School, Jaipur</h1><div class="flex items-center gap-space-xs"><span class="font-body-sm text-body-sm text-on-surface-variant">Institutional Session:</span><span class="font-label-sm text-label-sm text-primary font-medium bg-surface-container-high px-1.5 py-0.5 rounded">AY 2024–25 (Term II)</span></div></div></div><div class="flex items-center gap-space-lg"><div class="relative w-64 md:w-80"><span class="material-symbols-outlined absolute left-space-md top-1/2 -translate-y-1/2 text-on-surface-variant text-[18px]">search</span><input class="w-full h-9 pl-9 pr-space-md bg-surface border border-outline-variant rounded font-body-sm text-body-sm text-on-surface placeholder:text-on-surface-variant focus:outline-none focus:border-primary-container transition-colors" placeholder="Search student GRN, faculty, register..." type="text"/></div><div class="h-6 w-px bg-outline-variant"></div><div class="flex items-center gap-space-md"><div class="flex flex-col text-right"><span class="font-label-md text-label-md text-on-surface font-semibold leading-tight">Mrs. Ananya Sharma</span><span class="font-body-sm text-body-sm text-on-surface-variant leading-tight">Class Teacher 10-A / PGT English</span></div><div class="w-8 h-8 rounded-full bg-primary flex items-center justify-center"><span class="material-symbols-outlined text-on-primary text-[18px]">person</span></div></div></div></header><main class="relative pt-16 w-full min-h-screen bg-surface"><div class="flex flex-col w-full">
+<div class="px-margin-desktop py-space-xl flex flex-col gap-space-lg">
+<!-- Breadcrumb & Status Super-Header -->
+<div class="flex flex-col md:flex-row md:items-center justify-between gap-space-md border-b border-outline-variant pb-space-md">
+<div class="flex flex-col gap-space-xs">
+<nav aria-label="Breadcrumbs" class="flex items-center gap-space-xs font-body-sm text-body-sm text-on-surface-variant flex-wrap">
+<a class="hover:text-primary transition-colors" href="#">Home</a>
+<span class="material-symbols-outlined text-[14px]">chevron_right</span>
+<a class="hover:text-primary transition-colors" href="#">Performance</a>
+<span class="material-symbols-outlined text-[14px]">chevron_right</span>
+<a class="hover:text-primary transition-colors" href="#">Class 10-A</a>
+<span class="material-symbols-outlined text-[14px]">chevron_right</span>
+<span class="text-on-surface font-medium">Aarav Singhania (HJ-2021-0428)</span>
+<span class="material-symbols-outlined text-[14px]">chevron_right</span>
+<span class="text-primary font-semibold">Academic Performance Report</span>
+</nav>
+<h2 class="font-headline-md text-headline-md text-on-surface font-semibold tracking-tight">
+          Individual Academic Evaluation &amp; Progress Dossier — Term II Mid-Term Examination (AY 2024–25)
+        </h2>
+</div>
+<div class="flex items-center gap-space-xs flex-wrap">
+<span class="inline-flex items-center gap-1 font-label-sm text-label-sm uppercase tracking-wider px-2 py-0.5 rounded bg-surface-container-high text-on-surface-variant border border-outline-variant">
+<span class="material-symbols-outlined text-[14px] text-tertiary">lock</span>
+          Confidential • Faculty &amp; Guardian View
+        </span>
+<span class="inline-flex items-center gap-1 font-label-sm text-label-sm uppercase tracking-wider px-2 py-0.5 rounded bg-surface-container-high text-primary border border-primary-container/30">
+          CBSE Affiliation #1730249
+        </span>
+<span class="inline-flex items-center gap-1 font-label-sm text-label-sm uppercase tracking-wider px-2 py-0.5 rounded bg-secondary-fixed/50 text-secondary-fixed-variant border border-secondary-fixed-dim">
+          Term II Mid-Term Moderation
+        </span>
+</div>
+</div>
+<!-- Administrative Action Bar & Period Selector -->
+<div class="flex flex-col lg:flex-row lg:items-center justify-between gap-space-md p-space-md bg-surface-container-low border border-outline-variant rounded">
+<div class="flex items-center gap-space-md flex-wrap">
+<div class="flex items-center gap-space-xs">
+<span class="font-label-sm text-label-sm text-on-surface-variant uppercase tracking-wider">Evaluation Period:</span>
+<div class="relative">
+<select class="h-9 pl-3 pr-8 bg-surface-container-lowest border border-outline-variant rounded font-label-md text-label-md text-on-surface focus:outline-none focus:border-primary-container appearance-none cursor-pointer">
+<option selected="">Term II Mid-Term Assessment (Jan–Feb 2025) [Active]</option>
+<option>Unit Test 2 (Nov 2024)</option>
+<option>Half-Yearly Term I (Sept 2024)</option>
+<option>Unit Test 1 (July 2024)</option>
+</select>
+<span class="material-symbols-outlined absolute right-2.5 top-1/2 -translate-y-1/2 text-on-surface-variant pointer-events-none text-[18px]">expand_more</span>
+</div>
+</div>
+<div class="h-5 w-px bg-outline-variant hidden sm:block"></div>
+<div class="flex items-center gap-1.5 font-body-sm text-body-sm text-on-surface-variant">
+<span class="w-2 h-2 rounded-full bg-error inline-block"></span>
+<span>Moderation Committee Finalized: 11 Feb 2025</span>
+</div>
+</div>
+<div class="flex items-center gap-space-sm flex-wrap">
+<button class="h-9 px-3 bg-surface-container-lowest border border-outline-variant hover:bg-surface hover:border-on-surface transition-colors rounded font-label-md text-label-md text-on-surface inline-flex items-center gap-1.5">
+<span class="material-symbols-outlined text-[18px] text-on-surface-variant">picture_as_pdf</span>
+          Official Gazette Transcript (PDF)
+        </button>
+<button class="h-9 px-3 bg-surface-container-lowest border border-outline-variant hover:bg-surface hover:border-on-surface transition-colors rounded font-label-md text-label-md text-on-surface inline-flex items-center gap-1.5">
+<span class="material-symbols-outlined text-[18px] text-secondary">calendar_clock</span>
+          Schedule PTM (14 Feb, 10:30 AM)
+        </button>
+<button class="h-9 px-3.5 bg-primary-container text-on-primary hover:bg-primary transition-colors rounded font-label-md text-label-md font-semibold inline-flex items-center gap-1.5" onclick="window.print()">
+<span class="material-symbols-outlined text-[18px]">print</span>
+          Open Print-Ready Parent Summary (PTM)
+        </button>
+</div>
+</div>
+<!-- Student Identification Master Banner -->
+<div class="bg-surface-container-lowest border border-outline-variant rounded p-space-lg flex flex-col gap-space-md">
+<div class="flex flex-col lg:flex-row items-start lg:items-center justify-between gap-space-md pb-space-md border-b border-outline-variant">
+<div class="flex items-start gap-space-md">
+<div class="w-14 h-14 rounded bg-surface-container-high border border-outline-variant flex items-center justify-center font-headline-md text-headline-md text-primary font-bold">
+            AS
+          </div>
+<div class="flex flex-col">
+<div class="flex items-center gap-space-sm">
+<h3 class="font-headline-md text-headline-md text-on-surface font-semibold leading-tight">Aarav Singhania</h3>
+<span class="font-label-sm text-label-sm bg-surface-container-high text-on-surface-variant px-2 py-0.5 rounded border border-outline-variant">Roll No. 14</span>
+</div>
+<div class="flex items-center gap-space-md mt-1 flex-wrap font-body-sm text-body-sm text-on-surface-variant">
+<span>Adm No: <strong class="text-on-surface font-medium">HJ-2021-0428</strong></span>
+<span>•</span>
+<span>CBSE Reg: <strong class="text-on-surface font-medium">DL1730249/0042</strong></span>
+<span>•</span>
+<span>Class &amp; Section: <strong class="text-on-surface font-medium">10 - Section A</strong></span>
+<span>•</span>
+<span>House: <strong class="text-secondary font-medium">Pratap House</strong></span>
+</div>
+</div>
+</div>
+<div class="flex flex-wrap items-center gap-space-xs">
+<!-- Critical Shortfall Alert -->
+<div class="inline-flex items-center gap-1.5 px-3 py-1 rounded bg-tertiary-fixed/30 border border-tertiary/20 text-tertiary">
+<span class="material-symbols-outlined text-[16px]">warning</span>
+<span class="font-label-sm text-label-sm font-semibold">Attendance: 68.4% YTD (&lt;75% CBSE Floor)</span>
+</div>
+<!-- Result Grade -->
+<div class="inline-flex items-center gap-1.5 px-3 py-1 rounded bg-secondary-fixed/40 border border-secondary/20 text-secondary">
+<span class="font-label-sm text-label-sm font-semibold">Result: 54.2% Aggregate (Grade C1)</span>
+</div>
+<!-- Remedial Council Status -->
+<div class="inline-flex items-center gap-1.5 px-3 py-1 rounded bg-surface-container-high border border-outline-variant text-on-surface-variant">
+<span class="w-1.5 h-1.5 rounded-full bg-error"></span>
+<span class="font-label-sm text-label-sm">Remedial Council Assigned (2 Deficit Subjects)</span>
+</div>
+</div>
+</div>
+<!-- Detail Metadata Bar -->
+<div class="grid grid-cols-1 md:grid-cols-3 gap-space-md font-body-sm text-body-sm pt-space-xs">
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-[18px] text-on-surface-variant">supervisor_account</span>
+<span class="text-on-surface-variant">Class Teacher:</span>
+<span class="font-medium text-on-surface">Mrs. Ananya Sharma (PGT English)</span>
+</div>
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-[18px] text-on-surface-variant">family_restroom</span>
+<span class="text-on-surface-variant">Primary Guardian:</span>
+<span class="font-medium text-on-surface">Mr. Rajesh Singhania (Father)</span>
+</div>
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-[18px] text-on-surface-variant">support_agent</span>
+<span class="text-on-surface-variant">Proctorial Cell Status:</span>
+<span class="font-medium text-tertiary">Mandatory Parent Consultation Required</span>
+</div>
+</div>
+</div>
+<!-- Executive Performance & Attendance KPI Strip -->
+<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-space-md">
+<!-- KPI 1: Cumulative Aggregate Score -->
+<div class="bg-surface-container-lowest border border-outline-variant rounded p-space-md flex flex-col justify-between gap-space-sm">
+<div class="flex items-center justify-between text-on-surface-variant">
+<span class="font-label-sm text-label-sm uppercase tracking-wider">Cumulative Aggregate</span>
+<span class="font-label-sm text-label-sm font-semibold text-primary px-1.5 py-0.5 rounded bg-surface-container-high">Grade C1</span>
+</div>
+<div class="flex items-baseline gap-space-xs">
+<span class="font-headline-xl text-headline-xl text-on-surface font-semibold tracking-tight">291.0</span>
+<span class="font-body-md text-body-md text-on-surface-variant">/ 500.0</span>
+<span class="font-headline-sm text-headline-sm text-on-surface font-semibold ml-auto font-tabular-data">54.2%</span>
+</div>
+<div class="pt-space-xs border-t border-outline-variant/60 flex flex-col gap-0.5 font-body-sm text-body-sm">
+<div class="flex items-center justify-between">
+<span class="text-error font-medium inline-flex items-center gap-0.5">
+<span class="material-symbols-outlined text-[16px]">trending_down</span> -13.8%
+            </span>
+<span class="text-on-surface-variant">vs Term I (68.0%)</span>
+</div>
+<div class="flex items-center justify-between text-on-surface-variant">
+<span>Class 10-A Mean:</span>
+<span class="font-medium font-tabular-data text-on-surface">74.2% (371.0)</span>
+</div>
+</div>
+</div>
+<!-- KPI 2: Core Subject Clearance -->
+<div class="bg-surface-container-lowest border border-outline-variant rounded p-space-md flex flex-col justify-between gap-space-sm">
+<div class="flex items-center justify-between text-on-surface-variant">
+<span class="font-label-sm text-label-sm uppercase tracking-wider">Subject Clearance</span>
+<span class="font-label-sm text-label-sm font-medium px-1.5 py-0.5 rounded bg-error-container/60 text-error">Passing Floor: ≥33%</span>
+</div>
+<div class="flex items-baseline gap-space-xs">
+<span class="font-headline-xl text-headline-xl text-primary font-semibold tracking-tight">3</span>
+<span class="font-body-md text-body-md text-on-surface-variant">Passed</span>
+<span class="mx-1.5 text-outline-variant">/</span>
+<span class="font-headline-xl text-headline-xl text-error font-semibold tracking-tight">2</span>
+<span class="font-body-md text-body-md text-error">Deficit</span>
+</div>
+<div class="pt-space-xs border-t border-outline-variant/60 flex flex-col gap-0.5 font-body-sm text-body-sm">
+<div class="flex items-center justify-between text-on-surface-variant">
+<span>Cleared:</span>
+<span class="text-primary font-medium truncate max-w-[150px]">Eng (74), Hin (64), SSt (68)</span>
+</div>
+<div class="flex items-center justify-between text-on-surface-variant">
+<span>Deficit:</span>
+<span class="text-error font-medium truncate max-w-[150px]">Math (41), Sci (44)</span>
+</div>
+</div>
+</div>
+<!-- KPI 3: Attendance for Evaluation Period -->
+<div class="bg-surface-container-lowest border border-outline-variant rounded p-space-md flex flex-col justify-between gap-space-sm">
+<div class="flex items-center justify-between text-on-surface-variant">
+<span class="font-label-sm text-label-sm uppercase tracking-wider">Session Attendance</span>
+<span class="font-label-sm text-label-sm font-semibold px-1.5 py-0.5 rounded bg-tertiary-fixed/50 text-tertiary">Statutory Floor: 75%</span>
+</div>
+<div class="flex items-baseline gap-space-xs">
+<span class="font-headline-xl text-headline-xl text-on-surface font-semibold tracking-tight">97</span>
+<span class="font-body-md text-body-md text-on-surface-variant">/ 142 Days</span>
+<span class="font-headline-sm text-headline-sm text-tertiary font-semibold ml-auto font-tabular-data">68.4%</span>
+</div>
+<div class="pt-space-xs border-t border-outline-variant/60 flex flex-col gap-0.5 font-body-sm text-body-sm">
+<div class="flex items-center justify-between text-on-surface-variant">
+<span class="text-error font-medium">33 Unexcused Absences</span>
+<span>12 Approved Med</span>
+</div>
+<div class="flex items-center justify-between text-on-surface-variant">
+<span>CBSE Deficit:</span>
+<span class="text-error font-semibold font-tabular-data">-6.6% below floor</span>
+</div>
+</div>
+</div>
+<!-- KPI 4: Active Interventions -->
+<div class="bg-surface-container-lowest border border-outline-variant rounded p-space-md flex flex-col justify-between gap-space-sm">
+<div class="flex items-center justify-between text-on-surface-variant">
+<span class="font-label-sm text-label-sm uppercase tracking-wider">Active Directives</span>
+<span class="font-label-sm text-label-sm font-semibold px-1.5 py-0.5 rounded bg-secondary-fixed/50 text-secondary-fixed-variant">Mandatory</span>
+</div>
+<div class="flex items-baseline gap-space-xs">
+<span class="font-headline-xl text-headline-xl text-secondary font-semibold tracking-tight">2</span>
+<span class="font-body-md text-body-md text-on-surface">Remedials Active</span>
+</div>
+<div class="pt-space-xs border-t border-outline-variant/60 flex flex-col gap-0.5 font-body-sm text-body-sm">
+<div class="truncate text-on-surface-variant">
+            • <strong class="text-on-surface">Math #M-10A</strong> (Dr. Goyal, 15:00 Daily)
+          </div>
+<div class="truncate text-on-surface-variant">
+            • <strong class="text-on-surface">Sci Practical Catchup</strong> (15 Feb 10:00)
+          </div>
+</div>
+</div>
+</div>
+<!-- Comprehensive Subject-Wise Assessment & Trajectory Ledger -->
+<div class="bg-surface-container-lowest border border-outline-variant rounded flex flex-col overflow-hidden">
+<div class="px-space-lg py-space-md border-b border-outline-variant bg-surface-container-low flex flex-col sm:flex-row sm:items-center justify-between gap-space-xs">
+<div>
+<h4 class="font-headline-sm text-headline-sm text-on-surface font-semibold">CBSE Subject Assessment &amp; Historical Trajectory</h4>
+<p class="font-body-sm text-body-sm text-on-surface-variant">Official record for Class 10 Board eligibility and council oversight</p>
+</div>
+<div class="flex items-center gap-space-sm font-label-sm text-label-sm text-on-surface-variant">
+<span class="inline-flex items-center gap-1"><span class="w-2.5 h-2.5 rounded-sm bg-tertiary-fixed border border-tertiary"></span> Core Deficit</span>
+<span class="inline-flex items-center gap-1"><span class="w-2.5 h-2.5 rounded-sm bg-secondary-fixed border border-secondary"></span> Practical Shortfall</span>
+<span class="inline-flex items-center gap-1"><span class="w-2.5 h-2.5 rounded-sm bg-surface-container-high border border-outline-variant"></span> Cleared</span>
+</div>
+</div>
+<div class="overflow-x-auto">
+<table class="w-full text-left border-collapse font-body-md text-body-md">
+<thead>
+<tr class="bg-surface-container border-b border-outline-variant font-label-sm text-label-sm text-on-surface-variant uppercase tracking-wider">
+<th class="py-2.5 px-space-md">Subject &amp; Code</th>
+<th class="py-2.5 px-space-md">Faculty Evaluator</th>
+<th class="py-2.5 px-space-md text-right">Periodic / Theory</th>
+<th class="py-2.5 px-space-md text-right">Internal / Practical</th>
+<th class="py-2.5 px-space-md text-right">Scaled Total (/100)</th>
+<th class="py-2.5 px-space-md text-center">Grade</th>
+<th class="py-2.5 px-space-md text-right">Term I</th>
+<th class="py-2.5 px-space-md text-right">Delta</th>
+<th class="py-2.5 px-space-md text-right">Sec. Mean</th>
+<th class="py-2.5 px-space-md">Observation &amp; Regulatory Flag</th>
+</tr>
+</thead>
+<tbody class="divide-y divide-outline-variant text-on-surface">
+<!-- Row 1: Mathematics -->
+<tr class="hover:bg-surface-container-low transition-colors bg-surface-container-low/30">
+<td class="py-3 px-space-md font-medium">
+<div class="font-semibold text-on-surface">Mathematics Standard</div>
+<div class="font-body-sm text-body-sm text-on-surface-variant">Code: 041</div>
+</td>
+<td class="py-3 px-space-md font-body-sm text-body-sm text-on-surface-variant">
+                Dr. N. Goyal <span class="text-label-sm text-on-surface-variant/80 block">PGT Mathematics</span>
+</td>
+<td class="py-3 px-space-md text-right font-tabular-data">
+<span class="font-semibold text-error">16.0</span> <span class="text-on-surface-variant text-body-sm">/ 40</span>
+</td>
+<td class="py-3 px-space-md text-right font-tabular-data">
+                8.0 <span class="text-on-surface-variant text-body-sm">/ 10</span>
+</td>
+<td class="py-3 px-space-md text-right font-tabular-data">
+<span class="font-semibold text-error text-body-lg">41.0</span> <span class="text-on-surface-variant text-body-sm">/ 100</span>
+</td>
+<td class="py-3 px-space-md text-center">
+<span class="inline-block px-2 py-0.5 rounded font-label-sm text-label-sm bg-tertiary-fixed/60 text-tertiary border border-tertiary/30 font-semibold">D</span>
+</td>
+<td class="py-3 px-space-md text-right font-tabular-data text-on-surface-variant">
+                62.0
+              </td>
+<td class="py-3 px-space-md text-right font-tabular-data text-error font-medium">
+                -21.0% ↓
+              </td>
+<td class="py-3 px-space-md text-right font-tabular-data text-on-surface-variant">
+                69.6
+              </td>
+<td class="py-3 px-space-md">
+<div class="flex flex-col gap-1 max-w-md">
+<div class="inline-flex items-center gap-1 self-start px-2 py-0.5 rounded bg-tertiary-fixed/40 text-tertiary border border-tertiary/20 font-label-sm text-label-sm font-semibold">
+<span class="material-symbols-outlined text-[14px]">error</span>
+                    CORE DEFICIT • REMEDIAL MANDATED
+                  </div>
+<p class="font-body-sm text-body-sm text-on-surface-variant leading-relaxed">
+                    Aarav shows conceptual difficulty in quadratic equations and coordinate geometry proofs. Participation dropped with morning roll-call absences. Mandatory Remedial Batch #M-10A assigned daily 15:00–15:45 in Rm 102.
+                  </p>
+</div>
+</td>
+</tr>
+<!-- Row 2: Science -->
+<tr class="hover:bg-surface-container-low transition-colors bg-surface-container-low/20">
+<td class="py-3 px-space-md font-medium">
+<div class="font-semibold text-on-surface">Science (Theory &amp; Prac)</div>
+<div class="font-body-sm text-body-sm text-on-surface-variant">Code: 086</div>
+</td>
+<td class="py-3 px-space-md font-body-sm text-body-sm text-on-surface-variant">
+                Mrs. S. Banerjee <span class="text-label-sm text-on-surface-variant/80 block">PGT Science</span>
+</td>
+<td class="py-3 px-space-md text-right font-tabular-data">
+                21.0 <span class="text-on-surface-variant text-body-sm">/ 50</span>
+</td>
+<td class="py-3 px-space-md text-right font-tabular-data">
+<span class="text-secondary font-medium">11.0</span> <span class="text-on-surface-variant text-body-sm">/ 20</span>
+</td>
+<td class="py-3 px-space-md text-right font-tabular-data">
+<span class="font-semibold text-secondary text-body-lg">44.0</span> <span class="text-on-surface-variant text-body-sm">/ 100</span>
+</td>
+<td class="py-3 px-space-md text-center">
+<span class="inline-block px-2 py-0.5 rounded font-label-sm text-label-sm bg-secondary-fixed/50 text-secondary-fixed-variant border border-secondary/30 font-semibold">D</span>
+</td>
+<td class="py-3 px-space-md text-right font-tabular-data text-on-surface-variant">
+                59.0
+              </td>
+<td class="py-3 px-space-md text-right font-tabular-data text-error font-medium">
+                -15.0% ↓
+              </td>
+<td class="py-3 px-space-md text-right font-tabular-data text-on-surface-variant">
+                71.4
+              </td>
+<td class="py-3 px-space-md">
+<div class="flex flex-col gap-1 max-w-md">
+<div class="inline-flex items-center gap-1 self-start px-2 py-0.5 rounded bg-secondary-fixed/40 text-secondary border border-secondary/30 font-label-sm text-label-sm font-semibold">
+<span class="material-symbols-outlined text-[14px]">science</span>
+                    PRACTICAL BACKLOG • CATCHUP SCHEDULED
+                  </div>
+<p class="font-body-sm text-body-sm text-on-surface-variant leading-relaxed">
+                    Sound basic physics concepts, but practical records and Ohm's law verification log were unsubmitted due to medical leaves. Saturday catchup lab scheduled for Feb 15 at 10:00 AM.
+                  </p>
+</div>
+</td>
+</tr>
+<!-- Row 3: Social Science -->
+<tr class="hover:bg-surface-container-low transition-colors">
+<td class="py-3 px-space-md font-medium">
+<div class="font-semibold text-on-surface">Social Science</div>
+<div class="font-body-sm text-body-sm text-on-surface-variant">Code: 087</div>
+</td>
+<td class="py-3 px-space-md font-body-sm text-body-sm text-on-surface-variant">
+                Mr. R. P. Chauhan <span class="text-label-sm text-on-surface-variant/80 block">TGT Social Science</span>
+</td>
+<td class="py-3 px-space-md text-right font-tabular-data">
+                36.0 <span class="text-on-surface-variant text-body-sm">/ 50</span>
+</td>
+<td class="py-3 px-space-md text-right font-tabular-data">
+                16.0 <span class="text-on-surface-variant text-body-sm">/ 20</span>
+</td>
+<td class="py-3 px-space-md text-right font-tabular-data">
+<span class="font-semibold text-on-surface text-body-lg">68.0</span> <span class="text-on-surface-variant text-body-sm">/ 100</span>
+</td>
+<td class="py-3 px-space-md text-center">
+<span class="inline-block px-2 py-0.5 rounded font-label-sm text-label-sm bg-surface-container-high text-on-surface border border-outline-variant font-semibold">B2</span>
+</td>
+<td class="py-3 px-space-md text-right font-tabular-data text-on-surface-variant">
+                71.0
+              </td>
+<td class="py-3 px-space-md text-right font-tabular-data text-on-surface-variant">
+                -3.0%
+              </td>
+<td class="py-3 px-space-md text-right font-tabular-data text-on-surface-variant">
+                76.8
+              </td>
+<td class="py-3 px-space-md">
+<div class="flex flex-col gap-1 max-w-md">
+<div class="inline-flex items-center gap-1 self-start px-2 py-0.5 rounded bg-surface-container-high text-on-surface-variant border border-outline-variant font-label-sm text-label-sm">
+                    SATISFACTORY CLEARANCE
+                  </div>
+<p class="font-body-sm text-body-sm text-on-surface-variant leading-relaxed">
+                    Demonstrates consistent grasp of Indian national movement history. Needs greater precision in map-pointing for Indian mineral resources and agricultural distribution.
+                  </p>
+</div>
+</td>
+</tr>
+<!-- Row 4: English Language & Literature -->
+<tr class="hover:bg-surface-container-low transition-colors bg-primary/5">
+<td class="py-3 px-space-md font-medium">
+<div class="font-semibold text-on-surface">English Lang &amp; Literature</div>
+<div class="font-body-sm text-body-sm text-on-surface-variant">Code: 184</div>
+</td>
+<td class="py-3 px-space-md font-body-sm text-body-sm text-on-surface-variant">
+                Mrs. Ananya Sharma <span class="text-label-sm text-primary font-medium block">PGT English / Class Teacher</span>
+</td>
+<td class="py-3 px-space-md text-right font-tabular-data">
+                39.0 <span class="text-on-surface-variant text-body-sm">/ 50</span>
+</td>
+<td class="py-3 px-space-md text-right font-tabular-data">
+                17.0 <span class="text-on-surface-variant text-body-sm">/ 20</span>
+</td>
+<td class="py-3 px-space-md text-right font-tabular-data">
+<span class="font-semibold text-primary text-body-lg">74.0</span> <span class="text-on-surface-variant text-body-sm">/ 100</span>
+</td>
+<td class="py-3 px-space-md text-center">
+<span class="inline-block px-2 py-0.5 rounded font-label-sm text-label-sm bg-primary-fixed/50 text-primary border border-primary/20 font-semibold">B1</span>
+</td>
+<td class="py-3 px-space-md text-right font-tabular-data text-on-surface-variant">
+                72.0
+              </td>
+<td class="py-3 px-space-md text-right font-tabular-data text-primary font-medium">
+                +2.0% ↑
+              </td>
+<td class="py-3 px-space-md text-right font-tabular-data text-on-surface-variant">
+                78.5
+              </td>
+<td class="py-3 px-space-md">
+<div class="flex flex-col gap-1 max-w-md">
+<div class="inline-flex items-center gap-1 self-start px-2 py-0.5 rounded bg-primary-fixed/40 text-primary border border-primary/20 font-label-sm text-label-sm font-semibold">
+<span class="material-symbols-outlined text-[14px]">check_circle</span>
+                    PROFICIENT • ON TRACK
+                  </div>
+<p class="font-body-sm text-body-sm text-on-surface-variant leading-relaxed">
+                    Expressive oral articulation and strong vocabulary in formal debate. Reading comprehension and literature commentary are solid. Writing speed requires pacing adjustment.
+                  </p>
+</div>
+</td>
+</tr>
+<!-- Row 5: Hindi Course A -->
+<tr class="hover:bg-surface-container-low transition-colors">
+<td class="py-3 px-space-md font-medium">
+<div class="font-semibold text-on-surface">Hindi Course A</div>
+<div class="font-body-sm text-body-sm text-on-surface-variant">Code: 002</div>
+</td>
+<td class="py-3 px-space-md font-body-sm text-body-sm text-on-surface-variant">
+                Mr. K. L. Sharma <span class="text-label-sm text-on-surface-variant/80 block">TGT Hindi</span>
+</td>
+<td class="py-3 px-space-md text-right font-tabular-data">
+                34.0 <span class="text-on-surface-variant text-body-sm">/ 50</span>
+</td>
+<td class="py-3 px-space-md text-right font-tabular-data">
+                15.0 <span class="text-on-surface-variant text-body-sm">/ 20</span>
+</td>
+<td class="py-3 px-space-md text-right font-tabular-data">
+<span class="font-semibold text-on-surface text-body-lg">64.0</span> <span class="text-on-surface-variant text-body-sm">/ 100</span>
+</td>
+<td class="py-3 px-space-md text-center">
+<span class="inline-block px-2 py-0.5 rounded font-label-sm text-label-sm bg-surface-container-high text-on-surface border border-outline-variant font-semibold">B2</span>
+</td>
+<td class="py-3 px-space-md text-right font-tabular-data text-on-surface-variant">
+                67.0
+              </td>
+<td class="py-3 px-space-md text-right font-tabular-data text-on-surface-variant">
+                -3.0%
+              </td>
+<td class="py-3 px-space-md text-right font-tabular-data text-on-surface-variant">
+                74.7
+              </td>
+<td class="py-3 px-space-md">
+<div class="flex flex-col gap-1 max-w-md">
+<div class="inline-flex items-center gap-1 self-start px-2 py-0.5 rounded bg-surface-container-high text-on-surface-variant border border-outline-variant font-label-sm text-label-sm">
+                    SATISFACTORY CLEARANCE
+                  </div>
+<p class="font-body-sm text-body-sm text-on-surface-variant leading-relaxed">
+                    Poetry appreciation is well articulated. Applied Hindi grammar (sandhi and samas) requires regular notebook drills.
+                  </p>
+</div>
+</td>
+</tr>
+</tbody>
+<!-- Institutional Summary Row -->
+<tfoot>
+<tr class="bg-surface-container-high font-semibold text-on-surface border-t-2 border-outline-variant">
+<td class="py-3 px-space-md font-label-md text-label-md" colspan="2">
+                COMPOSITE EVALUATION SUMMARY
+              </td>
+<td class="py-3 px-space-md text-right font-body-sm text-body-sm text-on-surface-variant" colspan="2">
+                Net Cumulative Aggregate:
+              </td>
+<td class="py-3 px-space-md text-right font-tabular-data">
+<span class="text-headline-sm text-headline-sm font-bold text-on-surface">291.0</span> <span class="font-normal text-on-surface-variant">/ 500</span>
+</td>
+<td class="py-3 px-space-md text-center">
+<span class="font-label-sm text-label-sm bg-surface-container-lowest text-on-surface px-2 py-0.5 rounded border border-outline-variant font-bold">54.2%</span>
+</td>
+<td class="py-3 px-space-md text-right font-tabular-data font-medium text-on-surface-variant">
+                340.0
+              </td>
+<td class="py-3 px-space-md text-right font-tabular-data text-error font-bold">
+                -9.8% Shift
+              </td>
+<td class="py-3 px-space-md text-right font-tabular-data text-primary font-bold">
+                371.0 (74.2%)
+              </td>
+<td class="py-3 px-space-md font-label-sm text-label-sm text-on-surface-variant">
+                Institutional Floor: ≥165.0 (33.0%) Marks
+              </td>
+</tr>
+</tfoot>
+</table>
+</div>
+</div>
+<!-- Compact Visual Comparison & Period Trajectory Section -->
+<div class="grid grid-cols-1 lg:grid-cols-2 gap-space-lg">
+<!-- Card 1: Horizontal Benchmark Bars -->
+<div class="bg-surface-container-lowest border border-outline-variant rounded p-space-lg flex flex-col justify-between">
+<div>
+<div class="flex items-center justify-between pb-space-sm border-b border-outline-variant">
+<h4 class="font-headline-sm text-headline-sm text-on-surface font-semibold">Subject Benchmark Variance</h4>
+<span class="font-label-sm text-label-sm text-on-surface-variant">Aarav vs Class 10-A Mean</span>
+</div>
+<div class="flex flex-col gap-space-md mt-space-md">
+<!-- Item 1: Math -->
+<div class="flex flex-col gap-1">
+<div class="flex justify-between font-label-sm text-label-sm">
+<span class="font-semibold text-on-surface">Mathematics Standard (041)</span>
+<span class="font-tabular-data text-error font-medium">41% vs Class 69.6% (<span class="text-error">-28.6%</span>)</span>
+</div>
+<div class="w-full bg-surface-container-high h-3 rounded relative overflow-hidden flex items-center">
+<!-- Minimum pass marker (33%) -->
+<div class="absolute left-[33%] top-0 bottom-0 w-0.5 bg-outline z-10" title="33% Passing Floor"></div>
+<!-- Aarav bar -->
+<div class="bg-tertiary-container h-full rounded-l" style="width: 41%;"></div>
+<!-- Class mean point -->
+<div class="absolute left-[69.6%] top-0 bottom-0 w-1 bg-primary z-10" title="Class Mean: 69.6%"></div>
+</div>
+<div class="flex justify-between font-body-sm text-[10px] text-on-surface-variant">
+<span>0%</span>
+<span class="text-outline">Floor: 33%</span>
+<span class="text-primary font-medium">Class Mean: 69.6%</span>
+<span>100%</span>
+</div>
+</div>
+<!-- Item 2: Science -->
+<div class="flex flex-col gap-1">
+<div class="flex justify-between font-label-sm text-label-sm">
+<span class="font-semibold text-on-surface">Science (086)</span>
+<span class="font-tabular-data text-secondary font-medium">44% vs Class 71.4% (<span class="text-error">-27.4%</span>)</span>
+</div>
+<div class="w-full bg-surface-container-high h-3 rounded relative overflow-hidden flex items-center">
+<div class="absolute left-[33%] top-0 bottom-0 w-0.5 bg-outline z-10"></div>
+<div class="bg-secondary-fixed-dim h-full rounded-l" style="width: 44%;"></div>
+<div class="absolute left-[71.4%] top-0 bottom-0 w-1 bg-primary z-10"></div>
+</div>
+<div class="flex justify-between font-body-sm text-[10px] text-on-surface-variant">
+<span>0%</span>
+<span class="text-outline">Floor: 33%</span>
+<span class="text-primary font-medium">Class Mean: 71.4%</span>
+<span>100%</span>
+</div>
+</div>
+<!-- Item 3: Social Science -->
+<div class="flex flex-col gap-1">
+<div class="flex justify-between font-label-sm text-label-sm">
+<span class="font-semibold text-on-surface">Social Science (087)</span>
+<span class="font-tabular-data text-on-surface-variant">68% vs Class 76.8% (-8.8%)</span>
+</div>
+<div class="w-full bg-surface-container-high h-3 rounded relative overflow-hidden flex items-center">
+<div class="absolute left-[33%] top-0 bottom-0 w-0.5 bg-outline z-10"></div>
+<div class="bg-surface-tint/60 h-full rounded-l" style="width: 68%;"></div>
+<div class="absolute left-[76.8%] top-0 bottom-0 w-1 bg-primary z-10"></div>
+</div>
+<div class="flex justify-between font-body-sm text-[10px] text-on-surface-variant">
+<span>0%</span>
+<span class="text-outline">Floor: 33%</span>
+<span class="text-primary font-medium">Class Mean: 76.8%</span>
+<span>100%</span>
+</div>
+</div>
+<!-- Item 4: English -->
+<div class="flex flex-col gap-1">
+<div class="flex justify-between font-label-sm text-label-sm">
+<span class="font-semibold text-on-surface">English Language &amp; Lit (184)</span>
+<span class="font-tabular-data text-primary font-medium">74% vs Class 78.5% (-4.5%)</span>
+</div>
+<div class="w-full bg-surface-container-high h-3 rounded relative overflow-hidden flex items-center">
+<div class="absolute left-[33%] top-0 bottom-0 w-0.5 bg-outline z-10"></div>
+<div class="bg-primary-container h-full rounded-l" style="width: 74%;"></div>
+<div class="absolute left-[78.5%] top-0 bottom-0 w-1 bg-primary z-10"></div>
+</div>
+<div class="flex justify-between font-body-sm text-[10px] text-on-surface-variant">
+<span>0%</span>
+<span class="text-outline">Floor: 33%</span>
+<span class="text-primary font-medium">Class Mean: 78.5%</span>
+<span>100%</span>
+</div>
+</div>
+<!-- Item 5: Hindi -->
+<div class="flex flex-col gap-1">
+<div class="flex justify-between font-label-sm text-label-sm">
+<span class="font-semibold text-on-surface">Hindi Course A (002)</span>
+<span class="font-tabular-data text-on-surface-variant">64% vs Class 74.7% (-10.7%)</span>
+</div>
+<div class="w-full bg-surface-container-high h-3 rounded relative overflow-hidden flex items-center">
+<div class="absolute left-[33%] top-0 bottom-0 w-0.5 bg-outline z-10"></div>
+<div class="bg-surface-tint/60 h-full rounded-l" style="width: 64%;"></div>
+<div class="absolute left-[74.7%] top-0 bottom-0 w-1 bg-primary z-10"></div>
+</div>
+<div class="flex justify-between font-body-sm text-[10px] text-on-surface-variant">
+<span>0%</span>
+<span class="text-outline">Floor: 33%</span>
+<span class="text-primary font-medium">Class Mean: 74.7%</span>
+<span>100%</span>
+</div>
+</div>
+</div>
+</div>
+<div class="mt-space-md pt-space-sm border-t border-outline-variant flex items-center justify-between text-body-sm font-body-sm text-on-surface-variant">
+<div class="flex items-center gap-2">
+<span class="w-2.5 h-2.5 bg-primary rounded-full inline-block"></span>
+<span>Class Mean</span>
+</div>
+<div class="flex items-center gap-2">
+<span class="w-2.5 h-0.5 bg-outline inline-block"></span>
+<span>33% Floor</span>
+</div>
+<div class="flex items-center gap-2">
+<span class="w-2.5 h-2.5 bg-tertiary-container rounded-sm inline-block"></span>
+<span>Deficit Zone (&lt;45%)</span>
+</div>
+</div>
+</div>
+<!-- Card 2: Term Progression & Attendance Direct Correlation Vector -->
+<div class="bg-surface-container-lowest border border-outline-variant rounded p-space-lg flex flex-col justify-between">
+<div>
+<div class="flex items-center justify-between pb-space-sm border-b border-outline-variant">
+<h4 class="font-headline-sm text-headline-sm text-on-surface font-semibold">Attendance &amp; Marks Correlation Vector</h4>
+<span class="font-label-sm text-label-sm text-error font-medium">Steep Inverted Vector</span>
+</div>
+<p class="font-body-sm text-body-sm text-on-surface-variant mt-space-sm mb-space-md">
+            Direct empirical co-relation between sharp session attendance dips and subsequent academic deficit across AY 2024–25 testing milestones.
+          </p>
+<div class="space-y-space-md">
+<!-- Milestone 1 -->
+<div class="flex items-center justify-between p-space-sm rounded bg-surface-container-low border border-outline-variant/60">
+<div class="flex items-center gap-space-sm">
+<span class="w-7 h-7 rounded bg-primary-container text-on-primary font-label-sm text-label-sm flex items-center justify-center font-bold">T1</span>
+<div>
+<div class="font-label-md text-label-md font-semibold text-on-surface">Unit Test 1 (July 2024)</div>
+<div class="font-body-sm text-body-sm text-on-surface-variant">Session Baseline Phase</div>
+</div>
+</div>
+<div class="flex items-center gap-space-lg text-right font-tabular-data">
+<div>
+<div class="font-label-sm text-label-sm text-on-surface-variant">Score</div>
+<div class="font-headline-sm text-headline-sm text-primary font-semibold">71.4%</div>
+</div>
+<div>
+<div class="font-label-sm text-label-sm text-on-surface-variant">Attendance</div>
+<div class="font-headline-sm text-headline-sm text-primary font-semibold">94.2%</div>
+</div>
+</div>
+</div>
+<!-- Milestone 2 -->
+<div class="flex items-center justify-between p-space-sm rounded bg-surface-container-low border border-outline-variant/60">
+<div class="flex items-center gap-space-sm">
+<span class="w-7 h-7 rounded bg-surface-container-high text-on-surface font-label-sm text-label-sm flex items-center justify-center font-bold">HY</span>
+<div>
+<div class="font-label-md text-label-md font-semibold text-on-surface">Half-Yearly Term I (Sept 2024)</div>
+<div class="font-body-sm text-body-sm text-on-surface-variant">Regular Academic Engagement</div>
+</div>
+</div>
+<div class="flex items-center gap-space-lg text-right font-tabular-data">
+<div>
+<div class="font-label-sm text-label-sm text-on-surface-variant">Score</div>
+<div class="font-headline-sm text-headline-sm text-on-surface font-semibold">68.0%</div>
+</div>
+<div>
+<div class="font-label-sm text-label-sm text-on-surface-variant">Attendance</div>
+<div class="font-headline-sm text-headline-sm text-on-surface font-semibold">88.0%</div>
+</div>
+</div>
+</div>
+<!-- Milestone 3 -->
+<div class="flex items-center justify-between p-space-sm rounded bg-secondary-fixed/20 border border-secondary/20">
+<div class="flex items-center gap-space-sm">
+<span class="w-7 h-7 rounded bg-secondary-container text-on-secondary-container font-label-sm text-label-sm flex items-center justify-center font-bold">T2</span>
+<div>
+<div class="font-label-md text-label-md font-semibold text-on-surface">Unit Test 2 (Nov 2024)</div>
+<div class="font-body-sm text-body-sm text-secondary font-medium">Initial Attendance Slippage Observed</div>
+</div>
+</div>
+<div class="flex items-center gap-space-lg text-right font-tabular-data">
+<div>
+<div class="font-label-sm text-label-sm text-on-surface-variant">Score</div>
+<div class="font-headline-sm text-headline-sm text-secondary font-semibold">58.5%</div>
+</div>
+<div>
+<div class="font-label-sm text-label-sm text-on-surface-variant">Attendance</div>
+<div class="font-headline-sm text-headline-sm text-secondary font-semibold">71.5%</div>
+</div>
+</div>
+</div>
+<!-- Milestone 4 -->
+<div class="flex items-center justify-between p-space-sm rounded bg-tertiary-fixed/20 border border-tertiary/20">
+<div class="flex items-center gap-space-sm">
+<span class="w-7 h-7 rounded bg-tertiary text-on-tertiary font-label-sm text-label-sm flex items-center justify-center font-bold">MT</span>
+<div>
+<div class="font-label-md text-label-md font-semibold text-on-surface">Mid-Term II (Jan–Feb 2025)</div>
+<div class="font-body-sm text-body-sm text-tertiary font-medium">Statutory Intervention Level Reached</div>
+</div>
+</div>
+<div class="flex items-center gap-space-lg text-right font-tabular-data">
+<div>
+<div class="font-label-sm text-label-sm text-on-surface-variant">Score</div>
+<div class="font-headline-sm text-headline-sm text-tertiary font-semibold">54.2%</div>
+</div>
+<div>
+<div class="font-label-sm text-label-sm text-on-surface-variant">Attendance</div>
+<div class="font-headline-sm text-headline-sm text-tertiary font-semibold">64.8%</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+<div class="mt-space-md pt-space-sm border-t border-outline-variant flex items-center justify-between text-body-sm font-body-sm text-on-surface-variant">
+<span class="text-tertiary font-medium">Cumulative Shift: -17.2% Mark Drop | -29.4% Attendance Loss</span>
+<span class="font-label-sm text-label-sm text-primary">Intervention Recovery Target: ≥75.0%</span>
+</div>
+</div>
+</div>
+<!-- Authorized Class Teacher Synthesis & PTM Discussion Section -->
+<div class="bg-surface-container-lowest border border-outline-variant rounded p-space-lg flex flex-col gap-space-md">
+<div class="flex flex-col sm:flex-row sm:items-center justify-between pb-space-sm border-b border-outline-variant gap-space-xs">
+<div class="flex items-center gap-space-sm">
+<span class="material-symbols-outlined text-primary text-[22px]">assignment_ind</span>
+<h4 class="font-headline-sm text-headline-sm text-on-surface font-semibold">Class Teacher Synthesis &amp; PTM Conference Agenda</h4>
+</div>
+<div class="font-label-sm text-label-sm text-on-surface-variant">
+          Compiled by: <strong class="text-on-surface">Mrs. Ananya Sharma</strong> (EMP-1042)
+        </div>
+</div>
+<div class="grid grid-cols-1 lg:grid-cols-12 gap-space-lg">
+<!-- Synthesis Editorial Column -->
+<div class="lg:col-span-7 flex flex-col gap-space-sm font-body-md text-body-md text-on-surface leading-relaxed">
+<span class="font-label-sm text-label-sm uppercase tracking-wider text-on-surface-variant font-semibold">
+            Executive Academic Observation (Guardian Dossier)
+          </span>
+<blockquote class="p-space-md bg-surface-container-low border-l-4 border-primary rounded font-body-md text-body-md text-on-surface italic">
+            "Aarav is an intellectually capable student with distinct strengths in English debate and historical inquiry. However, an acute 4-week phase of unexcused morning absences (33 sessions) has created severe conceptual gaps in Mathematics (Dr. Goyal) and incomplete laboratory practical submissions in Science (Mrs. Banerjee). With 14 consecutive instructional sessions attended and dedicated participation in the 15:00 IST remedial clinic, Aarav can comfortably restore his CBSE eligibility threshold (&gt;75%) and rebound to his 68%+ baseline before the Board Examinations."
+          </blockquote>
+<div class="flex items-center gap-space-md text-body-sm text-on-surface-variant pt-space-xs">
+<span class="inline-flex items-center gap-1">
+<span class="material-symbols-outlined text-[16px] text-primary">verified</span> Verified against Master Ledger
+            </span>
+<span>•</span>
+<span>Class Teacher Signature Recorded</span>
+</div>
+</div>
+<!-- Action Items for Parent Conference -->
+<div class="lg:col-span-5 bg-surface-container-low border border-outline-variant rounded p-space-md flex flex-col justify-between">
+<div class="flex flex-col gap-space-sm">
+<span class="font-label-sm text-label-sm uppercase tracking-wider text-secondary font-semibold flex items-center gap-1.5">
+<span class="material-symbols-outlined text-[16px]">checklist</span>
+              Action Items for Parent Conference (14 Feb)
+            </span>
+<ol class="space-y-space-sm font-body-sm text-body-sm text-on-surface">
+<li class="flex items-start gap-space-xs">
+<span class="font-label-sm text-label-sm font-bold text-secondary bg-surface-container-lowest px-1.5 py-0.5 rounded border border-outline-variant">1</span>
+<div>
+<strong class="font-semibold text-on-surface">Daily Attendance Attestation:</strong>
+<span class="text-on-surface-variant block">Guardian commitment to daily roll verification via HanuJai Guardian Portal by 08:30 AM.</span>
+</div>
+</li>
+<li class="flex items-start gap-space-xs">
+<span class="font-label-sm text-label-sm font-bold text-secondary bg-surface-container-lowest px-1.5 py-0.5 rounded border border-outline-variant">2</span>
+<div>
+<strong class="font-semibold text-on-surface">Math Remedial Batch #M-10A:</strong>
+<span class="text-on-surface-variant block">Mandatory in-person participation with Dr. Goyal (Monday–Thursday, 15:00–15:45 IST, Rm 102).</span>
+</div>
+</li>
+<li class="flex items-start gap-space-xs">
+<span class="font-label-sm text-label-sm font-bold text-secondary bg-surface-container-lowest px-1.5 py-0.5 rounded border border-outline-variant">3</span>
+<div>
+<strong class="font-semibold text-on-surface">Compensatory Science Practical Record:</strong>
+<span class="text-on-surface-variant block">Physical submission of verified Ohm's Law and Optics logs on Saturday, 15 February 2025 at 10:00 AM.</span>
+</div>
+</li>
+</ol>
+</div>
+<div class="mt-space-md pt-space-xs border-t border-outline-variant flex items-center justify-between text-body-sm text-on-surface-variant">
+<span>PTM Room: <strong class="text-on-surface">Senior Annex 10-A</strong></span>
+<span>Slot: <strong class="text-primary font-semibold">10:30–10:50 AM</strong></span>
+</div>
+</div>
+</div>
+</div>
+<!-- Administrative Institutional Seal & Signoff Box -->
+<div class="bg-surface-container-low border border-outline-variant rounded p-space-md flex flex-col md:flex-row items-center justify-between gap-space-md font-body-sm text-body-sm text-on-surface-variant">
+<div class="flex items-center gap-space-md">
+<div class="w-10 h-10 rounded bg-surface-container-highest border border-outline-variant flex items-center justify-center text-primary">
+<span class="material-symbols-outlined text-[24px]">verified_user</span>
+</div>
+<div class="flex flex-col">
+<span class="font-label-md text-label-md text-on-surface font-semibold">Official Institutional Authentication</span>
+<span>Class Teacher: Mrs. Ananya Sharma (EMP-1042) • Digitally Signed: 12 Feb 2025, 14:22 IST</span>
+<span>Academic Clearance: Dr. V. K. Mathur (Senior Wing Vice-Principal, Examination Board)</span>
+</div>
+</div>
+<div class="text-right flex flex-col md:items-end">
+<span class="font-label-sm text-label-sm uppercase tracking-wider text-on-surface-variant">Statutory Compliance</span>
+<span class="text-[11px] max-w-sm text-on-surface-variant leading-tight">
+          Strictly institutional confidential record. Internal disciplinary logs remain sequestered in the Proctorial Administrative Vault pursuant to Rule SEC-402.
+        </span>
+</div>
+</div>
+</div>
+</div></main></div></body></html>

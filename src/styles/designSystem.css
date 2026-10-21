@@ -1,0 +1,465 @@
+/**
+ * HanuJai High School ERP — Design System & Tokens
+ * Based directly on: Designs/institutional_rigor/DESIGN.md
+ * Philosophy: Restrained Utilitarian Modernism
+ */
+
+:root {
+  /* Surface Architecture */
+  --hhs-canvas: #f7f7f4;           /* Warm paper ground */
+  --hhs-surface: #ffffff;          /* Card & panel surface */
+  --hhs-surface-muted: #e9ece8;    /* Table headers, read-only containers */
+  --hhs-surface-hover: #f1f3f0;
+  
+  /* Typographic Hierarchy & Contrast */
+  --hhs-text-primary: #202b2a;     /* Deep graphite green-charcoal */
+  --hhs-text-secondary: #5d6b68;   /* Balanced neutral green-slate */
+  --hhs-text-muted: #83918e;       /* Disabled or placeholder */
+  
+  /* Borders & Dividers */
+  --hhs-border: #dfe3df;           /* 1px structural boundary */
+  --hhs-border-strong: #c0c8c4;
+  --hhs-border-focus: #31594e;
+  
+  /* Brand & Semantics */
+  --hhs-primary: #31594e;          /* Pine green */
+  --hhs-primary-hover: #284a41;
+  --hhs-primary-active: #203b34;
+  --hhs-primary-light: #eaf0ee;
+  --hhs-primary-text: #1b3830;
+  
+  --hhs-accent: #d7a46a;           /* Desert ochre (caution / pending) */
+  --hhs-accent-text: #9e6e36;
+  --hhs-accent-light: #fbf5ee;
+  
+  --hhs-danger: #c85a54;           /* Terracotta red (critical / unexcused) */
+  --hhs-danger-hover: #b04b46;
+  --hhs-danger-text: #a83d38;
+  --hhs-danger-light: #faeceb;
+  
+  --hhs-info: #3b7188;             /* Slate blue info */
+  --hhs-info-light: #edf5f9;
+  
+  /* Layout Metrics */
+  --hhs-sidebar-width: 240px;
+  --hhs-sidebar-collapsed: 68px;
+  --hhs-topbar-height: 60px;
+  --hhs-control-height: 36px;
+  --hhs-control-height-lg: 40px;
+  --hhs-control-height-sm: 32px;
+  
+  /* Radius Metrics */
+  --hhs-radius-sm: 2px;
+  --hhs-radius-base: 4px;          /* Inputs, buttons, tags */
+  --hhs-radius-container: 6px;     /* Tables, cards */
+  --hhs-radius-modal: 8px;         /* Modals & dialogs */
+  --hhs-radius-pill: 9999px;
+  
+  /* Architectural Shadows */
+  --hhs-shadow-level-1: none;
+  --hhs-shadow-level-2: 0 2px 4px rgba(32, 43, 42, 0.06), 0 1px 2px rgba(32, 43, 42, 0.04);
+  --hhs-shadow-level-3: 0 8px 16px -2px rgba(32, 43, 42, 0.08);
+}
+
+/* Global Reset & Base Typography */
+*, *::before, *::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+html, body {
+  height: 100%;
+  background-color: var(--hhs-canvas);
+  color: var(--hhs-text-primary);
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  font-size: 14px;
+  line-height: 1.45;
+  -webkit-font-smoothing: antialiased;
+}
+
+#root {
+  min-height: 100%;
+  display: flex;
+  flex-direction: column;
+}
+
+/* Numeric alignment utility prescribed in DESIGN.md */
+.tnum,
+table td.numeric,
+.metric-value {
+  font-feature-settings: "tnum" 1;
+  font-variant-numeric: tabular-nums;
+}
+
+/* ============================================================================
+   TYPOGRAPHY HIERARCHY
+   ============================================================================ */
+.hhs-headline-xl {
+  font-size: 1.75rem; /* 28px */
+  font-weight: 700;
+  line-height: 2.25rem;
+  letter-spacing: -0.02em;
+  color: var(--hhs-text-primary);
+}
+
+.hhs-headline-lg {
+  font-size: 1.35rem; /* ~22px */
+  font-weight: 700;
+  line-height: 1.85rem;
+  letter-spacing: -0.015em;
+  color: var(--hhs-text-primary);
+}
+
+.hhs-headline-md {
+  font-size: 1.15rem; /* ~18px */
+  font-weight: 600;
+  line-height: 1.6rem;
+  letter-spacing: -0.01em;
+  color: var(--hhs-text-primary);
+}
+
+.hhs-headline-sm {
+  font-size: 1rem; /* 16px */
+  font-weight: 600;
+  line-height: 1.45rem;
+  color: var(--hhs-text-primary);
+}
+
+.hhs-body-md {
+  font-size: 0.875rem; /* 14px */
+  font-weight: 400;
+  line-height: 1.35rem;
+  color: var(--hhs-text-primary);
+}
+
+.hhs-body-sm {
+  font-size: 0.78rem; /* ~12.5px */
+  font-weight: 400;
+  line-height: 1.15rem;
+  color: var(--hhs-text-secondary);
+}
+
+.hhs-label-sm {
+  font-size: 0.72rem; /* ~11.5px */
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--hhs-text-secondary);
+}
+
+/* ============================================================================
+   SHARED REUSABLE COMPONENT STYLES
+   ============================================================================ */
+
+/* Primary Institutional Buttons */
+.hhs-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  height: var(--hhs-control-height);
+  padding: 0 14px;
+  border-radius: var(--hhs-radius-base);
+  font-size: 0.85rem;
+  font-weight: 600;
+  text-decoration: none;
+  cursor: pointer;
+  border: 1px solid transparent;
+  transition: background-color 0.15s ease, border-color 0.15s ease, color 0.15s ease;
+  white-space: nowrap;
+}
+
+.hhs-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.hhs-btn-primary {
+  background-color: var(--hhs-primary);
+  color: #ffffff;
+}
+
+.hhs-btn-primary:hover:not(:disabled) {
+  background-color: var(--hhs-primary-hover);
+}
+
+.hhs-btn-primary:active:not(:disabled) {
+  background-color: var(--hhs-primary-active);
+}
+
+.hhs-btn-secondary {
+  background-color: var(--hhs-surface);
+  border-color: var(--hhs-border);
+  color: var(--hhs-text-primary);
+}
+
+.hhs-btn-secondary:hover:not(:disabled) {
+  background-color: var(--hhs-canvas);
+  border-color: var(--hhs-border-strong);
+}
+
+.hhs-btn-danger {
+  background-color: var(--hhs-surface);
+  border-color: var(--hhs-danger);
+  color: var(--hhs-danger);
+}
+
+.hhs-btn-danger:hover:not(:disabled) {
+  background-color: var(--hhs-danger);
+  color: #ffffff;
+}
+
+.hhs-btn-sm {
+  height: var(--hhs-control-height-sm);
+  padding: 0 10px;
+  font-size: 0.78rem;
+}
+
+.hhs-btn-lg {
+  height: var(--hhs-control-height-lg);
+  padding: 0 18px;
+  font-size: 0.92rem;
+}
+
+/* Institutional Form Controls */
+.hhs-form-group {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin-bottom: 16px;
+}
+
+.hhs-label {
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--hhs-text-secondary);
+}
+
+.hhs-input, .hhs-select, .hhs-textarea {
+  width: 100%;
+  height: var(--hhs-control-height);
+  padding: 0 12px;
+  background-color: var(--hhs-surface);
+  border: 1px solid var(--hhs-border);
+  border-radius: var(--hhs-radius-base);
+  color: var(--hhs-text-primary);
+  font-size: 0.875rem;
+  font-family: inherit;
+  transition: border-color 0.15s ease;
+}
+
+.hhs-textarea {
+  height: auto;
+  min-height: 80px;
+  padding: 10px 12px;
+}
+
+.hhs-input:focus, .hhs-select:focus, .hhs-textarea:focus {
+  outline: none;
+  border-color: var(--hhs-border-focus);
+}
+
+.hhs-input.error, .hhs-select.error {
+  border-color: var(--hhs-danger);
+}
+
+.hhs-field-error {
+  font-size: 0.75rem;
+  color: var(--hhs-danger);
+  margin-top: 2px;
+}
+
+/* Institutional Card Surfaces */
+.hhs-card {
+  background-color: var(--hhs-surface);
+  border: 1px solid var(--hhs-border);
+  border-radius: var(--hhs-radius-container);
+  overflow: hidden;
+}
+
+.hhs-card-header {
+  padding: 14px 18px;
+  border-bottom: 1px solid var(--hhs-border);
+  background-color: var(--hhs-surface);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.hhs-card-body {
+  padding: 18px;
+}
+
+/* Metric KPI Blocks */
+.hhs-metric-card {
+  background-color: var(--hhs-surface);
+  border: 1px solid var(--hhs-border);
+  border-radius: var(--hhs-radius-container);
+  padding: 18px;
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+}
+
+.hhs-metric-card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 4px;
+  height: 100%;
+}
+
+.hhs-metric-card.primary::before { background-color: var(--hhs-primary); }
+.hhs-metric-card.accent::before { background-color: var(--hhs-accent); }
+.hhs-metric-card.danger::before { background-color: var(--hhs-danger); }
+.hhs-metric-card.info::before { background-color: var(--hhs-info); }
+
+.hhs-metric-value {
+  font-size: 2.15rem;
+  font-weight: 700;
+  color: var(--hhs-text-primary);
+  line-height: 1.1;
+  margin: 6px 0 2px 0;
+  font-feature-settings: "tnum" 1;
+}
+
+.hhs-metric-label {
+  font-size: 0.74rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--hhs-text-secondary);
+}
+
+/* Institutional Tables */
+.hhs-table-container {
+  width: 100%;
+  overflow-x: auto;
+  border: 1px solid var(--hhs-border);
+  border-radius: var(--hhs-radius-container);
+  background-color: var(--hhs-surface);
+}
+
+.hhs-table {
+  width: 100%;
+  border-collapse: collapse;
+  text-align: left;
+}
+
+.hhs-table th {
+  background-color: var(--hhs-surface-muted);
+  color: var(--hhs-text-secondary);
+  font-size: 0.72rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  padding: 10px 14px;
+  border-bottom: 1px solid var(--hhs-border);
+  white-space: nowrap;
+}
+
+.hhs-table td {
+  padding: 11px 14px;
+  border-bottom: 1px solid var(--hhs-border);
+  color: var(--hhs-text-primary);
+  font-size: 0.85rem;
+}
+
+.hhs-table tr:last-child td {
+  border-bottom: none;
+}
+
+.hhs-table tr:hover td {
+  background-color: var(--hhs-surface-hover);
+}
+
+/* Status Badges */
+.hhs-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  height: 22px;
+  padding: 0 8px;
+  border-radius: 3px;
+  font-size: 0.74rem;
+  font-weight: 600;
+  white-space: nowrap;
+  letter-spacing: 0.02em;
+}
+
+.hhs-badge-primary {
+  background-color: var(--hhs-primary-light);
+  color: var(--hhs-primary-text);
+  border: 1px solid rgba(49, 89, 78, 0.25);
+}
+
+.hhs-badge-accent {
+  background-color: var(--hhs-accent-light);
+  color: var(--hhs-accent-text);
+  border: 1px solid rgba(215, 164, 106, 0.35);
+}
+
+.hhs-badge-danger {
+  background-color: var(--hhs-danger-light);
+  color: var(--hhs-danger-text);
+  border: 1px solid rgba(200, 90, 84, 0.3);
+}
+
+.hhs-badge-neutral {
+  background-color: var(--hhs-surface-muted);
+  color: var(--hhs-text-secondary);
+  border: 1px solid var(--hhs-border);
+}
+
+/* Demo Mode Banner */
+.hhs-demo-banner {
+  background-color: #fef3c7;
+  border-bottom: 1px solid #fde68a;
+  color: #92400e;
+  padding: 6px 16px;
+  font-size: 0.78rem;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+/* Modal Dialogs */
+.hhs-modal-backdrop {
+  position: fixed;
+  inset: 0;
+  background-color: rgba(32, 43, 42, 0.4);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 100;
+  padding: 16px;
+}
+
+.hhs-modal-sheet {
+  background-color: var(--hhs-surface);
+  border: 1px solid var(--hhs-border);
+  border-radius: var(--hhs-radius-modal);
+  box-shadow: var(--hhs-shadow-level-3);
+  width: 100%;
+  max-width: 540px;
+  overflow: hidden;
+}
+
+/* Print Media Styles */
+@media print {
+  body {
+    background-color: #ffffff !important;
+  }
+  .no-print, nav, header, aside, .hhs-demo-banner {
+    display: none !important;
+  }
+  .hhs-card, .hhs-table-container {
+    border: 1px solid #000000 !important;
+  }
+}

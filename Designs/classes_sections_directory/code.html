@@ -1,0 +1,897 @@
+<!DOCTYPE html>
+
+<html lang="en"><head><meta charset="utf-8"/><meta content="width=device-width, initial-scale=1.0" name="viewport"/><meta content="web_dashboard" name="shell-type"/><link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" rel="stylesheet"/><link href="https://fonts.googleapis.com/css2?family=Inter:wght@100..900&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/><style>@layer base{html,body{margin:0;padding:0;}body{overscroll-behavior:none;}main>:first-child{margin-top:0!important;}main>:last-child{margin-bottom:0!important;}}::-webkit-scrollbar{display:none;}</style><script src="https://cdn.tailwindcss.com"></script><script id="tailwind-config">tailwind.config={darkMode:"class",theme:{extend:{colors:{"on-error":"#ffffff","surface-container-low":"#eaf6f4","on-tertiary":"#ffffff","tertiary-fixed":"#ffdad7","surface-container-lowest":"#ffffff","inverse-primary":"#a5cfc1","on-primary-container":"#a3cec0","secondary":"#7e5624","tertiary-fixed-dim":"#ffb3ad","inverse-on-surface":"#e7f3f1","on-tertiary-fixed-variant":"#822624","on-secondary":"#ffffff","secondary-container":"#fec78a","surface":"#f0fcfa","surface-dim":"#d0dddb","primary-container":"#31594e","on-tertiary-fixed":"#410004","error-container":"#ffdad6","primary-fixed":"#c0ecdd","surface-bright":"#f0fcfa","primary":"#184237","surface-variant":"#d9e5e3","surface-container-highest":"#d9e5e3","outline":"#717975","on-secondary-fixed":"#2b1700","on-secondary-fixed-variant":"#633f0d","on-background":"#131e1d","tertiary-container":"#91312e","on-surface":"#131e1d","on-error-container":"#93000a","background":"#f0fcfa","surface-container":"#e4f0ee","on-primary-fixed-variant":"#264e43","outline-variant":"#c0c8c4","secondary-fixed-dim":"#f2bd80","on-tertiary-container":"#ffb2ac","tertiary":"#721a1a","on-primary-fixed":"#002019","on-primary":"#ffffff","surface-container-high":"#deebe9","on-secondary-container":"#79511f","secondary-fixed":"#ffddba","primary-fixed-dim":"#a5cfc1","error":"#ba1a1a","surface-tint":"#3e665a","inverse-surface":"#273331","on-surface-variant":"#414845"},borderRadius:{"DEFAULT":"0.125rem","lg":"0.25rem","xl":"0.5rem","full":"0.75rem"},spacing:{"gutter":"1rem","gutter-desktop":"1.5rem","margin-desktop":"2rem","margin":"1rem","space-sm":"0.5rem","space-xs":"0.25rem","space-md":"0.75rem","space-xl":"1.5rem","space-lg":"1rem"},fontFamily:{"label-sm":["Inter"],"body-md":["Inter"],"body-sm":["Inter"],"headline-xl":["Inter"],"label-md":["Inter"],"headline-lg":["Inter"],"tabular-data":["Inter"],"headline-sm":["Inter"],"headline-md":["Inter"],"body-lg":["Inter"]},fontSize:{"label-sm":["0.75rem",{"lineHeight":"1rem","letterSpacing":"0.025em","fontWeight":"600"}],"body-md":["0.875rem",{"lineHeight":"1.25rem","letterSpacing":"0em","fontWeight":"400"}],"body-sm":["0.75rem",{"lineHeight":"1.125rem","letterSpacing":"0.005em","fontWeight":"400"}],"headline-xl":["2rem",{"lineHeight":"2.5rem","letterSpacing":"-0.02em","fontWeight":"600"}],"label-md":["0.875rem",{"lineHeight":"1.25rem","letterSpacing":"0.01em","fontWeight":"500"}],"headline-lg":["1.5rem",{"lineHeight":"2rem","letterSpacing":"-0.015em","fontWeight":"600"}],"tabular-data":["0.875rem",{"lineHeight":"1.25rem","letterSpacing":"0em","fontWeight":"400"}],"headline-sm":["1.125rem",{"lineHeight":"1.5rem","letterSpacing":"0em","fontWeight":"600"}],"headline-md":["1.25rem",{"lineHeight":"1.75rem","letterSpacing":"-0.01em","fontWeight":"600"}],"body-lg":["1rem",{"lineHeight":"1.5rem","letterSpacing":"0em","fontWeight":"400"}]}}}}</script></head><body class="bg-surface text-on-surface font-body-md text-body-md min-h-screen"><header class="fixed top-0 left-0 right-0 h-16 bg-surface-container-lowest shadow-[0_1px_4px_rgba(24,66,55,0.06)] z-50"><div class="h-16 w-full px-gutter-desktop flex items-center justify-between gap-space-lg"><div class="flex items-center gap-space-md"><img alt="HanuJai High School Crest" class="h-8 w-auto object-contain" src="https://lh3.googleusercontent.com/aida/AEtjO1XaQgiPfNIvW8D6_3ZLBk4GvIWZyWUGf7f7Dg04WfKedS7T3FYw-mhsFM8L3Pin9d7cVlXEHRmHsJCXDiazcnfVd6Tqv7VaLKe6RpNPCfZCc-Dvi1ZWD9M7WXsa4L-HwKss71_bIYIpzj-9xBLaHNmcz14vnYMCAa0kwivrop5es2kGVOT3zySzIYFxOHFNY5uKkyIZP7HWwhvOrMEpr5GgCcXnWgmWinAmafQcI3UYj4xiBvva4lvTdoE"/><div class="flex flex-col"><div class="flex items-center gap-space-sm"><span class="font-headline-sm text-headline-sm text-primary tracking-tight">HanuJai High School, Jaipur</span><span class="px-space-xs py-0.5 rounded-lg bg-surface-container text-on-surface-variant font-label-sm text-label-sm">AY 2024–25 (Senior Wing)</span></div><span class="font-body-sm text-body-sm text-on-surface-variant">Academic Structure &amp; Staff Administration ERP</span></div></div><div class="flex-1 max-w-lg mx-space-xl hidden md:flex items-center"><div class="w-full flex items-center px-space-md py-1.5 rounded-lg bg-surface-container-low text-on-surface-variant focus-within:bg-surface-container-lowest focus-within:text-on-surface"><span class="material-symbols-outlined text-outline mr-space-sm text-[18px]">search</span><input class="w-full bg-transparent border-0 p-0 text-on-surface placeholder:text-outline font-body-sm text-body-sm focus:ring-0 focus:outline-none" placeholder="Search classes, sections, faculty roster, subject codes..." type="text"/><kbd class="px-1.5 py-0.5 bg-surface-container rounded font-label-sm text-label-sm text-on-surface-variant">Ctrl+K</kbd></div></div><div class="flex items-center gap-space-md"><button aria-label="Notifications" class="relative p-space-xs rounded-lg text-on-surface-variant hover:bg-surface-container hover:text-on-surface transition-colors"><span class="material-symbols-outlined text-[20px]">notifications</span><span class="absolute top-1 right-1 w-2 h-2 rounded-full bg-error"></span></button><div class="flex items-center gap-space-sm pl-space-sm"><div class="w-8 h-8 rounded-full bg-primary flex items-center justify-center"><span class="material-symbols-outlined text-on-primary text-[18px]">person</span></div><div class="hidden xl:flex flex-col text-left"><span class="font-label-md text-label-md text-on-surface leading-tight">Dr. K. S. Rathore</span><span class="font-body-sm text-body-sm text-on-surface-variant leading-tight">Principal / Institutional Administrator</span></div></div></div></div></header><aside class="fixed left-0 top-16 h-[calc(100vh-4rem)] w-64 bg-surface-container-lowest shadow-[1px_0_4px_rgba(24,66,55,0.04)] z-40 flex flex-col justify-between overflow-y-auto"><div class="py-space-md"><div class="px-gutter mb-space-sm text-on-surface-variant font-label-sm text-label-sm uppercase tracking-wider">Administrative Modules</div><nav class="flex flex-col gap-1 px-space-sm" data-active-classes="bg-primary-container text-on-primary font-label-md rounded-lg shadow-sm"><a class="px-space-md py-2 rounded-lg text-on-surface-variant font-body-md text-body-md hover:bg-surface-container hover:text-on-surface transition-all" data-path="dashboard" href="#">Dashboard</a><a class="px-space-md py-2 rounded-lg text-on-surface-variant font-body-md text-body-md hover:bg-surface-container hover:text-on-surface transition-all" data-path="students" href="#">Students</a><a class="px-space-md py-2 rounded-lg text-on-surface-variant font-body-md text-body-md hover:bg-surface-container hover:text-on-surface transition-all" data-path="attendance" href="#">Attendance</a><a class="px-space-md py-2 rounded-lg text-on-surface-variant font-body-md text-body-md hover:bg-surface-container hover:text-on-surface transition-all" data-path="academics" href="#">Academics</a><a class="px-space-md py-2 rounded-lg text-on-surface-variant font-body-md text-body-md hover:bg-surface-container hover:text-on-surface transition-all" data-path="performance" href="#">Performance</a><a class="px-space-md py-2 rounded-lg text-on-surface-variant font-body-md text-body-md hover:bg-surface-container hover:text-on-surface transition-all" data-path="behaviour" href="#">Behaviour</a><a class="px-space-md py-2 rounded-lg text-on-surface-variant font-body-md text-body-md hover:bg-surface-container hover:text-on-surface transition-all" data-path="reports" href="#">Reports &amp; CBSE</a><div class="flex flex-col gap-1"><a class="px-space-md py-2 rounded-lg text-on-surface-variant font-body-md text-body-md hover:bg-surface-container hover:text-on-surface transition-all" data-path="academic-structure-administration" href="#">Administration</a><div class="pl-space-md pr-space-xs flex flex-col gap-0.5 ml-space-sm border-l border-surface-container"><a class="px-space-sm py-1.5 rounded-lg text-on-surface-variant font-body-sm text-body-sm hover:bg-surface-container hover:text-on-surface transition-all" data-path="classes-and-sections-directory" href="#">Classes &amp; Sections</a><a class="px-space-sm py-1.5 rounded-lg text-on-surface-variant font-body-sm text-body-sm hover:bg-surface-container hover:text-on-surface transition-all" data-path="section-student-roster" href="#">Section Student Roster</a><a class="px-space-sm py-1.5 rounded-lg text-on-surface-variant font-body-sm text-body-sm hover:bg-surface-container hover:text-on-surface transition-all" data-path="class-teacher-assignments" href="#">Class Teacher Assignments</a><a class="px-space-sm py-1.5 rounded-lg text-on-surface-variant font-body-sm text-body-sm hover:bg-surface-container hover:text-on-surface transition-all" data-path="subject-faculty-assignment-matrix" href="#">Subject-Faculty Matrix</a></div></div></nav></div><div class="p-space-md bg-surface-container-low m-space-sm rounded-lg flex flex-col gap-space-xs"><div class="flex items-center gap-space-xs text-primary font-label-sm text-label-sm"><span class="material-symbols-outlined text-[16px]">verified</span><span>CBSE Affiliation: #1730249</span></div><div class="font-body-sm text-body-sm text-on-surface-variant">Jaipur Zone • Senior Wing Active Node</div></div></aside><div class="pl-64"><main class="w-full pt-16 bg-surface min-h-screen"><div class="flex flex-col w-full">
+<!-- Top Command Context Bar -->
+<div class="w-full px-margin-desktop py-space-xl bg-surface-container-lowest shadow-sm flex flex-col md:flex-row md:items-end justify-between gap-space-lg">
+<div class="flex flex-col gap-space-xs">
+<div class="flex items-center gap-space-sm text-on-surface-variant font-label-sm text-label-sm uppercase tracking-wider">
+<span>Administration</span>
+<span class="material-symbols-outlined text-[14px]">chevron_right</span>
+<span>Academic Structure</span>
+<span class="material-symbols-outlined text-[14px]">chevron_right</span>
+<span class="text-primary font-label-sm">Classes &amp; Sections Directory</span>
+</div>
+<div class="flex items-center gap-space-md mt-1">
+<h1 class="font-headline-xl text-headline-xl text-on-surface tracking-tight">Academic Cohorts &amp; Section Registry</h1>
+<span class="px-2.5 py-1 rounded bg-surface-container text-primary font-label-sm text-label-sm">AY 2024–25 • Term II</span>
+</div>
+<p class="font-body-md text-body-md text-on-surface-variant max-w-2xl">
+        Statutory structural allocation ledger covering Senior Wing (Grades 9–12) and Middle Wing (Grades 6–8). Strict compliance with CBSE Affiliation Byelaws Chapter II, Section 14.1.
+      </p>
+</div>
+<!-- Global Utility Actions -->
+<div class="flex flex-wrap items-center gap-space-sm">
+<button class="h-9 px-space-md rounded bg-surface-container text-on-surface hover:bg-surface-container-high transition-colors flex items-center gap-space-xs font-label-md text-label-md shadow-sm">
+<span class="material-symbols-outlined text-[18px]">verified_user</span>
+<span>Audit Framework</span>
+</button>
+<button class="h-9 px-space-md rounded bg-surface-container text-on-surface hover:bg-surface-container-high transition-colors flex items-center gap-space-xs font-label-md text-label-md shadow-sm">
+<span class="material-symbols-outlined text-[18px]">file_download</span>
+<span>Export Roster (CSV/PDF)</span>
+</button>
+<button class="h-9 px-space-md rounded bg-primary text-on-primary hover:bg-primary-container transition-colors flex items-center gap-space-xs font-label-md text-label-md shadow-sm">
+<span class="material-symbols-outlined text-[18px]">add</span>
+<span>Sanction New Section</span>
+</button>
+</div>
+</div>
+<div class="px-margin-desktop py-space-xl flex flex-col gap-space-xl">
+<!-- KPI Metrics Strip -->
+<div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-space-lg">
+<!-- Metric 1: Total Sections -->
+<div class="bg-surface-container-lowest p-space-lg rounded shadow-sm flex flex-col justify-between">
+<div class="flex items-center justify-between text-on-surface-variant">
+<span class="font-label-sm text-label-sm uppercase tracking-wide">Total Sanctioned Cohorts</span>
+<span class="p-1 rounded bg-surface-container-low text-primary">
+<span class="material-symbols-outlined text-[18px]">domain</span>
+</span>
+</div>
+<div class="mt-space-md">
+<div class="flex items-baseline gap-space-xs">
+<span class="font-headline-xl text-headline-xl text-on-surface tabular-nums">20</span>
+<span class="font-body-sm text-body-sm text-on-surface-variant">Sections</span>
+</div>
+<div class="flex items-center gap-1.5 mt-space-xs text-primary font-label-sm text-label-sm">
+<span class="material-symbols-outlined text-[16px]">check_circle</span>
+<span>100% Configured across Grades 6–12</span>
+</div>
+</div>
+</div>
+<!-- Metric 2: Utilization -->
+<div class="bg-surface-container-lowest p-space-lg rounded shadow-sm flex flex-col justify-between">
+<div class="flex items-center justify-between text-on-surface-variant">
+<span class="font-label-sm text-label-sm uppercase tracking-wide">Seat Utilization</span>
+<span class="p-1 rounded bg-surface-container-low text-primary">
+<span class="material-symbols-outlined text-[18px]">group</span>
+</span>
+</div>
+<div class="mt-space-md">
+<div class="flex items-baseline gap-space-xs">
+<span class="font-headline-xl text-headline-xl text-on-surface tabular-nums">842</span>
+<span class="font-body-sm text-body-sm text-on-surface-variant">/ 880 Max Capacity</span>
+</div>
+<div class="w-full bg-surface-container-high h-1.5 rounded-full mt-2 overflow-hidden">
+<div class="bg-primary h-full rounded-full" style="width: 95.7%"></div>
+</div>
+<div class="flex items-center justify-between mt-1.5 font-label-sm text-label-sm text-on-surface-variant">
+<span>95.7% Aggregate Load</span>
+<span class="text-secondary font-medium">38 Vacancies</span>
+</div>
+</div>
+</div>
+<!-- Metric 3: Class Teachers Assigned -->
+<div class="bg-surface-container-lowest p-space-lg rounded shadow-sm flex flex-col justify-between">
+<div class="flex items-center justify-between text-on-surface-variant">
+<span class="font-label-sm text-label-sm uppercase tracking-wide">Class Teachers Assigned</span>
+<span class="p-1 rounded bg-surface-container-low text-primary">
+<span class="material-symbols-outlined text-[18px]">badge</span>
+</span>
+</div>
+<div class="mt-space-md">
+<div class="flex items-baseline gap-space-xs">
+<span class="font-headline-xl text-headline-xl text-on-surface tabular-nums">20</span>
+<span class="font-headline-sm text-headline-sm text-on-surface-variant">/ 20</span>
+</div>
+<div class="flex items-center gap-1.5 mt-space-xs text-primary font-label-sm text-label-sm">
+<span class="material-symbols-outlined text-[16px]">task_alt</span>
+<span>0 Unassigned • 100% Statutory Quorum</span>
+</div>
+</div>
+</div>
+<!-- Metric 4: Subject Mapping -->
+<div class="bg-surface-container-lowest p-space-lg rounded shadow-sm flex flex-col justify-between">
+<div class="flex items-center justify-between text-on-surface-variant">
+<span class="font-label-sm text-label-sm uppercase tracking-wide">Subject Matrix Status</span>
+<span class="p-1 rounded bg-surface-container-low text-secondary">
+<span class="material-symbols-outlined text-[18px]">rule</span>
+</span>
+</div>
+<div class="mt-space-md">
+<div class="flex items-baseline gap-space-xs">
+<span class="font-headline-xl text-headline-xl text-on-surface tabular-nums">98.5%</span>
+<span class="font-body-sm text-body-sm text-on-surface-variant">Active Load</span>
+</div>
+<div class="flex items-center gap-1.5 mt-space-xs text-secondary font-label-sm text-label-sm">
+<span class="material-symbols-outlined text-[16px]">warning</span>
+<span>1 Load Conflict Flagged (Room 304)</span>
+</div>
+</div>
+</div>
+</div>
+<!-- Ledger Filter Toolbar -->
+<div class="bg-surface-container-lowest p-space-md rounded shadow-sm flex flex-col lg:flex-row items-stretch lg:items-center justify-between gap-space-md">
+<!-- Primary Input & Wing Selectors -->
+<div class="flex flex-wrap items-center gap-space-sm flex-1">
+<div class="relative min-w-[280px] flex-1">
+<span class="material-symbols-outlined text-outline absolute left-3 top-2.5 text-[18px]">search</span>
+<input class="w-full h-9 pl-9 pr-3 rounded bg-surface text-on-surface placeholder:text-outline font-body-sm text-body-sm focus:outline-none focus:bg-surface-container-lowest transition-colors" placeholder="Search class, section, room or faculty..." type="text"/>
+</div>
+<!-- Wing Filter Dropdown -->
+<div class="flex items-center">
+<select class="h-9 px-space-md rounded bg-surface text-on-surface font-body-sm text-body-sm focus:outline-none pr-8 cursor-pointer">
+<option>All Wings (Senior &amp; Middle)</option>
+<option>Senior Wing (Classes 9–12)</option>
+<option>Middle Wing (Classes 6–8)</option>
+</select>
+</div>
+<!-- Stream Filter Dropdown -->
+<div class="flex items-center">
+<select class="h-9 px-space-md rounded bg-surface text-on-surface font-body-sm text-body-sm focus:outline-none pr-8 cursor-pointer">
+<option>All Streams (General / Voc.)</option>
+<option>General Core (Grades 6–10)</option>
+<option>Science (PCM / PCB)</option>
+<option>Commerce &amp; Accounts</option>
+<option>Humanities &amp; Liberal Arts</option>
+</select>
+</div>
+</div>
+<!-- Quick Status Badges Filter -->
+<div class="flex items-center gap-1.5 overflow-x-auto pb-1 lg:pb-0">
+<button class="px-3 py-1.5 rounded bg-primary-container text-on-primary font-label-sm text-label-sm whitespace-nowrap shadow-sm">
+          All Sections (20)
+        </button>
+<button class="px-3 py-1.5 rounded bg-surface text-on-surface-variant hover:text-on-surface font-label-sm text-label-sm whitespace-nowrap transition-colors">
+          Capacity Alert &gt;95% (4)
+        </button>
+<button class="px-3 py-1.5 rounded bg-surface text-on-surface-variant hover:text-on-surface font-label-sm text-label-sm whitespace-nowrap transition-colors">
+          Dual Proctor Assigned (12)
+        </button>
+<button class="px-3 py-1.5 rounded bg-surface text-on-surface-variant hover:text-on-surface font-label-sm text-label-sm whitespace-nowrap transition-colors">
+          Timetable Locked (19)
+        </button>
+</div>
+</div>
+<!-- Master Cohort Ledger Table -->
+<div class="bg-surface-container-lowest rounded shadow-sm overflow-hidden">
+<div class="overflow-x-auto">
+<table class="w-full text-left border-collapse">
+<thead>
+<tr class="bg-surface-container-high h-10">
+<th class="px-space-md font-label-sm text-label-sm text-on-surface-variant uppercase tracking-wider">Class &amp; Section</th>
+<th class="px-space-md font-label-sm text-label-sm text-on-surface-variant uppercase tracking-wider">Wing &amp; Stream</th>
+<th class="px-space-md font-label-sm text-label-sm text-on-surface-variant uppercase tracking-wider min-w-[160px]">Enrolled / Max</th>
+<th class="px-space-md font-label-sm text-label-sm text-on-surface-variant uppercase tracking-wider">Class Teacher</th>
+<th class="px-space-md font-label-sm text-label-sm text-on-surface-variant uppercase tracking-wider">Secondary Proctor</th>
+<th class="px-space-md font-label-sm text-label-sm text-on-surface-variant uppercase tracking-wider">Period Load</th>
+<th class="px-space-md font-label-sm text-label-sm text-on-surface-variant uppercase tracking-wider">Status</th>
+<th class="px-space-md font-label-sm text-label-sm text-on-surface-variant uppercase tracking-wider text-right">Actions</th>
+</tr>
+</thead>
+<tbody class="divide-y-0 text-on-surface font-body-sm text-body-sm">
+<!-- Row 1: Class 10-A -->
+<tr class="h-14 hover:bg-surface-container transition-colors group">
+<td class="px-space-md py-2">
+<div class="flex items-center gap-space-sm">
+<div class="w-8 h-8 rounded bg-surface-container flex items-center justify-center font-label-md text-primary font-semibold">
+                    10A
+                  </div>
+<div class="flex flex-col">
+<span class="font-label-md text-label-md text-on-surface">Class 10 — Section A</span>
+<span class="font-body-sm text-body-sm text-on-surface-variant">Room 204 • North Wing, 2nd Flr</span>
+</div>
+</div>
+</td>
+<td class="px-space-md py-2">
+<div class="flex flex-col">
+<span class="font-label-sm text-label-sm text-on-surface">Senior Wing</span>
+<span class="font-body-sm text-body-sm text-on-surface-variant">CBSE General Core</span>
+</div>
+</td>
+<td class="px-space-md py-2">
+<div class="flex flex-col gap-1">
+<div class="flex justify-between font-tabular-data text-tabular-data">
+<span class="font-semibold text-on-surface">42 <span class="text-on-surface-variant font-normal">/ 45</span></span>
+<span class="text-on-surface-variant">93.3%</span>
+</div>
+<div class="w-full bg-surface-container h-1.5 rounded-full overflow-hidden">
+<div class="bg-primary h-full rounded-full" style="width: 93.3%"></div>
+</div>
+</div>
+</td>
+<td class="px-space-md py-2">
+<div class="flex items-center gap-2">
+<div class="flex flex-col">
+<span class="font-label-sm text-label-sm text-on-surface">Mrs. Ananya Sharma</span>
+<span class="font-body-sm text-body-sm text-on-surface-variant">PGT English • <span class="font-mono">EMP-1042</span></span>
+</div>
+</div>
+</td>
+<td class="px-space-md py-2">
+<div class="flex flex-col">
+<span class="font-body-sm text-body-sm text-on-surface">Dr. N. Goyal</span>
+<span class="font-body-sm text-body-sm text-on-surface-variant">PGT Mathematics</span>
+</div>
+</td>
+<td class="px-space-md py-2">
+<div class="flex items-center gap-1.5">
+<span class="px-2 py-0.5 rounded bg-surface-container text-on-surface font-label-sm text-label-sm">34 / 34 Wkly</span>
+</div>
+</td>
+<td class="px-space-md py-2">
+<span class="inline-flex items-center gap-1 px-2 py-0.5 rounded bg-surface-container-low text-primary font-label-sm text-label-sm">
+<span class="w-1.5 h-1.5 rounded-full bg-primary"></span>
+                  Active &amp; Synced
+                </span>
+</td>
+<td class="px-space-md py-2 text-right">
+<div class="flex items-center justify-end gap-1">
+<button class="p-1 rounded text-on-surface-variant hover:text-primary hover:bg-surface-container transition-colors" title="View Class Roster">
+<span class="material-symbols-outlined text-[18px]">group</span>
+</button>
+<button class="p-1 rounded text-on-surface-variant hover:text-primary hover:bg-surface-container transition-colors" title="Faculty Assignments">
+<span class="material-symbols-outlined text-[18px]">assignment_ind</span>
+</button>
+<button class="p-1 rounded text-on-surface-variant hover:text-primary hover:bg-surface-container transition-colors" title="Section Configuration">
+<span class="material-symbols-outlined text-[18px]">settings</span>
+</button>
+</div>
+</td>
+</tr>
+<!-- Row 2: Class 10-B -->
+<tr class="h-14 hover:bg-surface-container transition-colors group">
+<td class="px-space-md py-2">
+<div class="flex items-center gap-space-sm">
+<div class="w-8 h-8 rounded bg-surface-container flex items-center justify-center font-label-md text-primary font-semibold">
+                    10B
+                  </div>
+<div class="flex flex-col">
+<span class="font-label-md text-label-md text-on-surface">Class 10 — Section B</span>
+<span class="font-body-sm text-body-sm text-on-surface-variant">Room 205 • North Wing, 2nd Flr</span>
+</div>
+</div>
+</td>
+<td class="px-space-md py-2">
+<div class="flex flex-col">
+<span class="font-label-sm text-label-sm text-on-surface">Senior Wing</span>
+<span class="font-body-sm text-body-sm text-on-surface-variant">CBSE General Core</span>
+</div>
+</td>
+<td class="px-space-md py-2">
+<div class="flex flex-col gap-1">
+<div class="flex justify-between font-tabular-data text-tabular-data">
+<span class="font-semibold text-on-surface">42 <span class="text-on-surface-variant font-normal">/ 45</span></span>
+<span class="text-on-surface-variant">93.3%</span>
+</div>
+<div class="w-full bg-surface-container h-1.5 rounded-full overflow-hidden">
+<div class="bg-primary h-full rounded-full" style="width: 93.3%"></div>
+</div>
+</div>
+</td>
+<td class="px-space-md py-2">
+<div class="flex items-center gap-2">
+<div class="flex flex-col">
+<span class="font-label-sm text-label-sm text-on-surface">Mr. Rajesh Meena</span>
+<span class="font-body-sm text-body-sm text-on-surface-variant">PGT Mathematics • <span class="font-mono">EMP-1018</span></span>
+</div>
+</div>
+</td>
+<td class="px-space-md py-2">
+<div class="flex flex-col">
+<span class="font-body-sm text-body-sm text-on-surface">Ms. R. Bhati</span>
+<span class="font-body-sm text-body-sm text-on-surface-variant">TGT Social Science</span>
+</div>
+</td>
+<td class="px-space-md py-2">
+<div class="flex items-center gap-1.5">
+<span class="px-2 py-0.5 rounded bg-surface-container text-on-surface font-label-sm text-label-sm">34 / 34 Wkly</span>
+</div>
+</td>
+<td class="px-space-md py-2">
+<span class="inline-flex items-center gap-1 px-2 py-0.5 rounded bg-surface-container-low text-primary font-label-sm text-label-sm">
+<span class="w-1.5 h-1.5 rounded-full bg-primary"></span>
+                  Active &amp; Synced
+                </span>
+</td>
+<td class="px-space-md py-2 text-right">
+<div class="flex items-center justify-end gap-1">
+<button class="p-1 rounded text-on-surface-variant hover:text-primary hover:bg-surface-container transition-colors" title="View Class Roster">
+<span class="material-symbols-outlined text-[18px]">group</span>
+</button>
+<button class="p-1 rounded text-on-surface-variant hover:text-primary hover:bg-surface-container transition-colors" title="Faculty Assignments">
+<span class="material-symbols-outlined text-[18px]">assignment_ind</span>
+</button>
+<button class="p-1 rounded text-on-surface-variant hover:text-primary hover:bg-surface-container transition-colors" title="Section Configuration">
+<span class="material-symbols-outlined text-[18px]">settings</span>
+</button>
+</div>
+</td>
+</tr>
+<!-- Row 3: Class 11-A (Science) - High utilization -->
+<tr class="h-14 hover:bg-surface-container transition-colors group">
+<td class="px-space-md py-2">
+<div class="flex items-center gap-space-sm">
+<div class="w-8 h-8 rounded bg-surface-container flex items-center justify-center font-label-md text-primary font-semibold">
+                    11A
+                  </div>
+<div class="flex flex-col">
+<span class="font-label-md text-label-md text-on-surface">Class 11 — Section A</span>
+<span class="font-body-sm text-body-sm text-on-surface-variant">Room 301 • Science Wing Lab Quad</span>
+</div>
+</div>
+</td>
+<td class="px-space-md py-2">
+<div class="flex flex-col">
+<span class="font-label-sm text-label-sm text-on-surface">Senior Secondary</span>
+<span class="font-body-sm text-body-sm text-secondary font-medium">Science (PCM/PCB)</span>
+</div>
+</td>
+<td class="px-space-md py-2">
+<div class="flex flex-col gap-1">
+<div class="flex justify-between font-tabular-data text-tabular-data">
+<span class="font-semibold text-secondary">44 <span class="text-on-surface-variant font-normal">/ 45</span></span>
+<span class="text-secondary font-semibold">97.8% [Alert]</span>
+</div>
+<div class="w-full bg-surface-container h-1.5 rounded-full overflow-hidden">
+<div class="bg-secondary h-full rounded-full" style="width: 97.8%"></div>
+</div>
+</div>
+</td>
+<td class="px-space-md py-2">
+<div class="flex items-center gap-2">
+<div class="flex flex-col">
+<span class="font-label-sm text-label-sm text-on-surface">Dr. V. K. Mathur</span>
+<span class="font-body-sm text-body-sm text-on-surface-variant">PGT Physics • <span class="font-mono">EMP-0891</span></span>
+</div>
+</div>
+</td>
+<td class="px-space-md py-2">
+<div class="flex flex-col">
+<span class="font-body-sm text-body-sm text-on-surface">Mr. O. P. Sen</span>
+<span class="font-body-sm text-body-sm text-on-surface-variant">PGT Biology</span>
+</div>
+</td>
+<td class="px-space-md py-2">
+<div class="flex items-center gap-1.5">
+<span class="px-2 py-0.5 rounded bg-surface-container text-on-surface font-label-sm text-label-sm">38 / 38 Wkly</span>
+</div>
+</td>
+<td class="px-space-md py-2">
+<span class="inline-flex items-center gap-1 px-2 py-0.5 rounded bg-surface-container-low text-primary font-label-sm text-label-sm">
+<span class="w-1.5 h-1.5 rounded-full bg-primary"></span>
+                  Capacity Locked
+                </span>
+</td>
+<td class="px-space-md py-2 text-right">
+<div class="flex items-center justify-end gap-1">
+<button class="p-1 rounded text-on-surface-variant hover:text-primary hover:bg-surface-container transition-colors" title="View Class Roster">
+<span class="material-symbols-outlined text-[18px]">group</span>
+</button>
+<button class="p-1 rounded text-on-surface-variant hover:text-primary hover:bg-surface-container transition-colors" title="Faculty Assignments">
+<span class="material-symbols-outlined text-[18px]">assignment_ind</span>
+</button>
+<button class="p-1 rounded text-on-surface-variant hover:text-primary hover:bg-surface-container transition-colors" title="Section Configuration">
+<span class="material-symbols-outlined text-[18px]">settings</span>
+</button>
+</div>
+</td>
+</tr>
+<!-- Row 4: Class 11-B (Commerce) - Conflict flagged -->
+<tr class="h-14 hover:bg-surface-container transition-colors group">
+<td class="px-space-md py-2">
+<div class="flex items-center gap-space-sm">
+<div class="w-8 h-8 rounded bg-surface-container flex items-center justify-center font-label-md text-primary font-semibold">
+                    11B
+                  </div>
+<div class="flex flex-col">
+<span class="font-label-md text-label-md text-on-surface">Class 11 — Section B</span>
+<span class="font-body-sm text-body-sm text-on-surface-variant">Room 304 • Senior Wing West</span>
+</div>
+</div>
+</td>
+<td class="px-space-md py-2">
+<div class="flex flex-col">
+<span class="font-label-sm text-label-sm text-on-surface">Senior Secondary</span>
+<span class="font-body-sm text-body-sm text-on-surface-variant">Commerce &amp; Accounts</span>
+</div>
+</td>
+<td class="px-space-md py-2">
+<div class="flex flex-col gap-1">
+<div class="flex justify-between font-tabular-data text-tabular-data">
+<span class="font-semibold text-on-surface">39 <span class="text-on-surface-variant font-normal">/ 42</span></span>
+<span class="text-on-surface-variant">92.8%</span>
+</div>
+<div class="w-full bg-surface-container h-1.5 rounded-full overflow-hidden">
+<div class="bg-primary h-full rounded-full" style="width: 92.8%"></div>
+</div>
+</div>
+</td>
+<td class="px-space-md py-2">
+<div class="flex items-center gap-2">
+<div class="flex flex-col">
+<span class="font-label-sm text-label-sm text-on-surface">Mrs. Deepa Verma</span>
+<span class="font-body-sm text-body-sm text-on-surface-variant">PGT Accountancy • <span class="font-mono">EMP-1087</span></span>
+</div>
+</div>
+</td>
+<td class="px-space-md py-2">
+<div class="flex flex-col">
+<span class="font-body-sm text-body-sm text-on-surface">Mr. R. K. Singhal</span>
+<span class="font-body-sm text-body-sm text-on-surface-variant">PGT Economics</span>
+</div>
+</td>
+<td class="px-space-md py-2">
+<div class="flex items-center gap-1.5">
+<span class="px-2 py-0.5 rounded bg-surface-container text-secondary font-label-sm text-label-sm">32 / 34 Wkly</span>
+</div>
+</td>
+<td class="px-space-md py-2">
+<span class="inline-flex items-center gap-1 px-2 py-0.5 rounded bg-surface-container text-secondary font-label-sm text-label-sm">
+<span class="w-1.5 h-1.5 rounded-full bg-secondary"></span>
+                  Load Review
+                </span>
+</td>
+<td class="px-space-md py-2 text-right">
+<div class="flex items-center justify-end gap-1">
+<button class="p-1 rounded text-on-surface-variant hover:text-primary hover:bg-surface-container transition-colors" title="View Class Roster">
+<span class="material-symbols-outlined text-[18px]">group</span>
+</button>
+<button class="p-1 rounded text-on-surface-variant hover:text-primary hover:bg-surface-container transition-colors" title="Faculty Assignments">
+<span class="material-symbols-outlined text-[18px]">assignment_ind</span>
+</button>
+<button class="p-1 rounded text-on-surface-variant hover:text-primary hover:bg-surface-container transition-colors" title="Section Configuration">
+<span class="material-symbols-outlined text-[18px]">settings</span>
+</button>
+</div>
+</td>
+</tr>
+<!-- Row 5: Class 12-A -->
+<tr class="h-14 hover:bg-surface-container transition-colors group">
+<td class="px-space-md py-2">
+<div class="flex items-center gap-space-sm">
+<div class="w-8 h-8 rounded bg-surface-container flex items-center justify-center font-label-md text-primary font-semibold">
+                    12A
+                  </div>
+<div class="flex flex-col">
+<span class="font-label-md text-label-md text-on-surface">Class 12 — Section A</span>
+<span class="font-body-sm text-body-sm text-on-surface-variant">Room 308 • Senior Wing Lab Quad</span>
+</div>
+</div>
+</td>
+<td class="px-space-md py-2">
+<div class="flex flex-col">
+<span class="font-label-sm text-label-sm text-on-surface">Senior Secondary</span>
+<span class="font-body-sm text-body-sm text-on-surface-variant">Science (PCM/PCB)</span>
+</div>
+</td>
+<td class="px-space-md py-2">
+<div class="flex flex-col gap-1">
+<div class="flex justify-between font-tabular-data text-tabular-data">
+<span class="font-semibold text-on-surface">41 <span class="text-on-surface-variant font-normal">/ 45</span></span>
+<span class="text-on-surface-variant">91.1%</span>
+</div>
+<div class="w-full bg-surface-container h-1.5 rounded-full overflow-hidden">
+<div class="bg-primary h-full rounded-full" style="width: 91.1%"></div>
+</div>
+</div>
+</td>
+<td class="px-space-md py-2">
+<div class="flex items-center gap-2">
+<div class="flex flex-col">
+<span class="font-label-sm text-label-sm text-on-surface">Mrs. S. Banerjee</span>
+<span class="font-body-sm text-body-sm text-on-surface-variant">PGT Chemistry • <span class="font-mono">EMP-0744</span></span>
+</div>
+</div>
+</td>
+<td class="px-space-md py-2">
+<div class="flex flex-col">
+<span class="font-body-sm text-body-sm text-on-surface">Dr. V. K. Mathur</span>
+<span class="font-body-sm text-body-sm text-on-surface-variant">PGT Physics</span>
+</div>
+</td>
+<td class="px-space-md py-2">
+<div class="flex items-center gap-1.5">
+<span class="px-2 py-0.5 rounded bg-surface-container text-on-surface font-label-sm text-label-sm">38 / 38 Wkly</span>
+</div>
+</td>
+<td class="px-space-md py-2">
+<span class="inline-flex items-center gap-1 px-2 py-0.5 rounded bg-surface-container-low text-primary font-label-sm text-label-sm">
+<span class="w-1.5 h-1.5 rounded-full bg-primary"></span>
+                  Active &amp; Synced
+                </span>
+</td>
+<td class="px-space-md py-2 text-right">
+<div class="flex items-center justify-end gap-1">
+<button class="p-1 rounded text-on-surface-variant hover:text-primary hover:bg-surface-container transition-colors" title="View Class Roster">
+<span class="material-symbols-outlined text-[18px]">group</span>
+</button>
+<button class="p-1 rounded text-on-surface-variant hover:text-primary hover:bg-surface-container transition-colors" title="Faculty Assignments">
+<span class="material-symbols-outlined text-[18px]">assignment_ind</span>
+</button>
+<button class="p-1 rounded text-on-surface-variant hover:text-primary hover:bg-surface-container transition-colors" title="Section Configuration">
+<span class="material-symbols-outlined text-[18px]">settings</span>
+</button>
+</div>
+</td>
+</tr>
+<!-- Row 6: Class 9-A -->
+<tr class="h-14 hover:bg-surface-container transition-colors group">
+<td class="px-space-md py-2">
+<div class="flex items-center gap-space-sm">
+<div class="w-8 h-8 rounded bg-surface-container flex items-center justify-center font-label-md text-primary font-semibold">
+                    09A
+                  </div>
+<div class="flex flex-col">
+<span class="font-label-md text-label-md text-on-surface">Class 9 — Section A</span>
+<span class="font-body-sm text-body-sm text-on-surface-variant">Room 112 • Senior Wing Ground</span>
+</div>
+</div>
+</td>
+<td class="px-space-md py-2">
+<div class="flex flex-col">
+<span class="font-label-sm text-label-sm text-on-surface">Secondary</span>
+<span class="font-body-sm text-body-sm text-on-surface-variant">CBSE General Core</span>
+</div>
+</td>
+<td class="px-space-md py-2">
+<div class="flex flex-col gap-1">
+<div class="flex justify-between font-tabular-data text-tabular-data">
+<span class="font-semibold text-on-surface">38 <span class="text-on-surface-variant font-normal">/ 40</span></span>
+<span class="text-on-surface-variant">95.0%</span>
+</div>
+<div class="w-full bg-surface-container h-1.5 rounded-full overflow-hidden">
+<div class="bg-primary h-full rounded-full" style="width: 95.0%"></div>
+</div>
+</div>
+</td>
+<td class="px-space-md py-2">
+<div class="flex items-center gap-2">
+<div class="flex flex-col">
+<span class="font-label-sm text-label-sm text-on-surface">Ms. Sunita Joshi</span>
+<span class="font-body-sm text-body-sm text-on-surface-variant">TGT Science • <span class="font-mono">EMP-1120</span></span>
+</div>
+</div>
+</td>
+<td class="px-space-md py-2">
+<div class="flex flex-col">
+<span class="font-body-sm text-body-sm text-on-surface">Mr. P. Rathore</span>
+<span class="font-body-sm text-body-sm text-on-surface-variant">TGT English</span>
+</div>
+</td>
+<td class="px-space-md py-2">
+<div class="flex items-center gap-1.5">
+<span class="px-2 py-0.5 rounded bg-surface-container text-on-surface font-label-sm text-label-sm">34 / 34 Wkly</span>
+</div>
+</td>
+<td class="px-space-md py-2">
+<span class="inline-flex items-center gap-1 px-2 py-0.5 rounded bg-surface-container-low text-primary font-label-sm text-label-sm">
+<span class="w-1.5 h-1.5 rounded-full bg-primary"></span>
+                  Active &amp; Synced
+                </span>
+</td>
+<td class="px-space-md py-2 text-right">
+<div class="flex items-center justify-end gap-1">
+<button class="p-1 rounded text-on-surface-variant hover:text-primary hover:bg-surface-container transition-colors" title="View Class Roster">
+<span class="material-symbols-outlined text-[18px]">group</span>
+</button>
+<button class="p-1 rounded text-on-surface-variant hover:text-primary hover:bg-surface-container transition-colors" title="Faculty Assignments">
+<span class="material-symbols-outlined text-[18px]">assignment_ind</span>
+</button>
+<button class="p-1 rounded text-on-surface-variant hover:text-primary hover:bg-surface-container transition-colors" title="Section Configuration">
+<span class="material-symbols-outlined text-[18px]">settings</span>
+</button>
+</div>
+</td>
+</tr>
+<!-- Row 7: Class 9-B -->
+<tr class="h-14 hover:bg-surface-container transition-colors group">
+<td class="px-space-md py-2">
+<div class="flex items-center gap-space-sm">
+<div class="w-8 h-8 rounded bg-surface-container flex items-center justify-center font-label-md text-primary font-semibold">
+                    09B
+                  </div>
+<div class="flex flex-col">
+<span class="font-label-md text-label-md text-on-surface">Class 9 — Section B</span>
+<span class="font-body-sm text-body-sm text-on-surface-variant">Room 114 • Senior Wing Ground</span>
+</div>
+</div>
+</td>
+<td class="px-space-md py-2">
+<div class="flex flex-col">
+<span class="font-label-sm text-label-sm text-on-surface">Secondary</span>
+<span class="font-body-sm text-body-sm text-on-surface-variant">CBSE General Core</span>
+</div>
+</td>
+<td class="px-space-md py-2">
+<div class="flex flex-col gap-1">
+<div class="flex justify-between font-tabular-data text-tabular-data">
+<span class="font-semibold text-on-surface">37 <span class="text-on-surface-variant font-normal">/ 40</span></span>
+<span class="text-on-surface-variant">92.5%</span>
+</div>
+<div class="w-full bg-surface-container h-1.5 rounded-full overflow-hidden">
+<div class="bg-primary h-full rounded-full" style="width: 92.5%"></div>
+</div>
+</div>
+</td>
+<td class="px-space-md py-2">
+<div class="flex items-center gap-2">
+<div class="flex flex-col">
+<span class="font-label-sm text-label-sm text-on-surface">Mr. Vikram Shekhawat</span>
+<span class="font-body-sm text-body-sm text-on-surface-variant">TGT Social Studies • <span class="font-mono">EMP-1033</span></span>
+</div>
+</div>
+</td>
+<td class="px-space-md py-2">
+<div class="flex flex-col">
+<span class="font-body-sm text-body-sm text-on-surface">Mrs. Alka Gaur</span>
+<span class="font-body-sm text-body-sm text-on-surface-variant">TGT Hindi</span>
+</div>
+</td>
+<td class="px-space-md py-2">
+<div class="flex items-center gap-1.5">
+<span class="px-2 py-0.5 rounded bg-surface-container text-on-surface font-label-sm text-label-sm">34 / 34 Wkly</span>
+</div>
+</td>
+<td class="px-space-md py-2">
+<span class="inline-flex items-center gap-1 px-2 py-0.5 rounded bg-surface-container-low text-primary font-label-sm text-label-sm">
+<span class="w-1.5 h-1.5 rounded-full bg-primary"></span>
+                  Active &amp; Synced
+                </span>
+</td>
+<td class="px-space-md py-2 text-right">
+<div class="flex items-center justify-end gap-1">
+<button class="p-1 rounded text-on-surface-variant hover:text-primary hover:bg-surface-container transition-colors" title="View Class Roster">
+<span class="material-symbols-outlined text-[18px]">group</span>
+</button>
+<button class="p-1 rounded text-on-surface-variant hover:text-primary hover:bg-surface-container transition-colors" title="Faculty Assignments">
+<span class="material-symbols-outlined text-[18px]">assignment_ind</span>
+</button>
+<button class="p-1 rounded text-on-surface-variant hover:text-primary hover:bg-surface-container transition-colors" title="Section Configuration">
+<span class="material-symbols-outlined text-[18px]">settings</span>
+</button>
+</div>
+</td>
+</tr>
+<!-- Row 8: Class 8-A (Middle Wing) -->
+<tr class="h-14 hover:bg-surface-container transition-colors group">
+<td class="px-space-md py-2">
+<div class="flex items-center gap-space-sm">
+<div class="w-8 h-8 rounded bg-surface-container flex items-center justify-center font-label-md text-primary font-semibold">
+                    08A
+                  </div>
+<div class="flex flex-col">
+<span class="font-label-md text-label-md text-on-surface">Class 8 — Section A</span>
+<span class="font-body-sm text-body-sm text-on-surface-variant">Room MW-102 • Middle Wing Block</span>
+</div>
+</div>
+</td>
+<td class="px-space-md py-2">
+<div class="flex flex-col">
+<span class="font-label-sm text-label-sm text-on-surface">Middle Wing</span>
+<span class="font-body-sm text-body-sm text-on-surface-variant">Standard Curriculum</span>
+</div>
+</td>
+<td class="px-space-md py-2">
+<div class="flex flex-col gap-1">
+<div class="flex justify-between font-tabular-data text-tabular-data">
+<span class="font-semibold text-on-surface">40 <span class="text-on-surface-variant font-normal">/ 42</span></span>
+<span class="text-on-surface-variant">95.2%</span>
+</div>
+<div class="w-full bg-surface-container h-1.5 rounded-full overflow-hidden">
+<div class="bg-primary h-full rounded-full" style="width: 95.2%"></div>
+</div>
+</div>
+</td>
+<td class="px-space-md py-2">
+<div class="flex items-center gap-2">
+<div class="flex flex-col">
+<span class="font-label-sm text-label-sm text-on-surface">Mr. K. L. Sharma</span>
+<span class="font-body-sm text-body-sm text-on-surface-variant">TGT Hindi • <span class="font-mono">EMP-0941</span></span>
+</div>
+</div>
+</td>
+<td class="px-space-md py-2">
+<div class="flex flex-col">
+<span class="font-body-sm text-body-sm text-on-surface">Ms. Pooja Jain</span>
+<span class="font-body-sm text-body-sm text-on-surface-variant">TGT Mathematics</span>
+</div>
+</td>
+<td class="px-space-md py-2">
+<div class="flex items-center gap-1.5">
+<span class="px-2 py-0.5 rounded bg-surface-container text-on-surface font-label-sm text-label-sm">32 / 32 Wkly</span>
+</div>
+</td>
+<td class="px-space-md py-2">
+<span class="inline-flex items-center gap-1 px-2 py-0.5 rounded bg-surface-container-low text-primary font-label-sm text-label-sm">
+<span class="w-1.5 h-1.5 rounded-full bg-primary"></span>
+                  Active &amp; Synced
+                </span>
+</td>
+<td class="px-space-md py-2 text-right">
+<div class="flex items-center justify-end gap-1">
+<button class="p-1 rounded text-on-surface-variant hover:text-primary hover:bg-surface-container transition-colors" title="View Class Roster">
+<span class="material-symbols-outlined text-[18px]">group</span>
+</button>
+<button class="p-1 rounded text-on-surface-variant hover:text-primary hover:bg-surface-container transition-colors" title="Faculty Assignments">
+<span class="material-symbols-outlined text-[18px]">assignment_ind</span>
+</button>
+<button class="p-1 rounded text-on-surface-variant hover:text-primary hover:bg-surface-container transition-colors" title="Section Configuration">
+<span class="material-symbols-outlined text-[18px]">settings</span>
+</button>
+</div>
+</td>
+</tr>
+<!-- Row 9: Class 8-B (Middle Wing) -->
+<tr class="h-14 hover:bg-surface-container transition-colors group">
+<td class="px-space-md py-2">
+<div class="flex items-center gap-space-sm">
+<div class="w-8 h-8 rounded bg-surface-container flex items-center justify-center font-label-md text-primary font-semibold">
+                    08B
+                  </div>
+<div class="flex flex-col">
+<span class="font-label-md text-label-md text-on-surface">Class 8 — Section B</span>
+<span class="font-body-sm text-body-sm text-on-surface-variant">Room MW-104 • Middle Wing Block</span>
+</div>
+</div>
+</td>
+<td class="px-space-md py-2">
+<div class="flex flex-col">
+<span class="font-label-sm text-label-sm text-on-surface">Middle Wing</span>
+<span class="font-body-sm text-body-sm text-on-surface-variant">Standard Curriculum</span>
+</div>
+</td>
+<td class="px-space-md py-2">
+<div class="flex flex-col gap-1">
+<div class="flex justify-between font-tabular-data text-tabular-data">
+<span class="font-semibold text-secondary">41 <span class="text-on-surface-variant font-normal">/ 42</span></span>
+<span class="text-secondary font-semibold">97.6% [Alert]</span>
+</div>
+<div class="w-full bg-surface-container h-1.5 rounded-full overflow-hidden">
+<div class="bg-secondary h-full rounded-full" style="width: 97.6%"></div>
+</div>
+</div>
+</td>
+<td class="px-space-md py-2">
+<div class="flex items-center gap-2">
+<div class="flex flex-col">
+<span class="font-label-sm text-label-sm text-on-surface">Mr. Amit Trivedi</span>
+<span class="font-body-sm text-body-sm text-on-surface-variant">TGT Sanskrit • <span class="font-mono">EMP-1077</span></span>
+</div>
+</div>
+</td>
+<td class="px-space-md py-2">
+<div class="flex flex-col">
+<span class="font-body-sm text-body-sm text-on-surface">Mrs. M. Sen</span>
+<span class="font-body-sm text-body-sm text-on-surface-variant">TGT Social Science</span>
+</div>
+</td>
+<td class="px-space-md py-2">
+<div class="flex items-center gap-1.5">
+<span class="px-2 py-0.5 rounded bg-surface-container text-on-surface font-label-sm text-label-sm">32 / 32 Wkly</span>
+</div>
+</td>
+<td class="px-space-md py-2">
+<span class="inline-flex items-center gap-1 px-2 py-0.5 rounded bg-surface-container-low text-primary font-label-sm text-label-sm">
+<span class="w-1.5 h-1.5 rounded-full bg-primary"></span>
+                  Active &amp; Synced
+                </span>
+</td>
+<td class="px-space-md py-2 text-right">
+<div class="flex items-center justify-end gap-1">
+<button class="p-1 rounded text-on-surface-variant hover:text-primary hover:bg-surface-container transition-colors" title="View Class Roster">
+<span class="material-symbols-outlined text-[18px]">group</span>
+</button>
+<button class="p-1 rounded text-on-surface-variant hover:text-primary hover:bg-surface-container transition-colors" title="Faculty Assignments">
+<span class="material-symbols-outlined text-[18px]">assignment_ind</span>
+</button>
+<button class="p-1 rounded text-on-surface-variant hover:text-primary hover:bg-surface-container transition-colors" title="Section Configuration">
+<span class="material-symbols-outlined text-[18px]">settings</span>
+</button>
+</div>
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+<!-- Ledger Pagination & Row Count Footer -->
+<div class="px-space-md py-space-sm bg-surface-container-high flex flex-col sm:flex-row items-center justify-between gap-space-md text-on-surface-variant font-body-sm text-body-sm">
+<div class="flex items-center gap-space-sm">
+<span>Showing <span class="font-semibold text-on-surface">1–9</span> of 20 Cohort Registers</span>
+<span class="text-outline">|</span>
+<span class="text-primary font-label-sm">11 Cohorts in Middle Wing Batches</span>
+</div>
+<div class="flex items-center gap-1">
+<button class="h-8 px-2.5 rounded bg-surface-container-lowest text-on-surface hover:bg-surface transition-colors disabled:opacity-50 font-label-sm text-label-sm shadow-sm" disabled="">
+            Previous
+          </button>
+<button class="h-8 w-8 rounded bg-primary text-on-primary font-label-sm text-label-sm shadow-sm">
+            1
+          </button>
+<button class="h-8 w-8 rounded bg-surface-container-lowest text-on-surface hover:bg-surface font-label-sm text-label-sm shadow-sm transition-colors">
+            2
+          </button>
+<button class="h-8 w-8 rounded bg-surface-container-lowest text-on-surface hover:bg-surface font-label-sm text-label-sm shadow-sm transition-colors">
+            3
+          </button>
+<button class="h-8 px-2.5 rounded bg-surface-container-lowest text-on-surface hover:bg-surface transition-colors font-label-sm text-label-sm shadow-sm">
+            Next
+          </button>
+</div>
+</div>
+</div>
+<!-- Bottom Institutional Governance & Compliance Panel -->
+<div class="grid grid-cols-1 md:grid-cols-3 gap-space-lg">
+<!-- Statutory Ceiling Directives -->
+<div class="md:col-span-2 bg-surface-container-lowest p-space-lg rounded shadow-sm flex flex-col justify-between">
+<div class="flex flex-col gap-space-xs">
+<div class="flex items-center gap-space-xs text-primary font-label-sm text-label-sm uppercase tracking-wide">
+<span class="material-symbols-outlined text-[18px]">gavel</span>
+<span>CBSE Statutory Affiliation Rule 14.1 — Section Ceiling Enforcement</span>
+</div>
+<p class="font-body-md text-body-md text-on-surface leading-relaxed mt-1">
+            Under CBSE Affiliation No. <span class="font-semibold text-primary">1730249</span> (Jaipur Zone), no instructional cohort may exceed 45 students without prior sanction from the Regional Directorate. Sections operating between 43–45 capacity trigger automated registrar freeze alerts on biometric admissions.
+          </p>
+</div>
+<div class="flex flex-wrap items-center gap-space-lg pt-space-md mt-space-md text-on-surface-variant font-body-sm text-body-sm">
+<div class="flex items-center gap-1.5">
+<span class="material-symbols-outlined text-primary text-[18px]">verified</span>
+<span>Floor Area Quotient: 1.2 m² / pupil satisfied</span>
+</div>
+<div class="flex items-center gap-1.5">
+<span class="material-symbols-outlined text-primary text-[18px]">pin_drop</span>
+<span>All 20 Section Classrooms Geotagged</span>
+</div>
+<div class="flex items-center gap-1.5">
+<span class="material-symbols-outlined text-secondary text-[18px]">notification_important</span>
+<span>4 Cohorts Approaching Saturation (≥95%)</span>
+</div>
+</div>
+</div>
+<!-- Audit Registry & Signoff Footprint -->
+<div class="bg-surface-container-lowest p-space-lg rounded shadow-sm flex flex-col justify-between">
+<div class="flex flex-col gap-space-xs">
+<span class="font-label-sm text-label-sm text-on-surface-variant uppercase tracking-wider">Cohort Audit Protocol</span>
+<div class="flex items-center gap-2 mt-1">
+<div class="w-8 h-8 rounded-full bg-primary-container text-on-primary flex items-center justify-center font-label-md">
+              KS
+            </div>
+<div class="flex flex-col">
+<span class="font-label-md text-label-md text-on-surface">Dr. K. S. Rathore</span>
+<span class="font-body-sm text-body-sm text-on-surface-variant">Principal &amp; Authority Head</span>
+</div>
+</div>
+</div>
+<div class="mt-space-md flex flex-col gap-1 font-body-sm text-body-sm text-on-surface-variant">
+<div class="flex justify-between">
+<span>Last Ledger Certification:</span>
+<span class="text-on-surface font-tabular-data">10 Jan 2025, 16:42 IST</span>
+</div>
+<div class="flex justify-between">
+<span>Next CBSE Periodic Inspection:</span>
+<span class="text-on-surface font-tabular-data">August 2025</span>
+</div>
+<div class="flex justify-between">
+<span>Integrity Checksum:</span>
+<span class="font-mono text-primary text-xs">HJ-AY24-SEC-0982F</span>
+</div>
+</div>
+<div class="mt-space-md pt-space-xs">
+<button class="w-full h-8 rounded bg-surface-container text-primary hover:bg-surface-container-high transition-colors font-label-sm text-label-sm flex items-center justify-center gap-1">
+<span class="material-symbols-outlined text-[16px]">history_edu</span>
+<span>View Configuration History Log</span>
+</button>
+</div>
+</div>
+</div>
+</div>
+</div></main></div></body></html>

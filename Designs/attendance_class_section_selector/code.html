@@ -1,0 +1,547 @@
+<!DOCTYPE html>
+
+<html lang="en"><head><meta charset="utf-8"/><meta content="width=device-width, initial-scale=1.0" name="viewport"/><meta content="web_dashboard" name="shell-type"/><link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@100..900&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/><style>@layer base{html,body{margin:0;padding:0;}body{overscroll-behavior:none;}main>:first-child{margin-top:0!important;}main>:last-child{margin-bottom:0!important;}}::-webkit-scrollbar{display:none;}</style><script src="https://cdn.tailwindcss.com"></script><script id="tailwind-config">tailwind.config={darkMode:"class",theme:{extend:{colors:{"surface-container-lowest":"#ffffff","inverse-surface":"#273331","on-background":"#131e1d","on-tertiary-fixed-variant":"#822624","surface":"#f0fcfa","background":"#f0fcfa","outline-variant":"#c0c8c4","on-error":"#ffffff","on-secondary-container":"#79511f","on-primary-fixed":"#002019","inverse-on-surface":"#e7f3f1","secondary":"#7e5624","on-tertiary-container":"#ffb2ac","primary-fixed-dim":"#a5cfc1","on-tertiary-fixed":"#410004","on-surface":"#131e1d","secondary-fixed":"#ffddba","surface-variant":"#d9e5e3","on-secondary":"#ffffff","surface-container-high":"#deebe9","tertiary":"#721a1a","on-surface-variant":"#414845","surface-bright":"#f0fcfa","surface-container":"#e4f0ee","on-primary-fixed-variant":"#264e43","surface-dim":"#d0dddb","surface-container-low":"#eaf6f4","tertiary-fixed-dim":"#ffb3ad","surface-container-highest":"#d9e5e3","on-primary":"#ffffff","surface-tint":"#3e665a","primary":"#184237","tertiary-fixed":"#ffdad7","on-secondary-fixed":"#2b1700","primary-container":"#31594e","tertiary-container":"#91312e","error":"#ba1a1a","on-primary-container":"#a3cec0","inverse-primary":"#a5cfc1","error-container":"#ffdad6","on-secondary-fixed-variant":"#633f0d","primary-fixed":"#c0ecdd","on-tertiary":"#ffffff","secondary-fixed-dim":"#f2bd80","secondary-container":"#fec78a","on-error-container":"#93000a","outline":"#717975"},borderRadius:{"DEFAULT":"0.125rem","lg":"0.25rem","xl":"0.5rem","full":"0.75rem"},spacing:{"space-xl":"1.5rem","gutter-desktop":"1.5rem","gutter":"1rem","space-md":"0.75rem","space-sm":"0.5rem","space-xs":"0.25rem","margin":"1rem","margin-desktop":"2rem","space-lg":"1rem"},fontFamily:{"tabular-data":["Inter"],"label-md":["Inter"],"headline-xl":["Inter"],"label-sm":["Inter"],"headline-md":["Inter"],"headline-sm":["Inter"],"body-md":["Inter"],"headline-lg":["Inter"],"body-sm":["Inter"],"body-lg":["Inter"]},fontSize:{"tabular-data":["0.875rem",{"lineHeight":"1.25rem","letterSpacing":"0em","fontWeight":"400"}],"label-md":["0.875rem",{"lineHeight":"1.25rem","letterSpacing":"0.01em","fontWeight":"500"}],"headline-xl":["2rem",{"lineHeight":"2.5rem","letterSpacing":"-0.02em","fontWeight":"600"}],"label-sm":["0.75rem",{"lineHeight":"1rem","letterSpacing":"0.025em","fontWeight":"600"}],"headline-md":["1.25rem",{"lineHeight":"1.75rem","letterSpacing":"-0.01em","fontWeight":"600"}],"headline-sm":["1.125rem",{"lineHeight":"1.5rem","letterSpacing":"0em","fontWeight":"600"}],"body-md":["0.875rem",{"lineHeight":"1.25rem","letterSpacing":"0em","fontWeight":"400"}],"headline-lg":["1.5rem",{"lineHeight":"2rem","letterSpacing":"-0.015em","fontWeight":"600"}],"body-sm":["0.75rem",{"lineHeight":"1.125rem","letterSpacing":"0.005em","fontWeight":"400"}],"body-lg":["1rem",{"lineHeight":"1.5rem","letterSpacing":"0em","fontWeight":"400"}]}}}}</script></head><body class="bg-surface text-on-surface font-body-md text-body-md min-h-screen"><header class="fixed top-0 left-0 right-0 h-16 bg-surface-container-lowest shadow-[0_1px_4px_rgba(24,66,55,0.06)] z-50"><div class="h-16 w-full px-gutter-desktop flex items-center justify-between gap-space-lg"><div class="flex items-center gap-space-md"><img alt="HanuJai High School Crest" class="h-8 w-auto object-contain" src="https://lh3.googleusercontent.com/aida/AEtjO1XaQgiPfNIvW8D6_3ZLBk4GvIWZyWUGf7f7Dg04WfKedS7T3FYw-mhsFM8L3Pin9d7cVlXEHRmHsJCXDiazcnfVd6Tqv7VaLKe6RpNPCfZCc-Dvi1ZWD9M7WXsa4L-HwKss71_bIYIpzj-9xBLaHNmcz14vnYMCAa0kwivrop5es2kGVOT3zySzIYFxOHFNY5uKkyIZP7HWwhvOrMEpr5GgCcXnWgmWinAmafQcI3UYj4xiBvva4lvTdoE"/><div class="flex flex-col"><div class="flex items-center gap-space-sm"><span class="font-headline-sm text-headline-sm text-primary tracking-tight">HanuJai High School, Jaipur</span><span class="px-space-xs py-0.5 rounded-lg bg-surface-container text-on-surface-variant font-label-sm text-label-sm">AY 2024–25 (Term II)</span></div><span class="font-body-sm text-body-sm text-on-surface-variant">Staff Administration ERP</span></div></div><div class="flex-1 max-w-lg mx-space-xl hidden md:flex items-center"><div class="w-full flex items-center px-space-md py-1.5 rounded-lg bg-surface-container-low text-on-surface-variant focus-within:bg-surface-container-lowest focus-within:text-on-surface"><span class="material-symbols-outlined text-outline mr-space-sm text-[18px]">search</span><input class="w-full bg-transparent border-0 p-0 text-on-surface placeholder:text-outline font-body-sm text-body-sm focus:ring-0 focus:outline-none" placeholder="Search student, staff, class, admission..." type="text"/><kbd class="px-1.5 py-0.5 bg-surface-container rounded font-label-sm text-label-sm text-on-surface-variant">Ctrl+K</kbd></div></div><div class="flex items-center gap-space-md"><button aria-label="Notifications" class="relative p-space-xs rounded-lg text-on-surface-variant hover:bg-surface-container hover:text-on-surface transition-colors"><span class="material-symbols-outlined text-[20px]">notifications</span><span class="absolute top-1 right-1 w-2 h-2 rounded-full bg-error"></span></button><div class="flex items-center gap-space-sm pl-space-sm"><div class="w-8 h-8 rounded-full bg-primary flex items-center justify-center"><span class="material-symbols-outlined text-on-primary text-[18px]">person</span></div><div class="hidden xl:flex flex-col text-left"><span class="font-label-md text-label-md text-on-surface leading-tight">Mrs. Ananya Sharma</span><span class="font-body-sm text-body-sm text-on-surface-variant leading-tight">Class Teacher 10-A / Invigilator</span></div></div></div></div></header><aside class="fixed left-0 top-16 h-[calc(100vh-4rem)] w-64 bg-surface-container-lowest shadow-[1px_0_4px_rgba(24,66,55,0.04)] z-40 flex flex-col justify-between overflow-y-auto"><div class="py-space-md"><div class="px-gutter mb-space-sm text-on-surface-variant font-label-sm text-label-sm uppercase tracking-wider">Administrative Modules</div><nav class="flex flex-col gap-1 px-space-sm" data-active-classes="bg-primary-container text-on-primary font-label-md rounded-lg shadow-sm"><a class="flex items-center px-space-md py-2 rounded-lg text-on-surface-variant font-body-md text-body-md hover:bg-surface-container hover:text-on-surface transition-all" data-path="dashboard" href="#">Dashboard</a><a class="flex items-center px-space-md py-2 rounded-lg text-on-surface-variant font-body-md text-body-md hover:bg-surface-container hover:text-on-surface transition-all" data-path="student-directory--enrollment-ledger" href="#">Students</a><a class="flex items-center px-space-md py-2 rounded-lg text-on-surface-variant font-body-md text-body-md hover:bg-surface-container hover:text-on-surface transition-all" data-path="attendance-class--section-selector" href="#">Attendance</a><a class="flex items-center px-space-md py-2 rounded-lg text-on-surface-variant font-body-md text-body-md hover:bg-surface-container hover:text-on-surface transition-all" data-path="academics" href="#">Academics</a><a class="flex items-center px-space-md py-2 rounded-lg text-on-surface-variant font-body-md text-body-md hover:bg-surface-container hover:text-on-surface transition-all" data-path="student-profile--academic-performance-aarav-singhania" href="#">Performance</a><a class="flex items-center px-space-md py-2 rounded-lg text-on-surface-variant font-body-md text-body-md hover:bg-surface-container hover:text-on-surface transition-all" data-path="behaviour" href="#">Behaviour</a><a class="flex items-center px-space-md py-2 rounded-lg text-on-surface-variant font-body-md text-body-md hover:bg-surface-container hover:text-on-surface transition-all" data-path="reports" href="#">Reports &amp; CBSE</a><a class="flex items-center px-space-md py-2 rounded-lg text-on-surface-variant font-body-md text-body-md hover:bg-surface-container hover:text-on-surface transition-all" data-path="attendance-late-correction-request--authorization-workflow" href="#">Attendance Audits</a></nav></div><div class="p-space-md bg-surface-container-low m-space-sm rounded-lg flex flex-col gap-space-xs"><div class="flex items-center gap-space-xs text-primary font-label-sm text-label-sm"><span class="material-symbols-outlined text-[16px]">verified</span><span>CBSE Affiliation: #1730249</span></div><div class="font-body-sm text-body-sm text-on-surface-variant">Jaipur Zone • Active Node</div></div></aside><div class="pl-64"><main class="w-full pt-16 bg-surface min-h-screen"><div class="flex flex-col w-full">
+<!-- Sub-Header / Ledger Breadcrumbs & System Status Anchor -->
+<div class="px-margin-desktop py-space-md bg-surface-container-lowest border-b border-outline-variant/30 flex flex-wrap items-center justify-between gap-space-md">
+<div class="flex items-center gap-space-sm text-on-surface-variant font-label-sm text-label-sm">
+<span class="hover:text-primary cursor-pointer transition-colors">Home</span>
+<span class="text-outline">/</span>
+<span class="hover:text-primary cursor-pointer transition-colors">Attendance</span>
+<span class="text-outline">/</span>
+<span class="text-primary font-semibold">Section Ledger &amp; Register Selection</span>
+</div>
+<div class="flex items-center gap-space-lg">
+<div class="flex items-center gap-space-xs text-on-surface-variant font-body-sm text-body-sm">
+<span class="material-symbols-outlined text-primary text-[18px]">cell_tower</span>
+<span>Bio-Metric Sync: <strong class="text-on-surface font-tabular-data">Station #04 Active</strong> (09:02:14 IST)</span>
+</div>
+<div class="h-3 w-px bg-outline-variant/60"></div>
+<div class="flex items-center gap-space-xs text-primary font-label-sm text-label-sm bg-surface-container px-space-sm py-1 rounded">
+<span class="material-symbols-outlined text-[15px]">verified_user</span>
+<span>CBSE Sec. 12(b) Compliant</span>
+</div>
+</div>
+</div>
+<div class="p-margin-desktop max-w-7xl w-full mx-auto space-y-space-lg">
+<!-- Page Title & Operational Date Controller -->
+<div class="flex flex-col lg:flex-row lg:items-end justify-between gap-space-lg">
+<div class="space-y-1">
+<div class="flex items-center gap-space-sm">
+<span class="text-secondary font-label-sm text-label-sm uppercase tracking-widest">Administrative Ledger</span>
+<span class="text-outline-variant">•</span>
+<span class="text-on-surface-variant font-label-sm text-label-sm">Class Teacher Duty Roster</span>
+</div>
+<h1 class="font-headline-lg text-headline-lg text-primary tracking-tight">Daily Attendance Registers &amp; Duty Roster</h1>
+<p class="font-body-md text-body-md text-on-surface-variant">
+          Wednesday, 12 February 2025 • Academic Session <span class="text-on-surface font-semibold">AY 2024–25 (Term II)</span>
+</p>
+</div>
+<!-- Date & Shift Picker Segment -->
+<div class="flex flex-wrap items-center gap-space-sm bg-surface-container-lowest p-1.5 rounded-lg border border-outline-variant/40 shadow-sm">
+<div class="flex items-center bg-surface-container-low px-space-sm py-1 rounded text-on-surface">
+<span class="material-symbols-outlined text-outline text-[18px] mr-1.5">calendar_today</span>
+<span class="font-label-md text-label-md font-tabular-data font-semibold pr-2">12 Feb 2025</span>
+<span class="text-outline text-body-sm">Wed</span>
+</div>
+<div class="h-6 w-px bg-outline-variant/40"></div>
+<div class="flex items-center gap-1">
+<button class="px-2.5 py-1 text-label-sm font-label-sm rounded bg-primary text-on-primary">Today</button>
+<button class="px-2.5 py-1 text-label-sm font-label-sm rounded text-on-surface-variant hover:bg-surface-container transition-colors">Yesterday</button>
+<button class="px-2.5 py-1 text-label-sm font-label-sm rounded text-on-surface-variant hover:bg-surface-container transition-colors">Mon, 10 Feb</button>
+</div>
+<div class="h-6 w-px bg-outline-variant/40"></div>
+<div class="flex items-center pr-1">
+<select class="bg-transparent text-label-sm font-label-sm text-on-surface font-medium focus:outline-none cursor-pointer py-1">
+<option selected="">Morning Roll Call (08:30–09:15)</option>
+<option>Afternoon Lab Block (13:30–14:00)</option>
+<option>Remedial Extra Period (15:45–16:15)</option>
+</select>
+</div>
+</div>
+</div>
+<!-- Operational Status Banner (Lock Warning & Window Countdown) -->
+<div class="rounded-lg bg-surface-container-lowest border-l-4 border-l-secondary border border-outline-variant/40 p-space-lg flex flex-col md:flex-row md:items-center justify-between gap-space-md shadow-sm">
+<div class="flex items-start gap-space-md">
+<div class="p-2 bg-secondary-container/40 text-on-secondary-container rounded">
+<span class="material-symbols-outlined text-[24px]">timer</span>
+</div>
+<div class="space-y-0.5">
+<div class="flex items-center gap-space-sm">
+<span class="font-headline-sm text-headline-sm text-on-surface">Morning Roll Call Window (08:30 – 09:15 AM IST)</span>
+<span class="inline-flex items-center gap-1 px-2 py-0.5 rounded text-label-sm font-label-sm bg-secondary-container text-on-secondary-container font-semibold">
+<span class="w-1.5 h-1.5 rounded-full bg-secondary animate-pulse"></span>
+              WINDOW OPEN • 22 mins remaining
+            </span>
+</div>
+<p class="font-body-sm text-body-sm text-on-surface-variant max-w-3xl">
+            Attendance submissions are cryptographically stamped and synchronized with the Central Board Examination &amp; Attendance Portal. Cohort records not finalized by 09:15 AM automatically transfer to the Office of the Vice-Principal for formal dispensation.
+          </p>
+</div>
+</div>
+<div class="flex items-center gap-space-sm shrink-0 self-end md:self-center">
+<a class="text-primary hover:underline font-label-sm text-label-sm flex items-center gap-1" href="#rules-drawer">
+<span class="material-symbols-outlined text-[16px]">info</span>
+          Rule Manual Sec. 8.4
+        </a>
+</div>
+</div>
+<!-- KPI Metric Cards Grid -->
+<div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-space-md">
+<!-- Card 1 -->
+<div class="bg-surface-container-lowest p-space-lg rounded-lg border border-outline-variant/40 shadow-sm flex flex-col justify-between">
+<div class="flex items-center justify-between text-on-surface-variant">
+<span class="font-label-sm text-label-sm uppercase tracking-wide">Total Sanctioned Cohorts</span>
+<span class="material-symbols-outlined text-[20px] text-outline">apartment</span>
+</div>
+<div class="mt-space-md flex items-baseline justify-between">
+<span class="font-headline-xl text-headline-xl text-primary font-tabular-data">20</span>
+<span class="font-label-sm text-label-sm text-on-surface-variant">1,024 Students</span>
+</div>
+<div class="mt-2 pt-2 border-t border-outline-variant/20 flex items-center justify-between text-body-sm text-on-surface-variant">
+<span>Active Capacity</span>
+<span class="font-semibold text-on-surface">98.2% Filled</span>
+</div>
+</div>
+<!-- Card 2 -->
+<div class="bg-surface-container-lowest p-space-lg rounded-lg border border-outline-variant/40 shadow-sm flex flex-col justify-between">
+<div class="flex items-center justify-between text-on-surface-variant">
+<span class="font-label-sm text-label-sm uppercase tracking-wide">Registers Submitted</span>
+<span class="material-symbols-outlined text-[20px] text-primary">fact_check</span>
+</div>
+<div class="mt-space-md flex items-baseline justify-between">
+<div class="flex items-baseline gap-1.5">
+<span class="font-headline-xl text-headline-xl text-on-surface font-tabular-data">16</span>
+<span class="font-body-md text-body-md text-outline">/ 20</span>
+</div>
+<span class="px-1.5 py-0.5 rounded text-label-sm font-label-sm bg-surface-container text-primary font-semibold">80.0%</span>
+</div>
+<div class="mt-2 pt-2 border-t border-outline-variant/20 flex items-center justify-between text-body-sm text-on-surface-variant">
+<span>Board Audit Status</span>
+<span class="text-primary font-medium flex items-center gap-1">
+<span class="w-1.5 h-1.5 rounded-full bg-primary"></span> Live Syncing
+          </span>
+</div>
+</div>
+<!-- Card 3 -->
+<div class="bg-surface-container-lowest p-space-lg rounded-lg border border-outline-variant/40 shadow-sm flex flex-col justify-between">
+<div class="flex items-center justify-between text-on-surface-variant">
+<span class="font-label-sm text-label-sm uppercase tracking-wide">In Progress / Pending</span>
+<span class="material-symbols-outlined text-[20px] text-secondary">pending_actions</span>
+</div>
+<div class="mt-space-md flex items-baseline justify-between">
+<span class="font-headline-xl text-headline-xl text-secondary font-tabular-data">3</span>
+<span class="font-label-sm text-label-sm text-secondary font-semibold">10-A Draft Active</span>
+</div>
+<div class="mt-2 pt-2 border-t border-outline-variant/20 flex items-center justify-between text-body-sm text-on-surface-variant">
+<span>Staff Awaiting</span>
+<span class="font-medium text-on-surface">3 Instructors</span>
+</div>
+</div>
+<!-- Card 4 -->
+<div class="bg-surface-container-lowest p-space-lg rounded-lg border border-outline-variant/40 shadow-sm flex flex-col justify-between">
+<div class="flex items-center justify-between text-on-surface-variant">
+<span class="font-label-sm text-label-sm uppercase tracking-wide">Locked / Attention</span>
+<span class="material-symbols-outlined text-[20px] text-tertiary">lock_clock</span>
+</div>
+<div class="mt-space-md flex items-baseline justify-between">
+<span class="font-headline-xl text-headline-xl text-tertiary font-tabular-data">1</span>
+<span class="font-label-sm text-label-sm px-1.5 py-0.5 rounded bg-error-container text-tertiary font-semibold">Grade 8-B</span>
+</div>
+<div class="mt-2 pt-2 border-t border-outline-variant/20 flex items-center justify-between text-body-sm text-on-surface-variant">
+<span>Action Required</span>
+<span class="text-tertiary font-medium">Bursar Discretion</span>
+</div>
+</div>
+</div>
+<!-- Active Section Filtering & Table View -->
+<div class="bg-surface-container-lowest rounded-lg border border-outline-variant/40 shadow-sm overflow-hidden">
+<!-- Ledger Control Toolbar -->
+<div class="p-space-md border-b border-outline-variant/30 flex flex-col md:flex-row md:items-center justify-between gap-space-md bg-surface-container-low/40">
+<!-- Scope Tabs -->
+<div class="flex items-center p-1 bg-surface-container rounded-lg">
+<button class="px-space-md py-1.5 text-label-sm font-label-sm rounded text-on-primary bg-primary shadow-xs font-semibold flex items-center gap-1.5 transition-all">
+<span class="material-symbols-outlined text-[16px]">person_check</span>
+<span>My Assigned Section (10-A)</span>
+</button>
+<button class="px-space-md py-1.5 text-label-sm font-label-sm rounded text-on-surface-variant hover:text-on-surface font-medium flex items-center gap-1.5 transition-all">
+<span class="material-symbols-outlined text-[16px]">grid_view</span>
+<span>All School Cohorts (Classes 1–10, 20 Sec)</span>
+</button>
+</div>
+<!-- Filter Tools -->
+<div class="flex items-center gap-space-sm">
+<div class="relative">
+<span class="material-symbols-outlined absolute left-2.5 top-1/2 -translate-y-1/2 text-outline text-[16px]">filter_list</span>
+<select class="pl-8 pr-6 py-1.5 text-label-sm font-label-sm bg-surface-container-lowest rounded border border-outline-variant/50 text-on-surface focus:outline-none focus:border-primary">
+<option>All Divisions (A–D)</option>
+<option>Senior Wing (9–10)</option>
+<option>Middle Wing (6–8)</option>
+<option>Primary Wing (1–5)</option>
+</select>
+</div>
+<div class="relative">
+<span class="material-symbols-outlined absolute left-2.5 top-1/2 -translate-y-1/2 text-outline text-[16px]">swap_vert</span>
+<select class="pl-8 pr-6 py-1.5 text-label-sm font-label-sm bg-surface-container-lowest rounded border border-outline-variant/50 text-on-surface focus:outline-none focus:border-primary">
+<option>Sort: Class Hierarchy</option>
+<option>Sort: Pending Status First</option>
+<option>Sort: Submission Timestamp</option>
+</select>
+</div>
+<button class="p-1.5 rounded hover:bg-surface-container text-on-surface-variant" title="Download Master Roll Ledger PDF">
+<span class="material-symbols-outlined text-[20px]">print</span>
+</button>
+</div>
+</div>
+<!-- Priority Action Banner for Class Teacher Ananya Sharma -->
+<div class="bg-primary/5 border-b border-primary/20 px-margin-desktop py-space-md flex flex-wrap items-center justify-between gap-space-md">
+<div class="flex items-center gap-space-md">
+<div class="w-10 h-10 rounded bg-primary-container text-on-primary flex items-center justify-center font-headline-sm font-semibold">
+            10A
+          </div>
+<div>
+<div class="flex items-center gap-space-sm">
+<h2 class="font-headline-sm text-headline-sm text-primary">Class 10-A • Invigilator Workstation</h2>
+<span class="px-2 py-0.5 rounded text-label-sm font-label-sm bg-primary/10 text-primary font-semibold">Assigned Cohort</span>
+</div>
+<p class="font-body-sm text-body-sm text-on-surface-variant">
+              Class Teacher: <strong class="text-on-surface">Mrs. Ananya Sharma</strong> • Room 204 (Aryabhata Block) • Draft Session initialized at 08:34 AM
+            </p>
+</div>
+</div>
+<div class="flex items-center gap-space-md">
+<div class="text-right hidden sm:block">
+<div class="font-label-md text-label-md font-tabular-data text-on-surface font-semibold">38 / 42 Students Recorded</div>
+<div class="font-body-sm text-body-sm text-secondary font-medium">4 Roll Calls Unmarked</div>
+</div>
+<button class="px-space-lg py-2 bg-primary hover:bg-primary-container text-on-primary font-label-md text-label-md rounded flex items-center gap-space-xs shadow-sm transition-colors cursor-pointer">
+<span class="material-symbols-outlined text-[18px]">edit_note</span>
+<span>Resume Marking (10-A)</span>
+</button>
+</div>
+</div>
+<!-- Cohort Registers Master Data Table -->
+<div class="overflow-x-auto">
+<table class="w-full text-left border-collapse">
+<thead>
+<tr class="bg-surface-container-high text-on-surface-variant font-label-sm text-label-sm uppercase tracking-wider h-9">
+<th class="px-margin-desktop py-2 font-semibold">Grade &amp; Section</th>
+<th class="px-space-md py-2 font-semibold">Class Teacher / Proctor</th>
+<th class="px-space-md py-2 font-semibold text-center">Enrollment</th>
+<th class="px-space-md py-2 font-semibold">Verification &amp; Filing Status</th>
+<th class="px-space-md py-2 font-semibold text-right">Headcount</th>
+<th class="px-margin-desktop py-2 font-semibold text-right">Administrative Action</th>
+</tr>
+</thead>
+<tbody class="divide-y divide-outline-variant/20 font-body-md text-body-md">
+<!-- Row 1: Class 10-A (Active Draft) -->
+<tr class="bg-primary/5 hover:bg-primary/10 transition-colors">
+<td class="px-margin-desktop py-3">
+<div class="flex items-center gap-2">
+<span class="w-2 h-2 rounded-full bg-secondary"></span>
+<span class="font-semibold text-on-surface">Class 10 - Section A</span>
+</div>
+<span class="text-body-sm text-on-surface-variant pl-4">CBSE AISSE Batch • Room 204</span>
+</td>
+<td class="px-space-md py-3">
+<div class="text-on-surface font-medium">Mrs. Ananya Sharma</div>
+<div class="text-body-sm text-on-surface-variant">PGT English (Emp #HS-1082)</div>
+</td>
+<td class="px-space-md py-3 text-center font-tabular-data font-medium">42</td>
+<td class="px-space-md py-3">
+<div class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded text-label-sm font-label-sm bg-secondary-container/50 text-on-secondary-container font-semibold">
+<span class="material-symbols-outlined text-[14px]">pending</span>
+<span>DRAFT IN PROGRESS • 38/42 Marked</span>
+</div>
+<div class="text-body-sm text-on-surface-variant mt-0.5">Last modified: 08:51 AM (Desktop Tab)</div>
+</td>
+<td class="px-space-md py-3 text-right font-tabular-data">
+<span class="text-on-surface font-semibold">36</span> Pres / <span class="text-tertiary font-semibold">2</span> Abs
+              </td>
+<td class="px-margin-desktop py-3 text-right">
+<button class="px-3 py-1.5 rounded bg-primary text-on-primary font-label-sm text-label-sm hover:bg-primary-container transition-colors inline-flex items-center gap-1 shadow-xs">
+<span>Resume</span>
+<span class="material-symbols-outlined text-[14px]">arrow_forward</span>
+</button>
+</td>
+</tr>
+<!-- Row 2: Class 10-B (Submitted) -->
+<tr class="hover:bg-surface-container-low transition-colors">
+<td class="px-margin-desktop py-3">
+<div class="flex items-center gap-2">
+<span class="w-2 h-2 rounded-full bg-primary"></span>
+<span class="font-medium text-on-surface">Class 10 - Section B</span>
+</div>
+<span class="text-body-sm text-on-surface-variant pl-4">CBSE AISSE Batch • Room 205</span>
+</td>
+<td class="px-space-md py-3">
+<div class="text-on-surface">Mr. Rajesh Meena</div>
+<div class="text-body-sm text-on-surface-variant">PGT Mathematics (Emp #HS-0941)</div>
+</td>
+<td class="px-space-md py-3 text-center font-tabular-data">42</td>
+<td class="px-space-md py-3">
+<div class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded text-label-sm font-label-sm bg-surface-container text-primary font-semibold">
+<span class="material-symbols-outlined text-[14px]">check_circle</span>
+<span>SUBMITTED • 08:52 AM</span>
+</div>
+<div class="text-body-sm text-on-surface-variant mt-0.5">Hash: #CBSE-8829-10B</div>
+</td>
+<td class="px-space-md py-3 text-right font-tabular-data">
+<span class="text-on-surface font-medium">39</span> Pres / <span class="text-tertiary">3</span> Abs
+              </td>
+<td class="px-margin-desktop py-3 text-right">
+<button class="px-3 py-1.5 rounded bg-surface-container-low hover:bg-surface-container text-on-surface font-label-sm text-label-sm transition-colors border border-outline-variant/40 inline-flex items-center gap-1">
+<span class="material-symbols-outlined text-[14px]">receipt_long</span>
+<span>Receipt</span>
+</button>
+</td>
+</tr>
+<!-- Row 3: Class 9-A (Submitted) -->
+<tr class="hover:bg-surface-container-low transition-colors">
+<td class="px-margin-desktop py-3">
+<div class="flex items-center gap-2">
+<span class="w-2 h-2 rounded-full bg-primary"></span>
+<span class="font-medium text-on-surface">Class 9 - Section A</span>
+</div>
+<span class="text-body-sm text-on-surface-variant pl-4">Secondary Wing • Room 112</span>
+</td>
+<td class="px-space-md py-3">
+<div class="text-on-surface">Ms. Sunita Joshi</div>
+<div class="text-body-sm text-on-surface-variant">TGT Science (Emp #HS-1120)</div>
+</td>
+<td class="px-space-md py-3 text-center font-tabular-data">38</td>
+<td class="px-space-md py-3">
+<div class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded text-label-sm font-label-sm bg-surface-container text-primary font-semibold">
+<span class="material-symbols-outlined text-[14px]">check_circle</span>
+<span>SUBMITTED • 08:44 AM</span>
+</div>
+<div class="text-body-sm text-on-surface-variant mt-0.5">Verified via Classroom Tablet</div>
+</td>
+<td class="px-space-md py-3 text-right font-tabular-data">
+<span class="text-on-surface font-medium">36</span> Pres / <span class="text-tertiary">2</span> Abs
+              </td>
+<td class="px-margin-desktop py-3 text-right">
+<button class="px-3 py-1.5 rounded bg-surface-container-lowest hover:bg-surface-container text-on-surface font-label-sm text-label-sm transition-colors border border-outline-variant/40">
+                  View Register
+                </button>
+</td>
+</tr>
+<!-- Row 4: Class 9-B (Submitted) -->
+<tr class="hover:bg-surface-container-low transition-colors">
+<td class="px-margin-desktop py-3">
+<div class="flex items-center gap-2">
+<span class="w-2 h-2 rounded-full bg-primary"></span>
+<span class="font-medium text-on-surface">Class 9 - Section B</span>
+</div>
+<span class="text-body-sm text-on-surface-variant pl-4">Secondary Wing • Room 114</span>
+</td>
+<td class="px-space-md py-3">
+<div class="text-on-surface">Mr. Vikram Shekhawat</div>
+<div class="text-body-sm text-on-surface-variant">TGT Social Studies (Emp #HS-0877)</div>
+</td>
+<td class="px-space-md py-3 text-center font-tabular-data">37</td>
+<td class="px-space-md py-3">
+<div class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded text-label-sm font-label-sm bg-surface-container text-primary font-semibold">
+<span class="material-symbols-outlined text-[14px]">check_circle</span>
+<span>SUBMITTED • 08:58 AM</span>
+</div>
+<div class="text-body-sm text-on-surface-variant mt-0.5">Biometric kiosk reconciled</div>
+</td>
+<td class="px-space-md py-3 text-right font-tabular-data">
+<span class="text-on-surface font-medium">34</span> Pres / <span class="text-tertiary">3</span> Abs
+              </td>
+<td class="px-margin-desktop py-3 text-right">
+<button class="px-3 py-1.5 rounded bg-surface-container-lowest hover:bg-surface-container text-on-surface font-label-sm text-label-sm transition-colors border border-outline-variant/40">
+                  View Register
+                </button>
+</td>
+</tr>
+<!-- Row 5: Class 8-A (Correction Pending Audit) -->
+<tr class="bg-surface-container-low/30 hover:bg-surface-container-low transition-colors">
+<td class="px-margin-desktop py-3">
+<div class="flex items-center gap-2">
+<span class="w-2 h-2 rounded-full bg-secondary"></span>
+<span class="font-medium text-on-surface">Class 8 - Section A</span>
+</div>
+<span class="text-body-sm text-on-surface-variant pl-4">Middle Wing • Room 102</span>
+</td>
+<td class="px-space-md py-3">
+<div class="text-on-surface">Mrs. Deepa Verma</div>
+<div class="text-body-sm text-on-surface-variant">TGT Hindi (Emp #HS-1204)</div>
+</td>
+<td class="px-space-md py-3 text-center font-tabular-data">40</td>
+<td class="px-space-md py-3">
+<div class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded text-label-sm font-label-sm bg-secondary-container/30 text-on-secondary-container font-semibold">
+<span class="material-symbols-outlined text-[14px]">published_with_changes</span>
+<span>CORRECTION PENDING REVIEW</span>
+</div>
+<div class="text-body-sm text-on-surface-variant mt-0.5">1 roll alteration awaiting approval</div>
+</td>
+<td class="px-space-md py-3 text-right font-tabular-data">
+<span class="text-on-surface font-medium">38</span> Pres / <span class="text-tertiary">2</span> Abs
+              </td>
+<td class="px-margin-desktop py-3 text-right">
+<button class="px-3 py-1.5 rounded bg-surface-container-lowest hover:bg-surface-container text-secondary font-label-sm text-label-sm transition-colors border border-secondary/30 inline-flex items-center gap-1">
+<span class="material-symbols-outlined text-[14px]">shield</span>
+<span>Audit Request</span>
+</button>
+</td>
+</tr>
+<!-- Row 6: Class 8-B (Window Closed / Overdue) -->
+<tr class="bg-error-container/10 hover:bg-error-container/20 transition-colors">
+<td class="px-margin-desktop py-3">
+<div class="flex items-center gap-2">
+<span class="w-2 h-2 rounded-full bg-tertiary"></span>
+<span class="font-semibold text-tertiary">Class 8 - Section B</span>
+</div>
+<span class="text-body-sm text-on-surface-variant pl-4">Middle Wing • Room 104</span>
+</td>
+<td class="px-space-md py-3">
+<div class="text-on-surface">Mr. Amit Trivedi</div>
+<div class="text-body-sm text-on-surface-variant">TGT Sanskrit (Emp #HS-1190)</div>
+</td>
+<td class="px-space-md py-3 text-center font-tabular-data">41</td>
+<td class="px-space-md py-3">
+<div class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded text-label-sm font-label-sm bg-error-container text-tertiary font-semibold">
+<span class="material-symbols-outlined text-[14px]">block</span>
+<span>WINDOW CLOSED • OVERDUE</span>
+</div>
+<div class="text-body-sm text-tertiary mt-0.5">0 of 41 marked • Auto-lock triggered</div>
+</td>
+<td class="px-space-md py-3 text-right font-tabular-data text-outline">
+                -- / --
+              </td>
+<td class="px-margin-desktop py-3 text-right">
+<button class="px-3 py-1.5 rounded bg-surface-container-lowest hover:bg-surface-container text-tertiary font-label-sm text-label-sm transition-colors border border-tertiary/40 inline-flex items-center gap-1">
+<span class="material-symbols-outlined text-[14px]">lock_open</span>
+<span>Request Unlock</span>
+</button>
+</td>
+</tr>
+<!-- Row 7: Class 7-A (Submitted) -->
+<tr class="hover:bg-surface-container-low transition-colors">
+<td class="px-margin-desktop py-3">
+<div class="flex items-center gap-2">
+<span class="w-2 h-2 rounded-full bg-primary"></span>
+<span class="font-medium text-on-surface">Class 7 - Section A</span>
+</div>
+<span class="text-body-sm text-on-surface-variant pl-4">Middle Wing • Room 008</span>
+</td>
+<td class="px-space-md py-3">
+<div class="text-on-surface">Mrs. Neha Khandelwal</div>
+<div class="text-body-sm text-on-surface-variant">TGT English (Emp #HS-1302)</div>
+</td>
+<td class="px-space-md py-3 text-center font-tabular-data">39</td>
+<td class="px-space-md py-3">
+<div class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded text-label-sm font-label-sm bg-surface-container text-primary font-semibold">
+<span class="material-symbols-outlined text-[14px]">check_circle</span>
+<span>SUBMITTED • 08:39 AM</span>
+</div>
+<div class="text-body-sm text-on-surface-variant mt-0.5">Filing agent: Standby Master</div>
+</td>
+<td class="px-space-md py-3 text-right font-tabular-data">
+<span class="text-on-surface font-medium">38</span> Pres / <span class="text-tertiary">1</span> Abs
+              </td>
+<td class="px-margin-desktop py-3 text-right">
+<button class="px-3 py-1.5 rounded bg-surface-container-lowest hover:bg-surface-container text-on-surface font-label-sm text-label-sm transition-colors border border-outline-variant/40">
+                  View Register
+                </button>
+</td>
+</tr>
+<!-- Row 8: Class 7-B (Submitted) -->
+<tr class="hover:bg-surface-container-low transition-colors">
+<td class="px-margin-desktop py-3">
+<div class="flex items-center gap-2">
+<span class="w-2 h-2 rounded-full bg-primary"></span>
+<span class="font-medium text-on-surface">Class 7 - Section B</span>
+</div>
+<span class="text-body-sm text-on-surface-variant pl-4">Middle Wing • Room 010</span>
+</td>
+<td class="px-space-md py-3">
+<div class="text-on-surface">Mr. Harish Chandra Rao</div>
+<div class="text-body-sm text-on-surface-variant">TGT Mathematics (Emp #HS-0914)</div>
+</td>
+<td class="px-space-md py-3 text-center font-tabular-data">39</td>
+<td class="px-space-md py-3">
+<div class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded text-label-sm font-label-sm bg-surface-container text-primary font-semibold">
+<span class="material-symbols-outlined text-[14px]">check_circle</span>
+<span>SUBMITTED • 08:48 AM</span>
+</div>
+<div class="text-body-sm text-on-surface-variant mt-0.5">Biometric kiosk reconciled</div>
+</td>
+<td class="px-space-md py-3 text-right font-tabular-data">
+<span class="text-on-surface font-medium">39</span> Pres / <span class="text-on-surface-variant">0</span> Abs
+              </td>
+<td class="px-margin-desktop py-3 text-right">
+<button class="px-3 py-1.5 rounded bg-surface-container-lowest hover:bg-surface-container text-on-surface font-label-sm text-label-sm transition-colors border border-outline-variant/40">
+                  View Register
+                </button>
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+<!-- Table Ledger Pagination & Footer Audit Data -->
+<div class="px-margin-desktop py-space-md bg-surface-container-low/30 border-t border-outline-variant/30 flex flex-wrap items-center justify-between gap-space-md text-body-sm text-on-surface-variant">
+<div class="flex items-center gap-space-md">
+<span>Showing <strong class="text-on-surface font-semibold">8</strong> of <strong class="text-on-surface font-semibold">20</strong> cohort ledgers</span>
+<span class="text-outline-variant">•</span>
+<span>Automatic refresh in <span class="font-tabular-data font-semibold text-primary" id="countdown">45s</span></span>
+</div>
+<div class="flex items-center gap-1">
+<button class="px-2 py-1 border border-outline-variant/40 rounded bg-surface-container-lowest text-on-surface-variant hover:bg-surface-container cursor-not-allowed opacity-50" disabled="">
+<span class="material-symbols-outlined text-[16px] align-middle">chevron_left</span>
+</button>
+<button class="px-2.5 py-1 border border-primary bg-primary text-on-primary font-semibold rounded text-label-sm">1</button>
+<button class="px-2.5 py-1 border border-outline-variant/40 rounded bg-surface-container-lowest text-on-surface hover:bg-surface-container text-label-sm">2</button>
+<button class="px-2.5 py-1 border border-outline-variant/40 rounded bg-surface-container-lowest text-on-surface hover:bg-surface-container text-label-sm">3</button>
+<button class="px-2 py-1 border border-outline-variant/40 rounded bg-surface-container-lowest text-on-surface-variant hover:bg-surface-container">
+<span class="material-symbols-outlined text-[16px] align-middle">chevron_right</span>
+</button>
+</div>
+</div>
+</div>
+<!-- Institutional Compliance Callout & Regulatory Footer Card -->
+<div class="p-space-lg rounded-lg bg-surface-container-low border border-outline-variant/50 flex flex-col md:flex-row items-start justify-between gap-space-lg">
+<div class="flex items-start gap-space-md">
+<span class="material-symbols-outlined text-primary text-[28px] mt-0.5">policy</span>
+<div class="space-y-1">
+<h3 class="font-headline-sm text-headline-sm text-primary">CBSE Examination Bye-Laws (Rule 14.1 Compliance Directive)</h3>
+<p class="font-body-sm text-body-sm text-on-surface-variant leading-relaxed max-w-4xl">
+            Strict attendance threshold mandate: Students must maintain a minimum of 75% aggregate physical presence across all lecture hours to be declared eligible for the All India Secondary School Examination (AISSE) admit card generation. Post-lock modifications can only be initiated via Form ATT-3 with counter-signatures from the Class Proctor and Principal.
+          </p>
+<div class="pt-1 flex flex-wrap items-center gap-space-lg text-label-sm font-label-sm text-on-surface">
+<span>Server Sync Time: <strong class="font-tabular-data">08:53:02 IST</strong></span>
+<span>•</span>
+<span>Auditor Node: <strong class="font-tabular-data">RJ-JPR-NORTH-04</strong></span>
+<span>•</span>
+<span>Principal Session Key: <strong class="font-tabular-data">ACTIVE (Dr. K. S. Rathore)</strong></span>
+</div>
+</div>
+</div>
+<div class="flex md:flex-col gap-2 shrink-0 w-full md:w-auto">
+<button class="flex-1 md:flex-none px-space-md py-2 text-label-sm font-label-sm bg-surface-container-lowest hover:bg-surface-container text-on-surface border border-outline-variant/60 rounded flex items-center justify-center gap-1.5 transition-colors">
+<span class="material-symbols-outlined text-[16px]">file_download</span>
+<span>Master Absentee Export</span>
+</button>
+<button class="flex-1 md:flex-none px-space-md py-2 text-label-sm font-label-sm bg-surface-container-lowest hover:bg-surface-container text-on-surface border border-outline-variant/60 rounded flex items-center justify-center gap-1.5 transition-colors">
+<span class="material-symbols-outlined text-[16px]">support_agent</span>
+<span>Bursar Desk Help</span>
+</button>
+</div>
+</div>
+</div>
+</div>
+<script>
+  // Simple periodic tabular counter simulation for administrative feel
+  let sec = 45;
+  const countdownEl = document.getElementById('countdown');
+  if (countdownEl) {
+    setInterval(() => {
+      sec--;
+      if (sec < 0) sec = 60;
+      countdownEl.textContent = sec + 's';
+    }, 1000);
+  }
+</script></main></div></body></html>

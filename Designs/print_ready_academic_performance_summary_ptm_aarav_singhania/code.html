@@ -1,0 +1,585 @@
+<!DOCTYPE html>
+
+<html lang="en"><head><meta charset="utf-8"/><meta content="width=device-width, initial-scale=1.0" name="viewport"/><meta content="web_blank" name="shell-type"/><link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/><style>@layer base{html,body{margin:0;padding:0;}body{overscroll-behavior:none;}main>:first-child{margin-top:0!important;}main>:last-child{margin-bottom:0!important;}}::-webkit-scrollbar{display:none;}</style><script src="https://cdn.tailwindcss.com"></script><script id="tailwind-config">tailwind.config = {
+    darkMode: "class",
+    theme: {
+      extend: {
+        "colors": {
+          "on-secondary-fixed-variant": "#633f0d",
+          "tertiary-fixed": "#ffdad7",
+          "surface-tint": "#3e665a",
+          "surface-container-highest": "#d9e5e3",
+          "surface-container": "#e4f0ee",
+          "on-primary-container": "#a3cec0",
+          "secondary-fixed-dim": "#f2bd80",
+          "tertiary-container": "#91312e",
+          "on-surface": "#131e1d",
+          "on-error-container": "#93000a",
+          "inverse-surface": "#273331",
+          "tertiary": "#721a1a",
+          "error": "#ba1a1a",
+          "on-secondary-fixed": "#2b1700",
+          "on-primary": "#ffffff",
+          "primary-container": "#31594e",
+          "on-secondary-container": "#79511f",
+          "error-container": "#ffdad6",
+          "outline-variant": "#c0c8c4",
+          "surface-dim": "#d0dddb",
+          "surface": "#f0fcfa",
+          "on-tertiary-fixed": "#410004",
+          "outline": "#717975",
+          "on-tertiary": "#ffffff",
+          "secondary-container": "#fec78a",
+          "surface-variant": "#d9e5e3",
+          "on-tertiary-container": "#ffb2ac",
+          "on-tertiary-fixed-variant": "#822624",
+          "tertiary-fixed-dim": "#ffb3ad",
+          "on-primary-fixed-variant": "#264e43",
+          "background": "#f0fcfa",
+          "secondary-fixed": "#ffddba",
+          "on-surface-variant": "#414845",
+          "surface-bright": "#f0fcfa",
+          "on-error": "#ffffff",
+          "primary-fixed-dim": "#a5cfc1",
+          "primary": "#184237",
+          "primary-fixed": "#c0ecdd",
+          "inverse-primary": "#a5cfc1",
+          "secondary": "#7e5624",
+          "on-primary-fixed": "#002019",
+          "on-background": "#131e1d",
+          "inverse-on-surface": "#e7f3f1",
+          "surface-container-low": "#eaf6f4",
+          "on-secondary": "#ffffff",
+          "surface-container-lowest": "#ffffff",
+          "surface-container-high": "#deebe9"
+        },
+        "borderRadius": {
+          "DEFAULT": "0.125rem",
+          "lg": "0.25rem",
+          "xl": "0.5rem",
+          "full": "0.75rem"
+        },
+        "spacing": {
+          "margin-desktop": "2rem",
+          "space-sm": "0.5rem",
+          "space-lg": "1rem",
+          "gutter": "1rem",
+          "space-xl": "1.5rem",
+          "margin": "1rem",
+          "space-xs": "0.25rem",
+          "space-md": "0.75rem",
+          "gutter-desktop": "1.5rem"
+        },
+        "fontFamily": {
+          "label-sm": [
+            "Inter"
+          ],
+          "headline-lg": [
+            "Inter"
+          ],
+          "headline-xl": [
+            "Inter"
+          ],
+          "tabular-data": [
+            "Inter"
+          ],
+          "body-lg": [
+            "Inter"
+          ],
+          "headline-sm": [
+            "Inter"
+          ],
+          "body-sm": [
+            "Inter"
+          ],
+          "label-md": [
+            "Inter"
+          ],
+          "body-md": [
+            "Inter"
+          ],
+          "headline-md": [
+            "Inter"
+          ]
+        },
+        "fontSize": {
+          "label-sm": [
+            "0.75rem",
+            {
+              "lineHeight": "1rem",
+              "letterSpacing": "0.025em",
+              "fontWeight": "600"
+            }
+          ],
+          "headline-lg": [
+            "1.5rem",
+            {
+              "lineHeight": "2rem",
+              "letterSpacing": "-0.015em",
+              "fontWeight": "600"
+            }
+          ],
+          "headline-xl": [
+            "2rem",
+            {
+              "lineHeight": "2.5rem",
+              "letterSpacing": "-0.02em",
+              "fontWeight": "600"
+            }
+          ],
+          "tabular-data": [
+            "0.875rem",
+            {
+              "lineHeight": "1.25rem",
+              "letterSpacing": "0em",
+              "fontWeight": "400"
+            }
+          ],
+          "body-lg": [
+            "1rem",
+            {
+              "lineHeight": "1.5rem",
+              "letterSpacing": "0em",
+              "fontWeight": "400"
+            }
+          ],
+          "headline-sm": [
+            "1.125rem",
+            {
+              "lineHeight": "1.5rem",
+              "letterSpacing": "0em",
+              "fontWeight": "600"
+            }
+          ],
+          "body-sm": [
+            "0.75rem",
+            {
+              "lineHeight": "1.125rem",
+              "letterSpacing": "0.005em",
+              "fontWeight": "400"
+            }
+          ],
+          "label-md": [
+            "0.875rem",
+            {
+              "lineHeight": "1.25rem",
+              "letterSpacing": "0.01em",
+              "fontWeight": "500"
+            }
+          ],
+          "body-md": [
+            "0.875rem",
+            {
+              "lineHeight": "1.25rem",
+              "letterSpacing": "0em",
+              "fontWeight": "400"
+            }
+          ],
+          "headline-md": [
+            "1.25rem",
+            {
+              "lineHeight": "1.75rem",
+              "letterSpacing": "-0.01em",
+              "fontWeight": "600"
+            }
+          ]
+        }
+      }
+    }
+  }</script></head><body class="bg-surface font-body-md text-body-md text-on-surface antialiased min-h-screen flex items-center justify-center p-gutter"><main class="w-full max-w-md bg-surface-container-lowest border border-outline-variant p-gutter rounded-lg shadow-[0_2px_4px_rgba(32,43,42,0.06)]"><div class="flex flex-col w-full">
+<!-- Print Controls & Utility Bar (Non-printing on @media print) -->
+<div class="print:hidden w-full max-w-5xl mx-auto mb-space-lg flex flex-wrap items-center justify-between gap-space-sm bg-surface-container-low p-space-sm rounded-lg shadow-sm">
+<div class="flex items-center gap-space-xs text-on-surface-variant font-label-md text-label-md">
+<span class="material-symbols-outlined text-primary text-[1.25rem]">print</span>
+<span class="font-headline-sm text-headline-sm text-primary">Print &amp; Archive Station</span>
+<span class="text-outline text-body-sm font-body-sm ml-space-xs">| Form 10-A/PTM-02 (2024-25)</span>
+</div>
+<div class="flex items-center gap-space-sm">
+<button class="flex items-center gap-space-xs bg-surface-container-lowest text-on-surface px-space-md py-space-xs rounded-DEFAULT shadow-sm hover:bg-surface-container transition-colors font-label-md text-label-md" onclick="window.history.back()">
+<span class="material-symbols-outlined text-[1rem]">arrow_back</span>
+<span>Back to Interactive Report</span>
+</button>
+<button class="flex items-center gap-space-xs bg-primary text-on-primary px-space-md py-space-xs rounded-DEFAULT shadow-sm hover:bg-primary-container transition-colors font-label-md text-label-md" onclick="window.print()">
+<span class="material-symbols-outlined text-[1rem]">print</span>
+<span>Print Document [Ctrl+P]</span>
+</button>
+<button class="flex items-center gap-space-xs bg-surface-container-highest text-primary px-space-md py-space-xs rounded-DEFAULT shadow-sm hover:bg-surface-container-high transition-colors font-label-md text-label-md" onclick="window.print()">
+<span class="material-symbols-outlined text-[1rem]">download</span>
+<span>Save as PDF</span>
+</button>
+</div>
+</div>
+<!-- Physical Document Canvas (Standard A4 Print Simulation) -->
+<div class="w-full max-w-5xl mx-auto bg-surface-container-lowest p-margin-desktop rounded-DEFAULT shadow-sm print:shadow-none print:p-0 print:max-w-none text-on-surface">
+<!-- Official Institutional Letterhead -->
+<header class="flex flex-col items-center text-center pb-space-lg mb-space-lg">
+<div class="flex items-center justify-between w-full pb-space-md">
+<div class="w-16 h-16 rounded-DEFAULT bg-surface-container flex items-center justify-center text-primary font-headline-xl text-headline-xl font-bold tracking-tight">
+          HJ
+        </div>
+<div class="flex-1 px-space-md">
+<h1 class="font-headline-xl text-headline-xl tracking-tight text-primary font-bold uppercase">
+            HanuJai High School, Jaipur
+          </h1>
+<p class="font-body-sm text-body-sm text-on-surface-variant font-medium mt-space-xs">
+            Affiliated to the Central Board of Secondary Education (CBSE), New Delhi • Affiliation No. 1730249 • School Code: 20249
+          </p>
+<p class="font-body-sm text-body-sm text-outline">
+            Sector 12, Vidhyadhar Nagar, Jaipur, Rajasthan 302039 • Phone: +91 141 2894000 • Email: registrar@hanujai.edu.in
+          </p>
+</div>
+<div class="text-right">
+<span class="inline-block px-space-sm py-0.5 bg-surface-container text-primary font-label-sm text-label-sm rounded-DEFAULT uppercase tracking-wider">
+            CBSE Secondary Wing
+          </span>
+<div class="font-tabular-data text-tabular-data text-outline mt-space-xs text-[0.7rem]">
+            Ref: HJ/SEC-10A/PTM-02
+          </div>
+</div>
+</div>
+<!-- Formal Title Box -->
+<div class="w-full bg-surface-container-high py-space-xs px-space-md mt-space-xs text-center rounded-DEFAULT">
+<h2 class="font-headline-sm text-headline-sm font-semibold tracking-wide text-primary uppercase">
+          TERM II MID-TERM ACADEMIC EVALUATION &amp; PARENT CONFERENCE SUMMARY
+        </h2>
+<div class="flex items-center justify-center gap-space-lg font-label-sm text-label-sm text-on-surface-variant mt-0.5">
+<span>Academic Session 2024–2025</span>
+<span>•</span>
+<span>Term II (Classes IX &amp; X Senior Secondary Wing)</span>
+<span>•</span>
+<span class="text-error font-semibold">Official Examination Record • Prepared for Guardian Inspection</span>
+</div>
+</div>
+</header>
+<!-- Student & Registration Dossier (Ledger Data Grid) -->
+<section class="mb-space-lg">
+<div class="bg-surface-container-highest px-space-sm py-1 font-label-sm text-label-sm uppercase tracking-wider text-primary font-semibold flex items-center justify-between">
+<span>I. Student Identification &amp; Institutional Registry Dossier</span>
+<span class="font-tabular-data text-body-sm">Generated: 12 February 2025</span>
+</div>
+<div class="grid grid-cols-4 gap-space-xs bg-surface-container-low p-space-sm rounded-DEFAULT mt-space-xs">
+<div class="p-space-xs bg-surface-container-lowest">
+<span class="block font-label-sm text-label-sm text-outline uppercase text-[0.7rem]">Student Name</span>
+<span class="block font-headline-sm text-headline-sm font-bold text-on-surface">Aarav Singhania</span>
+</div>
+<div class="p-space-xs bg-surface-container-lowest">
+<span class="block font-label-sm text-label-sm text-outline uppercase text-[0.7rem]">Roll No. / Section</span>
+<span class="block font-body-md text-body-md font-semibold text-on-surface">Roll #14 • Class 10-A</span>
+</div>
+<div class="p-space-xs bg-surface-container-lowest">
+<span class="block font-label-sm text-label-sm text-outline uppercase text-[0.7rem]">Admission Number</span>
+<span class="block font-tabular-data text-tabular-data font-semibold text-on-surface">HJ-2021-0428</span>
+</div>
+<div class="p-space-xs bg-surface-container-lowest">
+<span class="block font-label-sm text-label-sm text-outline uppercase text-[0.7rem]">CBSE Registration ID</span>
+<span class="block font-tabular-data text-tabular-data font-semibold text-primary">DL1730249/0042</span>
+</div>
+<div class="p-space-xs bg-surface-container-lowest">
+<span class="block font-label-sm text-label-sm text-outline uppercase text-[0.7rem]">Father / Guardian</span>
+<span class="block font-body-md text-body-md font-medium text-on-surface">Mr. Rajesh Singhania</span>
+</div>
+<div class="p-space-xs bg-surface-container-lowest">
+<span class="block font-label-sm text-label-sm text-outline uppercase text-[0.7rem]">Mother's Name</span>
+<span class="block font-body-md text-body-md font-medium text-on-surface">Dr. Sunita Singhania</span>
+</div>
+<div class="p-space-xs bg-surface-container-lowest">
+<span class="block font-label-sm text-label-sm text-outline uppercase text-[0.7rem]">House &amp; PGT In-Charge</span>
+<span class="block font-body-md text-body-md font-medium text-on-surface">Pratap House • Mrs. A. Sharma</span>
+</div>
+<div class="p-space-xs bg-surface-container-lowest">
+<span class="block font-label-sm text-label-sm text-outline uppercase text-[0.7rem]">Residential Jurisdiction</span>
+<span class="block font-body-md text-body-md font-medium text-on-surface truncate">42, Civil Lines, Jaipur</span>
+</div>
+</div>
+</section>
+<!-- CBSE Attendance Summary Ledger & Statutory Warning -->
+<section class="mb-space-lg">
+<div class="bg-surface-container-highest px-space-sm py-1 font-label-sm text-label-sm uppercase tracking-wider text-primary font-semibold flex items-center justify-between">
+<span>II. Official Attendance Record (Statutory Compliance Ledger)</span>
+<span class="font-tabular-data text-body-sm">Period: 01 Jul 2024 – 10 Feb 2025</span>
+</div>
+<div class="grid grid-cols-5 gap-space-xs text-center mt-space-xs bg-surface-container-low p-space-xs rounded-DEFAULT">
+<div class="bg-surface-container-lowest p-space-xs">
+<span class="block font-label-sm text-label-sm text-outline text-[0.7rem] uppercase">Total Sessions Held</span>
+<span class="block font-tabular-data text-headline-sm font-bold text-on-surface">142 Days</span>
+</div>
+<div class="bg-surface-container-lowest p-space-xs">
+<span class="block font-label-sm text-label-sm text-outline text-[0.7rem] uppercase">Sessions Attended</span>
+<span class="block font-tabular-data text-headline-sm font-bold text-primary">97 Days</span>
+</div>
+<div class="bg-surface-container-lowest p-space-xs">
+<span class="block font-label-sm text-label-sm text-outline text-[0.7rem] uppercase">Approved Medical Leave</span>
+<span class="block font-tabular-data text-headline-sm font-bold text-on-surface">12 Days</span>
+<span class="block font-label-sm text-[0.65rem] text-outline">Slip #MED-1049</span>
+</div>
+<div class="bg-surface-container-lowest p-space-xs">
+<span class="block font-label-sm text-label-sm text-outline text-[0.7rem] uppercase">Unexcused Absences</span>
+<span class="block font-tabular-data text-headline-sm font-bold text-error">33 Days</span>
+</div>
+<div class="bg-tertiary-container text-on-tertiary p-space-xs rounded-DEFAULT">
+<span class="block font-label-sm text-label-sm text-on-tertiary-container text-[0.7rem] uppercase font-semibold">Net Attendance</span>
+<span class="block font-tabular-data text-headline-sm font-bold">68.4%</span>
+<span class="block font-label-sm text-[0.65rem] text-on-tertiary-container font-medium">Deficit: -6.6%</span>
+</div>
+</div>
+<!-- Statutory Admonition Callout -->
+<div class="mt-space-xs p-space-xs bg-surface-container-high rounded-DEFAULT text-on-surface font-body-sm text-body-sm flex items-start gap-space-xs">
+<span class="material-symbols-outlined text-tertiary text-[1.125rem] mt-0.5 shrink-0">error</span>
+<div class="leading-snug">
+<strong class="font-label-sm uppercase text-tertiary tracking-wide">Statutory CBSE Admonition:</strong>
+          Net attendance of 68.4% is currently below the 75.0% threshold mandated by Chapter 7 of CBSE Secondary Curriculum Regulations for release of Class X Board Examination Roll Number. Condonation and regularization requires minimum 14 consecutive instructional days attended prior to 20 February 2025.
+        </div>
+</div>
+</section>
+<!-- Academic Assessment Summary Table (Term II Mid-Term) -->
+<section class="mb-space-lg">
+<div class="bg-surface-container-highest px-space-sm py-1 font-label-sm text-label-sm uppercase tracking-wider text-primary font-semibold flex items-center justify-between">
+<span>III. Academic Assessment Matrix • Term II Mid-Term Examination (Jan/Feb 2025)</span>
+<span class="font-tabular-data text-body-sm">Grading Standard: CBSE 8-Point Rubric</span>
+</div>
+<div class="overflow-x-auto mt-space-xs">
+<table class="w-full text-left font-body-sm text-body-sm">
+<thead>
+<tr class="bg-surface-container-high text-on-surface-variant font-label-sm text-label-sm uppercase text-[0.7rem]">
+<th class="py-space-xs px-space-sm text-center w-10">S.No</th>
+<th class="py-space-xs px-space-sm">Subject Nomenclature &amp; Code</th>
+<th class="py-space-xs px-space-xs text-right">Max</th>
+<th class="py-space-xs px-space-xs text-right">Theory</th>
+<th class="py-space-xs px-space-xs text-right">Practical/Int</th>
+<th class="py-space-xs px-space-xs text-right">Total Marks</th>
+<th class="py-space-xs px-space-xs text-center">Grade</th>
+<th class="py-space-xs px-space-xs text-right">Term I</th>
+<th class="py-space-xs px-space-xs text-center">Trend</th>
+<th class="py-space-xs px-space-sm w-56">Faculty Observations &amp; Academic Prescriptions</th>
+</tr>
+</thead>
+<tbody class="divide-y divide-surface-container-highest font-tabular-data">
+<!-- Row 1: Mathematics -->
+<tr class="hover:bg-surface-container-lowest">
+<td class="py-space-xs px-space-sm text-center font-medium text-outline">01</td>
+<td class="py-space-xs px-space-sm font-medium text-on-surface font-body-sm">
+                Mathematics Standard
+                <span class="text-outline text-[0.7rem] block">Code: 041</span>
+</td>
+<td class="py-space-xs px-space-xs text-right text-outline">100</td>
+<td class="py-space-xs px-space-xs text-right text-error font-semibold">16.0<span class="text-[0.65rem] text-outline font-normal">/40</span></td>
+<td class="py-space-xs px-space-xs text-right text-on-surface">8.0<span class="text-[0.65rem] text-outline">/10</span></td>
+<td class="py-space-xs px-space-xs text-right font-bold text-error">41.0</td>
+<td class="py-space-xs px-space-xs text-center font-semibold text-error bg-surface-container-low">D</td>
+<td class="py-space-xs px-space-xs text-right text-outline">62.0</td>
+<td class="py-space-xs px-space-xs text-center text-error font-medium text-[0.75rem]">↓ -21.0</td>
+<td class="py-space-xs px-space-sm font-body-sm text-[0.75rem] text-on-surface-variant leading-tight">
+                Difficulty with quadratic equations &amp; coordinate geometry. Mandatory attendance in Remedial Batch #M-10A (Dr. N. Goyal).
+              </td>
+</tr>
+<!-- Row 2: Science -->
+<tr class="bg-surface-container-lowest">
+<td class="py-space-xs px-space-sm text-center font-medium text-outline">02</td>
+<td class="py-space-xs px-space-sm font-medium text-on-surface font-body-sm">
+                Science (Theory &amp; Practical)
+                <span class="text-outline text-[0.7rem] block">Code: 086</span>
+</td>
+<td class="py-space-xs px-space-xs text-right text-outline">100</td>
+<td class="py-space-xs px-space-xs text-right text-error font-semibold">21.0<span class="text-[0.65rem] text-outline font-normal">/50</span></td>
+<td class="py-space-xs px-space-xs text-right text-on-surface">11.0<span class="text-[0.65rem] text-outline">/20</span></td>
+<td class="py-space-xs px-space-xs text-right font-bold text-error">44.0</td>
+<td class="py-space-xs px-space-xs text-center font-semibold text-error bg-surface-container-low">D</td>
+<td class="py-space-xs px-space-xs text-right text-outline">59.0</td>
+<td class="py-space-xs px-space-xs text-center text-error font-medium text-[0.75rem]">↓ -15.0</td>
+<td class="py-space-xs px-space-sm font-body-sm text-[0.75rem] text-on-surface-variant leading-tight">
+                Missed scheduled practical lab session due to illness; makeup practical scheduled for Sat 15 Feb (Mrs. S. Banerjee).
+              </td>
+</tr>
+<!-- Row 3: Social Science -->
+<tr class="hover:bg-surface-container-lowest">
+<td class="py-space-xs px-space-sm text-center font-medium text-outline">03</td>
+<td class="py-space-xs px-space-sm font-medium text-on-surface font-body-sm">
+                Social Science
+                <span class="text-outline text-[0.7rem] block">Code: 087</span>
+</td>
+<td class="py-space-xs px-space-xs text-right text-outline">100</td>
+<td class="py-space-xs px-space-xs text-right text-on-surface font-semibold">36.0<span class="text-[0.65rem] text-outline font-normal">/50</span></td>
+<td class="py-space-xs px-space-xs text-right text-on-surface">16.0<span class="text-[0.65rem] text-outline">/20</span></td>
+<td class="py-space-xs px-space-xs text-right font-bold text-primary">68.0</td>
+<td class="py-space-xs px-space-xs text-center font-semibold text-primary bg-surface-container-low">B2</td>
+<td class="py-space-xs px-space-xs text-right text-outline">71.0</td>
+<td class="py-space-xs px-space-xs text-center text-outline font-medium text-[0.75rem]">↓ -3.0</td>
+<td class="py-space-xs px-space-sm font-body-sm text-[0.75rem] text-on-surface-variant leading-tight">
+                Competent performance in History; map representation in Geography requires additional practice (Mr. R. P. Chauhan).
+              </td>
+</tr>
+<!-- Row 4: English -->
+<tr class="bg-surface-container-lowest">
+<td class="py-space-xs px-space-sm text-center font-medium text-outline">04</td>
+<td class="py-space-xs px-space-sm font-medium text-on-surface font-body-sm">
+                English Lang &amp; Literature
+                <span class="text-outline text-[0.7rem] block">Code: 184</span>
+</td>
+<td class="py-space-xs px-space-xs text-right text-outline">100</td>
+<td class="py-space-xs px-space-xs text-right text-on-surface font-semibold">39.0<span class="text-[0.65rem] text-outline font-normal">/50</span></td>
+<td class="py-space-xs px-space-xs text-right text-on-surface">17.0<span class="text-[0.65rem] text-outline">/20</span></td>
+<td class="py-space-xs px-space-xs text-right font-bold text-primary">74.0</td>
+<td class="py-space-xs px-space-xs text-center font-semibold text-primary bg-surface-container-low">B1</td>
+<td class="py-space-xs px-space-xs text-right text-outline">72.0</td>
+<td class="py-space-xs px-space-xs text-center text-primary font-medium text-[0.75rem]">↑ +2.0</td>
+<td class="py-space-xs px-space-sm font-body-sm text-[0.75rem] text-on-surface-variant leading-tight">
+                Commendable critical reading &amp; formal speech articulation. Examination writing speed should be paced (Mrs. A. Sharma).
+              </td>
+</tr>
+<!-- Row 5: Hindi -->
+<tr class="hover:bg-surface-container-lowest">
+<td class="py-space-xs px-space-sm text-center font-medium text-outline">05</td>
+<td class="py-space-xs px-space-sm font-medium text-on-surface font-body-sm">
+                Hindi Course A
+                <span class="text-outline text-[0.7rem] block">Code: 002</span>
+</td>
+<td class="py-space-xs px-space-xs text-right text-outline">100</td>
+<td class="py-space-xs px-space-xs text-right text-on-surface font-semibold">34.0<span class="text-[0.65rem] text-outline font-normal">/50</span></td>
+<td class="py-space-xs px-space-xs text-right text-on-surface">15.0<span class="text-[0.65rem] text-outline">/20</span></td>
+<td class="py-space-xs px-space-xs text-right font-bold text-primary">64.0</td>
+<td class="py-space-xs px-space-xs text-center font-semibold text-primary bg-surface-container-low">B2</td>
+<td class="py-space-xs px-space-xs text-right text-outline">67.0</td>
+<td class="py-space-xs px-space-xs text-center text-outline font-medium text-[0.75rem]">↓ -3.0</td>
+<td class="py-space-xs px-space-sm font-body-sm text-[0.75rem] text-on-surface-variant leading-tight">
+                Good comprehension of prose; grammar exercises in Sandhi require reinforcement (Mr. K. L. Sharma).
+              </td>
+</tr>
+</tbody>
+</table>
+</div>
+<!-- Institutional Aggregates & Cohort Comparison Grid -->
+<div class="grid grid-cols-4 gap-space-xs bg-surface-container-low p-space-xs mt-space-xs rounded-DEFAULT text-on-surface">
+<div class="p-space-xs bg-surface-container-lowest">
+<span class="block font-label-sm text-label-sm text-outline uppercase text-[0.7rem]">Cumulative Aggregate</span>
+<span class="block font-tabular-data text-headline-sm font-bold text-primary">291.0 / 500.0</span>
+<span class="block font-body-sm text-body-sm text-on-surface-variant font-medium">Score: 54.2% (Grade: C1)</span>
+</div>
+<div class="p-space-xs bg-surface-container-lowest">
+<span class="block font-label-sm text-label-sm text-outline uppercase text-[0.7rem]">Term I Baseline</span>
+<span class="block font-tabular-data text-headline-sm font-bold text-on-surface">340.0 / 500.0</span>
+<span class="block font-body-sm text-body-sm text-error font-medium">Variance: -49.0 (-9.8%)</span>
+</div>
+<div class="p-space-xs bg-surface-container-lowest">
+<span class="block font-label-sm text-label-sm text-outline uppercase text-[0.7rem]">Class 10-A Average</span>
+<span class="block font-tabular-data text-headline-sm font-bold text-outline">371.0 / 500.0</span>
+<span class="block font-body-sm text-body-sm text-outline font-medium">Cohort Mean: 74.2%</span>
+</div>
+<div class="p-space-xs bg-surface-container-lowest">
+<span class="block font-label-sm text-label-sm text-outline uppercase text-[0.7rem]">Board Clearance Status</span>
+<span class="block font-headline-sm text-headline-sm font-bold text-secondary">3 Pass / 2 Deficit</span>
+<span class="block font-body-sm text-body-sm text-outline text-[0.7rem]">Passing Criterion: 33.0%</span>
+</div>
+</div>
+</section>
+<!-- Authorized Observations & PTM Recommended Action Plan -->
+<section class="mb-space-lg">
+<div class="bg-surface-container-highest px-space-sm py-1 font-label-sm text-label-sm uppercase tracking-wider text-primary font-semibold flex items-center justify-between">
+<span>IV. Academic Faculty Observations &amp; Interventional Plan</span>
+<span class="font-label-sm text-outline">PTM Date: Friday, 14 February 2025</span>
+</div>
+<div class="grid grid-cols-3 gap-space-sm mt-space-xs">
+<!-- Faculty Remark -->
+<div class="col-span-2 p-space-sm bg-surface-container-low rounded-DEFAULT flex flex-col justify-between">
+<div>
+<span class="font-label-sm text-label-sm font-bold text-primary uppercase block mb-space-xs">
+              Section A: Class Teacher's Consolidated Diagnostic
+            </span>
+<p class="font-body-sm text-body-sm text-on-surface leading-relaxed text-justify">
+              “Aarav displays genuine analytical capability in humanities and language studies. The recent performance dip in Mathematics and Science directly correlates with irregular attendance in December and January. With disciplined daily presence and targeted remedial sessions, he has the potential to comfortably exceed 70% in the forthcoming Board Pre-Prelims.”
+            </p>
+</div>
+<div class="mt-space-sm pt-space-xs text-outline text-[0.75rem] font-medium flex justify-between">
+<span>Report Compiler: Mrs. Ananya Sharma (PGT English)</span>
+<span>Signature: <em>A.Sharma</em></span>
+</div>
+</div>
+<!-- Remedial Program Schedule -->
+<div class="p-space-sm bg-surface-container-high rounded-DEFAULT text-on-surface">
+<span class="font-label-sm text-label-sm font-bold text-primary uppercase block mb-space-xs">
+            Section B: Remedial Program
+          </span>
+<div class="space-y-space-xs font-body-sm text-[0.75rem]">
+<div class="bg-surface-container-lowest p-space-xs rounded-DEFAULT">
+<strong class="font-semibold text-primary block">Batch #M-10A (Mathematics)</strong>
+<span class="text-on-surface-variant block">Mon–Thu • 15:00 – 15:45 IST</span>
+<span class="text-outline block text-[0.7rem]">Venue: Room 102 • Dr. N. Goyal</span>
+</div>
+<div class="bg-surface-container-lowest p-space-xs rounded-DEFAULT">
+<strong class="font-semibold text-primary block">Special Science Practical</strong>
+<span class="text-on-surface-variant block">Sat, 15 Feb • 10:00 – 11:30 IST</span>
+<span class="text-outline block text-[0.7rem]">Senior Physics Lab #02 • Mrs. Banerjee</span>
+</div>
+</div>
+</div>
+</div>
+<!-- Parent Conference Commitment & Acknowledgement -->
+<div class="p-space-sm bg-surface-container-low rounded-DEFAULT mt-space-xs">
+<span class="font-label-sm text-label-sm font-bold text-primary uppercase block mb-space-xs">
+          Section C: Parent Conference Commitment &amp; Action Protocol (PTM Slot: 14 Feb 2025 • 10:30 AM)
+        </span>
+<div class="grid grid-cols-3 gap-space-md font-body-sm text-body-sm text-on-surface-variant">
+<div class="flex items-start gap-space-xs">
+<span class="w-3.5 h-3.5 mt-1 rounded-DEFAULT bg-surface-container-highest shrink-0 inline-block"></span>
+<span class="text-[0.75rem]">Parent commitment to ensure zero non-medical absence until commencement of Board Examination.</span>
+</div>
+<div class="flex items-start gap-space-xs">
+<span class="w-3.5 h-3.5 mt-1 rounded-DEFAULT bg-surface-container-highest shrink-0 inline-block"></span>
+<span class="text-[0.75rem]">Enrollment in zero-fee remedial support classes (#M-10A) with signed daily parent logbook check.</span>
+</div>
+<div class="flex items-start gap-space-xs">
+<span class="w-3.5 h-3.5 mt-1 rounded-DEFAULT bg-surface-container-highest shrink-0 inline-block"></span>
+<span class="text-[0.75rem]">Submission of medical justification documentation for remaining 33 unexcused leave days.</span>
+</div>
+</div>
+</div>
+</section>
+<!-- Formal Signoff & Authentication Seal Grid -->
+<section class="mt-space-xl pt-space-md">
+<div class="grid grid-cols-4 gap-space-md text-center">
+<!-- Sign 1 -->
+<div class="flex flex-col items-center justify-end h-28 bg-surface-container-low p-space-xs rounded-DEFAULT">
+<div class="font-headline-sm text-outline italic text-[0.9rem] mb-space-xs">Ananya Sharma</div>
+<div class="w-full h-0.5 bg-outline-variant my-1"></div>
+<span class="font-label-sm text-label-sm text-primary font-bold">Mrs. Ananya Sharma</span>
+<span class="text-outline text-[0.65rem] uppercase font-medium">Class Teacher (PGT English)</span>
+</div>
+<!-- Sign 2 -->
+<div class="flex flex-col items-center justify-end h-28 bg-surface-container-low p-space-xs rounded-DEFAULT">
+<div class="font-headline-sm text-outline italic text-[0.9rem] mb-space-xs">V. K. Mathur</div>
+<div class="w-full h-0.5 bg-outline-variant my-1"></div>
+<span class="font-label-sm text-label-sm text-primary font-bold">Dr. V. K. Mathur</span>
+<span class="text-outline text-[0.65rem] uppercase font-medium">HOD • Academic Coordinator</span>
+</div>
+<!-- Sign 3 -->
+<div class="flex flex-col items-center justify-end h-28 bg-surface-container-low p-space-xs rounded-DEFAULT relative">
+<div class="absolute top-2 w-12 h-12 rounded-DEFAULT bg-surface-container-high flex items-center justify-center text-[0.6rem] font-bold text-outline uppercase tracking-tighter">
+            SEAL
+          </div>
+<div class="font-headline-sm text-outline italic text-[0.9rem] mb-space-xs">K. S. Rathore</div>
+<div class="w-full h-0.5 bg-outline-variant my-1"></div>
+<span class="font-label-sm text-label-sm text-primary font-bold">Dr. K. S. Rathore</span>
+<span class="text-outline text-[0.65rem] uppercase font-medium">Principal, HanuJai High School</span>
+</div>
+<!-- Sign 4 -->
+<div class="flex flex-col items-center justify-end h-28 bg-surface-container-low p-space-xs rounded-DEFAULT">
+<div class="text-outline text-[0.7rem] italic mb-space-xs">Pending PTM In-Person Signoff</div>
+<div class="w-full h-0.5 bg-outline-variant my-1"></div>
+<span class="font-label-sm text-label-sm text-on-surface font-bold">Parent / Guardian Signature</span>
+<span class="text-outline text-[0.65rem] uppercase font-medium">Date: 14 February 2025</span>
+</div>
+</div>
+</section>
+<!-- CBSE Statutory Compliance & Audit Hash Footer -->
+<footer class="mt-space-lg pt-space-sm flex flex-col items-center text-center text-outline text-[0.7rem] font-tabular-data leading-normal">
+<div class="w-full flex items-center justify-between text-left pb-space-xs text-[0.65rem]">
+<span>Document ID: #HJ-TXN-2025-T2-0428-SEC10A</span>
+<span>Issued under CBSE Examination Bye-Laws Chap. 12</span>
+<span>Registry Node: Jaipur #1730249</span>
+</div>
+<p class="text-on-surface-variant font-body-sm text-[0.65rem]">
+        This performance summary is an official academic transcript maintained under the authority of the School Examination Board. Any unauthorized alternation or tampering invalidates this record. Prepared for parental inspection at the Term II Parent-Teacher Conference.
+      </p>
+</footer>
+</div>
+</div></main></body></html>

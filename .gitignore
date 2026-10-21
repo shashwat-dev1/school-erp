@@ -1,0 +1,44 @@
+# Dependencies
+node_modules/
+.pnp
+.pnp.js
+
+# Production build output
+dist/
+dist-ssr/
+build/
+
+# Local environment and secret files
+.env.local
+.env.*.local
+*.local
+
+# Firebase caches & emulator state
+.firebase/
+firebase-debug.log*
+firestore-debug.log*
+ui-debug.log*
+
+# Test and coverage output
+coverage/
+.vitest/
+
+# IDE & Editor temporary artifacts
+.vscode/*
+!.vscode/extensions.json
+.idea/
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
+
+# OS temporary files
+Thumbs.db
+.DS_Store
+
+# Vitest / testing temp artifacts
+test-results/
+
+# TypeScript build info
+*.tsbuildinfo

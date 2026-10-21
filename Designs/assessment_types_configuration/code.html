@@ -1,0 +1,667 @@
+<!DOCTYPE html>
+
+<html lang="en"><head><meta charset="utf-8"/><meta content="width=device-width, initial-scale=1.0" name="viewport"/><meta content="web_dashboard" name="shell-type"/><link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@100..900&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/><style>@layer base{html,body{margin:0;padding:0;}body{overscroll-behavior:none;}main>:first-child{margin-top:0!important;}main>:last-child{margin-bottom:0!important;}}::-webkit-scrollbar{display:none;}</style><script src="https://cdn.tailwindcss.com"></script><script id="tailwind-config">tailwind.config={darkMode:"class",theme:{extend:{colors:{"surface-container-lowest":"#ffffff","inverse-surface":"#273331","on-background":"#131e1d","on-tertiary-fixed-variant":"#822624","surface":"#f0fcfa","background":"#f0fcfa","outline-variant":"#c0c8c4","on-error":"#ffffff","on-secondary-container":"#79511f","on-primary-fixed":"#002019","inverse-on-surface":"#e7f3f1","secondary":"#7e5624","on-tertiary-container":"#ffb2ac","primary-fixed-dim":"#a5cfc1","on-tertiary-fixed":"#410004","on-surface":"#131e1d","secondary-fixed":"#ffddba","surface-variant":"#d9e5e3","on-secondary":"#ffffff","surface-container-high":"#deebe9","tertiary":"#721a1a","on-surface-variant":"#414845","surface-bright":"#f0fcfa","surface-container":"#e4f0ee","on-primary-fixed-variant":"#264e43","surface-dim":"#d0dddb","surface-container-low":"#eaf6f4","tertiary-fixed-dim":"#ffb3ad","surface-container-highest":"#d9e5e3","on-primary":"#ffffff","surface-tint":"#3e665a","primary":"#184237","tertiary-fixed":"#ffdad7","on-secondary-fixed":"#2b1700","primary-container":"#31594e","tertiary-container":"#91312e","error":"#ba1a1a","on-primary-container":"#a3cec0","inverse-primary":"#a5cfc1","error-container":"#ffdad6","on-secondary-fixed-variant":"#633f0d","primary-fixed":"#c0ecdd","on-tertiary":"#ffffff","secondary-fixed-dim":"#f2bd80","secondary-container":"#fec78a","on-error-container":"#93000a","outline":"#717975"},borderRadius:{"DEFAULT":"0.125rem","lg":"0.25rem","xl":"0.5rem","full":"0.75rem"},spacing:{"space-xl":"1.5rem","gutter-desktop":"1.5rem","gutter":"1rem","space-md":"0.75rem","space-sm":"0.5rem","space-xs":"0.25rem","margin":"1rem","margin-desktop":"2rem","space-lg":"1rem"},fontFamily:{"tabular-data":["Inter"],"label-md":["Inter"],"headline-xl":["Inter"],"label-sm":["Inter"],"headline-md":["Inter"],"headline-sm":["Inter"],"body-md":["Inter"],"headline-lg":["Inter"],"body-sm":["Inter"],"body-lg":["Inter"]},fontSize:{"tabular-data":["0.875rem",{"lineHeight":"1.25rem","letterSpacing":"0em","fontWeight":"400"}],"label-md":["0.875rem",{"lineHeight":"1.25rem","letterSpacing":"0.01em","fontWeight":"500"}],"headline-xl":["2rem",{"lineHeight":"2.5rem","letterSpacing":"-0.02em","fontWeight":"600"}],"label-sm":["0.75rem",{"lineHeight":"1rem","letterSpacing":"0.025em","fontWeight":"600"}],"headline-md":["1.25rem",{"lineHeight":"1.75rem","letterSpacing":"-0.01em","fontWeight":"600"}],"headline-sm":["1.125rem",{"lineHeight":"1.5rem","letterSpacing":"0em","fontWeight":"600"}],"body-md":["0.875rem",{"lineHeight":"1.25rem","letterSpacing":"0em","fontWeight":"400"}],"headline-lg":["1.5rem",{"lineHeight":"2rem","letterSpacing":"-0.015em","fontWeight":"600"}],"body-sm":["0.75rem",{"lineHeight":"1.125rem","letterSpacing":"0.005em","fontWeight":"400"}],"body-lg":["1rem",{"lineHeight":"1.5rem","letterSpacing":"0em","fontWeight":"400"}]}}}}</script></head><body class="bg-surface text-on-surface font-body-md text-body-md min-h-screen"><header class="fixed top-0 left-0 right-0 h-16 bg-surface-container-lowest shadow-[0_1px_4px_rgba(24,66,55,0.06)] z-50"><div class="h-16 w-full px-gutter-desktop flex items-center justify-between gap-space-lg"><div class="flex items-center gap-space-md"><img alt="HanuJai High School Crest" class="h-8 w-auto object-contain" src="https://lh3.googleusercontent.com/aida/AEtjO1XaQgiPfNIvW8D6_3ZLBk4GvIWZyWUGf7f7Dg04WfKedS7T3FYw-mhsFM8L3Pin9d7cVlXEHRmHsJCXDiazcnfVd6Tqv7VaLKe6RpNPCfZCc-Dvi1ZWD9M7WXsa4L-HwKss71_bIYIpzj-9xBLaHNmcz14vnYMCAa0kwivrop5es2kGVOT3zySzIYFxOHFNY5uKkyIZP7HWwhvOrMEpr5GgCcXnWgmWinAmafQcI3UYj4xiBvva4lvTdoE"/><div class="flex flex-col"><div class="flex items-center gap-space-sm"><span class="font-headline-sm text-headline-sm text-primary tracking-tight">HanuJai High School, Jaipur</span><span class="px-space-xs py-0.5 rounded-lg bg-surface-container text-on-surface-variant font-label-sm text-label-sm">AY 2024–25 (Term II)</span></div><span class="font-body-sm text-body-sm text-on-surface-variant">Staff Administration ERP</span></div></div><div class="flex-1 max-w-lg mx-space-xl hidden md:flex items-center"><div class="w-full flex items-center px-space-md py-1.5 rounded-lg bg-surface-container-low text-on-surface-variant focus-within:bg-surface-container-lowest focus-within:text-on-surface"><span class="material-symbols-outlined text-outline mr-space-sm text-[18px]">search</span><input class="w-full bg-transparent border-0 p-0 text-on-surface placeholder:text-outline font-body-sm text-body-sm focus:ring-0 focus:outline-none" placeholder="Search student, staff, class, admission..." type="text"/><kbd class="px-1.5 py-0.5 bg-surface-container rounded font-label-sm text-label-sm text-on-surface-variant">Ctrl+K</kbd></div></div><div class="flex items-center gap-space-md"><button class="relative p-space-xs rounded-lg text-on-surface-variant hover:bg-surface-container hover:text-on-surface transition-colors"><span class="material-symbols-outlined text-[20px]">notifications</span><span class="absolute top-1 right-1 w-2 h-2 rounded-full bg-error"></span></button><div class="flex items-center gap-space-sm pl-space-sm"><div class="w-8 h-8 rounded-full bg-primary flex items-center justify-center"><span class="material-symbols-outlined text-on-primary text-[18px]">person</span></div><div class="hidden xl:flex flex-col text-left"><span class="font-label-md text-label-md text-on-surface leading-tight">Dr. K. S. Rathore</span><span class="font-body-sm text-body-sm text-on-surface-variant leading-tight">Principal / Inst. Admin</span></div></div></div></div></header><aside class="fixed left-0 top-16 h-[calc(100vh-4rem)] w-64 bg-surface-container-lowest shadow-[1px_0_4px_rgba(24,66,55,0.04)] z-40 flex flex-col justify-between overflow-y-auto"><div class="py-space-md flex flex-col gap-space-md"><div class="flex flex-col"><div class="px-gutter mb-space-sm text-on-surface-variant font-label-sm text-label-sm uppercase tracking-wider">Administrative Modules</div><nav class="flex flex-col gap-1 px-space-sm" data-active-classes="bg-primary-container text-on-primary font-label-md rounded-lg shadow-sm"><a class="flex items-center px-space-md py-2 rounded-lg text-on-surface-variant font-body-md text-body-md hover:bg-surface-container hover:text-on-surface transition-all" data-path="dashboard" href="#"><span>Dashboard</span></a><a class="flex items-center px-space-md py-2 rounded-lg text-on-surface-variant font-body-md text-body-md hover:bg-surface-container hover:text-on-surface transition-all" data-path="students" href="#"><span>Students</span></a><a class="flex items-center px-space-md py-2 rounded-lg text-on-surface-variant font-body-md text-body-md hover:bg-surface-container hover:text-on-surface transition-all" data-path="attendance" href="#"><span>Attendance</span></a><a class="flex items-center px-space-md py-2 rounded-lg text-on-surface-variant font-body-md text-body-md hover:bg-surface-container hover:text-on-surface transition-all" data-path="academics" href="#"><span>Academics</span></a><a class="flex items-center px-space-md py-2 rounded-lg text-on-surface-variant font-body-md text-body-md hover:bg-surface-container hover:text-on-surface transition-all" data-path="performance" href="#"><span>Performance</span></a><a class="flex items-center px-space-md py-2 rounded-lg text-on-surface-variant font-body-md text-body-md hover:bg-surface-container hover:text-on-surface transition-all" data-path="behaviour" href="#"><span>Behaviour</span></a><a class="flex items-center px-space-md py-2 rounded-lg text-on-surface-variant font-body-md text-body-md hover:bg-surface-container hover:text-on-surface transition-all" data-path="reports" href="#"><span>Reports &amp; CBSE</span></a><a class="flex items-center px-space-md py-2 rounded-lg text-on-surface-variant font-body-md text-body-md hover:bg-surface-container hover:text-on-surface transition-all" data-path="administration" href="#"><span>Administration</span></a></nav></div><div class="flex flex-col"><div class="px-gutter mb-space-sm text-on-surface-variant font-label-sm text-label-sm uppercase tracking-wider">School Configuration</div><nav class="flex flex-col gap-1 px-space-sm" data-active-classes="bg-primary-container text-on-primary font-label-md rounded-lg shadow-sm"><a class="flex items-center px-space-md py-2 rounded-lg text-on-surface-variant font-body-md text-body-md hover:bg-surface-container hover:text-on-surface transition-all" data-path="academic-year-management" href="#"><span>Academic Year Management</span></a><a aria-current="page" class="flex items-center px-space-md py-2 transition-all bg-primary-container text-on-primary font-label-md rounded-lg shadow-sm" data-path="assessment-types-configuration" href="#"><span>Assessment Configuration</span></a><a class="flex items-center px-space-md py-2 rounded-lg text-on-surface-variant font-body-md text-body-md hover:bg-surface-container hover:text-on-surface transition-all" data-path="attendance-marking-policy" href="#"><span>Attendance Marking Policy</span></a><a class="flex items-center px-space-md py-2 rounded-lg text-on-surface-variant font-body-md text-body-md hover:bg-surface-container hover:text-on-surface transition-all" data-path="system-configuration-confirmation-audit" href="#"><span>System Configuration Confirmation &amp; Audit</span></a></nav></div></div><div class="p-space-md bg-surface-container-low m-space-sm rounded-lg flex flex-col gap-space-xs"><div class="flex items-center gap-space-xs text-primary font-label-sm text-label-sm"><span class="material-symbols-outlined text-[16px]">verified</span><span>CBSE Affiliation: #1730249</span></div><div class="font-body-sm text-body-sm text-on-surface-variant">Jaipur Zone • Active Node</div></div></aside><div class="pl-64"><main class="w-full pt-16 bg-surface min-h-screen"><div class="flex flex-col w-full">
+<!-- Topmost Meta Bar & Breadcrumb -->
+<div class="px-margin-desktop py-space-sm bg-surface-container-lowest flex flex-wrap items-center justify-between gap-space-sm">
+<div class="flex items-center gap-space-xs font-body-sm text-body-sm text-on-surface-variant">
+<span class="hover:text-primary transition-colors cursor-pointer">Institutional Governance</span>
+<span class="material-symbols-outlined text-[14px] text-outline">chevron_right</span>
+<span class="hover:text-primary transition-colors cursor-pointer">System Configuration</span>
+<span class="material-symbols-outlined text-[14px] text-outline">chevron_right</span>
+<span class="font-label-sm text-label-sm text-primary">Assessment Types Configuration</span>
+</div>
+<div class="flex items-center gap-space-md">
+<div class="flex items-center gap-1.5 px-space-sm py-0.5 rounded-lg bg-surface-container text-on-surface-variant font-label-sm text-label-sm">
+<span class="w-2 h-2 rounded-full bg-primary"></span>
+<span>Schema Status: Compliant (CBSE Acad-05/2024)</span>
+</div>
+<div class="font-tabular-data text-tabular-data text-on-surface-variant">
+        Sync Timestamp: <span class="font-label-sm text-label-sm text-on-surface">19 Feb 2025, 11:42 IST</span>
+</div>
+</div>
+</div>
+<!-- Header Section with Strict Institutional Hierarchy -->
+<div class="px-margin-desktop py-space-lg bg-surface-container-low flex flex-col md:flex-row md:items-end justify-between gap-space-lg">
+<div class="max-w-3xl flex flex-col gap-space-xs">
+<div class="flex items-center gap-space-sm">
+<span class="px-space-xs py-0.5 rounded bg-primary-container text-on-primary font-label-sm text-label-sm uppercase tracking-wider">Statutory Academic Engine</span>
+<span class="text-outline font-label-sm text-label-sm">•</span>
+<span class="text-on-surface-variant font-body-sm text-body-sm">Curriculum Division • Class 6 through 12</span>
+</div>
+<h1 class="font-headline-lg text-headline-lg text-primary tracking-tight">Assessment Types &amp; Evaluation Schema Configuration</h1>
+<p class="font-body-md text-body-md text-on-surface-variant">
+        Configure statutory assessment nomenclature, max marks ceilings, theory/practical splits, class cohort applicability, and sequential evaluation ordering.
+      </p>
+</div>
+<!-- Actions Toolbar -->
+<div class="flex items-center gap-space-sm self-start md:self-auto shrink-0">
+<button class="h-9 px-space-md rounded bg-surface-container-lowest text-on-surface font-label-md text-label-md shadow-sm hover:bg-surface-container transition-all flex items-center gap-space-xs">
+<span class="material-symbols-outlined text-[18px] text-outline">history</span>
+<span>Audit History</span>
+</button>
+<button class="h-9 px-space-md rounded bg-surface-container-lowest text-on-surface font-label-md text-label-md shadow-sm hover:bg-surface-container transition-all flex items-center gap-space-xs">
+<span class="material-symbols-outlined text-[18px] text-secondary">visibility</span>
+<span>Preview Report Card</span>
+</button>
+<button class="h-9 px-space-md rounded bg-primary text-on-primary font-label-md text-label-md shadow-sm hover:bg-primary-container transition-all flex items-center gap-space-xs">
+<span class="material-symbols-outlined text-[18px]">add_box</span>
+<span>+ Define Assessment Type</span>
+</button>
+</div>
+</div>
+<!-- Pending Review Banner (Restrained & Architectural) -->
+<div class="px-margin-desktop py-space-sm bg-secondary-fixed text-on-secondary-fixed flex flex-col sm:flex-row sm:items-center justify-between gap-space-md">
+<div class="flex items-center gap-space-sm">
+<span class="material-symbols-outlined text-secondary text-[20px]">pending_actions</span>
+<div class="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-space-sm">
+<span class="font-label-md text-label-md font-semibold">1 Draft Configuration Modification Pending Review:</span>
+<span class="font-body-sm text-body-sm text-on-secondary-fixed-variant">Term II Pre-Board Practical weightage adjusted for Class 10 by Mrs. Neeta Vashistha (Exam Cell).</span>
+</div>
+</div>
+<div class="flex items-center gap-space-sm shrink-0">
+<button class="h-7 px-space-sm rounded bg-surface-container-lowest text-secondary font-label-sm text-label-sm hover:bg-surface-container-low transition-colors shadow-sm">
+        Discard Edits
+      </button>
+<button class="h-7 px-space-md rounded bg-secondary text-on-secondary font-label-sm text-label-sm hover:bg-on-secondary-container transition-colors shadow-sm">
+        Review &amp; Stage
+      </button>
+</div>
+</div>
+<!-- Navigation Filters & Wing Selector -->
+<div class="px-margin-desktop py-space-md bg-surface flex flex-wrap items-center justify-between gap-space-md">
+<!-- Wing Selector Tabs -->
+<div class="flex items-center bg-surface-container-high rounded p-1 gap-1">
+<button class="px-space-md py-1.5 rounded font-label-sm text-label-sm text-on-surface-variant hover:text-on-surface hover:bg-surface-container transition-all">
+        All Classes (Grades 6–12)
+      </button>
+<button class="px-space-md py-1.5 rounded font-label-sm text-label-sm text-on-surface-variant hover:text-on-surface hover:bg-surface-container transition-all">
+        Senior Secondary (Grades 11–12)
+      </button>
+<button class="px-space-md py-1.5 rounded font-label-sm text-label-sm bg-surface-container-lowest text-primary shadow-sm font-semibold flex items-center gap-1.5">
+<span>Secondary Wing (Grades 9–10)</span>
+<span class="w-1.5 h-1.5 rounded-full bg-primary"></span>
+</button>
+<button class="px-space-md py-1.5 rounded font-label-sm text-label-sm text-on-surface-variant hover:text-on-surface hover:bg-surface-container transition-all">
+        Middle Wing (Grades 6–8)
+      </button>
+</div>
+<!-- Session & Blueprint Controls -->
+<div class="flex items-center gap-space-sm">
+<div class="flex items-center gap-space-xs bg-surface-container-lowest px-space-md py-1.5 rounded shadow-sm">
+<span class="font-body-sm text-body-sm text-on-surface-variant">Evaluation Cycle:</span>
+<span class="font-label-sm text-label-sm text-primary">AY 2024–25 (Term II)</span>
+</div>
+<div class="flex items-center gap-space-xs bg-surface-container-lowest px-space-md py-1.5 rounded shadow-sm">
+<span class="font-body-sm text-body-sm text-on-surface-variant">Affiliation Code:</span>
+<span class="font-tabular-data text-tabular-data text-on-surface">CBSE/REG-1730249</span>
+</div>
+<button class="w-9 h-9 flex items-center justify-center rounded bg-surface-container-lowest text-on-surface-variant hover:text-primary shadow-sm transition-colors" title="Print Evaluation Schedule Matrix">
+<span class="material-symbols-outlined text-[18px]">print</span>
+</button>
+</div>
+</div>
+<!-- Main Grid Workspace: Left Schema Table (65%) | Right Live Config Panel (35%) -->
+<div class="px-margin-desktop pb-margin-desktop grid grid-cols-1 xl:grid-cols-12 gap-space-lg items-start">
+<!-- Left Column: Master Sequence & Assessment Table (8 Cols) -->
+<div class="xl:col-span-7 flex flex-col gap-space-md">
+<!-- Table Header & Controls Bar -->
+<div class="bg-surface-container-lowest p-space-md rounded shadow-sm flex items-center justify-between">
+<div class="flex items-center gap-space-sm">
+<span class="material-symbols-outlined text-primary text-[20px]">sort</span>
+<span class="font-headline-sm text-headline-sm text-on-surface">Sequential Evaluation Sequence</span>
+<span class="px-2 py-0.5 rounded bg-surface-container text-on-surface-variant font-label-sm text-label-sm">6 Assessment Nodes</span>
+</div>
+<div class="flex items-center gap-space-xs text-on-surface-variant font-body-sm text-body-sm">
+<span class="material-symbols-outlined text-[16px]">info</span>
+<span>Drag sequence index or select node to modify blueprint</span>
+</div>
+</div>
+<!-- High-Density Ledger Table -->
+<div class="bg-surface-container-lowest rounded shadow-sm overflow-hidden">
+<div class="overflow-x-auto">
+<table class="w-full text-left border-collapse">
+<thead>
+<tr class="bg-surface-container-high h-8 text-on-surface-variant font-label-sm text-label-sm uppercase tracking-wider">
+<th class="w-12 px-space-sm text-center">Seq</th>
+<th class="px-space-md">Code &amp; Title</th>
+<th class="px-space-sm">Category</th>
+<th class="px-space-sm text-right">Max Marks</th>
+<th class="px-space-md">Component Split</th>
+<th class="px-space-sm">Applicable</th>
+<th class="px-space-sm">Weight</th>
+<th class="px-space-sm">Status</th>
+<th class="w-12 px-space-sm text-center">Action</th>
+</tr>
+</thead>
+<tbody class="divide-y divide-surface-container text-body-md font-body-md">
+<!-- Row 1: UT-1 -->
+<tr class="h-12 hover:bg-surface-container-low transition-colors group">
+<td class="text-center font-tabular-data text-tabular-data text-outline">
+<div class="flex items-center justify-center gap-0.5">
+<span class="material-symbols-outlined text-[16px] text-outline opacity-0 group-hover:opacity-100 cursor-grab">drag_indicator</span>
+<span>1</span>
+</div>
+</td>
+<td class="px-space-md py-2">
+<div class="flex flex-col">
+<span class="font-label-md text-label-md text-on-surface font-semibold">Unit Test I (Diagnostic)</span>
+<span class="font-tabular-data text-[11px] text-outline tracking-wider">CODE: UT-1 • TERM I</span>
+</div>
+</td>
+<td class="px-space-sm py-2">
+<span class="px-1.5 py-0.5 rounded bg-surface-container text-on-surface-variant font-label-sm text-label-sm whitespace-nowrap">Periodic Test</span>
+</td>
+<td class="px-space-sm py-2 text-right font-tabular-data text-tabular-data font-semibold text-on-surface">
+                  40
+                </td>
+<td class="px-space-md py-2 font-tabular-data text-tabular-data">
+<div class="flex items-center gap-1.5">
+<span class="px-1.5 py-0.5 bg-surface-container-low rounded text-[11px] text-on-surface">Th: 30</span>
+<span class="text-outline text-xs">+</span>
+<span class="px-1.5 py-0.5 bg-surface-container-low rounded text-[11px] text-on-surface">IA: 10</span>
+</div>
+</td>
+<td class="px-space-sm py-2 font-body-sm text-body-sm text-on-surface-variant">
+                  Grades 6–10
+                </td>
+<td class="px-space-sm py-2 font-tabular-data text-tabular-data text-primary font-medium">
+                  10%
+                </td>
+<td class="px-space-sm py-2">
+<span class="inline-flex items-center gap-1 px-2 py-0.5 rounded bg-surface-container-high text-on-surface-variant font-label-sm text-label-sm whitespace-nowrap">
+<span class="material-symbols-outlined text-[13px] text-outline">lock</span>
+<span>Locked</span>
+</span>
+</td>
+<td class="px-space-sm py-2 text-center">
+<button class="p-1 rounded text-outline hover:text-primary transition-colors">
+<span class="material-symbols-outlined text-[18px]">more_vert</span>
+</button>
+</td>
+</tr>
+<!-- Row 2: HY-EXAM -->
+<tr class="h-12 hover:bg-surface-container-low transition-colors group">
+<td class="text-center font-tabular-data text-tabular-data text-outline">
+<div class="flex items-center justify-center gap-0.5">
+<span class="material-symbols-outlined text-[16px] text-outline opacity-0 group-hover:opacity-100 cursor-grab">drag_indicator</span>
+<span>2</span>
+</div>
+</td>
+<td class="px-space-md py-2">
+<div class="flex flex-col">
+<span class="font-label-md text-label-md text-on-surface font-semibold">Half-Yearly Examination</span>
+<span class="font-tabular-data text-[11px] text-outline tracking-wider">CODE: HY-EXAM • TERM I</span>
+</div>
+</td>
+<td class="px-space-sm py-2">
+<span class="px-1.5 py-0.5 rounded bg-surface-container text-on-surface-variant font-label-sm text-label-sm whitespace-nowrap">Summative</span>
+</td>
+<td class="px-space-sm py-2 text-right font-tabular-data text-tabular-data font-semibold text-on-surface">
+                  100
+                </td>
+<td class="px-space-md py-2 font-tabular-data text-tabular-data">
+<div class="flex items-center gap-1.5">
+<span class="px-1.5 py-0.5 bg-surface-container-low rounded text-[11px] text-on-surface">Th: 80</span>
+<span class="text-outline text-xs">+</span>
+<span class="px-1.5 py-0.5 bg-surface-container-low rounded text-[11px] text-on-surface">IA: 20</span>
+</div>
+</td>
+<td class="px-space-sm py-2 font-body-sm text-body-sm text-on-surface-variant">
+                  Grades 6–12
+                </td>
+<td class="px-space-sm py-2 font-tabular-data text-tabular-data text-primary font-medium">
+                  30%
+                </td>
+<td class="px-space-sm py-2">
+<span class="inline-flex items-center gap-1 px-2 py-0.5 rounded bg-surface-container-high text-on-surface-variant font-label-sm text-label-sm whitespace-nowrap">
+<span class="material-symbols-outlined text-[13px] text-outline">lock</span>
+<span>Locked</span>
+</span>
+</td>
+<td class="px-space-sm py-2 text-center">
+<button class="p-1 rounded text-outline hover:text-primary transition-colors">
+<span class="material-symbols-outlined text-[18px]">more_vert</span>
+</button>
+</td>
+</tr>
+<!-- Row 3: UT-2 -->
+<tr class="h-12 hover:bg-surface-container-low transition-colors group">
+<td class="text-center font-tabular-data text-tabular-data text-outline">
+<div class="flex items-center justify-center gap-0.5">
+<span class="material-symbols-outlined text-[16px] text-outline opacity-0 group-hover:opacity-100 cursor-grab">drag_indicator</span>
+<span>3</span>
+</div>
+</td>
+<td class="px-space-md py-2">
+<div class="flex flex-col">
+<span class="font-label-md text-label-md text-on-surface font-semibold">Unit Test II (Progress Review)</span>
+<span class="font-tabular-data text-[11px] text-outline tracking-wider">CODE: UT-2 • TERM II</span>
+</div>
+</td>
+<td class="px-space-sm py-2">
+<span class="px-1.5 py-0.5 rounded bg-surface-container text-on-surface-variant font-label-sm text-label-sm whitespace-nowrap">Periodic Test</span>
+</td>
+<td class="px-space-sm py-2 text-right font-tabular-data text-tabular-data font-semibold text-on-surface">
+                  40
+                </td>
+<td class="px-space-md py-2 font-tabular-data text-tabular-data">
+<div class="flex items-center gap-1.5">
+<span class="px-1.5 py-0.5 bg-surface-container-low rounded text-[11px] text-on-surface">Th: 30</span>
+<span class="text-outline text-xs">+</span>
+<span class="px-1.5 py-0.5 bg-surface-container-low rounded text-[11px] text-on-surface">IA: 10</span>
+</div>
+</td>
+<td class="px-space-sm py-2 font-body-sm text-body-sm text-on-surface-variant">
+                  Grades 6–10
+                </td>
+<td class="px-space-sm py-2 font-tabular-data text-tabular-data text-primary font-medium">
+                  10%
+                </td>
+<td class="px-space-sm py-2">
+<span class="inline-flex items-center gap-1 px-2 py-0.5 rounded bg-surface-container-high text-on-surface-variant font-label-sm text-label-sm whitespace-nowrap">
+<span class="material-symbols-outlined text-[13px] text-outline">lock</span>
+<span>Locked</span>
+</span>
+</td>
+<td class="px-space-sm py-2 text-center">
+<button class="p-1 rounded text-outline hover:text-primary transition-colors">
+<span class="material-symbols-outlined text-[18px]">more_vert</span>
+</button>
+</td>
+</tr>
+<!-- Row 4: T2-MID -->
+<tr class="h-12 hover:bg-surface-container-low transition-colors group">
+<td class="text-center font-tabular-data text-tabular-data text-outline">
+<div class="flex items-center justify-center gap-0.5">
+<span class="material-symbols-outlined text-[16px] text-outline opacity-0 group-hover:opacity-100 cursor-grab">drag_indicator</span>
+<span>4</span>
+</div>
+</td>
+<td class="px-space-md py-2">
+<div class="flex flex-col">
+<span class="font-label-md text-label-md text-on-surface font-semibold">Term II Mid-Term Benchmark</span>
+<span class="font-tabular-data text-[11px] text-outline tracking-wider">CODE: T2-MID • TERM II</span>
+</div>
+</td>
+<td class="px-space-sm py-2">
+<span class="px-1.5 py-0.5 rounded bg-surface-container text-on-surface-variant font-label-sm text-label-sm whitespace-nowrap">Benchmark</span>
+</td>
+<td class="px-space-sm py-2 text-right font-tabular-data text-tabular-data font-semibold text-on-surface">
+                  100
+                </td>
+<td class="px-space-md py-2 font-tabular-data text-tabular-data">
+<div class="flex items-center gap-1.5">
+<span class="px-1.5 py-0.5 bg-surface-container-low rounded text-[11px] text-on-surface">Th: 80</span>
+<span class="text-outline text-xs">+</span>
+<span class="px-1.5 py-0.5 bg-surface-container-low rounded text-[11px] text-on-surface">IA: 20</span>
+</div>
+</td>
+<td class="px-space-sm py-2 font-body-sm text-body-sm text-on-surface-variant">
+                  Class 10
+                </td>
+<td class="px-space-sm py-2 font-tabular-data text-tabular-data text-primary font-medium">
+                  20%
+                </td>
+<td class="px-space-sm py-2">
+<span class="inline-flex items-center gap-1 px-2 py-0.5 rounded bg-surface-container text-primary font-label-sm text-label-sm whitespace-nowrap">
+<span class="w-1.5 h-1.5 rounded-full bg-primary animate-pulse"></span>
+<span>Evaluating</span>
+</span>
+</td>
+<td class="px-space-sm py-2 text-center">
+<button class="p-1 rounded text-outline hover:text-primary transition-colors">
+<span class="material-symbols-outlined text-[18px]">more_vert</span>
+</button>
+</td>
+</tr>
+<!-- Row 5: PRE-BRD-1 (ACTIVE SELECTED ROW) -->
+<tr class="h-14 bg-surface-container-low transition-colors group">
+<td class="text-center font-tabular-data text-tabular-data text-primary font-bold">
+<div class="flex items-center justify-center gap-0.5">
+<span class="material-symbols-outlined text-[16px] text-primary cursor-grab">drag_indicator</span>
+<span>5</span>
+</div>
+</td>
+<td class="px-space-md py-2">
+<div class="flex flex-col">
+<div class="flex items-center gap-1.5">
+<span class="font-label-md text-label-md text-primary font-bold">Pre-Board Examination I</span>
+<span class="px-1.5 py-0.2 rounded bg-primary text-on-primary font-label-sm text-[10px]">Editing</span>
+</div>
+<span class="font-tabular-data text-[11px] text-primary tracking-wider">CODE: PRE-BRD-1 • TERM II</span>
+</div>
+</td>
+<td class="px-space-sm py-2">
+<span class="px-1.5 py-0.5 rounded bg-surface-container-high text-primary font-label-sm text-label-sm whitespace-nowrap">Statutory Board</span>
+</td>
+<td class="px-space-sm py-2 text-right font-tabular-data text-tabular-data font-bold text-primary">
+                  100
+                </td>
+<td class="px-space-md py-2 font-tabular-data text-tabular-data">
+<div class="flex items-center gap-1.5">
+<span class="px-1.5 py-0.5 bg-surface-container rounded text-[11px] text-primary font-semibold">Th: 80</span>
+<span class="text-outline text-xs">+</span>
+<span class="px-1.5 py-0.5 bg-surface-container rounded text-[11px] text-secondary font-semibold">Lab: 20*</span>
+</div>
+</td>
+<td class="px-space-sm py-2 font-body-sm text-body-sm font-semibold text-on-surface">
+                  Class 10 &amp; 12
+                </td>
+<td class="px-space-sm py-2 font-tabular-data text-tabular-data text-on-surface-variant font-medium">
+                  Diagnostic
+                </td>
+<td class="px-space-sm py-2">
+<span class="inline-flex items-center gap-1 px-2 py-0.5 rounded bg-secondary-fixed text-on-secondary-fixed-variant font-label-sm text-label-sm whitespace-nowrap">
+<span class="material-symbols-outlined text-[13px]">event</span>
+<span>24 Feb 2025</span>
+</span>
+</td>
+<td class="px-space-sm py-2 text-center">
+<button class="p-1 rounded text-primary hover:bg-surface-container transition-colors">
+<span class="material-symbols-outlined text-[18px]">edit_note</span>
+</button>
+</td>
+</tr>
+<!-- Row 6: ANN-FIN -->
+<tr class="h-12 hover:bg-surface-container-low transition-colors group">
+<td class="text-center font-tabular-data text-tabular-data text-outline">
+<div class="flex items-center justify-center gap-0.5">
+<span class="material-symbols-outlined text-[16px] text-outline opacity-0 group-hover:opacity-100 cursor-grab">drag_indicator</span>
+<span>6</span>
+</div>
+</td>
+<td class="px-space-md py-2">
+<div class="flex flex-col">
+<span class="font-label-md text-label-md text-on-surface font-semibold">Annual Final Examination</span>
+<span class="font-tabular-data text-[11px] text-outline tracking-wider">CODE: ANN-FIN • TERM II</span>
+</div>
+</td>
+<td class="px-space-sm py-2">
+<span class="px-1.5 py-0.5 rounded bg-surface-container text-on-surface-variant font-label-sm text-label-sm whitespace-nowrap">Promotional</span>
+</td>
+<td class="px-space-sm py-2 text-right font-tabular-data text-tabular-data font-semibold text-on-surface">
+                  100
+                </td>
+<td class="px-space-md py-2 font-tabular-data text-tabular-data">
+<div class="flex items-center gap-1.5">
+<span class="px-1.5 py-0.5 bg-surface-container-low rounded text-[11px] text-on-surface">Th: 80</span>
+<span class="text-outline text-xs">+</span>
+<span class="px-1.5 py-0.5 bg-surface-container-low rounded text-[11px] text-on-surface">IA: 20</span>
+</div>
+</td>
+<td class="px-space-sm py-2 font-body-sm text-body-sm text-on-surface-variant">
+                  Grades 6–9, 11
+                </td>
+<td class="px-space-sm py-2 font-tabular-data text-tabular-data text-primary font-medium">
+                  50%
+                </td>
+<td class="px-space-sm py-2">
+<span class="inline-flex items-center gap-1 px-2 py-0.5 rounded bg-surface-container text-on-surface-variant font-label-sm text-label-sm whitespace-nowrap">
+<span class="material-symbols-outlined text-[13px]">schedule</span>
+<span>10 Mar 2025</span>
+</span>
+</td>
+<td class="px-space-sm py-2 text-center">
+<button class="p-1 rounded text-outline hover:text-primary transition-colors">
+<span class="material-symbols-outlined text-[18px]">more_vert</span>
+</button>
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+<!-- Table Summary Ledger Footer -->
+<div class="p-space-md bg-surface-container-low flex flex-wrap items-center justify-between gap-space-sm text-body-sm font-body-sm text-on-surface-variant">
+<div class="flex items-center gap-space-md">
+<span>Cumulative Weighted Distribution: <strong class="text-primary font-tabular-data">100%</strong> (Term I: 40% + Term II: 60%)</span>
+<span class="text-outline">•</span>
+<span>Assessment Ceiling Engine: <strong class="text-on-surface font-label-sm">Absolute Scale</strong></span>
+</div>
+<div class="flex items-center gap-space-xs text-secondary font-label-sm text-label-sm">
+<span class="material-symbols-outlined text-[16px]">verified</span>
+<span>All 6 codes mapped to CBSE OASIS portal format</span>
+</div>
+</div>
+</div>
+<!-- Statutory Rule Note & Compliance Guard -->
+<div class="bg-surface-container-lowest p-space-lg rounded shadow-sm flex items-start gap-space-md">
+<div class="p-2 rounded bg-surface-container-high text-primary shrink-0">
+<span class="material-symbols-outlined text-[24px]">gavel</span>
+</div>
+<div class="flex flex-col gap-1">
+<div class="flex items-center gap-space-sm">
+<span class="font-label-md text-label-md text-primary font-semibold">Statutory Compliance Guard — CBSE Acad-05/2024</span>
+<span class="px-1.5 py-0.5 rounded bg-surface-container text-on-surface-variant font-label-sm text-label-sm">Mandatory Rule #9</span>
+</div>
+<p class="font-body-sm text-body-sm text-on-surface-variant leading-relaxed">
+            For Grades 9 &amp; 10, the statutory Internal Assessment ceiling is strictly locked to <strong>20 marks</strong>. This comprises:
+            Periodic Tests (scaled to 5 marks), Diverse Multiple Assessments (5 marks), Subject Portfolio (5 marks), and Practical Enrichment/Lab activities (5 marks). Theory examinations may not exceed an 80-mark evaluation ledger without prior Regional Officer sanction.
+          </p>
+</div>
+</div>
+</div>
+<!-- Right Column: Detail Configuration Drawer / Precision Control Panel (5 Cols) -->
+<div class="xl:col-span-5 flex flex-col gap-space-md">
+<!-- Panel Container with Clean Architectural Boundaries -->
+<div class="bg-surface-container-lowest rounded shadow-sm overflow-hidden">
+<!-- Drawer Header -->
+<div class="p-space-md bg-surface-container-high flex items-center justify-between">
+<div class="flex items-center gap-space-sm">
+<div class="w-7 h-7 rounded bg-primary text-on-primary flex items-center justify-center font-bold text-xs">
+              05
+            </div>
+<div class="flex flex-col">
+<span class="font-headline-sm text-headline-sm text-primary">Pre-Board Examination I</span>
+<span class="font-tabular-data text-[11px] text-on-surface-variant">NODE ID: PRE-BRD-1 • SECONDARY COHORT</span>
+</div>
+</div>
+<span class="px-2 py-1 rounded bg-secondary-fixed text-on-secondary-fixed-variant font-label-sm text-label-sm font-semibold">
+            Unsaved Draft
+          </span>
+</div>
+<!-- Form Formats -->
+<div class="p-space-lg flex flex-col gap-space-lg">
+<!-- Section 1: Identification & Taxonomy -->
+<div class="flex flex-col gap-space-sm">
+<div class="font-label-sm text-label-sm uppercase tracking-wider text-outline">
+              1. Assessment Identification &amp; Cycle
+            </div>
+<div class="grid grid-cols-2 gap-space-md">
+<div class="flex flex-col gap-1">
+<label class="font-label-sm text-label-sm text-on-surface">Assessment Title</label>
+<input class="h-9 px-space-md rounded bg-surface-container-low text-on-surface font-body-md text-body-md focus:bg-surface-container-lowest transition-colors focus:outline-none" readonly="" type="text" value="Pre-Board Examination I"/>
+</div>
+<div class="flex flex-col gap-1">
+<label class="font-label-sm text-label-sm text-on-surface">System Registry Code</label>
+<input class="h-9 px-space-md rounded bg-surface-container-low text-on-surface font-tabular-data text-tabular-data font-semibold focus:outline-none" readonly="" type="text" value="PRE-BRD-1"/>
+</div>
+</div>
+<div class="grid grid-cols-2 gap-space-md">
+<div class="flex flex-col gap-1">
+<label class="font-label-sm text-label-sm text-on-surface">Academic Term Window</label>
+<select class="h-9 px-space-md rounded bg-surface-container-lowest text-on-surface font-body-md text-body-md shadow-sm focus:outline-none">
+<option selected="">AY 2024–25 (Term II)</option>
+<option>AY 2024–25 (Term I - Archived)</option>
+</select>
+</div>
+<div class="flex flex-col gap-1">
+<label class="font-label-sm text-label-sm text-on-surface">Pedagogic Category</label>
+<select class="h-9 px-space-md rounded bg-surface-container-lowest text-on-surface font-body-md text-body-md shadow-sm focus:outline-none">
+<option selected="">Statutory Board Rehearsal</option>
+<option>Periodic Assessment</option>
+<option>Formative Diagnostic</option>
+</select>
+</div>
+</div>
+</div>
+<!-- Section 2: Component Breakdown & Ceiling Policy -->
+<div class="flex flex-col gap-space-sm">
+<div class="flex items-center justify-between">
+<span class="font-label-sm text-label-sm uppercase tracking-wider text-outline">2. Marks &amp; Component Schema</span>
+<span class="font-tabular-data text-tabular-data text-primary font-semibold">Total Scaled Ceiling: 100</span>
+</div>
+<div class="p-space-md rounded bg-surface-container-low flex flex-col gap-space-md">
+<!-- Total Scale Slider / Metric visual -->
+<div class="grid grid-cols-3 gap-space-sm">
+<div class="p-space-sm bg-surface-container-lowest rounded shadow-sm flex flex-col">
+<span class="font-label-sm text-[11px] text-on-surface-variant">Total Max Ceiling</span>
+<div class="flex items-baseline gap-1 mt-0.5">
+<span class="font-tabular-data text-headline-sm text-primary font-bold">100</span>
+<span class="font-body-sm text-[10px] text-outline">Marks</span>
+</div>
+</div>
+<div class="p-space-sm bg-surface-container-lowest rounded shadow-sm flex flex-col">
+<span class="font-label-sm text-[11px] text-on-surface-variant">Theory Scaled</span>
+<div class="flex items-baseline gap-1 mt-0.5">
+<span class="font-tabular-data text-headline-sm text-on-surface font-bold">80</span>
+<span class="font-body-sm text-[10px] text-outline">Pass: 26.4</span>
+</div>
+</div>
+<div class="p-space-sm bg-surface-container-lowest rounded shadow-sm flex flex-col">
+<span class="font-label-sm text-[11px] text-secondary font-medium">Practical/Viva</span>
+<div class="flex items-baseline gap-1 mt-0.5">
+<span class="font-tabular-data text-headline-sm text-secondary font-bold">20</span>
+<span class="font-body-sm text-[10px] text-outline">Pass: 6.6</span>
+</div>
+</div>
+</div>
+<!-- Component Input Row -->
+<div class="grid grid-cols-2 gap-space-md">
+<div class="flex flex-col gap-1">
+<div class="flex items-center justify-between">
+<label class="font-label-sm text-label-sm text-on-surface">Theory Max (Raw)</label>
+<span class="font-body-sm text-[11px] text-on-surface-variant">33% Min Threshold</span>
+</div>
+<input class="h-9 px-space-md rounded bg-surface-container-lowest text-on-surface font-tabular-data text-tabular-data shadow-sm focus:outline-none" type="number" value="80"/>
+</div>
+<div class="flex flex-col gap-1">
+<div class="flex items-center justify-between">
+<label class="font-label-sm text-label-sm text-on-surface">Practical / Lab Viva</label>
+<span class="px-1 py-0.2 bg-secondary-fixed text-on-secondary-fixed text-[10px] rounded">Modified</span>
+</div>
+<input class="h-9 px-space-md rounded bg-surface-container-lowest text-secondary font-tabular-data text-tabular-data font-bold shadow-sm focus:outline-none" type="number" value="20"/>
+</div>
+</div>
+<div class="flex items-center justify-between pt-1">
+<div class="flex items-center gap-space-xs">
+<input checked="" class="w-4 h-4 rounded text-primary focus:ring-0 accent-primary" id="decimal-rule" type="checkbox"/>
+<label class="font-body-sm text-body-sm text-on-surface cursor-pointer" for="decimal-rule">
+                    Decimal precision policy: Round to 1 decimal place (e.g. 18.5/20)
+                  </label>
+</div>
+</div>
+</div>
+</div>
+<!-- Section 3: Cohort & Section Applicability -->
+<div class="flex flex-col gap-space-sm">
+<span class="font-label-sm text-label-sm uppercase tracking-wider text-outline">3. Class Cohort Applicability</span>
+<div class="grid grid-cols-2 gap-space-sm font-body-sm text-body-sm">
+<label class="flex items-center gap-space-sm p-space-sm bg-surface-container-low rounded cursor-pointer hover:bg-surface-container transition-colors">
+<input checked="" class="w-4 h-4 rounded text-primary focus:ring-0 accent-primary" type="checkbox"/>
+<div class="flex flex-col">
+<span class="font-label-sm text-label-sm text-on-surface">Class 10-A (Secondary)</span>
+<span class="text-[11px] text-on-surface-variant">Rolls: 1001–1042 • 42 Enrolled</span>
+</div>
+</label>
+<label class="flex items-center gap-space-sm p-space-sm bg-surface-container-low rounded cursor-pointer hover:bg-surface-container transition-colors">
+<input checked="" class="w-4 h-4 rounded text-primary focus:ring-0 accent-primary" type="checkbox"/>
+<div class="flex flex-col">
+<span class="font-label-sm text-label-sm text-on-surface">Class 10-B (Secondary)</span>
+<span class="text-[11px] text-on-surface-variant">Rolls: 1043–1085 • 43 Enrolled</span>
+</div>
+</label>
+<label class="flex items-center gap-space-sm p-space-sm bg-surface-container-low rounded cursor-pointer hover:bg-surface-container transition-colors">
+<input checked="" class="w-4 h-4 rounded text-primary focus:ring-0 accent-primary" type="checkbox"/>
+<div class="flex flex-col">
+<span class="font-label-sm text-label-sm text-on-surface">Class 12-A (PCM Stream)</span>
+<span class="text-[11px] text-on-surface-variant">Rolls: 1201–1238 • 38 Enrolled</span>
+</div>
+</label>
+<label class="flex items-center gap-space-sm p-space-sm bg-surface-container-low rounded cursor-pointer hover:bg-surface-container transition-colors">
+<input checked="" class="w-4 h-4 rounded text-primary focus:ring-0 accent-primary" type="checkbox"/>
+<div class="flex flex-col">
+<span class="font-label-sm text-label-sm text-on-surface">Class 12-B (Arts &amp; Comm)</span>
+<span class="text-[11px] text-on-surface-variant">Rolls: 1239–1279 • 41 Enrolled</span>
+</div>
+</label>
+</div>
+</div>
+<!-- Section 4: Lockout Policy & Digital Attestation -->
+<div class="flex flex-col gap-space-sm">
+<span class="font-label-sm text-label-sm uppercase tracking-wider text-outline">4. Marks Entry Window &amp; Lockdown Protocols</span>
+<div class="grid grid-cols-2 gap-space-md">
+<div class="flex flex-col gap-1">
+<label class="font-label-sm text-label-sm text-on-surface">Portal Opens</label>
+<div class="h-9 px-space-md rounded bg-surface-container-lowest text-on-surface font-tabular-data text-body-sm shadow-sm flex items-center justify-between">
+<span>24 Feb 2025, 08:00</span>
+<span class="material-symbols-outlined text-[16px] text-outline">calendar_today</span>
+</div>
+</div>
+<div class="flex flex-col gap-1">
+<label class="font-label-sm text-label-sm text-on-surface">Hard Lockout Deadline</label>
+<div class="h-9 px-space-md rounded bg-surface-container-lowest text-on-surface font-tabular-data text-body-sm shadow-sm flex items-center justify-between">
+<span>05 Mar 2025, 17:00</span>
+<span class="material-symbols-outlined text-[16px] text-error">lock_clock</span>
+</div>
+</div>
+</div>
+<div class="p-space-sm bg-surface-container-low rounded flex flex-col gap-space-xs mt-1">
+<label class="flex items-center gap-space-sm cursor-pointer">
+<input checked="" class="w-4 h-4 rounded text-primary focus:ring-0 accent-primary" type="checkbox"/>
+<span class="font-body-sm text-body-sm text-on-surface">Require Academic Head of Department (HOD) Counter-Signature</span>
+</label>
+<label class="flex items-center gap-space-sm cursor-pointer">
+<input checked="" class="w-4 h-4 rounded text-primary focus:ring-0 accent-primary" type="checkbox"/>
+<span class="font-body-sm text-body-sm text-on-surface">Require Principal Digital Attestation prior to Report Ledger publishing</span>
+</label>
+</div>
+</div>
+<!-- Section 5: Stage Control Actions -->
+<div class="pt-space-md flex flex-col gap-space-xs">
+<div class="flex items-center gap-space-sm">
+<button class="flex-1 h-9 rounded bg-surface-container text-on-surface font-label-md text-label-md hover:bg-surface-variant transition-colors" type="button">
+                Revert to Baseline
+              </button>
+<button class="flex-1 h-9 rounded bg-primary text-on-primary font-label-md text-label-md shadow-sm hover:bg-primary-container transition-colors flex items-center justify-center gap-1.5" type="button">
+<span class="material-symbols-outlined text-[18px]">done_all</span>
+<span>Stage Configuration</span>
+</button>
+</div>
+<span class="text-center font-body-sm text-[11px] text-outline mt-1">
+              Changes will require Final Confirmation under the System Audit section.
+            </span>
+</div>
+</div>
+</div>
+<!-- Quick Context Box: Assessment Blueprint Schema Summary -->
+<div class="bg-surface-container-lowest p-space-md rounded shadow-sm flex flex-col gap-space-sm">
+<div class="flex items-center justify-between">
+<span class="font-label-sm text-label-sm font-semibold text-primary">Class 10 Evaluation Blueprint Progress</span>
+<span class="font-tabular-data text-label-sm text-on-surface">80% Configured</span>
+</div>
+<div class="w-full bg-surface-container h-2 rounded-full overflow-hidden flex">
+<div class="bg-primary h-full" style="width: 60%" title="Summatives Configured"></div>
+<div class="bg-primary-fixed-dim h-full" style="width: 20%" title="Internal / Periodic Configured"></div>
+<div class="bg-secondary-container h-full" style="width: 20%" title="Staged Draft Pending Review"></div>
+</div>
+<div class="flex items-center justify-between text-[11px] font-body-sm text-on-surface-variant pt-1">
+<div class="flex items-center gap-1">
+<span class="w-2 h-2 rounded-full bg-primary"></span>
+<span>Summative (60%)</span>
+</div>
+<div class="flex items-center gap-1">
+<span class="w-2 h-2 rounded-full bg-primary-fixed-dim"></span>
+<span>Internal / UT (20%)</span>
+</div>
+<div class="flex items-center gap-1">
+<span class="w-2 h-2 rounded-full bg-secondary-container"></span>
+<span>Staged Draft (20%)</span>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div></main></div></body></html>

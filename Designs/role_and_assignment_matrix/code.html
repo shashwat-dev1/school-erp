@@ -1,0 +1,992 @@
+<!DOCTYPE html>
+
+<html lang="en"><head><meta charset="utf-8"/><meta content="width=device-width, initial-scale=1.0" name="viewport"/><meta content="web_dashboard" name="shell-type"/><link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" rel="stylesheet"/><link href="https://fonts.googleapis.com/css2?family=Inter:wght@100..900&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/><style>@layer base{html,body{margin:0;padding:0;}body{overscroll-behavior:none;}main>:first-child{margin-top:0!important;}main>:last-child{margin-bottom:0!important;}}::-webkit-scrollbar{display:none;}</style><script src="https://cdn.tailwindcss.com"></script><script id="tailwind-config">tailwind.config={darkMode:"class",theme:{extend:{colors:{"on-error":"#ffffff","surface-container-low":"#eaf6f4","on-tertiary":"#ffffff","tertiary-fixed":"#ffdad7","surface-container-lowest":"#ffffff","inverse-primary":"#a5cfc1","on-primary-container":"#a3cec0","secondary":"#7e5624","tertiary-fixed-dim":"#ffb3ad","inverse-on-surface":"#e7f3f1","on-tertiary-fixed-variant":"#822624","on-secondary":"#ffffff","secondary-container":"#fec78a","surface":"#f0fcfa","surface-dim":"#d0dddb","primary-container":"#31594e","on-tertiary-fixed":"#410004","error-container":"#ffdad6","primary-fixed":"#c0ecdd","surface-bright":"#f0fcfa","primary":"#184237","surface-variant":"#d9e5e3","surface-container-highest":"#d9e5e3","outline":"#717975","on-secondary-fixed":"#2b1700","on-secondary-fixed-variant":"#633f0d","on-background":"#131e1d","tertiary-container":"#91312e","on-surface":"#131e1d","on-error-container":"#93000a","background":"#f0fcfa","surface-container":"#e4f0ee","on-primary-fixed-variant":"#264e43","outline-variant":"#c0c8c4","secondary-fixed-dim":"#f2bd80","on-tertiary-container":"#ffb2ac","tertiary":"#721a1a","on-primary-fixed":"#002019","on-primary":"#ffffff","surface-container-high":"#deebe9","on-secondary-container":"#79511f","secondary-fixed":"#ffddba","primary-fixed-dim":"#a5cfc1","error":"#ba1a1a","surface-tint":"#3e665a","inverse-surface":"#273331","on-surface-variant":"#414845"},borderRadius:{"DEFAULT":"0.125rem","lg":"0.25rem","xl":"0.5rem","full":"0.75rem"},spacing:{"gutter":"1rem","gutter-desktop":"1.5rem","margin-desktop":"2rem","margin":"1rem","space-sm":"0.5rem","space-xs":"0.25rem","space-md":"0.75rem","space-xl":"1.5rem","space-lg":"1rem"},fontFamily:{"label-sm":["Inter"],"body-md":["Inter"],"body-sm":["Inter"],"headline-xl":["Inter"],"label-md":["Inter"],"headline-lg":["Inter"],"tabular-data":["Inter"],"headline-sm":["Inter"],"headline-md":["Inter"],"body-lg":["Inter"]},fontSize:{"label-sm":["0.75rem",{"lineHeight":"1rem","letterSpacing":"0.025em","fontWeight":"600"}],"body-md":["0.875rem",{"lineHeight":"1.25rem","letterSpacing":"0em","fontWeight":"400"}],"body-sm":["0.75rem",{"lineHeight":"1.125rem","letterSpacing":"0.005em","fontWeight":"400"}],"headline-xl":["2rem",{"lineHeight":"2.5rem","letterSpacing":"-0.02em","fontWeight":"600"}],"label-md":["0.875rem",{"lineHeight":"1.25rem","letterSpacing":"0.01em","fontWeight":"500"}],"headline-lg":["1.5rem",{"lineHeight":"2rem","letterSpacing":"-0.015em","fontWeight":"600"}],"tabular-data":["0.875rem",{"lineHeight":"1.25rem","letterSpacing":"0em","fontWeight":"400"}],"headline-sm":["1.125rem",{"lineHeight":"1.5rem","letterSpacing":"0em","fontWeight":"600"}],"headline-md":["1.25rem",{"lineHeight":"1.75rem","letterSpacing":"-0.01em","fontWeight":"600"}],"body-lg":["1rem",{"lineHeight":"1.5rem","letterSpacing":"0em","fontWeight":"400"}]}}}}</script></head><body class="bg-surface text-on-surface font-body-md text-body-md min-h-screen"><header class="fixed top-0 left-0 right-0 h-16 bg-surface-container-lowest shadow-[0_1px_4px_rgba(24,66,55,0.06)] z-50"><div class="h-16 w-full px-gutter-desktop flex items-center justify-between gap-space-lg"><div class="flex items-center gap-space-md"><img alt="HanuJai High School Crest" class="h-8 w-auto object-contain" src="https://lh3.googleusercontent.com/aida/AEtjO1XaQgiPfNIvW8D6_3ZLBk4GvIWZyWUGf7f7Dg04WfKedS7T3FYw-mhsFM8L3Pin9d7cVlXEHRmHsJCXDiazcnfVd6Tqv7VaLKe6RpNPCfZCc-Dvi1ZWD9M7WXsa4L-HwKss71_bIYIpzj-9xBLaHNmcz14vnYMCAa0kwivrop5es2kGVOT3zySzIYFxOHFNY5uKkyIZP7HWwhvOrMEpr5GgCcXnWgmWinAmafQcI3UYj4xiBvva4lvTdoE"/><div class="flex flex-col"><div class="flex items-center gap-space-sm"><span class="font-headline-sm text-headline-sm text-primary tracking-tight">HanuJai High School, Jaipur</span><span class="px-space-xs py-0.5 rounded-lg bg-surface-container text-on-surface-variant font-label-sm text-label-sm">AY 2024–25 (Senior Wing)</span></div><span class="font-body-sm text-body-sm text-on-surface-variant">Academic Structure &amp; Staff Administration ERP</span></div></div><div class="flex-1 max-w-lg mx-space-xl hidden md:flex items-center"><div class="w-full flex items-center px-space-md py-1.5 rounded-lg bg-surface-container-low text-on-surface-variant focus-within:bg-surface-container-lowest focus-within:text-on-surface"><span class="material-symbols-outlined text-outline mr-space-sm text-[18px]">search</span><input class="w-full bg-transparent border-0 p-0 text-on-surface placeholder:text-outline font-body-sm text-body-sm focus:ring-0 focus:outline-none" placeholder="Search staff roster, employee IDs, permissions, roles..." type="text"/><kbd class="px-1.5 py-0.5 bg-surface-container rounded font-label-sm text-label-sm text-on-surface-variant">Ctrl+K</kbd></div></div><div class="flex items-center gap-space-md"><button aria-label="Notifications" class="relative p-space-xs rounded-lg text-on-surface-variant hover:bg-surface-container hover:text-on-surface transition-colors"><span class="material-symbols-outlined text-[20px]">notifications</span><span class="absolute top-1 right-1 w-2 h-2 rounded-full bg-error"></span></button><div class="flex items-center gap-space-sm pl-space-sm"><div class="w-8 h-8 rounded-full bg-primary flex items-center justify-center"><span class="material-symbols-outlined text-on-primary text-[18px]">person</span></div><div class="hidden xl:flex flex-col text-left"><span class="font-label-md text-label-md text-on-surface leading-tight">Dr. K. S. Rathore</span><span class="font-body-sm text-body-sm text-on-surface-variant leading-tight">Principal / Institutional Administrator</span></div></div></div></div></header><aside class="fixed left-0 top-16 h-[calc(100vh-4rem)] w-64 bg-surface-container-lowest shadow-[1px_0_4px_rgba(24,66,55,0.04)] z-40 flex flex-col justify-between overflow-y-auto"><div class="py-space-md"><div class="px-gutter mb-space-sm text-on-surface-variant font-label-sm text-label-sm uppercase tracking-wider">Administrative Modules</div><nav class="flex flex-col gap-1 px-space-sm" data-active-classes="bg-primary-container text-on-primary font-label-md rounded-lg shadow-sm"><a class="px-space-md py-2 rounded-lg text-on-surface-variant font-body-md text-body-md hover:bg-surface-container hover:text-on-surface transition-all" data-path="dashboard" href="#">Dashboard</a><a class="px-space-md py-2 rounded-lg text-on-surface-variant font-body-md text-body-md hover:bg-surface-container hover:text-on-surface transition-all" data-path="students" href="#">Students</a><a class="px-space-md py-2 rounded-lg text-on-surface-variant font-body-md text-body-md hover:bg-surface-container hover:text-on-surface transition-all" data-path="attendance" href="#">Attendance</a><a class="px-space-md py-2 rounded-lg text-on-surface-variant font-body-md text-body-md hover:bg-surface-container hover:text-on-surface transition-all" data-path="academics" href="#">Academics</a><a class="px-space-md py-2 rounded-lg text-on-surface-variant font-body-md text-body-md hover:bg-surface-container hover:text-on-surface transition-all" data-path="performance" href="#">Performance</a><a class="px-space-md py-2 rounded-lg text-on-surface-variant font-body-md text-body-md hover:bg-surface-container hover:text-on-surface transition-all" data-path="behaviour" href="#">Behaviour</a><a class="px-space-md py-2 rounded-lg text-on-surface-variant font-body-md text-body-md hover:bg-surface-container hover:text-on-surface transition-all" data-path="reports" href="#">Reports &amp; CBSE</a><div class="flex flex-col gap-1"><a class="px-space-md py-2 rounded-lg text-on-surface-variant font-body-md text-body-md hover:bg-surface-container hover:text-on-surface transition-all" data-path="academic-structure-administration" href="#">Administration</a><div class="pl-space-md pr-space-xs flex flex-col gap-0.5 ml-space-sm border-l border-surface-container"><a class="px-space-sm py-1.5 rounded-lg text-on-surface-variant font-body-sm text-body-sm hover:bg-surface-container hover:text-on-surface transition-all" data-path="classes-and-sections-directory" href="#">Classes &amp; Sections</a><a class="px-space-sm py-1.5 rounded-lg text-on-surface-variant font-body-sm text-body-sm hover:bg-surface-container hover:text-on-surface transition-all" data-path="section-student-roster" href="#">Section Student Roster</a><a class="px-space-sm py-1.5 rounded-lg text-on-surface-variant font-body-sm text-body-sm hover:bg-surface-container hover:text-on-surface transition-all" data-path="class-teacher-assignments" href="#">Class Teacher Assignments</a><a class="px-space-sm py-1.5 rounded-lg text-on-surface-variant font-body-sm text-body-sm hover:bg-surface-container hover:text-on-surface transition-all" data-path="subject-faculty-assignment-matrix" href="#">Subject-Faculty Matrix</a><a class="px-space-sm py-1.5 rounded-lg text-on-surface-variant font-body-sm text-body-sm hover:bg-surface-container hover:text-on-surface transition-all" data-path="staff-directory" href="#">Staff Directory</a><a class="px-space-sm py-1.5 rounded-lg text-on-surface-variant font-body-sm text-body-sm hover:bg-surface-container hover:text-on-surface transition-all" data-path="staff-account-form" href="#">Staff Account Form</a><a aria-current="page" class="px-space-sm py-1.5 transition-all bg-primary-container text-on-primary font-label-md rounded-lg shadow-sm" data-path="role-and-assignment-matrix" href="#">Roles &amp; Permissions Matrix</a><a class="px-space-sm py-1.5 rounded-lg text-on-surface-variant font-body-sm text-body-sm hover:bg-surface-container hover:text-on-surface transition-all" data-path="access-denied" href="#">Access Denied</a></div></div></nav></div><div class="p-space-md bg-surface-container-low m-space-sm rounded-lg flex flex-col gap-space-xs"><div class="flex items-center gap-space-xs text-primary font-label-sm text-label-sm"><span class="material-symbols-outlined text-[16px]">verified</span><span>CBSE Affiliation: #1730249</span></div><div class="font-body-sm text-body-sm text-on-surface-variant">Jaipur Zone • Senior Wing Active Node</div></div></aside><div class="pl-64"><main class="w-full pt-16 bg-surface min-h-screen"><div class="flex flex-col w-full">
+<!-- Top Statutory Notification Banner -->
+<div class="w-full bg-surface-container-high px-margin-desktop py-space-sm flex items-center justify-between text-on-surface">
+<div class="flex items-center gap-space-sm">
+<span class="material-symbols-outlined text-[18px] text-primary">policy</span>
+<span class="font-label-sm text-label-sm uppercase tracking-wider text-primary">Statutory Security Standard: SEC-402 (Zero-Trust RBAC Protocol)</span>
+<span class="text-outline text-body-sm">•</span>
+<span class="font-body-sm text-body-sm text-on-surface-variant">Annual Review Signed: 18 March 2024 by Central Compliance Board</span>
+</div>
+<div class="flex items-center gap-space-md">
+<span class="inline-flex items-center gap-1 font-label-sm text-label-sm text-primary">
+<span class="w-1.5 h-1.5 rounded-full bg-primary animate-pulse"></span>
+        Ledger Integrity: Enforced
+      </span>
+<span class="text-outline text-body-sm">•</span>
+<span class="font-body-sm text-body-sm text-on-surface-variant">Hash Check: #a4f8...892e</span>
+</div>
+</div>
+<!-- Primary Page Canvas -->
+<div class="px-margin-desktop py-space-xl flex flex-col gap-space-xl">
+<!-- Breadcrumb & Header Utility Bar -->
+<div class="flex flex-col gap-space-sm">
+<nav class="flex items-center gap-space-xs font-label-sm text-label-sm text-on-surface-variant">
+<a class="hover:text-primary transition-colors" href="#">Administration</a>
+<span class="material-symbols-outlined text-[14px]">chevron_right</span>
+<a class="hover:text-primary transition-colors" href="#">Staff &amp; Identity Governance</a>
+<span class="material-symbols-outlined text-[14px]">chevron_right</span>
+<span class="text-on-surface font-label-md">Role &amp; Assignment Matrix</span>
+</nav>
+<div class="flex flex-col lg:flex-row lg:items-end justify-between gap-space-lg">
+<div class="flex flex-col gap-space-xs max-w-4xl">
+<div class="flex items-center gap-space-sm">
+<h1 class="font-headline-lg text-headline-lg text-on-surface tracking-tight">Institutional Role Hierarchy &amp; Statutory Permission Matrix</h1>
+<span class="px-space-xs py-0.5 rounded bg-primary-container text-on-primary font-label-sm text-label-sm">SEC-402 Rigid</span>
+</div>
+<p class="font-body-md text-body-md text-on-surface-variant leading-relaxed">
+            Strict structural separation between Executive Oversight, Ledger Bursary, Cohort Pastoral Custody, and Period Instruction under HanuJai High School Institutional Bylaws (AY 2024–25).
+          </p>
+</div>
+<div class="flex items-center gap-space-sm flex-wrap">
+<button class="h-9 px-space-md bg-surface-container-lowest text-on-surface font-label-md text-label-md rounded flex items-center gap-space-xs hover:bg-surface-container transition-colors shadow-sm">
+<span class="material-symbols-outlined text-[18px] text-outline">history</span>
+<span>Audit Logs</span>
+</button>
+<button class="h-9 px-space-md bg-surface-container-lowest text-on-surface font-label-md text-label-md rounded flex items-center gap-space-xs hover:bg-surface-container transition-colors shadow-sm" id="verifyIntegrityBtn">
+<span class="material-symbols-outlined text-[18px] text-primary">verified_user</span>
+<span>Verify Role Isolation</span>
+</button>
+<button class="h-9 px-space-md bg-primary text-on-primary font-label-md text-label-md rounded flex items-center gap-space-xs hover:bg-primary-container transition-colors shadow-sm">
+<span class="material-symbols-outlined text-[18px]">picture_as_pdf</span>
+<span>Export Compliance Matrix (PDF)</span>
+</button>
+</div>
+</div>
+</div>
+<!-- The 4 Canonical System Roles (Comparative Cards) -->
+<div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-space-md">
+<!-- Card 1: School Administrator -->
+<div class="bg-surface-container-lowest p-space-lg rounded flex flex-col justify-between shadow-sm relative overflow-hidden group">
+<div class="absolute top-0 left-0 right-0 h-1 bg-primary"></div>
+<div class="flex flex-col gap-space-md">
+<div class="flex items-start justify-between">
+<div class="flex flex-col">
+<span class="font-label-sm text-label-sm uppercase tracking-wider text-primary">Level 01 Governance</span>
+<h2 class="font-headline-sm text-headline-sm text-on-surface">School Administrator</h2>
+<span class="font-body-sm text-body-sm text-on-surface-variant">Principal, Vice-Principal, Registrar</span>
+</div>
+<span class="p-2 bg-surface-container-low rounded text-primary">
+<span class="material-symbols-outlined text-[20px]">account_balance</span>
+</span>
+</div>
+<div class="flex items-baseline gap-space-xs bg-surface-container-low px-space-md py-space-sm rounded">
+<span class="font-headline-md text-headline-md text-primary">3</span>
+<span class="font-body-sm text-body-sm text-on-surface-variant">Accounts Provisioned (Active)</span>
+</div>
+<div class="flex flex-col gap-space-xs">
+<span class="font-label-sm text-label-sm text-outline uppercase tracking-wider">Mandate</span>
+<p class="font-body-sm text-body-sm text-on-surface leading-normal">
+              Executive supervision, master timetable sealing, gazette digital locking, faculty allotment, dual-custody audit log certification.
+            </p>
+</div>
+</div>
+<div class="mt-space-lg pt-space-md bg-surface-container-low p-space-sm rounded flex items-start gap-space-xs">
+<span class="material-symbols-outlined text-[16px] text-tertiary flex-shrink-0 mt-0.5">lock</span>
+<span class="font-body-sm text-body-sm text-on-surface">
+<strong class="font-label-sm text-label-sm text-tertiary">Boundary:</strong> Cannot modify student classroom marks without formal counter-signed exception docket.
+          </span>
+</div>
+</div>
+<!-- Card 2: Office Staff -->
+<div class="bg-surface-container-lowest p-space-lg rounded flex flex-col justify-between shadow-sm relative overflow-hidden group">
+<div class="absolute top-0 left-0 right-0 h-1 bg-secondary"></div>
+<div class="flex flex-col gap-space-md">
+<div class="flex items-start justify-between">
+<div class="flex flex-col">
+<span class="font-label-sm text-label-sm uppercase tracking-wider text-secondary">Level 02 Registry &amp; Fiscal</span>
+<h2 class="font-headline-sm text-headline-sm text-on-surface">Office Staff</h2>
+<span class="font-body-sm text-body-sm text-on-surface-variant">Bursar, Admissions Desk, Clerks</span>
+</div>
+<span class="p-2 bg-surface-container-low rounded text-secondary">
+<span class="material-symbols-outlined text-[20px]">receipt_long</span>
+</span>
+</div>
+<div class="flex items-baseline gap-space-xs bg-surface-container-low px-space-md py-space-sm rounded">
+<span class="font-headline-md text-headline-md text-secondary">12</span>
+<span class="font-body-sm text-body-sm text-on-surface-variant">Accounts Provisioned (Active)</span>
+</div>
+<div class="flex flex-col gap-space-xs">
+<span class="font-label-sm text-label-sm text-outline uppercase tracking-wider">Mandate</span>
+<p class="font-body-sm text-body-sm text-on-surface leading-normal">
+              Tuition fee ledgers, admissions enrolment, Transfer Certificates (TC), biometric device sync, Aadhaar/APAAR demographic registries.
+            </p>
+</div>
+</div>
+<div class="mt-space-lg pt-space-md bg-surface-container-low p-space-sm rounded flex items-start gap-space-xs">
+<span class="material-symbols-outlined text-[16px] text-tertiary flex-shrink-0 mt-0.5">block</span>
+<span class="font-body-sm text-body-sm text-on-surface">
+<strong class="font-label-sm text-label-sm text-tertiary">Boundary:</strong> Zero read/write privileges to student marks, assessment rubrics, or confidential medical notes.
+          </span>
+</div>
+</div>
+<!-- Card 3: Class Teacher -->
+<div class="bg-surface-container-lowest p-space-lg rounded flex flex-col justify-between shadow-sm relative overflow-hidden group">
+<div class="absolute top-0 left-0 right-0 h-1 bg-primary-container"></div>
+<div class="flex flex-col gap-space-md">
+<div class="flex items-start justify-between">
+<div class="flex flex-col">
+<span class="font-label-sm text-label-sm uppercase tracking-wider text-primary">Level 03 Cohort Custodian</span>
+<h2 class="font-headline-sm text-headline-sm text-on-surface">Class Teacher</h2>
+<span class="font-body-sm text-body-sm text-on-surface-variant">Section Custodians (1 per section)</span>
+</div>
+<span class="p-2 bg-surface-container-low rounded text-primary">
+<span class="material-symbols-outlined text-[20px]">badge</span>
+</span>
+</div>
+<div class="flex items-baseline gap-space-xs bg-surface-container-low px-space-md py-space-sm rounded">
+<span class="font-headline-md text-headline-md text-primary">20</span>
+<span class="font-body-sm text-body-sm text-on-surface-variant">Accounts Provisioned (Active)</span>
+</div>
+<div class="flex flex-col gap-space-xs">
+<span class="font-label-sm text-label-sm text-outline uppercase tracking-wider">Mandate</span>
+<p class="font-body-sm text-body-sm text-on-surface leading-normal">
+              Morning roll-call authority, multi-subject progress dossier for assigned section, holistic behavioral reports, parent PTM meetings.
+            </p>
+</div>
+</div>
+<div class="mt-space-lg pt-space-md bg-surface-container-low p-space-sm rounded flex items-start gap-space-xs">
+<span class="material-symbols-outlined text-[16px] text-tertiary flex-shrink-0 mt-0.5">warning</span>
+<span class="font-body-sm text-body-sm text-on-surface">
+<strong class="font-label-sm text-label-sm text-tertiary">Boundary:</strong> Locked strictly to exactly 1 assigned class section. Cannot enter marks for non-taught subjects.
+          </span>
+</div>
+</div>
+<!-- Card 4: Subject Teacher -->
+<div class="bg-surface-container-lowest p-space-lg rounded flex flex-col justify-between shadow-sm relative overflow-hidden group">
+<div class="absolute top-0 left-0 right-0 h-1 bg-outline"></div>
+<div class="flex flex-col gap-space-md">
+<div class="flex items-start justify-between">
+<div class="flex flex-col">
+<span class="font-label-sm text-label-sm uppercase tracking-wider text-on-surface-variant">Level 04 Instruction</span>
+<h2 class="font-headline-sm text-headline-sm text-on-surface">Subject Teacher</h2>
+<span class="font-body-sm text-body-sm text-on-surface-variant">Instructional &amp; Lab Faculty</span>
+</div>
+<span class="p-2 bg-surface-container-low rounded text-outline">
+<span class="material-symbols-outlined text-[20px]">school</span>
+</span>
+</div>
+<div class="flex items-baseline gap-space-xs bg-surface-container-low px-space-md py-space-sm rounded">
+<span class="font-headline-md text-headline-md text-on-surface">23</span>
+<span class="font-body-sm text-body-sm text-on-surface-variant">Accounts Provisioned (Active)</span>
+</div>
+<div class="flex flex-col gap-space-xs">
+<span class="font-label-sm text-label-sm text-outline uppercase tracking-wider">Mandate</span>
+<p class="font-body-sm text-body-sm text-on-surface leading-normal">
+              Periodic marks entry, unit test recording, period attendance marking, instructional remarks strictly for assigned courses.
+            </p>
+</div>
+</div>
+<div class="mt-space-lg pt-space-md bg-surface-container-low p-space-sm rounded flex items-start gap-space-xs">
+<span class="material-symbols-outlined text-[16px] text-tertiary flex-shrink-0 mt-0.5">shield</span>
+<span class="font-body-sm text-body-sm text-on-surface">
+<strong class="font-label-sm text-label-sm text-tertiary">Boundary:</strong> Zero visibility into peer marks, non-enrolled sections, fee status, or parent financial profiles.
+          </span>
+</div>
+</div>
+</div>
+<!-- Live Compliance Status & Security Metrics Row -->
+<div class="grid grid-cols-1 lg:grid-cols-3 gap-space-md">
+<!-- Metrics Card 1: Isolation Integrity -->
+<div class="bg-surface-container-lowest p-space-lg rounded shadow-sm flex items-center justify-between">
+<div class="flex flex-col gap-space-xs">
+<span class="font-label-sm text-label-sm text-outline uppercase">RBAC Boundary Health</span>
+<div class="flex items-baseline gap-space-sm">
+<span class="font-headline-lg text-headline-lg text-primary tracking-tight">100.0%</span>
+<span class="font-label-sm text-label-sm text-primary flex items-center">
+<span class="material-symbols-outlined text-[16px]">check_circle</span> Zero Leakage
+            </span>
+</div>
+<span class="font-body-sm text-body-sm text-on-surface-variant">58 Total Active Staff Credentials Bounded</span>
+</div>
+<div class="w-16 h-16 flex items-center justify-center bg-surface-container-low rounded-full">
+<svg class="w-12 h-12" viewbox="0 0 36 36">
+<path class="text-surface-dim stroke-current" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" fill="none" stroke-width="3"></path>
+<path class="text-primary stroke-current" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" fill="none" stroke-dasharray="100, 100" stroke-linecap="round" stroke-width="3"></path>
+</svg>
+</div>
+</div>
+<!-- Metrics Card 2: Dual-Custody Safeguard -->
+<div class="bg-surface-container-lowest p-space-lg rounded shadow-sm flex items-center justify-between">
+<div class="flex flex-col gap-space-xs">
+<span class="font-label-sm text-label-sm text-outline uppercase">Dual-Custody Locks Active</span>
+<div class="flex items-baseline gap-space-sm">
+<span class="font-headline-lg text-headline-lg text-secondary tracking-tight">4 Nodes</span>
+<span class="font-label-sm text-label-sm text-secondary">Secured</span>
+</div>
+<span class="font-body-sm text-body-sm text-on-surface-variant">Fee Waiver, Gazette Sealing, Class Transfer, Medical Tier</span>
+</div>
+<div class="p-space-md bg-surface-container-low rounded">
+<span class="material-symbols-outlined text-secondary text-[28px]">enhanced_encryption</span>
+</div>
+</div>
+<!-- Metrics Card 3: Audit Anomaly Check -->
+<div class="bg-surface-container-lowest p-space-lg rounded shadow-sm flex items-center justify-between">
+<div class="flex flex-col gap-space-xs">
+<span class="font-label-sm text-label-sm text-outline uppercase">SEC-402 Violations (30 Days)</span>
+<div class="flex items-baseline gap-space-sm">
+<span class="font-headline-lg text-headline-lg text-primary tracking-tight">0 Detected</span>
+<span class="font-label-sm text-label-sm text-primary">Normal Baseline</span>
+</div>
+<span class="font-body-sm text-body-sm text-on-surface-variant">Automated honeypot queries &amp; boundary tests</span>
+</div>
+<div class="p-space-md bg-surface-container-low rounded">
+<span class="material-symbols-outlined text-primary text-[28px]">security_update_good</span>
+</div>
+</div>
+</div>
+<!-- Main Comparison Section with Filter Toolbar -->
+<div class="bg-surface-container-lowest rounded shadow-sm flex flex-col">
+<!-- Table Header Bar & Filter Controls -->
+<div class="p-space-lg flex flex-col md:flex-row md:items-center justify-between gap-space-md">
+<div class="flex flex-col">
+<div class="flex items-center gap-space-sm">
+<h2 class="font-headline-md text-headline-md text-on-surface">Comprehensive Functional Capability Matrix</h2>
+<span class="px-space-xs py-0.5 rounded bg-surface-container text-on-surface-variant font-label-sm text-label-sm">4 Modules • 13 Controls</span>
+</div>
+<span class="font-body-sm text-body-sm text-on-surface-variant">Statutory mapping of access authorization according to institutional data governance policy</span>
+</div>
+<div class="flex items-center gap-space-sm flex-wrap">
+<div class="flex items-center bg-surface-container-low rounded px-space-sm py-1">
+<span class="material-symbols-outlined text-outline text-[16px] mr-1">filter_list</span>
+<span class="font-label-sm text-label-sm text-on-surface-variant mr-space-sm">View:</span>
+<button class="px-2 py-0.5 bg-surface-container-lowest font-label-sm text-label-sm text-primary rounded shadow-xs" id="filterAll">All Modules</button>
+<button class="px-2 py-0.5 hover:bg-surface-container font-label-sm text-label-sm text-on-surface-variant rounded transition-colors" id="filterAcademics">Academics Only</button>
+<button class="px-2 py-0.5 hover:bg-surface-container font-label-sm text-label-sm text-on-surface-variant rounded transition-colors" id="filterRestricted">Boundary Prohibitions</button>
+</div>
+<div class="relative">
+<input class="h-8 pl-space-md pr- space-md bg-surface-container-low rounded text-on-surface font-body-sm text-body-sm placeholder:text-outline focus:outline-none focus:ring-1 focus:ring-primary w-44" id="matrixSearch" placeholder="Filter capabilities..." type="text"/>
+</div>
+</div>
+</div>
+<!-- Legend Ribbon -->
+<div class="px-space-lg py-space-sm bg-surface-container-low flex flex-wrap items-center gap-space-lg font-label-sm text-label-sm">
+<span class="text-on-surface-variant uppercase tracking-wider font-label-sm text-label-sm">Legend:</span>
+<div class="flex items-center gap-1.5">
+<span class="w-2.5 h-2.5 rounded bg-primary"></span>
+<span class="text-on-surface">Full Access / Primary Authority</span>
+</div>
+<div class="flex items-center gap-1.5">
+<span class="w-2.5 h-2.5 rounded bg-secondary"></span>
+<span class="text-on-surface">Scoped / Role-Bounded (SEC-402)</span>
+</div>
+<div class="flex items-center gap-1.5">
+<span class="w-2.5 h-2.5 rounded bg-surface-container-highest"></span>
+<span class="text-on-surface">Read-Only Audit Oversight</span>
+</div>
+<div class="flex items-center gap-1.5">
+<span class="w-2.5 h-2.5 rounded bg-error"></span>
+<span class="text-on-surface">Strictly Restricted / Prohibited</span>
+</div>
+</div>
+<!-- Functional Capability Comparison Table -->
+<div class="w-full overflow-x-auto">
+<table class="w-full text-left border-collapse" id="capabilityMatrixTable">
+<thead>
+<tr class="bg-surface-container-high text-on-surface font-label-sm text-label-sm uppercase tracking-wider">
+<th class="py-space-md px-space-lg w-1/4">Functional Capability &amp; Scope</th>
+<th class="py-space-md px-space-md w-1/6">
+<div class="flex items-center gap-1">
+<span>School Admin</span>
+<span class="text-[10px] text-primary font-normal">(Exec)</span>
+</div>
+</th>
+<th class="py-space-md px-space-md w-1/6">
+<div class="flex items-center gap-1">
+<span>Office Staff</span>
+<span class="text-[10px] text-secondary font-normal">(Bursar)</span>
+</div>
+</th>
+<th class="py-space-md px-space-md w-1/6">
+<div class="flex items-center gap-1">
+<span>Class Teacher</span>
+<span class="text-[10px] text-primary font-normal">(Section)</span>
+</div>
+</th>
+<th class="py-space-md px-space-md w-1/6">
+<div class="flex items-center gap-1">
+<span>Subject Teacher</span>
+<span class="text-[10px] text-outline font-normal">(Course)</span>
+</div>
+</th>
+</tr>
+</thead>
+<tbody class="divide-y divide-surface-container font-body-md text-body-md">
+<!-- MODULE 1: Student Demographics & Enrollment -->
+<tr class="bg-surface-container-low/60 module-header" data-module="demographics">
+<td class="py-2.5 px-space-lg font-label-md text-label-md text-primary" colspan="5">
+<div class="flex items-center gap-space-xs">
+<span class="material-symbols-outlined text-[18px]">contact_page</span>
+<span>Module 01: Student Demographics &amp; Enrolment Governance</span>
+</div>
+</td>
+</tr>
+<!-- Capability 1.1 -->
+<tr class="hover:bg-surface-container-low transition-colors matrix-row" data-module="demographics">
+<td class="py-space-md px-space-lg">
+<div class="flex flex-col">
+<span class="font-label-md text-label-md text-on-surface">View Master Student Directory</span>
+<span class="font-body-sm text-body-sm text-on-surface-variant">Access to student dossiers, enrollment numbers &amp; house allocations</span>
+</div>
+</td>
+<td class="py-space-md px-space-md">
+<span class="inline-flex items-center gap-1 px-2 py-0.5 rounded text-label-sm font-label-sm bg-primary/10 text-primary">
+<span class="w-1.5 h-1.5 rounded-full bg-primary"></span>
+                  All Records (All Wings)
+                </span>
+</td>
+<td class="py-space-md px-space-md">
+<span class="inline-flex items-center gap-1 px-2 py-0.5 rounded text-label-sm font-label-sm bg-primary/10 text-primary">
+<span class="w-1.5 h-1.5 rounded-full bg-primary"></span>
+                  Full Edit &amp; Enrolment
+                </span>
+</td>
+<td class="py-space-md px-space-md">
+<span class="inline-flex items-center gap-1 px-2 py-0.5 rounded text-label-sm font-label-sm bg-secondary/10 text-secondary">
+<span class="w-1.5 h-1.5 rounded-full bg-secondary"></span>
+                  Assigned Section Only
+                </span>
+</td>
+<td class="py-space-md px-space-md">
+<span class="inline-flex items-center gap-1 px-2 py-0.5 rounded text-label-sm font-label-sm bg-secondary/10 text-secondary">
+<span class="w-1.5 h-1.5 rounded-full bg-secondary"></span>
+                  Assigned Cohorts Only
+                </span>
+</td>
+</tr>
+<!-- Capability 1.2 -->
+<tr class="hover:bg-surface-container-low transition-colors matrix-row" data-module="demographics">
+<td class="py-space-md px-space-lg">
+<div class="flex flex-col">
+<span class="font-label-md text-label-md text-on-surface">Edit Biological &amp; Aadhaar Details</span>
+<span class="font-body-sm text-body-sm text-on-surface-variant">Modifications to Date of Birth, parent names, address, APAAR ID</span>
+</div>
+</td>
+<td class="py-space-md px-space-md">
+<span class="inline-flex items-center gap-1 px-2 py-0.5 rounded text-label-sm font-label-sm bg-surface-container-highest text-on-surface">
+<span class="w-1.5 h-1.5 rounded-full bg-outline"></span>
+                  Full Audit Override
+                </span>
+</td>
+<td class="py-space-md px-space-md">
+<span class="inline-flex items-center gap-1 px-2 py-0.5 rounded text-label-sm font-label-sm bg-primary/10 text-primary">
+<span class="w-1.5 h-1.5 rounded-full bg-primary"></span>
+                  Primary Author (Desk)
+                </span>
+</td>
+<td class="py-space-md px-space-md">
+<span class="inline-flex items-center gap-1 px-2 py-0.5 rounded text-label-sm font-label-sm bg-surface-container-high text-on-surface-variant">
+<span class="w-1.5 h-1.5 rounded-full bg-outline"></span>
+                  Restricted (View Only)
+                </span>
+</td>
+<td class="py-space-md px-space-md">
+<span class="inline-flex items-center gap-1 px-2 py-0.5 rounded text-label-sm font-label-sm bg-error/10 text-error">
+<span class="w-1.5 h-1.5 rounded-full bg-error"></span>
+                  No Access
+                </span>
+</td>
+</tr>
+<!-- Capability 1.3 -->
+<tr class="hover:bg-surface-container-low transition-colors matrix-row" data-module="demographics">
+<td class="py-space-md px-space-lg">
+<div class="flex flex-col">
+<span class="font-label-md text-label-md text-on-surface">Fee Payment &amp; Financial Ledgers</span>
+<span class="font-body-sm text-body-sm text-on-surface-variant">Fee installment status, dues, receipts, bursary concessions</span>
+</div>
+</td>
+<td class="py-space-md px-space-md">
+<span class="inline-flex items-center gap-1 px-2 py-0.5 rounded text-label-sm font-label-sm bg-surface-container-highest text-on-surface">
+<span class="w-1.5 h-1.5 rounded-full bg-outline"></span>
+                  Executive Audit View
+                </span>
+</td>
+<td class="py-space-md px-space-md">
+<span class="inline-flex items-center gap-1 px-2 py-0.5 rounded text-label-sm font-label-sm bg-primary/10 text-primary">
+<span class="w-1.5 h-1.5 rounded-full bg-primary"></span>
+                  Full Read &amp; Collection
+                </span>
+</td>
+<td class="py-space-md px-space-md">
+<span class="inline-flex items-center gap-1 px-2 py-0.5 rounded text-label-sm font-label-sm bg-error/10 text-error">
+<span class="material-symbols-outlined text-[12px]">lock</span>
+                  STRICTLY RESTRICTED
+                </span>
+</td>
+<td class="py-space-md px-space-md">
+<span class="inline-flex items-center gap-1 px-2 py-0.5 rounded text-label-sm font-label-sm bg-error/10 text-error">
+<span class="material-symbols-outlined text-[12px]">lock</span>
+                  STRICTLY RESTRICTED
+                </span>
+</td>
+</tr>
+<!-- MODULE 2: Daily Attendance & Punctuality -->
+<tr class="bg-surface-container-low/60 module-header" data-module="attendance">
+<td class="py-2.5 px-space-lg font-label-md text-label-md text-primary" colspan="5">
+<div class="flex items-center gap-space-xs">
+<span class="material-symbols-outlined text-[18px]">how_to_reg</span>
+<span>Module 02: Daily Attendance &amp; Cohort Punctuality</span>
+</div>
+</td>
+</tr>
+<!-- Capability 2.1 -->
+<tr class="hover:bg-surface-container-low transition-colors matrix-row" data-module="attendance">
+<td class="py-space-md px-space-lg">
+<div class="flex flex-col">
+<span class="font-label-md text-label-md text-on-surface">Morning Roll-Call Custody</span>
+<span class="font-body-sm text-body-sm text-on-surface-variant">Statutory CBSE 08:15 AM attendance lock for cohort</span>
+</div>
+</td>
+<td class="py-space-md px-space-md">
+<span class="inline-flex items-center gap-1 px-2 py-0.5 rounded text-label-sm font-label-sm bg-surface-container-highest text-on-surface">
+<span class="w-1.5 h-1.5 rounded-full bg-outline"></span>
+                  View Institutional Roster
+                </span>
+</td>
+<td class="py-space-md px-space-md">
+<span class="inline-flex items-center gap-1 px-2 py-0.5 rounded text-label-sm font-label-sm bg-surface-container-highest text-on-surface">
+<span class="w-1.5 h-1.5 rounded-full bg-outline"></span>
+                  View Daily Aggregates
+                </span>
+</td>
+<td class="py-space-md px-space-md">
+<span class="inline-flex items-center gap-1 px-2 py-0.5 rounded text-label-sm font-label-sm bg-primary/10 text-primary">
+<span class="material-symbols-outlined text-[12px]">verified</span>
+                  Exclusive Edit (Own Section)
+                </span>
+</td>
+<td class="py-space-md px-space-md">
+<span class="inline-flex items-center gap-1 px-2 py-0.5 rounded text-label-sm font-label-sm bg-error/10 text-error">
+<span class="w-1.5 h-1.5 rounded-full bg-error"></span>
+                  Restricted
+                </span>
+</td>
+</tr>
+<!-- Capability 2.2 -->
+<tr class="hover:bg-surface-container-low transition-colors matrix-row" data-module="attendance">
+<td class="py-space-md px-space-lg">
+<div class="flex flex-col">
+<span class="font-label-md text-label-md text-on-surface">Period-Wise Instructional Attendance</span>
+<span class="font-body-sm text-body-sm text-on-surface-variant">Individual period subject checks during timetable hours</span>
+</div>
+</td>
+<td class="py-space-md px-space-md">
+<span class="inline-flex items-center gap-1 px-2 py-0.5 rounded text-label-sm font-label-sm bg-surface-container-highest text-on-surface">
+<span class="w-1.5 h-1.5 rounded-full bg-outline"></span>
+                  View Real-time Grid
+                </span>
+</td>
+<td class="py-space-md px-space-md">
+<span class="inline-flex items-center gap-1 px-2 py-0.5 rounded text-label-sm font-label-sm bg-error/10 text-error">
+<span class="w-1.5 h-1.5 rounded-full bg-error"></span>
+                  Restricted
+                </span>
+</td>
+<td class="py-space-md px-space-md">
+<span class="inline-flex items-center gap-1 px-2 py-0.5 rounded text-label-sm font-label-sm bg-secondary/10 text-secondary">
+<span class="w-1.5 h-1.5 rounded-full bg-secondary"></span>
+                  View Assigned Section
+                </span>
+</td>
+<td class="py-space-md px-space-md">
+<span class="inline-flex items-center gap-1 px-2 py-0.5 rounded text-label-sm font-label-sm bg-primary/10 text-primary">
+<span class="w-1.5 h-1.5 rounded-full bg-primary"></span>
+                  Edit (Assigned Periods)
+                </span>
+</td>
+</tr>
+<!-- Capability 2.3 -->
+<tr class="hover:bg-surface-container-low transition-colors matrix-row" data-module="attendance">
+<td class="py-space-md px-space-lg">
+<div class="flex flex-col">
+<span class="font-label-md text-label-md text-on-surface">Late Arrival / Gate Slip Reconciliation</span>
+<span class="font-body-sm text-body-sm text-on-surface-variant">Reconciling guard gate pass with homeroom attendance record</span>
+</div>
+</td>
+<td class="py-space-md px-space-md">
+<span class="inline-flex items-center gap-1 px-2 py-0.5 rounded text-label-sm font-label-sm bg-primary/10 text-primary">
+<span class="w-1.5 h-1.5 rounded-full bg-primary"></span>
+                  Executive Override
+                </span>
+</td>
+<td class="py-space-md px-space-md">
+<span class="inline-flex items-center gap-1 px-2 py-0.5 rounded text-label-sm font-label-sm bg-secondary/10 text-secondary">
+<span class="w-1.5 h-1.5 rounded-full bg-secondary"></span>
+                  Gate Desk Logging
+                </span>
+</td>
+<td class="py-space-md px-space-md">
+<span class="inline-flex items-center gap-1 px-2 py-0.5 rounded text-label-sm font-label-sm bg-secondary/10 text-secondary">
+<span class="w-1.5 h-1.5 rounded-full bg-secondary"></span>
+                  Initiate Reconciliation
+                </span>
+</td>
+<td class="py-space-md px-space-md">
+<span class="inline-flex items-center gap-1 px-2 py-0.5 rounded text-label-sm font-label-sm bg-error/10 text-error">
+<span class="w-1.5 h-1.5 rounded-full bg-error"></span>
+                  Restricted
+                </span>
+</td>
+</tr>
+<!-- MODULE 3: Academic Assessments & Marks Entry -->
+<tr class="bg-surface-container-low/60 module-header" data-module="academics">
+<td class="py-2.5 px-space-lg font-label-md text-label-md text-primary" colspan="5">
+<div class="flex items-center gap-space-xs">
+<span class="material-symbols-outlined text-[18px]">calculate</span>
+<span>Module 03: Academic Assessments, Rubrics &amp; Marks Entry</span>
+</div>
+</td>
+</tr>
+<!-- Capability 3.1 -->
+<tr class="hover:bg-surface-container-low transition-colors matrix-row" data-module="academics">
+<td class="py-space-md px-space-lg">
+<div class="flex flex-col">
+<span class="font-label-md text-label-md text-on-surface">Exam Rubric &amp; Weightage Configuration</span>
+<span class="font-body-sm text-body-sm text-on-surface-variant">Defining Periodic Tests (PT1/PT2/Term) maximum marks &amp; formulas</span>
+</div>
+</td>
+<td class="py-space-md px-space-md">
+<span class="inline-flex items-center gap-1 px-2 py-0.5 rounded text-label-sm font-label-sm bg-primary/10 text-primary">
+<span class="w-1.5 h-1.5 rounded-full bg-primary"></span>
+                  Sole Authority
+                </span>
+</td>
+<td class="py-space-md px-space-md">
+<span class="inline-flex items-center gap-1 px-2 py-0.5 rounded text-label-sm font-label-sm bg-error/10 text-error">
+<span class="material-symbols-outlined text-[12px]">lock</span>
+                  STRICTLY RESTRICTED
+                </span>
+</td>
+<td class="py-space-md px-space-md">
+<span class="inline-flex items-center gap-1 px-2 py-0.5 rounded text-label-sm font-label-sm bg-surface-container-highest text-on-surface">
+<span class="w-1.5 h-1.5 rounded-full bg-outline"></span>
+                  Read Only (Syllabus)
+                </span>
+</td>
+<td class="py-space-md px-space-md">
+<span class="inline-flex items-center gap-1 px-2 py-0.5 rounded text-label-sm font-label-sm bg-surface-container-highest text-on-surface">
+<span class="w-1.5 h-1.5 rounded-full bg-outline"></span>
+                  Read Only (Syllabus)
+                </span>
+</td>
+</tr>
+<!-- Capability 3.2 -->
+<tr class="hover:bg-surface-container-low transition-colors matrix-row" data-module="academics">
+<td class="py-space-md px-space-lg">
+<div class="flex flex-col">
+<span class="font-label-md text-label-md text-on-surface">Marks Entry &amp; Score Modifications</span>
+<span class="font-body-sm text-body-sm text-on-surface-variant">Entering raw exam marks into system during open marks window</span>
+</div>
+</td>
+<td class="py-space-md px-space-md">
+<span class="inline-flex items-center gap-1 px-2 py-0.5 rounded text-label-sm font-label-sm bg-surface-container-highest text-on-surface">
+<span class="w-1.5 h-1.5 rounded-full bg-outline"></span>
+                  Audit Read-Only
+                </span>
+</td>
+<td class="py-space-md px-space-md">
+<span class="inline-flex items-center gap-1 px-2 py-0.5 rounded text-label-sm font-label-sm bg-error/10 text-error">
+<span class="material-symbols-outlined text-[12px]">lock</span>
+                  STRICTLY RESTRICTED
+                </span>
+</td>
+<td class="py-space-md px-space-md">
+<span class="inline-flex items-center gap-1 px-2 py-0.5 rounded text-label-sm font-label-sm bg-secondary/10 text-secondary">
+<span class="w-1.5 h-1.5 rounded-full bg-secondary"></span>
+                  Taught Subjects Only
+                </span>
+</td>
+<td class="py-space-md px-space-md">
+<span class="inline-flex items-center gap-1 px-2 py-0.5 rounded text-label-sm font-label-sm bg-primary/10 text-primary">
+<span class="w-1.5 h-1.5 rounded-full bg-primary"></span>
+                  Full Edit (Allocated Subjects)
+                </span>
+</td>
+</tr>
+<!-- Capability 3.3 -->
+<tr class="hover:bg-surface-container-low transition-colors matrix-row" data-module="academics">
+<td class="py-space-md px-space-lg">
+<div class="flex flex-col">
+<span class="font-label-md text-label-md text-on-surface">Cross-Subject Cohort Consolidated View</span>
+<span class="font-body-sm text-body-sm text-on-surface-variant">Viewing student's holistic scores across English, Math, Physics, etc.</span>
+</div>
+</td>
+<td class="py-space-md px-space-md">
+<span class="inline-flex items-center gap-1 px-2 py-0.5 rounded text-label-sm font-label-sm bg-primary/10 text-primary">
+<span class="w-1.5 h-1.5 rounded-full bg-primary"></span>
+                  Full Institutional View
+                </span>
+</td>
+<td class="py-space-md px-space-md">
+<span class="inline-flex items-center gap-1 px-2 py-0.5 rounded text-label-sm font-label-sm bg-error/10 text-error">
+<span class="material-symbols-outlined text-[12px]">lock</span>
+                  STRICTLY RESTRICTED
+                </span>
+</td>
+<td class="py-space-md px-space-md">
+<span class="inline-flex items-center gap-1 px-2 py-0.5 rounded text-label-sm font-label-sm bg-primary/10 text-primary">
+<span class="material-symbols-outlined text-[12px]">verified</span>
+                  Full Cohort View (Rule SEC-402)
+                </span>
+</td>
+<td class="py-space-md px-space-md">
+<span class="inline-flex items-center gap-1 px-2 py-0.5 rounded text-label-sm font-label-sm bg-error/10 text-error">
+<span class="material-symbols-outlined text-[12px]">block</span>
+                  PROHIBITED (Own Subject Only)
+                </span>
+</td>
+</tr>
+<!-- Capability 3.4 -->
+<tr class="hover:bg-surface-container-low transition-colors matrix-row" data-module="academics">
+<td class="py-space-md px-space-lg">
+<div class="flex flex-col">
+<span class="font-label-md text-label-md text-on-surface">Gazette Cryptographic Sealing</span>
+<span class="font-body-sm text-body-sm text-on-surface-variant">Final report card generation and CBSE repository commit</span>
+</div>
+</td>
+<td class="py-space-md px-space-md">
+<span class="inline-flex items-center gap-1 px-2 py-0.5 rounded text-label-sm font-label-sm bg-primary/10 text-primary">
+<span class="material-symbols-outlined text-[12px]">key</span>
+                  Sole Cryptographic Key
+                </span>
+</td>
+<td class="py-space-md px-space-md">
+<span class="inline-flex items-center gap-1 px-2 py-0.5 rounded text-label-sm font-label-sm bg-error/10 text-error">
+<span class="w-1.5 h-1.5 rounded-full bg-error"></span>
+                  Restricted
+                </span>
+</td>
+<td class="py-space-md px-space-md">
+<span class="inline-flex items-center gap-1 px-2 py-0.5 rounded text-label-sm font-label-sm bg-error/10 text-error">
+<span class="w-1.5 h-1.5 rounded-full bg-error"></span>
+                  Restricted
+                </span>
+</td>
+<td class="py-space-md px-space-md">
+<span class="inline-flex items-center gap-1 px-2 py-0.5 rounded text-label-sm font-label-sm bg-error/10 text-error">
+<span class="w-1.5 h-1.5 rounded-full bg-error"></span>
+                  Restricted
+                </span>
+</td>
+</tr>
+<!-- MODULE 4: Student Conduct & Observations -->
+<tr class="bg-surface-container-low/60 module-header" data-module="conduct">
+<td class="py-2.5 px-space-lg font-label-md text-label-md text-primary" colspan="5">
+<div class="flex items-center gap-space-xs">
+<span class="material-symbols-outlined text-[18px]">psychology</span>
+<span>Module 04: Pastoral Care, Conduct &amp; Confidential Disciplinary Tier</span>
+</div>
+</td>
+</tr>
+<!-- Capability 4.1 -->
+<tr class="hover:bg-surface-container-low transition-colors matrix-row" data-module="conduct">
+<td class="py-space-md px-space-lg">
+<div class="flex flex-col">
+<span class="font-label-md text-label-md text-on-surface">Log Behavioral Observation</span>
+<span class="font-body-sm text-body-sm text-on-surface-variant">Classroom merit tags, minor infractions, pastoral comments</span>
+</div>
+</td>
+<td class="py-space-md px-space-md">
+<span class="inline-flex items-center gap-1 px-2 py-0.5 rounded text-label-sm font-label-sm bg-surface-container-highest text-on-surface">
+<span class="w-1.5 h-1.5 rounded-full bg-outline"></span>
+                  Oversight &amp; Dismissal
+                </span>
+</td>
+<td class="py-space-md px-space-md">
+<span class="inline-flex items-center gap-1 px-2 py-0.5 rounded text-label-sm font-label-sm bg-error/10 text-error">
+<span class="w-1.5 h-1.5 rounded-full bg-error"></span>
+                  Restricted
+                </span>
+</td>
+<td class="py-space-md px-space-md">
+<span class="inline-flex items-center gap-1 px-2 py-0.5 rounded text-label-sm font-label-sm bg-primary/10 text-primary">
+<span class="w-1.5 h-1.5 rounded-full bg-primary"></span>
+                  Full Custody (Cohort)
+                </span>
+</td>
+<td class="py-space-md px-space-md">
+<span class="inline-flex items-center gap-1 px-2 py-0.5 rounded text-label-sm font-label-sm bg-secondary/10 text-secondary">
+<span class="w-1.5 h-1.5 rounded-full bg-secondary"></span>
+                  Course-Specific Remarks
+                </span>
+</td>
+</tr>
+<!-- Capability 4.2 -->
+<tr class="hover:bg-surface-container-low transition-colors matrix-row" data-module="conduct">
+<td class="py-space-md px-space-lg">
+<div class="flex flex-col">
+<span class="font-label-md text-label-md text-on-surface">Access Confidential Tier (Medical &amp; Counselor)</span>
+<span class="font-body-sm text-body-sm text-on-surface-variant">Sensitive clinical diagnoses, child welfare logs, special accommodations</span>
+</div>
+</td>
+<td class="py-space-md px-space-md">
+<span class="inline-flex items-center gap-1 px-2 py-0.5 rounded text-label-sm font-label-sm bg-secondary/10 text-secondary">
+<span class="material-symbols-outlined text-[12px]">security</span>
+                  Dual-Custody Key View
+                </span>
+</td>
+<td class="py-space-md px-space-md">
+<span class="inline-flex items-center gap-1 px-2 py-0.5 rounded text-label-sm font-label-sm bg-error/10 text-error">
+<span class="material-symbols-outlined text-[12px]">lock</span>
+                  STRICTLY RESTRICTED
+                </span>
+</td>
+<td class="py-space-md px-space-md">
+<span class="inline-flex items-center gap-1 px-2 py-0.5 rounded text-label-sm font-label-sm bg-surface-container-highest text-on-surface">
+<span class="w-1.5 h-1.5 rounded-full bg-outline"></span>
+                  Emergency Flags Only
+                </span>
+</td>
+<td class="py-space-md px-space-md">
+<span class="inline-flex items-center gap-1 px-2 py-0.5 rounded text-label-sm font-label-sm bg-error/10 text-error">
+<span class="material-symbols-outlined text-[12px]">lock</span>
+                  STRICTLY RESTRICTED
+                </span>
+</td>
+</tr>
+<!-- Capability 4.3 -->
+<tr class="hover:bg-surface-container-low transition-colors matrix-row" data-module="conduct">
+<td class="py-space-md px-space-lg">
+<div class="flex flex-col">
+<span class="font-label-md text-label-md text-on-surface">Parent-Teacher Meeting (PTM) Dossier</span>
+<span class="font-body-sm text-body-sm text-on-surface-variant">Generation and signature of unified parent conference minutes</span>
+</div>
+</td>
+<td class="py-space-md px-space-md">
+<span class="inline-flex items-center gap-1 px-2 py-0.5 rounded text-label-sm font-label-sm bg-surface-container-highest text-on-surface">
+<span class="w-1.5 h-1.5 rounded-full bg-outline"></span>
+                  Executive Escalations
+                </span>
+</td>
+<td class="py-space-md px-space-md">
+<span class="inline-flex items-center gap-1 px-2 py-0.5 rounded text-label-sm font-label-sm bg-error/10 text-error">
+<span class="w-1.5 h-1.5 rounded-full bg-error"></span>
+                  Restricted
+                </span>
+</td>
+<td class="py-space-md px-space-md">
+<span class="inline-flex items-center gap-1 px-2 py-0.5 rounded text-label-sm font-label-sm bg-primary/10 text-primary">
+<span class="w-1.5 h-1.5 rounded-full bg-primary"></span>
+                  Lead Author &amp; Signer
+                </span>
+</td>
+<td class="py-space-md px-space-md">
+<span class="inline-flex items-center gap-1 px-2 py-0.5 rounded text-label-sm font-label-sm bg-secondary/10 text-secondary">
+<span class="w-1.5 h-1.5 rounded-full bg-secondary"></span>
+                  Subject Contributor
+                </span>
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+<!-- Table Footer / Regulatory Footnote -->
+<div class="p-space-lg bg-surface-container-low flex flex-col md:flex-row md:items-center justify-between gap-space-md">
+<div class="flex items-center gap-space-sm text-on-surface-variant font-body-sm text-body-sm">
+<span class="material-symbols-outlined text-[18px] text-primary">gavel</span>
+<span>Matrix adheres to CBSE Affiliation Bylaws Chapter 3 §14 (Data Protection &amp; Confidential Records)</span>
+</div>
+<div class="flex items-center gap-space-xs font-label-sm text-label-sm text-outline">
+<span>Schema Rev: v24.2.1</span>
+<span>•</span>
+<span>Encrypted under HSM-PIN: RSA-4096</span>
+</div>
+</div>
+</div>
+<!-- Architectural Deep Dive / Regulatory Notice Section -->
+<div class="grid grid-cols-1 lg:grid-cols-12 gap-space-lg">
+<!-- Regulatory Note (8 cols) -->
+<div class="lg:col-span-8 bg-surface-container-lowest p-space-xl rounded shadow-sm flex flex-col gap-space-md">
+<div class="flex items-center gap-space-sm text-primary">
+<span class="material-symbols-outlined text-[24px]">verified</span>
+<h3 class="font-headline-sm text-headline-sm">Why Permissions Are Rigidly Bounded by Role (Rule SEC-402)</h3>
+</div>
+<div class="font-body-md text-body-md text-on-surface space-y-space-sm leading-relaxed">
+<p>
+            Unlike permissive commercial software that permits arbitrary permission checkboxes per user, HanuJai High School's ERP strictly enforces <strong>Hierarchical Functional Boundaries</strong>. This structural safeguard guarantees that:
+          </p>
+<div class="grid grid-cols-1 md:grid-cols-2 gap-space-md pt-space-xs">
+<div class="p-space-md bg-surface-container-low rounded flex flex-col gap-space-xs">
+<span class="font-label-md text-label-md text-primary flex items-center gap-1">
+<span class="material-symbols-outlined text-[16px]">visibility_off</span>
+                Zero Peer Marks Intrusion
+              </span>
+<p class="font-body-sm text-body-sm text-on-surface-variant">
+                Subject teachers cannot inspect marks entered by colleagues. This eliminates unintentional bias and internal student grading disputes.
+              </p>
+</div>
+<div class="p-space-md bg-surface-container-low rounded flex flex-col gap-space-xs">
+<span class="font-label-md text-label-md text-secondary flex items-center gap-1">
+<span class="material-symbols-outlined text-[16px]">credit_card_off</span>
+                Total Bursary Insulation
+              </span>
+<p class="font-body-sm text-body-sm text-on-surface-variant">
+                Instructional faculty have absolute zero exposure to fee balances or defaulter registries, protecting students from classroom discrimination.
+              </p>
+</div>
+<div class="p-space-md bg-surface-container-low rounded flex flex-col gap-space-xs">
+<span class="font-label-md text-label-md text-primary flex items-center gap-1">
+<span class="material-symbols-outlined text-[16px]">history_edu</span>
+                Gazette Tamper-Proofing
+              </span>
+<p class="font-body-sm text-body-sm text-on-surface-variant">
+                Marks cannot be altered once the examination window elapses without dual-approval cryptographic commit logged directly to institutional server.
+              </p>
+</div>
+<div class="p-space-md bg-surface-container-low rounded flex flex-col gap-space-xs">
+<span class="font-label-md text-label-md text-tertiary flex items-center gap-1">
+<span class="material-symbols-outlined text-[16px]">shield_person</span>
+                Strict Cohort Isolation
+              </span>
+<p class="font-body-sm text-body-sm text-on-surface-variant">
+                A Class Teacher’s pastoral oversight is physically restricted to exactly 1 sanctioned classroom section per academic year.
+              </p>
+</div>
+</div>
+</div>
+</div>
+<!-- Compliance Verification Ledger Card (4 cols) -->
+<div class="lg:col-span-4 bg-surface-container-lowest p-space-xl rounded shadow-sm flex flex-col justify-between">
+<div class="flex flex-col gap-space-md">
+<div class="flex items-center justify-between">
+<span class="font-label-sm text-label-sm uppercase tracking-wider text-outline">Statutory Certification</span>
+<span class="px-space-xs py-0.5 bg-primary/10 text-primary font-label-sm text-label-sm rounded">ACTIVE</span>
+</div>
+<div class="flex flex-col gap-1">
+<span class="font-headline-sm text-headline-sm text-on-surface">Institutional Ledger Node</span>
+<span class="font-body-sm text-body-sm text-on-surface-variant">CBSE Affiliation #1730249 • Jaipur Central Zone</span>
+</div>
+<div class="space-y-space-xs bg-surface-container-low p-space-md rounded font-body-sm text-body-sm">
+<div class="flex justify-between py-1">
+<span class="text-on-surface-variant">Master Admin:</span>
+<span class="font-label-sm text-label-sm text-on-surface">Dr. K. S. Rathore</span>
+</div>
+<div class="flex justify-between py-1">
+<span class="text-on-surface-variant">Chief Bursar:</span>
+<span class="font-label-sm text-label-sm text-on-surface">M. L. Sharma</span>
+</div>
+<div class="flex justify-between py-1">
+<span class="text-on-surface-variant">Exam Controller:</span>
+<span class="font-label-sm text-label-sm text-on-surface">Mrs. Neeta Vashistha</span>
+</div>
+<div class="flex justify-between py-1">
+<span class="text-on-surface-variant">Last Audit Verification:</span>
+<span class="font-label-sm text-label-sm text-primary">Today, 06:14 AM</span>
+</div>
+</div>
+</div>
+<div class="pt-space-md flex flex-col gap-space-xs">
+<div class="flex items-center gap-space-xs text-primary font-label-sm text-label-sm">
+<span class="material-symbols-outlined text-[16px]">verified</span>
+<span>Cryptographically Certified by Principal</span>
+</div>
+<span class="font-body-sm text-body-sm text-outline">Public Fingerprint: 89A2-E311-BC44-9021</span>
+</div>
+</div>
+</div>
+</div>
+<!-- Interactive Toast Notification Element (Hidden by default) -->
+<div class="fixed bottom-6 right-6 bg-primary text-on-primary px-space-lg py-space-md rounded shadow-lg flex items-center gap-space-md opacity-0 pointer-events-none transition-all duration-300 z-50" id="integrityToast">
+<span class="material-symbols-outlined text-[22px]">verified_user</span>
+<div class="flex flex-col">
+<span class="font-label-md text-label-md">Role Isolation Integrity Verified</span>
+<span class="font-body-sm text-body-sm opacity-90">All 58 staff assignments adhere strictly to SEC-402 protocol boundaries.</span>
+</div>
+</div>
+</div>
+<script>
+  (function() {
+    // Interactive Verification Button
+    const verifyBtn = document.getElementById('verifyIntegrityBtn');
+    const toast = document.getElementById('integrityToast');
+
+    if (verifyBtn && toast) {
+      verifyBtn.addEventListener('click', function() {
+        verifyBtn.classList.add('opacity-75');
+        verifyBtn.innerHTML = '<span class="material-symbols-outlined text-[18px] animate-spin">refresh</span><span>Verifying ACL Matrix...</span>';
+        
+        setTimeout(function() {
+          verifyBtn.classList.remove('opacity-75');
+          verifyBtn.innerHTML = '<span class="material-symbols-outlined text-[18px] text-primary">verified_user</span><span>Verify Role Isolation</span>';
+          
+          toast.classList.remove('opacity-0', 'pointer-events-none');
+          toast.classList.add('opacity-100');
+          
+          setTimeout(function() {
+            toast.classList.add('opacity-0', 'pointer-events-none');
+            toast.classList.remove('opacity-100');
+          }, 3500);
+        }, 800);
+      });
+    }
+
+    // Filter capability matrix
+    const filterAll = document.getElementById('filterAll');
+    const filterAcademics = document.getElementById('filterAcademics');
+    const filterRestricted = document.getElementById('filterRestricted');
+    const searchInput = document.getElementById('matrixSearch');
+    const rows = document.querySelectorAll('.matrix-row');
+    const headers = document.querySelectorAll('.module-header');
+
+    function resetFilters() {
+      [filterAll, filterAcademics, filterRestricted].forEach(b => {
+        b.className = 'px-2 py-0.5 hover:bg-surface-container font-label-sm text-label-sm text-on-surface-variant rounded transition-colors';
+      });
+    }
+
+    if (filterAll) {
+      filterAll.addEventListener('click', function() {
+        resetFilters();
+        filterAll.className = 'px-2 py-0.5 bg-surface-container-lowest font-label-sm text-label-sm text-primary rounded shadow-xs';
+        rows.forEach(r => r.style.display = '');
+        headers.forEach(h => h.style.display = '');
+      });
+    }
+
+    if (filterAcademics) {
+      filterAcademics.addEventListener('click', function() {
+        resetFilters();
+        filterAcademics.className = 'px-2 py-0.5 bg-surface-container-lowest font-label-sm text-label-sm text-primary rounded shadow-xs';
+        rows.forEach(r => {
+          if (r.getAttribute('data-module') === 'academics') {
+            r.style.display = '';
+          } else {
+            r.style.display = 'none';
+          }
+        });
+        headers.forEach(h => {
+          if (h.getAttribute('data-module') === 'academics') {
+            h.style.display = '';
+          } else {
+            h.style.display = 'none';
+          }
+        });
+      });
+    }
+
+    if (filterRestricted) {
+      filterRestricted.addEventListener('click', function() {
+        resetFilters();
+        filterRestricted.className = 'px-2 py-0.5 bg-surface-container-lowest font-label-sm text-label-sm text-primary rounded shadow-xs';
+        rows.forEach(r => {
+          const hasRestricted = r.textContent.includes('RESTRICTED') || r.textContent.includes('PROHIBITED');
+          r.style.display = hasRestricted ? '' : 'none';
+        });
+        headers.forEach(h => h.style.display = '');
+      });
+    }
+
+    if (searchInput) {
+      searchInput.addEventListener('input', function(e) {
+        const query = e.target.value.toLowerCase();
+        rows.forEach(r => {
+          const text = r.textContent.toLowerCase();
+          r.style.display = text.includes(query) ? '' : 'none';
+        });
+      });
+    }
+  })();
+</script></main></div></body></html>

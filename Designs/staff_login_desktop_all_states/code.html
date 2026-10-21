@@ -1,0 +1,329 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Staff Login — HanuJai High School ERP</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    body {
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+      background-color: #F7F7F4;
+      color: #202B2A;
+    }
+    .tabular-nums {
+      font-variant-numeric: tabular-nums;
+    }
+  </style>
+</head>
+<body class="min-h-screen bg-[#F7F7F4] flex flex-col justify-between text-[#202B2A] antialiased selection:bg-[#31594E]/15 selection:text-[#31594E]">
+
+  <!-- Top Minimal Utility Bar -->
+  <header class="w-full border-b border-[#E9ECE8] bg-[#F7F7F4]/90 backdrop-blur-sm px-6 py-3.5 flex items-center justify-between">
+    <div class="flex items-center space-x-3">
+      <div class="w-7 h-7 rounded bg-[#31594E] flex items-center justify-center text-white text-xs font-semibold tracking-wider">
+        HJ
+      </div>
+      <div class="flex items-baseline space-x-2">
+        <span class="text-sm font-semibold tracking-tight text-[#202B2A]">HanuJai High School</span>
+        <span class="text-xs text-[#52605E]">Staff Administration ERP</span>
+      </div>
+    </div>
+    
+    <div class="flex items-center space-x-4 text-xs text-[#52605E]">
+      <div class="flex items-center space-x-1.5">
+        <span class="w-2 h-2 rounded-full bg-[#31594E]"></span>
+        <span class="font-medium text-[#202B2A]">CBSE Node 1730249</span>
+        <span class="text-[#889694]">• Jaipur Zone</span>
+      </div>
+      <span class="text-[#D0D6D2]">|</span>
+      <span class="hidden sm:inline">Academic Session 2024–25</span>
+    </div>
+  </header>
+
+  <!-- Interactive States Switcher Bar (For review of requested states) -->
+  <div class="max-w-md mx-auto w-full px-4 pt-6">
+    <div class="bg-[#EAF0ED] p-1 rounded-md flex items-center justify-center space-x-1 border border-[#D9E2DE] text-xs font-medium">
+      <button id="btn-state-default" onclick="switchState('default')" class="flex-1 py-1.5 px-2 rounded text-center transition-all bg-white text-[#202B2A] shadow-sm border border-[#D0D9D5]">
+        1. Default State
+      </button>
+      <button id="btn-state-error" onclick="switchState('error')" class="flex-1 py-1.5 px-2 rounded text-center transition-all text-[#52605E] hover:text-[#202B2A]">
+        2. Invalid Credentials
+      </button>
+      <button id="btn-state-loading" onclick="switchState('loading')" class="flex-1 py-1.5 px-2 rounded text-center transition-all text-[#52605E] hover:text-[#202B2A]">
+        3. Authenticating...
+      </button>
+    </div>
+  </div>
+
+  <!-- Main Centered Authentication Container -->
+  <main class="flex-1 flex items-center justify-center px-4 py-8 sm:py-12">
+    <div class="w-full max-w-[420px]">
+      
+      <!-- Card Container -->
+      <div class="bg-white rounded-lg border border-[#E2E6E3] shadow-[0_1px_3px_rgba(0,0,0,0.04),0_6px_16px_rgba(32,43,42,0.03)] p-8">
+        
+        <!-- Header Branding & Purpose -->
+        <div class="mb-7">
+          <div class="flex items-center justify-between mb-4">
+            <div class="w-9 h-9 rounded bg-[#31594E] flex items-center justify-center text-white text-sm font-semibold tracking-wider">
+              HJ
+            </div>
+            <span class="inline-flex items-center px-2 py-0.5 rounded text-[11px] font-medium bg-[#F0F4F2] text-[#31594E] border border-[#DEE6E2]">
+              Internal Staff Portal
+            </span>
+          </div>
+
+          <h1 class="text-xl font-bold tracking-tight text-[#202B2A]">Staff Authentication</h1>
+          <p class="text-xs text-[#52605E] mt-1 leading-relaxed">
+            Authorized access for Faculty, Administrative Officers, and School Leadership.
+          </p>
+        </div>
+
+        <!-- Banner Alert Box (Displayed dynamically or in error state) -->
+        <div id="error-banner" class="hidden mb-6 p-3.5 rounded border border-[#F0BCB8] bg-[#FDF2F1] text-[#93231E]">
+          <div class="flex items-start space-x-2.5">
+            <svg class="w-4 h-4 text-[#C85A54] mt-0.5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/>
+            </svg>
+            <div class="text-xs">
+              <p class="font-semibold text-[#93231E]">Authentication Failed</p>
+              <p class="text-[#A2342F] mt-0.5">Invalid staff ID or password. Multiple consecutive failed attempts will trigger an administrative lock.</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- Form Elements -->
+        <form id="login-form" onsubmit="event.preventDefault(); switchState('loading');" class="space-y-4">
+          
+          <!-- Staff Username / Identifier -->
+          <div>
+            <div class="flex items-center justify-between mb-1.5">
+              <label for="username" class="block text-xs font-semibold text-[#202B2A]">
+                Staff ID or Institutional Email
+              </label>
+              <span class="text-[11px] text-[#71807D]">e.g. EMP-1042</span>
+            </div>
+            <div class="relative">
+              <input 
+                type="text" 
+                id="username" 
+                name="username" 
+                value="rathore.admin@hanujai.edu.in"
+                autocomplete="username"
+                required
+                class="w-full text-sm px-3 py-2.5 rounded bg-white border border-[#CED5D1] text-[#202B2A] placeholder-[#9BA7A4] focus:outline-none focus:ring-2 focus:ring-[#31594E]/20 focus:border-[#31594E] transition-colors"
+                placeholder="staff.name@hanujai.edu.in"
+              />
+              <div id="username-error-icon" class="hidden absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
+                <svg class="h-4 w-4 text-[#C85A54]" fill="currentColor" viewBox="0 0 20 20">
+                  <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clip-rule="evenodd"/>
+                </svg>
+              </div>
+            </div>
+            <p id="username-error-text" class="hidden mt-1.5 text-xs text-[#C85A54]">Please enter a recognized institutional email or employee code.</p>
+          </div>
+
+          <!-- Password Field with Show/Hide -->
+          <div>
+            <div class="flex items-center justify-between mb-1.5">
+              <label for="password" class="block text-xs font-semibold text-[#202B2A]">
+                Password
+              </label>
+              <a href="#" class="text-[11px] font-medium text-[#31594E] hover:underline hover:text-[#24433A]">
+                Forgot Password?
+              </a>
+            </div>
+            <div class="relative">
+              <input 
+                type="password" 
+                id="password" 
+                name="password" 
+                value="••••••••••••"
+                autocomplete="current-password"
+                required
+                class="w-full text-sm px-3 py-2.5 rounded bg-white border border-[#CED5D1] text-[#202B2A] placeholder-[#9BA7A4] pr-10 focus:outline-none focus:ring-2 focus:ring-[#31594E]/20 focus:border-[#31594E] transition-colors font-mono tracking-wider"
+                placeholder="Enter password"
+              />
+              <button 
+                type="button" 
+                id="toggle-password" 
+                onclick="togglePasswordVisibility()" 
+                class="absolute inset-y-0 right-0 pr-3 flex items-center text-[#71807D] hover:text-[#202B2A] transition-colors focus:outline-none"
+                aria-label="Toggle password visibility"
+              >
+                <!-- Eye icon -->
+                <svg id="eye-icon" class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                </svg>
+              </button>
+            </div>
+            <p id="password-error-text" class="hidden mt-1.5 text-xs text-[#C85A54]">Password does not match our security records.</p>
+          </div>
+
+          <!-- Session & Role Selection Option -->
+          <div class="pt-1 flex items-center justify-between">
+            <label class="flex items-center space-x-2 cursor-pointer select-none">
+              <input 
+                type="checkbox" 
+                id="remember-me" 
+                checked 
+                class="w-3.5 h-3.5 text-[#31594E] border-[#CED5D1] rounded focus:ring-[#31594E] focus:ring-1 accent-[#31594E]"
+              >
+              <span class="text-xs text-[#52605E]">Keep session active (8h)</span>
+            </label>
+            <span class="text-[11px] text-[#71807D] tabular-nums">Vidyadhar Nagar Server</span>
+          </div>
+
+          <!-- Submit Button / Active / Loading States -->
+          <div class="pt-2">
+            <button 
+              type="submit" 
+              id="submit-btn" 
+              class="w-full h-10 px-4 rounded bg-[#31594E] hover:bg-[#284940] active:bg-[#203a33] text-white text-xs font-semibold tracking-wide transition-all duration-150 flex items-center justify-center space-x-2 shadow-sm focus:outline-none focus:ring-2 focus:ring-[#31594E] focus:ring-offset-1"
+            >
+              <span id="btn-text">Sign In to ERP</span>
+              <svg id="btn-arrow" class="w-3.5 h-3.5 transition-transform group-hover:translate-x-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3"/>
+              </svg>
+              <svg id="btn-spinner" class="hidden animate-spin h-4 w-4 text-white" fill="none" viewBox="0 0 24 24">
+                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+              </svg>
+            </button>
+          </div>
+
+        </form>
+
+        <!-- Divider with institutional notice -->
+        <div class="mt-6 pt-5 border-t border-[#EEF2EF] text-center">
+          <p class="text-[11px] text-[#71807D] leading-normal">
+            Need credentials or security clearance? Contact 
+            <a href="mailto:admin.it@hanujai.edu.in" class="text-[#31594E] font-medium hover:underline">Campus Systems Office</a> 
+            (Ext. 204).
+          </p>
+        </div>
+
+      </div>
+
+      <!-- Security & Regulatory Notice -->
+      <div class="mt-5 text-center space-y-1.5">
+        <div class="flex items-center justify-center space-x-2 text-[11px] text-[#71807D]">
+          <svg class="w-3.5 h-3.5 text-[#31594E]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/>
+          </svg>
+          <span class="font-medium text-[#202B2A]">256-Bit TLS Secured Staff Endpoint</span>
+        </div>
+        <p class="text-[10px] text-[#889694]">
+          Confidential school records protected under Indian Digital Personal Data Protection (DPDP) Act guidelines.
+        </p>
+      </div>
+
+    </div>
+  </main>
+
+  <!-- Global Institutional Footer -->
+  <footer class="w-full border-t border-[#E9ECE8] bg-[#F7F7F4] px-6 py-3.5 flex flex-col sm:flex-row items-center justify-between text-xs text-[#71807D] gap-2">
+    <div>
+      © 2024–2025 HanuJai High School, Vidyadhar Nagar, Jaipur, Rajasthan 302039
+    </div>
+    <div class="flex items-center space-x-4 text-[11px]">
+      <span class="inline-flex items-center text-[#31594E] font-medium">
+        <span class="w-1.5 h-1.5 rounded-full bg-[#31594E] mr-1.5"></span>
+        Pariksha Sangam Sync v4.8.12
+      </span>
+      <span>•</span>
+      <a href="#" class="hover:underline text-[#52605E]">ERP Policy & Audit Log</a>
+      <span>•</span>
+      <a href="#" class="hover:underline text-[#52605E]">IT Desk</a>
+    </div>
+  </footer>
+
+  <!-- State Management Scripts -->
+  <script>
+    function togglePasswordVisibility() {
+      const pwdInput = document.getElementById('password');
+      if (pwdInput.type === 'password') {
+        pwdInput.type = 'text';
+      } else {
+        pwdInput.type = 'password';
+      }
+    }
+
+    function switchState(state) {
+      const btnDefault = document.getElementById('btn-state-default');
+      const btnError = document.getElementById('btn-state-error');
+      const btnLoading = document.getElementById('btn-state-loading');
+
+      const errorBanner = document.getElementById('error-banner');
+      const usernameInput = document.getElementById('username');
+      const passwordInput = document.getElementById('password');
+      const usernameErrorIcon = document.getElementById('username-error-icon');
+      const usernameErrorText = document.getElementById('username-error-text');
+      const passwordErrorText = document.getElementById('password-error-text');
+
+      const submitBtn = document.getElementById('submit-btn');
+      const btnText = document.getElementById('btn-text');
+      const btnArrow = document.getElementById('btn-arrow');
+      const btnSpinner = document.getElementById('btn-spinner');
+
+      // Reset button tabs styling
+      [btnDefault, btnError, btnLoading].forEach(b => {
+        b.className = 'flex-1 py-1.5 px-2 rounded text-center transition-all text-[#52605E] hover:text-[#202B2A]';
+      });
+
+      // Reset inputs & alerts
+      errorBanner.classList.add('hidden');
+      usernameInput.classList.remove('border-[#C85A54]', 'focus:ring-[#C85A54]/20', 'focus:border-[#C85A54]', 'bg-[#FDF7F7]');
+      usernameInput.classList.add('border-[#CED5D1]', 'focus:ring-[#31594E]/20', 'focus:border-[#31594E]', 'bg-white');
+      usernameInput.disabled = false;
+
+      passwordInput.classList.remove('border-[#C85A54]', 'focus:ring-[#C85A54]/20', 'focus:border-[#C85A54]', 'bg-[#FDF7F7]');
+      passwordInput.classList.add('border-[#CED5D1]', 'focus:ring-[#31594E]/20', 'focus:border-[#31594E]', 'bg-white');
+      passwordInput.disabled = false;
+
+      usernameErrorIcon.classList.add('hidden');
+      usernameErrorText.classList.add('hidden');
+      passwordErrorText.classList.add('hidden');
+
+      submitBtn.disabled = false;
+      submitBtn.classList.remove('opacity-75', 'cursor-not-allowed');
+      btnText.innerText = "Sign In to ERP";
+      btnArrow.classList.remove('hidden');
+      btnSpinner.classList.add('hidden');
+
+      if (state === 'default') {
+        btnDefault.className = 'flex-1 py-1.5 px-2 rounded text-center transition-all bg-white text-[#202B2A] shadow-sm border border-[#D0D9D5] font-semibold';
+        usernameInput.value = "rathore.admin@hanujai.edu.in";
+        passwordInput.value = "••••••••••••";
+      } else if (state === 'error') {
+        btnError.className = 'flex-1 py-1.5 px-2 rounded text-center transition-all bg-white text-[#93231E] shadow-sm border border-[#F0BCB8] font-semibold';
+        errorBanner.classList.remove('hidden');
+
+        usernameInput.classList.remove('border-[#CED5D1]', 'focus:ring-[#31594E]/20', 'focus:border-[#31594E]', 'bg-white');
+        usernameInput.classList.add('border-[#C85A54]', 'focus:ring-[#C85A54]/20', 'focus:border-[#C85A54]', 'bg-[#FDF7F7]');
+        
+        passwordInput.classList.remove('border-[#CED5D1]', 'focus:ring-[#31594E]/20', 'focus:border-[#31594E]', 'bg-white');
+        passwordInput.classList.add('border-[#C85A54]', 'focus:ring-[#C85A54]/20', 'focus:border-[#C85A54]', 'bg-[#FDF7F7]');
+
+        usernameErrorIcon.classList.remove('hidden');
+        usernameErrorText.classList.remove('hidden');
+        passwordErrorText.classList.remove('hidden');
+      } else if (state === 'loading') {
+        btnLoading.className = 'flex-1 py-1.5 px-2 rounded text-center transition-all bg-[#31594E] text-white shadow-sm font-semibold';
+        submitBtn.disabled = true;
+        submitBtn.classList.add('opacity-85', 'cursor-not-allowed');
+        usernameInput.disabled = true;
+        passwordInput.disabled = true;
+        btnText.innerText = "Verifying Credentials...";
+        btnArrow.classList.add('hidden');
+        btnSpinner.classList.remove('hidden');
+      }
+    }
+  </script>
+</body>
+</html>

@@ -1,0 +1,592 @@
+<!DOCTYPE html>
+
+<html lang="en"><head><meta charset="utf-8"/><meta content="width=device-width, initial-scale=1.0" name="viewport"/><meta content="web_dashboard" name="shell-type"/><link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" rel="stylesheet"/><link href="https://fonts.googleapis.com" rel="preconnect"/><link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/><link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/><style>@layer base{html,body{margin:0;padding:0;}body{overscroll-behavior:none;}main>:first-child{margin-top:0!important;}main>:last-child{margin-bottom:0!important;}}::-webkit-scrollbar{display:none;}</style><script src="https://cdn.tailwindcss.com"></script><script id="tailwind-config">tailwind.config = { darkMode: "class", theme: { extend: { "colors": { "inverse-primary": "#a5cfc1", "surface": "#f0fcfa", "on-primary": "#ffffff", "on-surface": "#131e1d", "on-error-container": "#93000a", "primary": "#184237", "surface-dim": "#d0dddb", "surface-container-low": "#eaf6f4", "surface-container-lowest": "#ffffff", "on-secondary-container": "#79511f", "background": "#f0fcfa", "inverse-surface": "#273331", "on-background": "#131e1d", "tertiary": "#721a1a", "secondary-fixed": "#ffddba", "on-error": "#ffffff", "outline": "#717975", "tertiary-container": "#91312e", "on-primary-fixed-variant": "#264e43", "on-primary-container": "#a3cec0", "tertiary-fixed-dim": "#ffb3ad", "error": "#ba1a1a", "on-primary-fixed": "#002019", "inverse-on-surface": "#e7f3f1", "surface-container-highest": "#d9e5e3", "secondary-container": "#fec78a", "surface-container-high": "#deebe9", "primary-container": "#31594e", "on-secondary-fixed": "#2b1700", "surface-bright": "#f0fcfa", "on-tertiary-container": "#ffb2ac", "tertiary-fixed": "#ffdad7", "surface-variant": "#d9e5e3", "on-surface-variant": "#414845", "error-container": "#ffdad6", "on-tertiary": "#ffffff", "secondary-fixed-dim": "#f2bd80", "primary-fixed-dim": "#a5cfc1", "on-secondary-fixed-variant": "#633f0d", "on-tertiary-fixed": "#410004", "outline-variant": "#c0c8c4", "surface-tint": "#3e665a", "surface-container": "#e4f0ee", "on-tertiary-fixed-variant": "#822624", "primary-fixed": "#c0ecdd", "secondary": "#7e5624", "on-secondary": "#ffffff" }, "borderRadius": { "DEFAULT": "0.125rem", "lg": "0.25rem", "xl": "0.5rem", "full": "0.75rem" }, "spacing": { "gutter-desktop": "1.5rem", "space-xs": "0.25rem", "space-md": "0.75rem", "margin": "1rem", "space-lg": "1rem", "space-sm": "0.5rem", "margin-desktop": "2rem", "gutter": "1rem", "space-xl": "1.5rem" }, "fontFamily": { "label-md": ["Inter"], "label-sm": ["Inter"], "tabular-data": ["Inter"], "body-lg": ["Inter"], "headline-xl": ["Inter"], "headline-md": ["Inter"], "body-md": ["Inter"], "headline-lg": ["Inter"], "headline-sm": ["Inter"], "body-sm": ["Inter"] }, "fontSize": { "label-md": ["0.875rem", {"lineHeight": "1.25rem", "letterSpacing": "0.01em", "fontWeight": "500"}], "label-sm": ["0.75rem", {"lineHeight": "1rem", "letterSpacing": "0.025em", "fontWeight": "600"}], "tabular-data": ["0.875rem", {"lineHeight": "1.25rem", "letterSpacing": "0em", "fontWeight": "400"}], "body-lg": ["1rem", {"lineHeight": "1.5rem", "letterSpacing": "0em", "fontWeight": "400"}], "headline-xl": ["2rem", {"lineHeight": "2.5rem", "letterSpacing": "-0.02em", "fontWeight": "600"}], "headline-md": ["1.25rem", {"lineHeight": "1.75rem", "letterSpacing": "-0.01em", "fontWeight": "600"}], "body-md": ["0.875rem", {"lineHeight": "1.25rem", "letterSpacing": "0em", "fontWeight": "400"}], "headline-lg": ["1.5rem", {"lineHeight": "2rem", "letterSpacing": "-0.015em", "fontWeight": "600"}], "headline-sm": ["1.125rem", {"lineHeight": "1.5rem", "letterSpacing": "0em", "fontWeight": "600"}], "body-sm": ["0.75rem", {"lineHeight": "1.125rem", "letterSpacing": "0.005em", "fontWeight": "400"}] } } } };</script></head><body class="bg-surface font-body-md text-body-md text-on-surface antialiased"><aside class="fixed left-0 top-0 h-full w-60 bg-surface-container-low flex flex-col z-50 shadow-[0_1px_8px_rgba(0,0,0,0.04)]"><div class="h-14 px-space-md flex items-center gap-space-sm bg-surface-container"><div class="w-8 h-8 rounded-lg bg-primary-container flex items-center justify-center font-headline-sm text-headline-sm text-on-primary font-bold">HJ</div><div class="flex flex-col min-w-0"><span class="font-label-md text-label-md text-on-surface truncate">HanuJai High School</span><span class="font-body-sm text-body-sm text-on-surface-variant truncate">Jaipur • Staff ERP</span></div></div><div class="px-space-md py-space-sm bg-surface-container-high/60 flex items-center justify-between"><span class="font-label-sm text-label-sm text-on-surface-variant">SESSION</span><span class="font-label-sm text-label-sm text-primary font-semibold">AY 2024–25 (T-II)</span></div><nav class="flex-1 px-space-sm py-space-md space-y-space-xs overflow-y-auto" data-active-classes="bg-primary-container text-on-primary font-medium rounded-lg"><a class="flex items-center gap-space-sm px-space-md py-space-sm rounded-lg text-on-surface-variant hover:bg-surface-container hover:text-on-surface transition-colors" data-path="dashboard" href="#"><span class="material-symbols-outlined text-[18px]">dashboard</span><span class="font-label-md text-label-md">Dashboard</span></a><a class="flex items-center gap-space-sm px-space-md py-space-sm rounded-lg text-on-surface-variant hover:bg-surface-container hover:text-on-surface transition-colors" data-path="students" href="#"><span class="material-symbols-outlined text-[18px]">group</span><span class="font-label-md text-label-md">Students</span></a><a class="flex items-center gap-space-sm px-space-md py-space-sm rounded-lg text-on-surface-variant hover:bg-surface-container hover:text-on-surface transition-colors" data-path="attendance" href="#"><span class="material-symbols-outlined text-[18px]">how_to_reg</span><span class="font-label-md text-label-md">Attendance</span></a><a aria-current="page" class="flex items-center gap-space-sm px-space-md py-space-sm transition-colors bg-primary-container text-on-primary font-medium rounded-lg" data-path="academics" href="#"><span class="material-symbols-outlined text-[18px]">menu_book</span><span class="font-label-md text-label-md">Academics</span></a><a class="flex items-center gap-space-sm px-space-md py-space-sm rounded-lg text-on-surface-variant hover:bg-surface-container hover:text-on-surface transition-colors" data-path="performance" href="#"><span class="material-symbols-outlined text-[18px]">insights</span><span class="font-label-md text-label-md">Performance</span></a><a class="flex items-center gap-space-sm px-space-md py-space-sm rounded-lg text-on-surface-variant hover:bg-surface-container hover:text-on-surface transition-colors" data-path="behaviour" href="#"><span class="material-symbols-outlined text-[18px]">verified_user</span><span class="font-label-md text-label-md">Behaviour</span></a><a class="flex items-center gap-space-sm px-space-md py-space-sm rounded-lg text-on-surface-variant hover:bg-surface-container hover:text-on-surface transition-colors" data-path="reports-cbse" href="#"><span class="material-symbols-outlined text-[18px]">assignment</span><span class="font-label-md text-label-md">Reports &amp; CBSE</span></a><a class="flex items-center gap-space-sm px-space-md py-space-sm rounded-lg text-on-surface-variant hover:bg-surface-container hover:text-on-surface transition-colors" data-path="administration" href="#"><span class="material-symbols-outlined text-[18px]">admin_panel_settings</span><span class="font-label-md text-label-md">Administration</span></a></nav><div class="p-space-md bg-surface-container-high/40"><div class="flex items-center gap-space-xs text-on-surface-variant"><span class="material-symbols-outlined text-[14px] text-primary">account_balance</span><span class="font-label-sm text-label-sm">CBSE #1730249</span></div><div class="font-body-sm text-body-sm text-on-surface-variant mt-space-xs">Jaipur Zone • Active Node</div></div></aside><div class="pl-60"><header class="fixed top-0 left-60 right-0 h-14 bg-surface/90 backdrop-blur-md z-40 shadow-[0_1px_8px_rgba(0,0,0,0.04)] px-gutter-desktop flex items-center justify-between gap-space-lg"><div class="flex items-center gap-space-md flex-1 max-w-lg"><div class="relative w-full"><span class="material-symbols-outlined absolute left-space-md top-1/2 -translate-y-1/2 text-on-surface-variant text-[18px]">search</span><input class="w-full h-9 pl-9 pr-14 bg-surface-container-lowest text-on-surface font-body-md text-body-md rounded-lg placeholder:text-on-surface-variant/60 focus:outline-none focus:ring-1 focus:ring-primary shadow-[0_1px_2px_rgba(32,43,42,0.04)]" placeholder="Search student, staff, marks, assessment..." type="text"/><div class="absolute right-space-sm top-1/2 -translate-y-1/2 px-space-xs py-0.5 bg-surface-container-high text-on-surface-variant rounded font-label-sm text-label-sm">Ctrl+K</div></div></div><div class="flex items-center gap-space-lg"><div class="hidden lg:flex items-center gap-space-xs px-space-md py-1 bg-surface-container-high rounded-full"><span class="w-2 h-2 rounded-full bg-primary animate-pulse"></span><span class="font-label-sm text-label-sm text-on-surface">Term II Marks Entry Active</span></div><button class="relative p-space-sm text-on-surface-variant hover:text-on-surface hover:bg-surface-container rounded-lg transition-colors"><span class="material-symbols-outlined text-[20px]">notifications</span><span class="absolute top-1.5 right-1.5 w-2 h-2 rounded-full bg-tertiary"></span></button><div class="flex items-center gap-space-md pl-space-sm"><div class="flex flex-col text-right"><span class="font-label-md text-label-md text-on-surface">Dr. N. Goyal</span><span class="font-body-sm text-body-sm text-on-surface-variant">PGT Mathematics • Senior Wing</span></div><div class="w-8 h-8 rounded-full bg-primary flex items-center justify-center"><span class="material-symbols-outlined text-on-primary text-[18px]">person</span></div></div></div></header><main class="w-full pt-14 bg-surface px-gutter-desktop py-space-xl"><div class="flex flex-col w-full pb-24">
+<!-- Breadcrumb Navigation -->
+<div class="flex items-center gap-space-xs text-on-surface-variant font-label-sm text-label-sm mb-space-md">
+<span class="hover:text-primary cursor-pointer transition-colors">Home</span>
+<span class="material-symbols-outlined text-[14px]">chevron_right</span>
+<span class="hover:text-primary cursor-pointer transition-colors">Academics</span>
+<span class="material-symbols-outlined text-[14px]">chevron_right</span>
+<span class="hover:text-primary cursor-pointer transition-colors">Assessments</span>
+<span class="material-symbols-outlined text-[14px]">chevron_right</span>
+<span class="hover:text-primary cursor-pointer transition-colors">Term II Mid-Term</span>
+<span class="material-symbols-outlined text-[14px]">chevron_right</span>
+<span class="text-on-surface font-semibold">Class 10-A (Mathematics Standard)</span>
+</div>
+<!-- Primary Context Strip & Institutional Header -->
+<div class="bg-surface-container-lowest rounded-xl p-space-lg shadow-sm mb-space-lg">
+<div class="flex flex-col lg:flex-row lg:items-center justify-between gap-space-lg pb-space-md border-b border-surface-container-high/70">
+<div class="flex items-start gap-space-md">
+<div class="w-12 h-12 rounded-lg bg-primary-container text-on-primary flex items-center justify-center shrink-0">
+<span class="material-symbols-outlined text-[26px]">calculate</span>
+</div>
+<div class="flex flex-col">
+<div class="flex items-center gap-space-sm flex-wrap">
+<span class="font-headline-md text-headline-md text-on-surface font-bold tracking-tight">Class 10-A Marks Entry Register</span>
+<span class="px-space-xs py-0.5 rounded bg-surface-container-high text-on-surface-variant font-label-sm text-label-sm font-semibold">Room 204 • North Wing</span>
+<span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-secondary-container/30 text-on-secondary-container font-label-sm text-label-sm font-medium">
+<span class="w-1.5 h-1.5 rounded-full bg-secondary"></span>
+              Draft in Progress
+            </span>
+</div>
+<p class="font-body-md text-body-md text-on-surface-variant mt-0.5">
+            Subject: <strong class="text-on-surface font-semibold">Mathematics Standard (Code: 041)</strong> • Evaluator: <span class="text-on-surface">Dr. N. Goyal (PGT Mathematics, EMP-1018)</span>
+</p>
+</div>
+</div>
+<!-- Deadline & Status Chips -->
+<div class="flex flex-wrap items-center gap-space-md lg:justify-end">
+<div class="flex flex-col items-start lg:items-end bg-surface-container-low px-space-md py-1.5 rounded-lg">
+<span class="font-label-sm text-label-sm text-on-surface-variant uppercase tracking-wider">Scoring Framework</span>
+<span class="font-tabular-data text-tabular-data font-semibold text-primary">Max: 50 Marks • Pass: 16.5 (33%)</span>
+</div>
+<div class="flex flex-col items-start lg:items-end bg-error-container/40 px-space-md py-1.5 rounded-lg">
+<span class="font-label-sm text-label-sm text-tertiary uppercase tracking-wider flex items-center gap-1">
+<span class="material-symbols-outlined text-[13px]">schedule</span> Portal Lockdown
+          </span>
+<span class="font-label-sm text-label-sm font-bold text-on-surface">3 Days Remaining • 15 Feb, 17:00 IST</span>
+</div>
+</div>
+</div>
+<!-- Live Audit Micro-Strip -->
+<div class="flex flex-wrap items-center justify-between gap-space-sm pt-space-sm font-label-sm text-label-sm text-on-surface-variant">
+<div class="flex items-center gap-space-md">
+<span class="flex items-center gap-1 text-primary">
+<span class="material-symbols-outlined text-[15px]">verified</span> CBSE Ledger Protocol #HJ-2024-T2-041-A
+        </span>
+<span>•</span>
+<span>Components: Theory (40) + Internal / Portfolio (10)</span>
+</div>
+<div class="flex items-center gap-1.5 text-on-surface-variant">
+<span class="material-symbols-outlined text-[14px] text-primary">sync</span>
+<span>Auto-saved to institutional database: <strong>11:42:18 AM IST</strong></span>
+</div>
+</div>
+</div>
+<!-- Operational Metrics & Cohort Distribution -->
+<div class="grid grid-cols-1 md:grid-cols-4 gap-space-md mb-space-lg">
+<!-- Progress Tally Card -->
+<div class="bg-surface-container-lowest p-space-md rounded-xl shadow-sm flex flex-col justify-between">
+<div class="flex items-center justify-between text-on-surface-variant mb-space-xs">
+<span class="font-label-sm text-label-sm uppercase tracking-wide">Registry Progress</span>
+<span class="font-label-sm text-label-sm font-semibold text-primary">85.7%</span>
+</div>
+<div class="font-headline-lg text-headline-lg text-on-surface font-bold tracking-tight mb-space-xs">
+        36 <span class="font-body-md text-body-md font-normal text-on-surface-variant">/ 42 Scored</span>
+</div>
+<div class="w-full bg-surface-container-high h-2 rounded-full overflow-hidden flex">
+<div class="bg-primary h-full transition-all duration-300" style="width: 85.7%"></div>
+</div>
+</div>
+<!-- Cohort Mean Card -->
+<div class="bg-surface-container-lowest p-space-md rounded-xl shadow-sm flex flex-col justify-between">
+<div class="flex items-center justify-between text-on-surface-variant mb-space-xs">
+<span class="font-label-sm text-label-sm uppercase tracking-wide">Class Mean Aggregate</span>
+<span class="font-label-sm text-label-sm text-primary font-semibold">T-I: 33.2</span>
+</div>
+<div class="flex items-baseline gap-space-xs mb-space-xs">
+<span class="font-headline-lg text-headline-lg text-on-surface font-bold">34.8</span>
+<span class="font-body-md text-body-md text-on-surface-variant">/ 50.0</span>
+<span class="ml-auto font-label-sm text-label-sm px-1.5 py-0.5 rounded bg-surface-container text-primary font-semibold">69.6%</span>
+</div>
+<div class="font-body-sm text-body-sm text-on-surface-variant truncate">
+        Standard Deviation: <span class="font-semibold text-on-surface">±6.4 Marks</span>
+</div>
+</div>
+<!-- Pass / At-Risk Breakdown -->
+<div class="bg-surface-container-lowest p-space-md rounded-xl shadow-sm flex flex-col justify-between">
+<div class="flex items-center justify-between text-on-surface-variant mb-space-xs">
+<span class="font-label-sm text-label-sm uppercase tracking-wide">Performance Status</span>
+<span class="material-symbols-outlined text-[16px] text-tertiary">warning</span>
+</div>
+<div class="flex items-center gap-space-md my-0.5">
+<div class="flex flex-col">
+<span class="font-headline-sm text-headline-sm font-bold text-primary">31</span>
+<span class="font-body-sm text-body-sm text-on-surface-variant">Passed (≥16.5)</span>
+</div>
+<div class="w-px h-8 bg-surface-container-high"></div>
+<div class="flex flex-col">
+<span class="font-headline-sm text-headline-sm font-bold text-tertiary">5</span>
+<span class="font-body-sm text-body-sm text-on-surface-variant">Remedial (&lt;16.5)</span>
+</div>
+</div>
+<div class="font-body-sm text-body-sm text-on-surface-variant">
+        Remedial intervention batch flagged
+      </div>
+</div>
+<!-- Data Quality & Outstanding Card -->
+<div class="bg-surface-container-lowest p-space-md rounded-xl shadow-sm flex flex-col justify-between">
+<div class="flex items-center justify-between text-on-surface-variant mb-space-xs">
+<span class="font-label-sm text-label-sm uppercase tracking-wide">Validation Alerts</span>
+<span class="px-1.5 py-0.5 rounded bg-error-container text-error font-label-sm text-label-sm font-bold">1 Action</span>
+</div>
+<div class="flex items-center gap-space-sm mb-space-xs">
+<span class="font-headline-lg text-headline-lg text-error font-bold">1</span>
+<span class="font-body-md text-body-md text-error leading-snug">Invalid score exceeds 40 Max</span>
+</div>
+<div class="font-body-sm text-body-sm text-on-surface-variant">
+        6 students unscored / marked pending
+      </div>
+</div>
+</div>
+<!-- Interactive Controls & Cohort Filter Pill Bar -->
+<div class="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-space-md mb-space-md">
+<div class="flex items-center gap-space-xs overflow-x-auto pb-1 sm:pb-0">
+<button class="px-space-md h-9 rounded-lg bg-primary-container text-on-primary font-label-md text-label-md shadow-sm flex items-center gap-1.5 shrink-0">
+<span>All Students</span>
+<span class="px-1.5 py-0.2 rounded-full bg-surface-container-lowest/20 font-bold text-xs">42</span>
+</button>
+<button class="px-space-md h-9 rounded-lg bg-surface-container-lowest text-on-surface-variant hover:bg-surface-container hover:text-on-surface font-label-md text-label-md transition-colors flex items-center gap-1.5 shrink-0 shadow-sm">
+<span>Incomplete / Pending</span>
+<span class="px-1.5 py-0.2 rounded-full bg-surface-container font-semibold text-xs">6</span>
+</button>
+<button class="px-space-md h-9 rounded-lg bg-surface-container-lowest text-tertiary hover:bg-error-container/30 font-label-md text-label-md transition-colors flex items-center gap-1.5 shrink-0 shadow-sm">
+<span class="w-1.5 h-1.5 rounded-full bg-error"></span>
+<span>Remedial Alert (&lt;16.5)</span>
+<span class="px-1.5 py-0.2 rounded-full bg-error-container text-error font-semibold text-xs">5</span>
+</button>
+<button class="px-space-md h-9 rounded-lg bg-surface-container-lowest text-on-surface-variant hover:bg-surface-container hover:text-on-surface font-label-md text-label-md transition-colors flex items-center gap-1.5 shrink-0 shadow-sm">
+<span>High Achievers (≥45)</span>
+<span class="px-1.5 py-0.2 rounded-full bg-secondary-fixed/50 text-secondary font-semibold text-xs">8</span>
+</button>
+</div>
+<!-- Quick Utilities -->
+<div class="flex items-center gap-space-sm self-end sm:self-auto shrink-0">
+<button class="h-9 px-space-md bg-surface-container-lowest text-on-surface-variant hover:text-on-surface rounded-lg font-label-md text-label-md flex items-center gap-1.5 shadow-sm transition-colors">
+<span class="material-symbols-outlined text-[17px]">file_download</span>
+<span>Export CBSE Format</span>
+</button>
+<button class="h-9 px-space-md bg-surface-container-lowest text-on-surface-variant hover:text-on-surface rounded-lg font-label-md text-label-md flex items-center gap-1.5 shadow-sm transition-colors">
+<span class="material-symbols-outlined text-[17px]">keyboard</span>
+<span>Shortcuts (Tab / Enter)</span>
+</button>
+</div>
+</div>
+<!-- Marks Entry Ledger Table -->
+<div class="bg-surface-container-lowest rounded-xl shadow-sm overflow-hidden mb-space-lg">
+<div class="overflow-x-auto">
+<table class="w-full text-left border-collapse">
+<thead>
+<tr class="bg-surface-container-high/60 h-10 border-b border-surface-container-high">
+<th class="px-space-md font-label-sm text-label-sm text-on-surface-variant uppercase tracking-wider w-16 text-center">Roll #</th>
+<th class="px-space-md font-label-sm text-label-sm text-on-surface-variant uppercase tracking-wider min-w-[220px]">Student ID &amp; Profile</th>
+<th class="px-space-md font-label-sm text-label-sm text-on-surface-variant uppercase tracking-wider w-32">
+<div class="flex items-center gap-1">
+<span>Theory</span>
+<span class="text-primary font-bold">/ 40</span>
+</div>
+</th>
+<th class="px-space-md font-label-sm text-label-sm text-on-surface-variant uppercase tracking-wider w-32">
+<div class="flex items-center gap-1">
+<span>Internal</span>
+<span class="text-primary font-bold">/ 10</span>
+</div>
+</th>
+<th class="px-space-md font-label-sm text-label-sm text-on-surface-variant uppercase tracking-wider w-28 text-right">
+              Total / 50
+            </th>
+<th class="px-space-md font-label-sm text-label-sm text-on-surface-variant uppercase tracking-wider w-36">
+              Grade &amp; Scale
+            </th>
+<th class="px-space-md font-label-sm text-label-sm text-on-surface-variant uppercase tracking-wider w-40">
+              Audit Status
+            </th>
+<th class="px-space-md font-label-sm text-label-sm text-on-surface-variant uppercase tracking-wider min-w-[280px]">
+              Authorized Teacher Pedagogical Remark
+            </th>
+</tr>
+</thead>
+<tbody class="divide-y divide-surface-container-high/40">
+<!-- ROW 1: Roll #01 - Meera Shekhawat (High Achiever) -->
+<tr class="hover:bg-surface-container-low/40 transition-colors">
+<td class="px-space-md py-space-sm font-tabular-data text-tabular-data font-bold text-on-surface text-center">
+              01
+            </td>
+<td class="px-space-md py-space-sm">
+<div class="flex flex-col">
+<span class="font-label-md text-label-md text-on-surface font-semibold">Meera Shekhawat</span>
+<div class="flex items-center gap-1.5 font-body-sm text-body-sm text-on-surface-variant">
+<span>HJ-2021-0104</span>
+<span>•</span>
+<span class="text-secondary font-medium">Tagore House</span>
+<span>•</span>
+<span class="text-primary font-medium">96% Attn</span>
+</div>
+</div>
+</td>
+<td class="px-space-md py-space-sm">
+<input class="w-24 h-9 px-space-sm bg-surface-container-low font-tabular-data text-tabular-data text-on-surface rounded-lg text-right focus:bg-surface-container-lowest focus:outline-none focus:ring-1 focus:ring-primary shadow-sm" type="text" value="38.0"/>
+</td>
+<td class="px-space-md py-space-sm">
+<input class="w-24 h-9 px-space-sm bg-surface-container-low font-tabular-data text-tabular-data text-on-surface rounded-lg text-right focus:bg-surface-container-lowest focus:outline-none focus:ring-1 focus:ring-primary shadow-sm" type="text" value="9.5"/>
+</td>
+<td class="px-space-md py-space-sm text-right">
+<span class="font-tabular-data text-tabular-data font-bold text-primary">47.5</span>
+<span class="font-body-sm text-body-sm text-on-surface-variant">/ 50</span>
+</td>
+<td class="px-space-md py-space-sm">
+<div class="flex items-center gap-1.5">
+<span class="px-2 py-0.5 rounded bg-surface-container text-primary font-tabular-data text-tabular-data font-bold">95.0%</span>
+<span class="px-1.5 py-0.5 rounded bg-primary text-on-primary font-label-sm text-label-sm font-bold">A1</span>
+</div>
+</td>
+<td class="px-space-md py-space-sm">
+<span class="inline-flex items-center gap-1 px-2 py-0.5 rounded bg-surface-container text-primary font-label-sm text-label-sm font-semibold">
+<span class="material-symbols-outlined text-[13px]">check_circle</span>
+                Valid
+              </span>
+</td>
+<td class="px-space-md py-space-sm">
+<input class="w-full h-9 px-space-sm bg-surface-container-low text-on-surface font-body-sm text-body-sm rounded-lg focus:bg-surface-container-lowest focus:outline-none focus:ring-1 focus:ring-primary shadow-sm" type="text" value="Council head; exemplary analytical rigor and precise proof structures."/>
+</td>
+</tr>
+<!-- ROW 2: Roll #05 - Ananya Sen (Good Performer) -->
+<tr class="hover:bg-surface-container-low/40 transition-colors">
+<td class="px-space-md py-space-sm font-tabular-data text-tabular-data font-bold text-on-surface text-center">
+              05
+            </td>
+<td class="px-space-md py-space-sm">
+<div class="flex flex-col">
+<span class="font-label-md text-label-md text-on-surface font-semibold">Ananya Sen</span>
+<div class="flex items-center gap-1.5 font-body-sm text-body-sm text-on-surface-variant">
+<span>HJ-2021-0231</span>
+<span>•</span>
+<span class="text-on-surface-variant">Raman House</span>
+<span>•</span>
+<span class="text-primary font-medium">92% Attn</span>
+</div>
+</div>
+</td>
+<td class="px-space-md py-space-sm">
+<input class="w-24 h-9 px-space-sm bg-surface-container-low font-tabular-data text-tabular-data text-on-surface rounded-lg text-right focus:bg-surface-container-lowest focus:outline-none focus:ring-1 focus:ring-primary shadow-sm" type="text" value="28.0"/>
+</td>
+<td class="px-space-md py-space-sm">
+<input class="w-24 h-9 px-space-sm bg-surface-container-low font-tabular-data text-tabular-data text-on-surface rounded-lg text-right focus:bg-surface-container-lowest focus:outline-none focus:ring-1 focus:ring-primary shadow-sm" type="text" value="8.0"/>
+</td>
+<td class="px-space-md py-space-sm text-right">
+<span class="font-tabular-data text-tabular-data font-bold text-on-surface">36.0</span>
+<span class="font-body-sm text-body-sm text-on-surface-variant">/ 50</span>
+</td>
+<td class="px-space-md py-space-sm">
+<div class="flex items-center gap-1.5">
+<span class="px-2 py-0.5 rounded bg-surface-container-high text-on-surface font-tabular-data text-tabular-data font-medium">72.0%</span>
+<span class="px-1.5 py-0.5 rounded bg-surface-container-highest text-on-surface font-label-sm text-label-sm font-bold">B1</span>
+</div>
+</td>
+<td class="px-space-md py-space-sm">
+<span class="inline-flex items-center gap-1 px-2 py-0.5 rounded bg-surface-container text-primary font-label-sm text-label-sm font-semibold">
+<span class="material-symbols-outlined text-[13px]">check_circle</span>
+                Valid
+              </span>
+</td>
+<td class="px-space-md py-space-sm">
+<input class="w-full h-9 px-space-sm bg-surface-container-low text-on-surface font-body-sm text-body-sm rounded-lg focus:bg-surface-container-lowest focus:outline-none focus:ring-1 focus:ring-primary shadow-sm" type="text" value="Good grasp on trigonometry; needs attention to step-wise algebraic simplifications."/>
+</td>
+</tr>
+<!-- ROW 3: Roll #14 - Aarav Singhania (SYNTHETIC MATCH SCREEN 10: 24/50 = 48%, Grade D, Remedial) -->
+<tr class="bg-secondary-container/10 hover:bg-secondary-container/20 transition-colors">
+<td class="px-space-md py-space-sm font-tabular-data text-tabular-data font-bold text-on-surface text-center">
+              14
+            </td>
+<td class="px-space-md py-space-sm">
+<div class="flex flex-col">
+<div class="flex items-center gap-1.5">
+<span class="font-label-md text-label-md text-on-surface font-bold">Aarav Singhania</span>
+<span class="px-1.5 py-0.2 rounded bg-tertiary-fixed text-on-tertiary-fixed font-label-sm text-label-sm text-xs font-semibold">Flagged</span>
+</div>
+<div class="flex items-center gap-1.5 font-body-sm text-body-sm text-on-surface-variant">
+<span>HJ-2021-0428</span>
+<span>•</span>
+<span class="text-tertiary font-medium">Ashoka House</span>
+<span>•</span>
+<span class="text-error font-medium">78% Attn</span>
+</div>
+</div>
+</td>
+<td class="px-space-md py-space-sm">
+<input class="w-24 h-9 px-space-sm bg-surface-container-lowest font-tabular-data text-tabular-data text-on-surface font-semibold rounded-lg text-right focus:outline-none focus:ring-1 focus:ring-primary shadow-sm" type="text" value="16.0"/>
+</td>
+<td class="px-space-md py-space-sm">
+<input class="w-24 h-9 px-space-sm bg-surface-container-lowest font-tabular-data text-tabular-data text-on-surface font-semibold rounded-lg text-right focus:outline-none focus:ring-1 focus:ring-primary shadow-sm" type="text" value="8.0"/>
+</td>
+<td class="px-space-md py-space-sm text-right">
+<span class="font-tabular-data text-tabular-data font-bold text-tertiary">24.0</span>
+<span class="font-body-sm text-body-sm text-on-surface-variant">/ 50</span>
+</td>
+<td class="px-space-md py-space-sm">
+<div class="flex items-center gap-1.5">
+<span class="px-2 py-0.5 rounded bg-tertiary-fixed text-on-tertiary-fixed font-tabular-data text-tabular-data font-bold">48.0%</span>
+<span class="px-1.5 py-0.5 rounded bg-tertiary text-on-tertiary font-label-sm text-label-sm font-bold">D</span>
+</div>
+</td>
+<td class="px-space-md py-space-sm">
+<span class="inline-flex items-center gap-1 px-2 py-0.5 rounded bg-error-container text-error font-label-sm text-label-sm font-semibold">
+<span class="material-symbols-outlined text-[13px]">warning</span>
+                Remedial Alert
+              </span>
+</td>
+<td class="px-space-md py-space-sm">
+<input class="w-full h-9 px-space-sm bg-surface-container-lowest text-on-surface font-body-sm text-body-sm rounded-lg focus:outline-none focus:ring-1 focus:ring-primary shadow-sm" type="text" value="Consistent difficulty with quadratic equations and coordinate geometry; enrolled in Special Batch 10-M."/>
+</td>
+</tr>
+<!-- ROW 4: Roll #28 - Tanvi Pareek (Top Scorer) -->
+<tr class="hover:bg-surface-container-low/40 transition-colors">
+<td class="px-space-md py-space-sm font-tabular-data text-tabular-data font-bold text-on-surface text-center">
+              28
+            </td>
+<td class="px-space-md py-space-sm">
+<div class="flex flex-col">
+<span class="font-label-md text-label-md text-on-surface font-semibold">Tanvi Pareek</span>
+<div class="flex items-center gap-1.5 font-body-sm text-body-sm text-on-surface-variant">
+<span>HJ-2021-0312</span>
+<span>•</span>
+<span class="text-secondary font-medium">Tagore House</span>
+<span>•</span>
+<span class="text-primary font-medium">98% Attn</span>
+</div>
+</div>
+</td>
+<td class="px-space-md py-space-sm">
+<input class="w-24 h-9 px-space-sm bg-surface-container-low font-tabular-data text-tabular-data text-on-surface rounded-lg text-right focus:bg-surface-container-lowest focus:outline-none focus:ring-1 focus:ring-primary shadow-sm" type="text" value="39.0"/>
+</td>
+<td class="px-space-md py-space-sm">
+<input class="w-24 h-9 px-space-sm bg-surface-container-low font-tabular-data text-tabular-data text-on-surface rounded-lg text-right focus:bg-surface-container-lowest focus:outline-none focus:ring-1 focus:ring-primary shadow-sm" type="text" value="10.0"/>
+</td>
+<td class="px-space-md py-space-sm text-right">
+<span class="font-tabular-data text-tabular-data font-bold text-primary">49.0</span>
+<span class="font-body-sm text-body-sm text-on-surface-variant">/ 50</span>
+</td>
+<td class="px-space-md py-space-sm">
+<div class="flex items-center gap-1.5">
+<span class="px-2 py-0.5 rounded bg-surface-container text-primary font-tabular-data text-tabular-data font-bold">98.0%</span>
+<span class="px-1.5 py-0.5 rounded bg-primary text-on-primary font-label-sm text-label-sm font-bold">A1</span>
+</div>
+</td>
+<td class="px-space-md py-space-sm">
+<span class="inline-flex items-center gap-1 px-2 py-0.5 rounded bg-surface-container text-primary font-label-sm text-label-sm font-semibold">
+<span class="material-symbols-outlined text-[13px]">check_circle</span>
+                Valid
+              </span>
+</td>
+<td class="px-space-md py-space-sm">
+<input class="w-full h-9 px-space-sm bg-surface-container-low text-on-surface font-body-sm text-body-sm rounded-lg focus:bg-surface-container-lowest focus:outline-none focus:ring-1 focus:ring-primary shadow-sm" type="text" value="Flawless construction &amp; theorems paper; recommended for Inter-School Olympiad squad."/>
+</td>
+</tr>
+<!-- ROW 5: Roll #31 - Kabir Vyas (EXPLICIT ERROR STATE: 46 > 40 MAX) -->
+<tr class="bg-error-container/20 hover:bg-error-container/30 transition-colors">
+<td class="px-space-md py-space-sm font-tabular-data text-tabular-data font-bold text-error text-center">
+              31
+            </td>
+<td class="px-space-md py-space-sm">
+<div class="flex flex-col">
+<div class="flex items-center gap-1.5">
+<span class="font-label-md text-label-md text-on-surface font-bold">Kabir Vyas</span>
+<span class="px-1.5 py-0.2 rounded bg-error text-on-error font-label-sm text-label-sm text-xs font-bold uppercase">Input Fault</span>
+</div>
+<div class="flex items-center gap-1.5 font-body-sm text-body-sm text-on-surface-variant">
+<span>HJ-2021-0499</span>
+<span>•</span>
+<span>Pratap House</span>
+<span>•</span>
+<span class="text-on-surface font-medium">85% Attn</span>
+</div>
+</div>
+</td>
+<td class="px-space-md py-space-sm relative">
+<!-- Out of bounds field with error highlighting and contextual callout -->
+<div class="relative inline-block">
+<input class="w-24 h-9 px-space-sm bg-surface-container-lowest font-tabular-data text-tabular-data text-error font-bold rounded-lg text-right ring-2 ring-error focus:outline-none shadow-sm" type="text" value="46"/>
+<!-- Immediate Micro-Tooltip -->
+<div class="absolute left-0 -top-8 z-30 bg-inverse-surface text-inverse-on-surface px-2 py-0.5 rounded shadow-md whitespace-nowrap flex items-center gap-1 font-label-sm text-label-sm">
+<span class="material-symbols-outlined text-[13px] text-error-container">error</span>
+<span>Score exceeds max 40!</span>
+</div>
+</div>
+</td>
+<td class="px-space-md py-space-sm">
+<input class="w-24 h-9 px-space-sm bg-surface-container-lowest font-tabular-data text-tabular-data text-on-surface rounded-lg text-right focus:outline-none focus:ring-1 focus:ring-primary shadow-sm" type="text" value="7.5"/>
+</td>
+<td class="px-space-md py-space-sm text-right">
+<span class="font-tabular-data text-tabular-data font-bold text-error">53.5*</span>
+<span class="font-body-sm text-body-sm text-on-surface-variant">/ 50</span>
+</td>
+<td class="px-space-md py-space-sm">
+<span class="px-2 py-0.5 rounded bg-error-container text-error font-label-sm text-label-sm font-bold">
+                ERR: OVERFLOW
+              </span>
+</td>
+<td class="px-space-md py-space-sm">
+<span class="inline-flex items-center gap-1 px-2 py-0.5 rounded bg-error text-on-error font-label-sm text-label-sm font-bold">
+<span class="material-symbols-outlined text-[13px]">block</span>
+                Requires Fix
+              </span>
+</td>
+<td class="px-space-md py-space-sm">
+<input class="w-full h-9 px-space-sm bg-surface-container-lowest text-on-surface font-body-sm text-body-sm rounded-lg focus:outline-none focus:ring-1 focus:ring-primary shadow-sm" type="text" value="Active participation in circle theorems; check theory mark entry slip."/>
+</td>
+</tr>
+<!-- ROW 6: Roll #35 - Ritu Rajawat (Unscored / Clean Placeholder) -->
+<tr class="bg-surface-container-low/20 hover:bg-surface-container-low/50 transition-colors">
+<td class="px-space-md py-space-sm font-tabular-data text-tabular-data font-bold text-on-surface-variant text-center">
+              35
+            </td>
+<td class="px-space-md py-space-sm">
+<div class="flex flex-col">
+<span class="font-label-md text-label-md text-on-surface font-medium">Ritu Rajawat</span>
+<div class="flex items-center gap-1.5 font-body-sm text-body-sm text-on-surface-variant">
+<span>HJ-2021-0551</span>
+<span>•</span>
+<span>Shakti House</span>
+<span>•</span>
+<span class="text-on-surface-variant">88% Attn</span>
+</div>
+</div>
+</td>
+<td class="px-space-md py-space-sm">
+<input class="w-24 h-9 px-space-sm bg-surface-container-lowest font-tabular-data text-tabular-data text-on-surface placeholder:text-on-surface-variant/40 rounded-lg text-right focus:outline-none focus:ring-1 focus:ring-primary shadow-sm" placeholder="—" type="text"/>
+</td>
+<td class="px-space-md py-space-sm">
+<input class="w-24 h-9 px-space-sm bg-surface-container-lowest font-tabular-data text-tabular-data text-on-surface placeholder:text-on-surface-variant/40 rounded-lg text-right focus:outline-none focus:ring-1 focus:ring-primary shadow-sm" placeholder="—" type="text"/>
+</td>
+<td class="px-space-md py-space-sm text-right">
+<span class="font-tabular-data text-tabular-data text-on-surface-variant font-medium">—</span>
+</td>
+<td class="px-space-md py-space-sm">
+<span class="px-2 py-0.5 rounded bg-surface-container-high text-on-surface-variant font-label-sm text-label-sm">
+                Uncalculated
+              </span>
+</td>
+<td class="px-space-md py-space-sm">
+<span class="inline-flex items-center gap-1 px-2 py-0.5 rounded bg-surface-container text-on-surface-variant font-label-sm text-label-sm">
+<span class="material-symbols-outlined text-[13px]">hourglass_empty</span>
+                Pending Entry
+              </span>
+</td>
+<td class="px-space-md py-space-sm">
+<input class="w-full h-9 px-space-sm bg-surface-container-lowest text-on-surface placeholder:text-on-surface-variant/40 font-body-sm text-body-sm rounded-lg focus:outline-none focus:ring-1 focus:ring-primary shadow-sm" placeholder="Enter teacher assessment note..." type="text"/>
+</td>
+</tr>
+<!-- ROW 7: Roll #42 - Zayan Qureshi (Unscored / Absent during test) -->
+<tr class="bg-surface-container-low/20 hover:bg-surface-container-low/50 transition-colors">
+<td class="px-space-md py-space-sm font-tabular-data text-tabular-data font-bold text-on-surface-variant text-center">
+              42
+            </td>
+<td class="px-space-md py-space-sm">
+<div class="flex flex-col">
+<span class="font-label-md text-label-md text-on-surface font-medium">Zayan Qureshi</span>
+<div class="flex items-center gap-1.5 font-body-sm text-body-sm text-on-surface-variant">
+<span>HJ-2021-0619</span>
+<span>•</span>
+<span>Raman House</span>
+<span>•</span>
+<span class="text-tertiary font-medium">Med. Leave</span>
+</div>
+</div>
+</td>
+<td class="px-space-md py-space-sm">
+<input class="w-24 h-9 px-space-sm bg-surface-container-lowest font-tabular-data text-tabular-data text-on-surface placeholder:text-on-surface-variant/40 rounded-lg text-right focus:outline-none focus:ring-1 focus:ring-primary shadow-sm" placeholder="AB / —" type="text"/>
+</td>
+<td class="px-space-md py-space-sm">
+<input class="w-24 h-9 px-space-sm bg-surface-container-low font-tabular-data text-tabular-data text-on-surface rounded-lg text-right focus:bg-surface-container-lowest focus:outline-none focus:ring-1 focus:ring-primary shadow-sm" type="text" value="8.5"/>
+</td>
+<td class="px-space-md py-space-sm text-right">
+<span class="font-tabular-data text-tabular-data text-on-surface-variant font-medium">—</span>
+</td>
+<td class="px-space-md py-space-sm">
+<span class="px-2 py-0.5 rounded bg-surface-container-high text-on-surface-variant font-label-sm text-label-sm">
+                Incomplete
+              </span>
+</td>
+<td class="px-space-md py-space-sm">
+<span class="inline-flex items-center gap-1 px-2 py-0.5 rounded bg-secondary-container/40 text-on-secondary-container font-label-sm text-label-sm font-medium">
+<span class="material-symbols-outlined text-[13px]">help_outline</span>
+                Absent Theory
+              </span>
+</td>
+<td class="px-space-md py-space-sm">
+<input class="w-full h-9 px-space-sm bg-surface-container-lowest text-on-surface font-body-sm text-body-sm rounded-lg focus:outline-none focus:ring-1 focus:ring-primary shadow-sm" type="text" value="Medical certificate submitted. Re-test scheduled for Feb 17."/>
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+<!-- Data Quality Footer / Quick Entry Instructions -->
+<div class="px-space-lg py-space-md bg-surface-container-low/50 flex flex-col md:flex-row items-start md:items-center justify-between gap-space-md border-t border-surface-container-high">
+<div class="flex items-center gap-space-md text-on-surface-variant font-body-sm text-body-sm">
+<span class="flex items-center gap-1">
+<kbd class="px-1.5 py-0.5 rounded bg-surface-container-lowest text-on-surface font-label-sm text-label-sm shadow-sm">Tab</kbd> Move Next
+        </span>
+<span class="flex items-center gap-1">
+<kbd class="px-1.5 py-0.5 rounded bg-surface-container-lowest text-on-surface font-label-sm text-label-sm shadow-sm">Shift+Tab</kbd> Move Prev
+        </span>
+<span class="flex items-center gap-1">
+<kbd class="px-1.5 py-0.5 rounded bg-surface-container-lowest text-on-surface font-label-sm text-label-sm shadow-sm">Enter</kbd> Next Student
+        </span>
+</div>
+<div class="font-label-sm text-label-sm text-on-surface-variant">
+        Displaying 7 of 42 students • Showing active cohort entries
+      </div>
+</div>
+</div>
+<!-- Pedagogical Evaluation Guidelines Panel -->
+<div class="grid grid-cols-1 md:grid-cols-3 gap-space-md mb-space-lg">
+<div class="bg-surface-container-lowest p-space-md rounded-xl shadow-sm">
+<div class="flex items-center gap-space-xs text-primary font-label-md text-label-md font-bold mb-space-xs">
+<span class="material-symbols-outlined text-[18px]">verified</span>
+        Passing Criteria (CBSE Norm)
+      </div>
+<p class="font-body-sm text-body-sm text-on-surface-variant">
+        Minimum 33% combined across Theory (40 marks) and Internal Assessment (10 marks). Total threshold is 16.5 marks. Students scoring below 16.5 require compulsory Departmental Remedial sessions.
+      </p>
+</div>
+<div class="bg-surface-container-lowest p-space-md rounded-xl shadow-sm">
+<div class="flex items-center gap-space-xs text-secondary font-label-md text-label-md font-bold mb-space-xs">
+<span class="material-symbols-outlined text-[18px]">history_edu</span>
+        Moderation Note
+      </div>
+<p class="font-body-sm text-body-sm text-on-surface-variant">
+        Dr. Goyal: Step-marking applied for 5-mark geometric theorems as agreed in Dept Meeting #04. Formula sheets reviewed for consistency across sections 10-A and 10-B.
+      </p>
+</div>
+<div class="bg-surface-container-lowest p-space-md rounded-xl shadow-sm">
+<div class="flex items-center gap-space-xs text-on-surface font-label-md text-label-md font-bold mb-space-xs">
+<span class="material-symbols-outlined text-[18px]">lock_clock</span>
+        Principal Sign-Off Process
+      </div>
+<p class="font-body-sm text-body-sm text-on-surface-variant">
+        After submission, the register locks for teacher edits. Vice Principal (Academics) will review aggregate grade curves before formal publication on the parent ERP portal.
+      </p>
+</div>
+</div>
+<!-- Sticky Institutional Action Dock -->
+<div class="fixed bottom-0 left-60 right-0 h-16 bg-surface-container-lowest/95 backdrop-blur-md shadow-[0_-2px_12px_rgba(32,43,42,0.08)] px-gutter-desktop flex items-center justify-between z-40">
+<!-- Status / Warning Summary -->
+<div class="flex items-center gap-space-md">
+<div class="flex items-center gap-2">
+<span class="w-2.5 h-2.5 rounded-full bg-error animate-ping"></span>
+<span class="font-label-sm text-label-sm text-error font-bold">1 Validation Error Detected</span>
+</div>
+<span class="text-surface-container-highest">|</span>
+<span class="font-body-sm text-body-sm text-on-surface-variant hidden md:inline">
+        6 students unscored • Correct Roll #31 Kabir Vyas (&gt;40 max) before final lock
+      </span>
+</div>
+<!-- Center Status Indicator -->
+<div class="hidden xl:flex items-center gap-1.5 font-label-sm text-label-sm text-on-surface-variant">
+<span class="material-symbols-outlined text-[15px] text-primary">cloud_done</span>
+<span>Auto-save active • All draft inputs secured</span>
+</div>
+<!-- Action Trigger Buttons -->
+<div class="flex items-center gap-space-sm">
+<button class="h-9 px-space-md bg-surface-container-lowest hover:bg-surface-container text-on-surface font-label-md text-label-md rounded-lg shadow-sm transition-colors flex items-center gap-1.5">
+<span class="material-symbols-outlined text-[17px]">save</span>
+<span>Save Draft (Ctrl+S)</span>
+</button>
+<button class="h-9 px-space-lg bg-primary-container text-on-primary hover:bg-primary font-label-md text-label-md font-semibold rounded-lg shadow-sm transition-colors flex items-center gap-1.5">
+<span class="material-symbols-outlined text-[18px]">publish</span>
+<span>Review &amp; Submit Register</span>
+</button>
+</div>
+</div>
+</div></main></div></body></html>

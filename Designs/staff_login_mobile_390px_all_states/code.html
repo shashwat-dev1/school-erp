@@ -1,0 +1,295 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=390, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>Staff Login — HanuJai High School ERP (Mobile)</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    body {
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+      background-color: #F7F7F4;
+      color: #202B2A;
+      width: 390px;
+      margin: 0 auto;
+      min-height: 100vh;
+    }
+    .tabular-nums {
+      font-variant-numeric: tabular-nums;
+    }
+  </style>
+</head>
+<body class="bg-[#F7F7F4] flex flex-col justify-between text-[#202B2A] antialiased selection:bg-[#31594E]/15 selection:text-[#31594E]">
+
+  <!-- Mobile Minimal Top Header -->
+  <header class="w-full border-b border-[#E9ECE8] bg-[#F7F7F4] px-4 py-3 flex items-center justify-between sticky top-0 z-20">
+    <div class="flex items-center space-x-2.5">
+      <div class="w-6 h-6 rounded bg-[#31594E] flex items-center justify-center text-white text-[11px] font-semibold tracking-wider">
+        HJ
+      </div>
+      <div class="leading-tight">
+        <span class="text-xs font-bold tracking-tight text-[#202B2A] block">HanuJai High School</span>
+        <span class="text-[10px] text-[#52605E] block">Staff Administration ERP</span>
+      </div>
+    </div>
+    
+    <div class="flex items-center space-x-1.5 text-[10px] font-medium text-[#31594E] bg-[#EAF2EE] px-2 py-0.5 rounded border border-[#D5E2DC]">
+      <span class="w-1.5 h-1.5 rounded-full bg-[#31594E]"></span>
+      <span>CBSE 1730249</span>
+    </div>
+  </header>
+
+  <!-- Mobile State Switcher -->
+  <div class="px-4 pt-4">
+    <div class="bg-[#EAEFEA] p-1 rounded-md flex items-center space-x-1 border border-[#D8E0D9] text-[11px] font-medium">
+      <button id="m-btn-default" onclick="setMobileState('default')" class="flex-1 py-1.5 rounded text-center transition-all bg-white text-[#202B2A] shadow-sm font-semibold border border-[#D0D9D3]">
+        Default
+      </button>
+      <button id="m-btn-error" onclick="setMobileState('error')" class="flex-1 py-1.5 rounded text-center transition-all text-[#52605E] hover:text-[#202B2A]">
+        Invalid Error
+      </button>
+      <button id="m-btn-loading" onclick="setMobileState('loading')" class="flex-1 py-1.5 rounded text-center transition-all text-[#52605E] hover:text-[#202B2A]">
+        Loading
+      </button>
+    </div>
+  </div>
+
+  <!-- Mobile Form Center Section -->
+  <main class="flex-1 px-4 py-5 flex flex-col justify-center">
+    
+    <!-- Card Container -->
+    <div class="bg-white rounded-lg border border-[#E2E6E3] shadow-sm p-5">
+      
+      <!-- Crest & Title Header -->
+      <div class="mb-5">
+        <div class="flex items-center justify-between mb-3">
+          <div class="w-8 h-8 rounded bg-[#31594E] flex items-center justify-center text-white text-xs font-semibold tracking-wider">
+            HJ
+          </div>
+          <span class="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-medium bg-[#F0F4F2] text-[#31594E] border border-[#DEE6E2]">
+            Staff Portal • 2024–25
+          </span>
+        </div>
+
+        <h1 class="text-lg font-bold tracking-tight text-[#202B2A]">Staff Authentication</h1>
+        <p class="text-[11px] text-[#52605E] mt-0.5 leading-normal">
+          Authorized personnel sign-in for attendance, grades, and administrative duties.
+        </p>
+      </div>
+
+      <!-- Banner Error Box -->
+      <div id="m-error-banner" class="hidden mb-4 p-3 rounded border border-[#F0BCB8] bg-[#FDF2F1] text-[#93231E]">
+        <div class="flex items-start space-x-2">
+          <svg class="w-3.5 h-3.5 text-[#C85A54] mt-0.5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/>
+          </svg>
+          <div class="text-[11px] leading-tight">
+            <p class="font-semibold text-[#93231E]">Invalid Credentials</p>
+            <p class="text-[#A2342F] mt-0.5">Please check your Staff ID or password. Multiple failed attempts lock the account.</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Form Inputs -->
+      <form id="m-form" onsubmit="event.preventDefault(); setMobileState('loading');" class="space-y-3.5">
+        
+        <!-- Staff ID Input -->
+        <div>
+          <div class="flex items-center justify-between mb-1">
+            <label for="m-username" class="block text-xs font-semibold text-[#202B2A]">
+              Staff ID or Email
+            </label>
+            <span class="text-[10px] text-[#71807D]">e.g. EMP-1042</span>
+          </div>
+          <div class="relative">
+            <input 
+              type="text" 
+              id="m-username" 
+              value="rathore.admin@hanujai.edu.in"
+              required
+              class="w-full text-xs px-3 py-2.5 rounded bg-white border border-[#CED5D1] text-[#202B2A] placeholder-[#9BA7A4] focus:outline-none focus:ring-2 focus:ring-[#31594E]/20 focus:border-[#31594E] transition-colors"
+              placeholder="name@hanujai.edu.in"
+            />
+            <div id="m-user-err-icon" class="hidden absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
+              <svg class="h-3.5 w-3.5 text-[#C85A54]" fill="currentColor" viewBox="0 0 20 20">
+                <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clip-rule="evenodd"/>
+              </svg>
+            </div>
+          </div>
+          <p id="m-user-err-text" class="hidden mt-1 text-[10px] text-[#C85A54]">Unrecognized staff identifier.</p>
+        </div>
+
+        <!-- Password Input -->
+        <div>
+          <div class="flex items-center justify-between mb-1">
+            <label for="m-password" class="block text-xs font-semibold text-[#202B2A]">
+              Password
+            </label>
+            <a href="#" class="text-[10px] font-medium text-[#31594E] hover:underline">
+              Forgot?
+            </a>
+          </div>
+          <div class="relative">
+            <input 
+              type="password" 
+              id="m-password" 
+              value="••••••••••••"
+              required
+              class="w-full text-xs px-3 py-2.5 rounded bg-white border border-[#CED5D1] text-[#202B2A] placeholder-[#9BA7A4] pr-9 focus:outline-none focus:ring-2 focus:ring-[#31594E]/20 focus:border-[#31594E] transition-colors font-mono"
+              placeholder="Password"
+            />
+            <button 
+              type="button" 
+              onclick="toggleMobilePassword()" 
+              class="absolute inset-y-0 right-0 pr-3 flex items-center text-[#71807D] hover:text-[#202B2A] focus:outline-none"
+              aria-label="Toggle password"
+            >
+              <svg id="m-eye" class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+              </svg>
+            </button>
+          </div>
+          <p id="m-pass-err-text" class="hidden mt-1 text-[10px] text-[#C85A54]">Password incorrect. Please recheck.</p>
+        </div>
+
+        <!-- Keep Active Checkbox -->
+        <div class="flex items-center justify-between pt-0.5">
+          <label class="flex items-center space-x-2 cursor-pointer select-none">
+            <input 
+              type="checkbox" 
+              checked 
+              class="w-3.5 h-3.5 text-[#31594E] rounded border-[#CED5D1] accent-[#31594E]"
+            >
+            <span class="text-[11px] text-[#52605E]">Keep logged in (8h)</span>
+          </label>
+          <span class="text-[10px] text-[#71807D]">Vidyadhar Nagar</span>
+        </div>
+
+        <!-- Touch Target Sign In CTA Button -->
+        <div class="pt-2">
+          <button 
+            type="submit" 
+            id="m-submit-btn" 
+            class="w-full h-11 px-4 rounded bg-[#31594E] hover:bg-[#284940] active:bg-[#203a33] text-white text-xs font-semibold tracking-wide transition-all flex items-center justify-center space-x-2 shadow-sm focus:outline-none focus:ring-2 focus:ring-[#31594E] focus:ring-offset-1"
+          >
+            <span id="m-btn-text">Sign In to ERP</span>
+            <svg id="m-btn-arrow" class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3"/>
+            </svg>
+            <svg id="m-btn-spinner" class="hidden animate-spin h-4 w-4 text-white" fill="none" viewBox="0 0 24 24">
+              <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+              <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+            </svg>
+          </button>
+        </div>
+
+      </form>
+
+      <!-- Help Contact -->
+      <div class="mt-4 pt-3.5 border-t border-[#EEF2EF] text-center">
+        <p class="text-[10px] text-[#71807D]">
+          Account issues? Contact <a href="#" class="text-[#31594E] font-medium underline">Campus IT Desk</a> (Ext. 204).
+        </p>
+      </div>
+
+    </div>
+
+    <!-- Security & DPDP Compliance Strip -->
+    <div class="mt-4 text-center">
+      <div class="inline-flex items-center space-x-1 text-[10px] text-[#52605E]">
+        <svg class="w-3 h-3 text-[#31594E]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/>
+        </svg>
+        <span class="font-medium text-[#202B2A]">256-Bit TLS Secured Endpoint</span>
+      </div>
+      <p class="text-[9px] text-[#889694] mt-0.5">
+        Regulated under India DPDP Act & CBSE IT Guidelines
+      </p>
+    </div>
+
+  </main>
+
+  <!-- Mobile Footer -->
+  <footer class="w-full border-t border-[#E9ECE8] bg-[#F7F7F4] px-4 py-2.5 flex items-center justify-between text-[10px] text-[#71807D]">
+    <span>HanuJai High School, Jaipur</span>
+    <span class="font-medium text-[#31594E]">Pariksha Sangam v4.8</span>
+  </footer>
+
+  <!-- Script for Mobile -->
+  <script>
+    function toggleMobilePassword() {
+      const p = document.getElementById('m-password');
+      p.type = p.type === 'password' ? 'text' : 'password';
+    }
+
+    function setMobileState(state) {
+      const bDef = document.getElementById('m-btn-default');
+      const bErr = document.getElementById('m-btn-error');
+      const bLoad = document.getElementById('m-btn-loading');
+
+      const banner = document.getElementById('m-error-banner');
+      const uInput = document.getElementById('m-username');
+      const pInput = document.getElementById('m-password');
+      const uIcon = document.getElementById('m-user-err-icon');
+      const uText = document.getElementById('m-user-err-text');
+      const pText = document.getElementById('m-pass-err-text');
+
+      const btn = document.getElementById('m-submit-btn');
+      const btnText = document.getElementById('m-btn-text');
+      const btnArrow = document.getElementById('m-btn-arrow');
+      const btnSpinner = document.getElementById('m-btn-spinner');
+
+      [bDef, bErr, bLoad].forEach(b => {
+        b.className = 'flex-1 py-1.5 rounded text-center transition-all text-[#52605E] hover:text-[#202B2A]';
+      });
+
+      banner.classList.add('hidden');
+      uInput.classList.remove('border-[#C85A54]', 'bg-[#FDF7F7]');
+      uInput.classList.add('border-[#CED5D1]', 'bg-white');
+      pInput.classList.remove('border-[#C85A54]', 'bg-[#FDF7F7]');
+      pInput.classList.add('border-[#CED5D1]', 'bg-white');
+
+      uIcon.classList.add('hidden');
+      uText.classList.add('hidden');
+      pText.classList.add('hidden');
+
+      uInput.disabled = false;
+      pInput.disabled = false;
+      btn.disabled = false;
+      btn.classList.remove('opacity-85');
+      btnText.innerText = "Sign In to ERP";
+      btnArrow.classList.remove('hidden');
+      btnSpinner.classList.add('hidden');
+
+      if (state === 'default') {
+        bDef.className = 'flex-1 py-1.5 rounded text-center transition-all bg-white text-[#202B2A] shadow-sm font-semibold border border-[#D0D9D3]';
+        uInput.value = "rathore.admin@hanujai.edu.in";
+        pInput.value = "••••••••••••";
+      } else if (state === 'error') {
+        bErr.className = 'flex-1 py-1.5 rounded text-center transition-all bg-white text-[#93231E] shadow-sm font-semibold border border-[#F0BCB8]';
+        banner.classList.remove('hidden');
+        uInput.classList.remove('border-[#CED5D1]', 'bg-white');
+        uInput.classList.add('border-[#C85A54]', 'bg-[#FDF7F7]');
+        pInput.classList.remove('border-[#CED5D1]', 'bg-white');
+        pInput.classList.add('border-[#C85A54]', 'bg-[#FDF7F7]');
+        uIcon.classList.remove('hidden');
+        uText.classList.remove('hidden');
+        pText.classList.remove('hidden');
+      } else if (state === 'loading') {
+        bLoad.className = 'flex-1 py-1.5 rounded text-center transition-all bg-[#31594E] text-white shadow-sm font-semibold';
+        btn.disabled = true;
+        btn.classList.add('opacity-85');
+        uInput.disabled = true;
+        pInput.disabled = true;
+        btnText.innerText = "Verifying...";
+        btnArrow.classList.add('hidden');
+        btnSpinner.classList.remove('hidden');
+      }
+    }
+  </script>
+</body>
+</html>

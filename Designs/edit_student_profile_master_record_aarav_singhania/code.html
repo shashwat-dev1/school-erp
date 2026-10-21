@@ -1,0 +1,529 @@
+<!DOCTYPE html>
+
+<html lang="en"><head><meta charset="utf-8"/><meta content="width=device-width, initial-scale=1.0" name="viewport"/><meta content="web_dashboard" name="shell-type"/><link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;display=swap" rel="stylesheet"/><link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/><style>@layer base { html, body { margin: 0; padding: 0; } body { overscroll-behavior: none; } main > :first-child { margin-top: 0 !important; } main > :last-child { margin-bottom: 0 !important; } } ::-webkit-scrollbar { display: none; }</style><script src="https://cdn.tailwindcss.com"></script><script id="tailwind-config">tailwind.config = { darkMode: "class", theme: { extend: { "colors": { "tertiary-fixed-dim": "#ffb3ad", "on-secondary": "#ffffff", "error": "#ba1a1a", "on-secondary-fixed-variant": "#633f0d", "surface-bright": "#f0fcfa", "on-primary-fixed": "#002019", "surface-container-low": "#eaf6f4", "tertiary-container": "#91312e", "secondary": "#7e5624", "inverse-surface": "#273331", "background": "#f0fcfa", "inverse-primary": "#a5cfc1", "on-surface": "#131e1d", "tertiary": "#721a1a", "on-tertiary-fixed": "#410004", "surface-container-highest": "#d9e5e3", "on-error": "#ffffff", "surface-container": "#e4f0ee", "secondary-fixed-dim": "#f2bd80", "on-secondary-fixed": "#2b1700", "tertiary-fixed": "#ffdad7", "on-background": "#131e1d", "error-container": "#ffdad6", "surface-variant": "#d9e5e3", "primary-fixed": "#c0ecdd", "on-primary-container": "#a3cec0", "on-primary": "#ffffff", "surface-tint": "#3e665a", "secondary-container": "#fec78a", "surface": "#f0fcfa", "primary-container": "#31594e", "outline-variant": "#c0c8c4", "on-tertiary-fixed-variant": "#822624", "on-primary-fixed-variant": "#264e43", "surface-container-high": "#deebe9", "secondary-fixed": "#ffddba", "primary": "#184237", "outline": "#717975", "on-surface-variant": "#414845", "surface-dim": "#d0dddb", "on-error-container": "#93000a", "on-secondary-container": "#79511f", "on-tertiary": "#ffffff", "surface-container-lowest": "#ffffff", "inverse-on-surface": "#e7f3f1", "primary-fixed-dim": "#a5cfc1", "on-tertiary-container": "#ffb2ac" }, "borderRadius": { "DEFAULT": "0.125rem", "lg": "0.25rem", "xl": "0.5rem", "full": "0.75rem" }, "spacing": { "margin": "1rem", "space-xs": "0.25rem", "gutter-desktop": "1.5rem", "margin-desktop": "2rem", "space-sm": "0.5rem", "space-md": "0.75rem", "gutter": "1rem", "space-xl": "1.5rem", "space-lg": "1rem" }, "fontFamily": { "body-md": ["Inter"], "headline-xl": ["Inter"], "headline-lg": ["Inter"], "tabular-data": ["Inter"], "label-md": ["Inter"], "body-sm": ["Inter"], "label-sm": ["Inter"], "headline-sm": ["Inter"], "body-lg": ["Inter"], "headline-md": ["Inter"] }, "fontSize": { "body-md": ["0.875rem", { "lineHeight": "1.25rem", "letterSpacing": "0em", "fontWeight": "400" }], "headline-xl": ["2rem", { "lineHeight": "2.5rem", "letterSpacing": "-0.02em", "fontWeight": "600" }], "headline-lg": ["1.5rem", { "lineHeight": "2rem", "letterSpacing": "-0.015em", "fontWeight": "600" }], "tabular-data": ["0.875rem", { "lineHeight": "1.25rem", "letterSpacing": "0em", "fontWeight": "400" }], "label-md": ["0.875rem", { "lineHeight": "1.25rem", "letterSpacing": "0.01em", "fontWeight": "500" }], "body-sm": ["0.75rem", { "lineHeight": "1.125rem", "letterSpacing": "0.005em", "fontWeight": "400" }], "label-sm": ["0.75rem", { "lineHeight": "1rem", "letterSpacing": "0.025em", "fontWeight": "600" }], "headline-sm": ["1.125rem", { "lineHeight": "1.5rem", "letterSpacing": "0em", "fontWeight": "600" }], "body-lg": ["1rem", { "lineHeight": "1.5rem", "letterSpacing": "0em", "fontWeight": "400" }], "headline-md": ["1.25rem", { "lineHeight": "1.75rem", "letterSpacing": "-0.01em", "fontWeight": "600" }] } } } };</script></head><body class="bg-surface font-body-md text-on-surface antialiased"><aside class="fixed left-0 top-0 h-screen w-72 bg-surface-container-low shadow-[0_1px_8px_rgba(0,0,0,0.04)] z-50 flex flex-col justify-between select-none"><div class="flex flex-col flex-1 min-h-0"><div class="h-16 px-space-lg flex items-center gap-space-sm bg-surface-container"><div class="w-9 h-9 rounded-lg bg-primary-container text-on-primary flex items-center justify-center shrink-0"><span class="material-symbols-outlined text-[20px]">account_balance</span></div><div class="flex flex-col min-w-0"><span class="font-headline-sm text-headline-sm text-primary tracking-tight truncate leading-tight">HanuJai High</span><span class="font-label-sm text-label-sm text-on-surface-variant truncate uppercase">Institutional ERP</span></div></div><div class="flex-1 overflow-y-auto px-space-md py-space-md space-y-space-lg"><div class="space-y-space-xs"><div class="px-space-sm py-space-xs font-label-sm text-label-sm text-on-surface-variant uppercase tracking-wider">Administrative Modules</div><nav class="space-y-space-xs flex flex-col" data-active-classes="bg-primary-container text-on-primary font-label-md rounded-lg shadow-sm"><a class="flex items-center gap-space-sm px-space-md py-space-sm rounded-lg font-label-md text-label-md text-on-surface-variant hover:bg-surface-container-high hover:text-on-surface transition-colors" data-path="dashboard" href="#"><span class="material-symbols-outlined text-[18px]">space_dashboard</span><span>Dashboard</span></a><a aria-current="page" class="flex items-center gap-space-sm px-space-md py-space-sm transition-colors bg-primary-container text-on-primary font-label-md rounded-lg shadow-sm" data-path="students" href="#"><span class="material-symbols-outlined text-[18px]">school</span><span>Students</span></a><a class="flex items-center gap-space-sm px-space-md py-space-sm rounded-lg font-label-md text-label-md text-on-surface-variant hover:bg-surface-container-high hover:text-on-surface transition-colors" data-path="attendance" href="#"><span class="material-symbols-outlined text-[18px]">event_available</span><span>Attendance</span></a><a class="flex items-center gap-space-sm px-space-md py-space-sm rounded-lg font-label-md text-label-md text-on-surface-variant hover:bg-surface-container-high hover:text-on-surface transition-colors" data-path="academics" href="#"><span class="material-symbols-outlined text-[18px]">menu_book</span><span>Academics</span></a><a class="flex items-center gap-space-sm px-space-md py-space-sm rounded-lg font-label-md text-label-md text-on-surface-variant hover:bg-surface-container-high hover:text-on-surface transition-colors" data-path="performance" href="#"><span class="material-symbols-outlined text-[18px]">insights</span><span>Performance</span></a><a class="flex items-center gap-space-sm px-space-md py-space-sm rounded-lg font-label-md text-label-md text-on-surface-variant hover:bg-surface-container-high hover:text-on-surface transition-colors" data-path="behaviour" href="#"><span class="material-symbols-outlined text-[18px]">psychology</span><span>Behaviour</span></a><a class="flex items-center gap-space-sm px-space-md py-space-sm rounded-lg font-label-md text-label-md text-on-surface-variant hover:bg-surface-container-high hover:text-on-surface transition-colors" data-path="reports-cbse" href="#"><span class="material-symbols-outlined text-[18px]">assignment</span><span>Reports &amp; CBSE</span></a><a class="flex items-center gap-space-sm px-space-md py-space-sm rounded-lg font-label-md text-label-md text-on-surface-variant hover:bg-surface-container-high hover:text-on-surface transition-colors" data-path="administration" href="#"><span class="material-symbols-outlined text-[18px]">corporate_fare</span><span>Administration</span></a></nav></div><div class="space-y-space-xs"><div class="px-space-sm py-space-xs font-label-sm text-label-sm text-on-surface-variant uppercase tracking-wider">School Configuration</div><nav class="space-y-space-xs flex flex-col" data-active-classes="bg-primary-container text-on-primary font-label-md rounded-lg shadow-sm"><a class="flex items-center gap-space-sm px-space-md py-space-sm rounded-lg font-label-md text-label-md text-on-surface-variant hover:bg-surface-container-high hover:text-on-surface transition-colors" data-path="academic-year-management" href="#"><span class="material-symbols-outlined text-[18px]">calendar_month</span><span>Academic Year Management</span></a><a class="flex items-center gap-space-sm px-space-md py-space-sm rounded-lg font-label-md text-label-md text-on-surface-variant hover:bg-surface-container-high hover:text-on-surface transition-colors" data-path="assessment-configuration" href="#"><span class="material-symbols-outlined text-[18px]">tune</span><span>Assessment Configuration</span></a><a class="flex items-center gap-space-sm px-space-md py-space-sm rounded-lg font-label-md text-label-md text-on-surface-variant hover:bg-surface-container-high hover:text-on-surface transition-colors" data-path="attendance-marking-policy" href="#"><span class="material-symbols-outlined text-[18px]">policy</span><span>Attendance Marking Policy</span></a><a class="flex items-center gap-space-sm px-space-md py-space-sm rounded-lg font-label-md text-label-md text-on-surface-variant hover:bg-surface-container-high hover:text-on-surface transition-colors" data-path="system-configuration-confirmation-audit" href="#"><span class="material-symbols-outlined text-[18px]">verified_user</span><span>System Audit &amp; Config</span></a></nav></div></div></div><div class="p-space-md bg-surface-container"><div class="flex items-center gap-space-sm"><div class="w-2.5 h-2.5 rounded-full bg-primary shrink-0"></div><div class="min-w-0 flex-1"><div class="font-label-sm text-label-sm text-on-surface font-semibold truncate">CBSE Affiliation: #1730249</div><div class="font-body-sm text-body-sm text-on-surface-variant truncate">Jaipur Zone • Active Node</div></div></div></div></aside><div class="pl-72"><header class="fixed top-0 left-72 right-0 h-16 bg-surface/90 backdrop-blur-md shadow-[0_1px_8px_rgba(0,0,0,0.04)] z-40 flex items-center justify-between px-margin-desktop"><div class="flex items-center gap-space-lg"><div class="flex items-center gap-space-sm px-space-md py-space-xs rounded-lg bg-surface-container font-label-sm text-label-sm text-primary font-semibold"><span class="material-symbols-outlined text-[16px]">verified</span><span>AY 2024–25 (Term II)</span></div><div class="relative flex items-center"><div class="w-80 h-9 bg-surface-container-low rounded-lg flex items-center px-space-md gap-space-sm"><span class="material-symbols-outlined text-on-surface-variant text-[18px]">search</span><input class="w-full bg-transparent font-body-sm text-body-sm text-on-surface placeholder:text-on-surface-variant focus:outline-none" placeholder="Search records, students, registers (Ctrl+K)..." readonly="" type="text"/><kbd class="font-label-sm text-label-sm text-on-surface-variant bg-surface-container px-1.5 py-0.5 rounded-lg border-0">Ctrl+K</kbd></div></div></div><div class="flex items-center gap-space-lg"><button class="relative p-space-sm rounded-lg text-on-surface-variant hover:bg-surface-container hover:text-on-surface transition-colors" type="button"><span class="material-symbols-outlined text-[20px]">notifications</span><span class="absolute top-1.5 right-1.5 w-2 h-2 rounded-full bg-tertiary"></span></button><div class="flex items-center gap-space-md pl-space-md"><div class="flex flex-col text-right"><span class="font-label-md text-label-md text-on-surface font-semibold leading-tight">Dr. K. S. Rathore</span><span class="font-body-sm text-body-sm text-on-surface-variant leading-tight">Principal / Inst. Admin</span></div><div class="w-8 h-8 rounded-full bg-primary flex items-center justify-center"><span class="material-symbols-outlined text-on-primary text-[18px]">person</span></div></div></div></header><main class="relative pt-16 bg-surface min-h-screen px-margin-desktop py-space-xl"><div class="flex flex-col w-full pb-24">
+<!-- Breadcrumb Navigation -->
+<nav class="flex items-center gap-space-xs font-body-sm text-body-sm text-on-surface-variant mb-space-md">
+<a class="hover:text-primary transition-colors" href="#">Academic Registry</a>
+<span class="material-symbols-outlined text-[14px]">chevron_right</span>
+<a class="hover:text-primary transition-colors" href="#">Students</a>
+<span class="material-symbols-outlined text-[14px]">chevron_right</span>
+<a class="hover:text-primary transition-colors" href="#">Student Directory</a>
+<span class="material-symbols-outlined text-[14px]">chevron_right</span>
+<span class="text-on-surface font-label-sm">Aarav Singhania (Class 10-A)</span>
+<span class="material-symbols-outlined text-[14px]">chevron_right</span>
+<span class="text-primary font-label-sm">Edit Master Record</span>
+</nav>
+<!-- Master Record Header Block -->
+<div class="bg-surface-container-lowest p-space-lg rounded-lg shadow-sm flex flex-col md:flex-row md:items-center justify-between gap-space-lg mb-space-lg">
+<div class="space-y-space-xs">
+<div class="flex flex-wrap items-center gap-space-sm">
+<h1 class="font-headline-lg text-headline-lg text-primary tracking-tight">Edit Student Master Record — Aarav Singhania</h1>
+<span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-lg bg-surface-container font-label-sm text-label-sm text-on-surface-variant">
+<span class="material-symbols-outlined text-[14px]">badge</span>
+          GRN: HJ-2021-0428
+        </span>
+<span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-lg bg-surface-container font-label-sm text-label-sm text-on-surface-variant">
+<span class="material-symbols-outlined text-[14px]">school</span>
+          Enrolled: Class 10 - Section A
+        </span>
+<span class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-lg bg-primary-fixed text-on-primary-fixed font-label-sm text-label-sm font-semibold">
+<span class="w-1.5 h-1.5 rounded-full bg-primary shrink-0"></span>
+          Active Student • Pratap House
+        </span>
+</div>
+<p class="font-body-sm text-body-sm text-on-surface-variant">
+        Authoritative statutory ledger for central board indexing, institutional compliance, and academic custody records.
+      </p>
+</div>
+<!-- Top Action Set -->
+<div class="flex flex-wrap items-center gap-space-sm shrink-0">
+<button class="h-9 px-space-md rounded-lg bg-surface-container font-label-md text-label-md text-on-surface hover:bg-surface-container-high transition-colors flex items-center gap-space-xs" type="button">
+<span class="material-symbols-outlined text-[18px]">visibility</span>
+<span>View Profile (Read-Only)</span>
+</button>
+<button class="h-9 px-space-md rounded-lg bg-surface-container-lowest font-label-md text-label-md text-on-surface-variant hover:bg-surface-container hover:text-on-surface transition-colors flex items-center gap-space-xs" type="button">
+<span>Cancel Changes</span>
+</button>
+<button class="h-9 px-space-md rounded-lg bg-surface-container font-label-md text-label-md text-primary font-semibold hover:bg-surface-container-high transition-colors flex items-center gap-space-xs" type="button">
+<span class="material-symbols-outlined text-[18px]">save</span>
+<span>Save Draft</span>
+</button>
+<button class="h-9 px-space-lg rounded-lg bg-primary-container text-on-primary font-label-md text-label-md font-semibold hover:bg-primary transition-colors flex items-center gap-space-xs shadow-sm" type="button">
+<span class="material-symbols-outlined text-[18px]">verified</span>
+<span>Update &amp; Commit Record</span>
+</button>
+</div>
+</div>
+<!-- Operational Context Strip -->
+<div class="bg-surface-container-low px-space-lg py-space-sm rounded-lg mb-space-xl flex flex-wrap items-center justify-between gap-space-md text-body-sm font-body-sm text-on-surface-variant">
+<div class="flex flex-wrap items-center gap-y-1 gap-x-space-lg">
+<div class="flex items-center gap-1.5 font-label-sm text-label-sm text-on-surface">
+<span class="text-on-surface-variant font-normal">Roll Allotment:</span>
+<span class="px-2 py-0.5 rounded-lg bg-surface-container font-semibold">#14</span>
+</div>
+<div class="flex items-center gap-1.5 font-label-sm text-label-sm text-on-surface">
+<span class="text-on-surface-variant font-normal">Class Teacher:</span>
+<span>Mrs. Ananya Sharma <span class="text-on-surface-variant font-normal">(EMP-1042)</span></span>
+</div>
+<div class="flex items-center gap-1.5 font-label-sm text-label-sm">
+<span class="text-on-surface-variant font-normal">Cumulative Attendance:</span>
+<span class="text-secondary font-semibold">68.4%</span>
+<span class="text-secondary-container bg-surface-container px-1.5 py-0.2 rounded-lg text-body-sm">(Under Remediation)</span>
+</div>
+</div>
+<div class="flex items-center gap-1.5 text-body-sm">
+<span class="material-symbols-outlined text-[16px]">history</span>
+<span>Last Modified: <strong>14 Feb 2025, 09:40 IST</strong> by <strong>Dr. K. S. Rathore</strong> (Marks Rectification)</span>
+</div>
+</div>
+<!-- Main Multi-Section Form Structure -->
+<form class="space-y-space-xl" onsubmit="event.preventDefault();">
+<!-- SECTION 1: Student Identity & Admission Details -->
+<div class="bg-surface-container-lowest rounded-lg p-space-xl shadow-sm">
+<div class="flex items-center justify-between pb-space-md mb-space-lg bg-surface-container-low -mx-space-xl -mt-space-xl px-space-xl pt-space-md rounded-t-lg">
+<div class="flex items-center gap-space-sm">
+<span class="material-symbols-outlined text-primary text-[22px]">person_outline</span>
+<div>
+<h2 class="font-headline-sm text-headline-sm text-on-surface">1. Student Identity &amp; Admission Details</h2>
+<p class="font-body-sm text-body-sm text-on-surface-variant">Permanent civil identity, demographic attributes, and registry intake keys.</p>
+</div>
+</div>
+<span class="font-label-sm text-label-sm text-primary bg-primary-fixed px-2.5 py-0.5 rounded-lg uppercase tracking-wider font-semibold">Statutory ID</span>
+</div>
+<div class="grid grid-cols-1 lg:grid-cols-12 gap-space-lg items-start">
+<!-- Photo Block & Biometric Avatar -->
+<div class="lg:col-span-3 flex flex-col items-center bg-surface-container-low p-space-md rounded-lg">
+<div class="relative w-36 h-44 rounded-lg overflow-hidden bg-surface-container-high mb-space-sm shadow-sm flex items-center justify-center">
+<img class="w-full h-full object-cover" data-alt="Close-up professional school identity passport photograph of a 15-year-old North Indian male student named Aarav, clean haircut, crisp dark green institutional blazer with golden HanuJai High crest lapel, neutral cream background, soft studio documentary lighting." src="https://lh3.googleusercontent.com/aida-public/AB6AXuCF29kzUi4lo_bEtlfrsB_BknGv3-b8jcbwl3deEx4lZ9tQilWFvwlTaoWh1_WQ1YDxzHfEiT55I6BvEBEj4SxJdbQHmPfeSdPsxWOzWn3-XZynY6DgPEIwnov-W-2-bZxVJt1V1ivPj1_fF5LKAHEDdvQgwY-_-jE8cKqxJXO-iCm1-UcQ1sVJJQ_u9PypouuOb2XTUCXsEqNldBuN8QqRdojg_LCUx_0Iwrf0LfPt73bqFcLlUmEa"/>
+<div class="absolute bottom-0 inset-x-0 bg-primary/80 py-1 text-center">
+<span class="font-label-sm text-[10px] text-on-primary tracking-widest uppercase">Verified Face ID</span>
+</div>
+</div>
+<button class="w-full h-8 px-space-sm rounded-lg bg-surface-container text-on-surface font-label-sm text-label-sm hover:bg-surface-container-high transition-colors flex items-center justify-center gap-1" type="button">
+<span class="material-symbols-outlined text-[16px]">photo_camera</span>
+<span>Change Photo</span>
+</button>
+<p class="font-body-sm text-[11px] text-on-surface-variant text-center mt-2">
+            Standard: White background, 35mm x 45mm, JPEG ≤ 500KB.
+          </p>
+</div>
+<!-- Identity Fields Grid -->
+<div class="lg:col-span-9 grid grid-cols-1 md:grid-cols-3 gap-space-md">
+<!-- GRN (Locked) -->
+<div class="space-y-1">
+<label class="flex items-center justify-between font-label-sm text-label-sm text-on-surface">
+<span>GRN / Admission Number</span>
+<span class="flex items-center gap-0.5 text-on-surface-variant" title="Primary key cannot be modified directly. Requires administrative re-registration protocol.">
+<span class="material-symbols-outlined text-[14px]">lock</span>
+<span class="text-[11px]">Protected</span>
+</span>
+</label>
+<div class="relative">
+<input class="w-full h-9 px-space-md bg-surface-container-high text-on-surface-variant font-tabular-data text-body-md rounded-lg cursor-not-allowed select-none focus:outline-none" readonly="" type="text" value="HJ-2021-0428"/>
+<span class="material-symbols-outlined absolute right-2.5 top-2 text-[18px] text-on-surface-variant">verified_user</span>
+</div>
+<p class="font-body-sm text-[11px] text-on-surface-variant">Unique institutional primary ledger entry.</p>
+</div>
+<!-- Admission Date -->
+<div class="space-y-1">
+<label class="font-label-sm text-label-sm text-on-surface">Admission Date</label>
+<input class="w-full h-9 px-space-md bg-surface-container-high text-on-surface font-body-md rounded-lg cursor-not-allowed select-none focus:outline-none" readonly="" type="text" value="10 Jul 2021"/>
+<p class="font-body-sm text-[11px] text-on-surface-variant">AY 2021-22 Regular Intake.</p>
+</div>
+<!-- Legal Full Name -->
+<div class="space-y-1">
+<label class="font-label-sm text-label-sm text-on-surface">Legal Full Name <span class="text-tertiary">*</span></label>
+<input class="w-full h-9 px-space-md bg-surface text-on-surface font-body-md rounded-lg focus:outline-none focus:bg-surface-container transition-colors" type="text" value="Aarav Singhania"/>
+<p class="font-body-sm text-[11px] text-on-surface-variant">As per Municipal Birth Certificate.</p>
+</div>
+<!-- Date of Birth -->
+<div class="space-y-1">
+<label class="font-label-sm text-label-sm text-on-surface">Date of Birth <span class="text-tertiary">*</span></label>
+<input class="w-full h-9 px-space-md bg-surface text-on-surface font-body-md rounded-lg focus:outline-none focus:bg-surface-container" type="text" value="14 Sep 2009"/>
+<p class="font-body-sm text-[11px] text-on-surface-variant">Computed Age: 15 Years, 5 Months.</p>
+</div>
+<!-- Gender -->
+<div class="space-y-1">
+<label class="font-label-sm text-label-sm text-on-surface">Gender <span class="text-tertiary">*</span></label>
+<select class="w-full h-9 px-space-md bg-surface text-on-surface font-body-md rounded-lg focus:outline-none focus:bg-surface-container cursor-pointer">
+<option selected="" value="Male">Male</option>
+<option value="Female">Female</option>
+<option value="Other">Other</option>
+</select>
+<p class="font-body-sm text-[11px] text-on-surface-variant">CBSE Demographic category.</p>
+</div>
+<!-- Blood Group -->
+<div class="space-y-1">
+<label class="font-label-sm text-label-sm text-on-surface">Blood Group</label>
+<select class="w-full h-9 px-space-md bg-surface text-on-surface font-body-md rounded-lg focus:outline-none focus:bg-surface-container cursor-pointer">
+<option selected="" value="B+">B Positive (B+)</option>
+<option value="A+">A Positive (A+)</option>
+<option value="O+">O Positive (O+)</option>
+<option value="AB+">AB Positive (AB+)</option>
+<option value="O-">O Negative (O-)</option>
+</select>
+<p class="font-body-sm text-[11px] text-on-surface-variant">Verified by school infirmary log.</p>
+</div>
+<!-- First Language / Mother Tongue -->
+<div class="space-y-1">
+<label class="font-label-sm text-label-sm text-on-surface">First Language / Mother Tongue</label>
+<select class="w-full h-9 px-space-md bg-surface text-on-surface font-body-md rounded-lg focus:outline-none focus:bg-surface-container cursor-pointer">
+<option selected="" value="Hindi">Hindi</option>
+<option value="English">English</option>
+<option value="Rajasthani">Rajasthani</option>
+<option value="Punjabi">Punjabi</option>
+<option value="Gujarati">Gujarati</option>
+</select>
+<p class="font-body-sm text-[11px] text-on-surface-variant">Three-language formula record.</p>
+</div>
+<!-- CBSE Registration Index -->
+<div class="md:col-span-2 space-y-1">
+<label class="font-label-sm text-label-sm text-on-surface">CBSE Registration Index (LOC Roll)</label>
+<div class="relative">
+<input class="w-full h-9 px-space-md bg-surface text-on-surface font-tabular-data text-body-md rounded-lg focus:outline-none focus:bg-surface-container" type="text" value="DL1730249/0014"/>
+<span class="material-symbols-outlined absolute right-2.5 top-2 text-[18px] text-primary">pin</span>
+</div>
+<p class="font-body-sm text-[11px] text-on-surface-variant">Pre-populated list of candidates submission for Class 10 Board 2025.</p>
+</div>
+</div>
+</div>
+</div>
+<!-- SECTION 2: Academic Year, Class & Cohort Allotment -->
+<div class="bg-surface-container-lowest rounded-lg p-space-xl shadow-sm">
+<div class="flex items-center justify-between pb-space-md mb-space-lg bg-surface-container-low -mx-space-xl -mt-space-xl px-space-xl pt-space-md rounded-t-lg">
+<div class="flex items-center gap-space-sm">
+<span class="material-symbols-outlined text-primary text-[22px]">domain</span>
+<div>
+<h2 class="font-headline-sm text-headline-sm text-on-surface">2. Academic Year, Class &amp; Cohort Allotment</h2>
+<p class="font-body-sm text-body-sm text-on-surface-variant">Curricular division, classroom roster assignment, and pastoral care house.</p>
+</div>
+</div>
+<span class="font-label-sm text-label-sm text-on-surface-variant bg-surface-container px-2.5 py-0.5 rounded-lg font-semibold">Active Term II</span>
+</div>
+<div class="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 gap-space-md">
+<!-- Academic Session -->
+<div class="space-y-1">
+<label class="font-label-sm text-label-sm text-on-surface">Academic Session <span class="text-tertiary">*</span></label>
+<div class="h-9 px-space-md bg-surface-container-high rounded-lg flex items-center justify-between font-label-md text-label-md text-on-surface">
+<span>AY 2024–25 (Term II)</span>
+<span class="material-symbols-outlined text-[16px] text-primary">event_available</span>
+</div>
+</div>
+<!-- Wing / Division -->
+<div class="space-y-1">
+<label class="font-label-sm text-label-sm text-on-surface">Wing / Division <span class="text-tertiary">*</span></label>
+<select class="w-full h-9 px-space-md bg-surface text-on-surface font-body-md rounded-lg focus:outline-none focus:bg-surface-container cursor-pointer">
+<option selected="" value="Secondary Wing">Secondary Wing (Grades 9–10)</option>
+<option value="Senior Secondary">Senior Secondary Wing (Grades 11–12)</option>
+<option value="Middle Wing">Middle Wing (Grades 6–8)</option>
+</select>
+</div>
+<!-- Grade / Standard -->
+<div class="space-y-1">
+<label class="font-label-sm text-label-sm text-on-surface">Grade / Standard <span class="text-tertiary">*</span></label>
+<select class="w-full h-9 px-space-md bg-surface text-on-surface font-body-md rounded-lg focus:outline-none focus:bg-surface-container cursor-pointer">
+<option selected="" value="Class 10">Class 10</option>
+<option value="Class 9">Class 9</option>
+</select>
+</div>
+<!-- Section -->
+<div class="space-y-1">
+<label class="font-label-sm text-label-sm text-on-surface">Section &amp; Homeroom <span class="text-tertiary">*</span></label>
+<select class="w-full h-9 px-space-md bg-surface text-on-surface font-body-md rounded-lg focus:outline-none focus:bg-surface-container cursor-pointer">
+<option selected="" value="Section A">Section A - Homeroom 204</option>
+<option value="Section B">Section B - Homeroom 205</option>
+<option value="Section C">Section C - Homeroom 206</option>
+</select>
+</div>
+<!-- Assigned House -->
+<div class="space-y-1">
+<label class="font-label-sm text-label-sm text-on-surface">Assigned House</label>
+<div class="h-9 px-space-md bg-surface rounded-lg flex items-center justify-between font-label-md text-label-md text-on-surface">
+<div class="flex items-center gap-2">
+<span class="w-3 h-3 rounded-full bg-secondary"></span>
+<span>Pratap House (Ochre/Gold)</span>
+</div>
+<span class="material-symbols-outlined text-[16px] text-on-surface-variant">shield</span>
+</div>
+</div>
+<!-- Class Roll Number -->
+<div class="space-y-1">
+<label class="font-label-sm text-label-sm text-on-surface">Class Roll Number <span class="text-tertiary">*</span></label>
+<input class="w-full h-9 px-space-md bg-surface text-on-surface font-tabular-data text-body-md rounded-lg focus:outline-none focus:bg-surface-container" type="number" value="14"/>
+</div>
+<!-- Proctorial Custody -->
+<div class="md:col-span-2 space-y-1">
+<label class="font-label-sm text-label-sm text-on-surface">Proctorial Custody / Class Mentor</label>
+<div class="h-9 px-space-md bg-surface-container-high rounded-lg flex items-center justify-between font-body-md text-body-md text-on-surface">
+<span>Mrs. Ananya Sharma • PGT English (EMP-1042)</span>
+<span class="material-symbols-outlined text-[16px] text-primary">assignment_ind</span>
+</div>
+</div>
+</div>
+</div>
+<!-- SECTION 3: Parent & Authorized Guardian Information -->
+<div class="bg-surface-container-lowest rounded-lg p-space-xl shadow-sm">
+<div class="flex items-center justify-between pb-space-md mb-space-lg bg-surface-container-low -mx-space-xl -mt-space-xl px-space-xl pt-space-md rounded-t-lg">
+<div class="flex items-center gap-space-sm">
+<span class="material-symbols-outlined text-primary text-[22px]">family_restroom</span>
+<div>
+<h2 class="font-headline-sm text-headline-sm text-on-surface">3. Parent &amp; Authorized Guardian Information</h2>
+<p class="font-body-sm text-body-sm text-on-surface-variant">Primary emergency contacts, legal guardianship credentials, and physical address.</p>
+</div>
+</div>
+<span class="font-label-sm text-label-sm text-primary bg-primary-fixed px-2.5 py-0.5 rounded-lg font-semibold">2 Contacts Verified</span>
+</div>
+<div class="grid grid-cols-1 md:grid-cols-3 gap-space-md mb-space-lg">
+<!-- Primary Guardian Relationship -->
+<div class="space-y-1">
+<label class="font-label-sm text-label-sm text-on-surface">Primary Guardian Relationship <span class="text-tertiary">*</span></label>
+<select class="w-full h-9 px-space-md bg-surface text-on-surface font-body-md rounded-lg focus:outline-none focus:bg-surface-container cursor-pointer">
+<option selected="" value="Father">Father</option>
+<option value="Mother">Mother</option>
+<option value="Legal Guardian">Court Appointed Guardian</option>
+</select>
+</div>
+<!-- Primary Guardian Name -->
+<div class="space-y-1">
+<label class="font-label-sm text-label-sm text-on-surface">Primary Guardian Name <span class="text-tertiary">*</span></label>
+<input class="w-full h-9 px-space-md bg-surface text-on-surface font-body-md rounded-lg focus:outline-none focus:bg-surface-container" type="text" value="Mr. Rajesh Singhania"/>
+</div>
+<!-- Relationship / Occupation -->
+<div class="space-y-1">
+<label class="font-label-sm text-label-sm text-on-surface">Guardian Profession / Designation</label>
+<input class="w-full h-9 px-space-md bg-surface text-on-surface font-body-md rounded-lg focus:outline-none focus:bg-surface-container" type="text" value="Director, Structural Engineering Consultancy"/>
+</div>
+<!-- Primary Emergency Mobile -->
+<div class="space-y-1">
+<label class="flex items-center justify-between font-label-sm text-label-sm text-on-surface">
+<span>Primary Emergency Mobile <span class="text-tertiary">*</span></span>
+<span class="text-primary text-[11px] font-semibold flex items-center gap-0.5">
+<span class="material-symbols-outlined text-[12px]">verified</span> SMS Active
+            </span>
+</label>
+<div class="relative">
+<input class="w-full h-9 px-space-md bg-surface text-on-surface font-tabular-data text-body-md rounded-lg focus:outline-none focus:bg-surface-container" type="text" value="+91 98290 41182"/>
+<span class="material-symbols-outlined absolute right-2.5 top-2 text-[18px] text-primary">phone_iphone</span>
+</div>
+</div>
+<!-- Email Address -->
+<div class="space-y-1">
+<label class="font-label-sm text-label-sm text-on-surface">Official Notification Email</label>
+<div class="relative">
+<input class="w-full h-9 px-space-md bg-surface text-on-surface font-body-md rounded-lg focus:outline-none focus:bg-surface-container" type="email" value="rajesh.singhania@domain.com"/>
+<span class="material-symbols-outlined absolute right-2.5 top-2 text-[18px] text-on-surface-variant">mail</span>
+</div>
+</div>
+<!-- Mother / Secondary Guardian Name -->
+<div class="space-y-1">
+<label class="font-label-sm text-label-sm text-on-surface">Mother / Secondary Guardian Name</label>
+<input class="w-full h-9 px-space-md bg-surface text-on-surface font-body-md rounded-lg focus:outline-none focus:bg-surface-container" type="text" value="Mrs. Sunita Singhania"/>
+</div>
+<!-- Secondary Contact Mobile -->
+<div class="space-y-1">
+<label class="font-label-sm text-label-sm text-on-surface">Secondary Contact Mobile</label>
+<div class="relative">
+<input class="w-full h-9 px-space-md bg-surface text-on-surface font-tabular-data text-body-md rounded-lg focus:outline-none focus:bg-surface-container" type="text" value="+91 98290 41183"/>
+<span class="material-symbols-outlined absolute right-2.5 top-2 text-[18px] text-on-surface-variant">call</span>
+</div>
+</div>
+<!-- Residential Address Full -->
+<div class="md:col-span-2 space-y-1">
+<label class="font-label-sm text-label-sm text-on-surface">Permanent Residential Address (Jaipur) <span class="text-tertiary">*</span></label>
+<input class="w-full h-9 px-space-md bg-surface text-on-surface font-body-md rounded-lg focus:outline-none focus:bg-surface-container" type="text" value="Flat 402, Royal Palms Residency, Civil Lines, Jaipur, Rajasthan 302006"/>
+</div>
+</div>
+</div>
+<!-- SECTION 4: Enrollment & Academic Standing Status -->
+<div class="bg-surface-container-lowest rounded-lg p-space-xl shadow-sm">
+<div class="flex items-center justify-between pb-space-md mb-space-lg bg-surface-container-low -mx-space-xl -mt-space-xl px-space-xl pt-space-md rounded-t-lg">
+<div class="flex items-center gap-space-sm">
+<span class="material-symbols-outlined text-primary text-[22px]">clinical_notes</span>
+<div>
+<h2 class="font-headline-sm text-headline-sm text-on-surface">4. Enrollment &amp; Academic Standing Status</h2>
+<p class="font-body-sm text-body-sm text-on-surface-variant">Institutional standing, disciplinary track, attendance remedial, and infirmary notes.</p>
+</div>
+</div>
+<span class="font-label-sm text-label-sm text-secondary bg-surface-container px-2.5 py-0.5 rounded-lg font-semibold">Special Standing</span>
+</div>
+<div class="grid grid-cols-1 md:grid-cols-2 gap-space-lg">
+<!-- Enrollment Status Dropdown -->
+<div class="space-y-space-xs">
+<label class="font-label-sm text-label-sm text-on-surface">Institutional Enrollment Status <span class="text-tertiary">*</span></label>
+<select class="w-full h-9 px-space-md bg-surface text-on-surface font-body-md rounded-lg focus:outline-none focus:bg-surface-container cursor-pointer font-semibold">
+<option selected="" value="Active Regular Enrolled">Active Regular Enrolled</option>
+<option value="Under Remediation Watchlist">Under Remediation Watchlist</option>
+<option value="On Medical Leave">On Medical Leave</option>
+<option value="TC Issued / Withdrawn">TC Issued / Withdrawn</option>
+</select>
+<div class="p-space-sm rounded-lg bg-surface-container-high flex items-start gap-2 text-body-sm text-on-surface-variant mt-2">
+<span class="material-symbols-outlined text-secondary text-[18px] shrink-0">info</span>
+<span>Student is currently flagged on <strong>Attendance &amp; Academic Remediation Plan (Rule SEC-802)</strong> due to 68.4% physical attendance (minimum board requirement is 75%).</span>
+</div>
+</div>
+<!-- Academic Remediation Plan Checkbox & Tag -->
+<div class="space-y-space-xs">
+<label class="font-label-sm text-label-sm text-on-surface">Academic Remediation Allotment</label>
+<div class="p-space-md bg-surface rounded-lg space-y-space-sm">
+<label class="flex items-start gap-space-sm cursor-pointer select-none">
+<input checked="" class="mt-1 w-4 h-4 rounded text-primary accent-primary cursor-pointer" type="checkbox"/>
+<div class="flex flex-col">
+<span class="font-label-sm text-label-sm text-on-surface">Mandatory Academic &amp; Attendance Recovery Program</span>
+<span class="font-body-sm text-body-sm text-on-surface-variant">Active: Math Clinic #M-10A &amp; Saturday Science Practical Catchup.</span>
+</div>
+</label>
+<div class="pt-2 flex items-center gap-space-sm">
+<span class="px-2 py-0.5 rounded-lg bg-surface-container font-label-sm text-label-sm text-on-surface">Category: Standard General Merit</span>
+<span class="px-2 py-0.5 rounded-lg bg-secondary-fixed text-on-secondary-fixed-variant font-label-sm text-label-sm font-semibold">Flag: Rule SEC-802</span>
+</div>
+</div>
+</div>
+<!-- Medical & Infirmary Advisory Full Width -->
+<div class="md:col-span-2 space-y-1">
+<label class="font-label-sm text-label-sm text-on-surface">Medical / Infirmary Standing Advisory</label>
+<div class="relative">
+<input class="w-full h-9 px-space-md bg-surface text-on-surface font-body-md rounded-lg focus:outline-none focus:bg-surface-container" type="text" value="Mild dust allergy documented in infirmary card #MC-882; emergency inhaler in proctor custody"/>
+<span class="material-symbols-outlined absolute right-2.5 top-2 text-[18px] text-tertiary">medical_services</span>
+</div>
+<p class="font-body-sm text-[11px] text-on-surface-variant">Visible to physical education instructors and emergency response personnel.</p>
+</div>
+</div>
+</div>
+<!-- SECTION 5: Required Statutory Documents -->
+<div class="bg-surface-container-lowest rounded-lg p-space-xl shadow-sm">
+<div class="flex items-center justify-between pb-space-md mb-space-lg bg-surface-container-low -mx-space-xl -mt-space-xl px-space-xl pt-space-md rounded-t-lg">
+<div class="flex items-center gap-space-sm">
+<span class="material-symbols-outlined text-primary text-[22px]">folder_special</span>
+<div>
+<h2 class="font-headline-sm text-headline-sm text-on-surface">5. Required Statutory Documents (Verified &amp; Archived)</h2>
+<p class="font-body-sm text-body-sm text-on-surface-variant">Central board audit repository and certified enrollment proofs.</p>
+</div>
+</div>
+<span class="font-label-sm text-label-sm text-primary bg-primary-fixed px-2.5 py-0.5 rounded-lg font-semibold">4/4 Archived</span>
+</div>
+<div class="grid grid-cols-1 md:grid-cols-2 gap-space-md">
+<!-- Doc 1 -->
+<div class="p-space-md rounded-lg bg-surface flex items-center justify-between gap-space-md">
+<div class="flex items-center gap-space-sm min-w-0">
+<div class="w-9 h-9 rounded-lg bg-primary-fixed flex items-center justify-center shrink-0 text-primary">
+<span class="material-symbols-outlined text-[20px]">description</span>
+</div>
+<div class="min-w-0">
+<div class="font-label-md text-label-md text-on-surface truncate">Municipal Birth Certificate</div>
+<div class="font-body-sm text-body-sm text-on-surface-variant truncate">Verified • PDF 1.4 MB • Sealed by Registrar</div>
+</div>
+</div>
+<div class="flex items-center gap-1 shrink-0">
+<button class="h-8 px-2.5 rounded-lg bg-surface-container font-label-sm text-label-sm text-on-surface hover:bg-surface-container-high transition-colors" type="button">View</button>
+<button class="h-8 px-2 rounded-lg bg-surface-container text-on-surface-variant hover:text-on-surface hover:bg-surface-container-high transition-colors" title="Replace Document" type="button">
+<span class="material-symbols-outlined text-[16px]">sync</span>
+</button>
+</div>
+</div>
+<!-- Doc 2 -->
+<div class="p-space-md rounded-lg bg-surface flex items-center justify-between gap-space-md">
+<div class="flex items-center gap-space-sm min-w-0">
+<div class="w-9 h-9 rounded-lg bg-primary-fixed flex items-center justify-center shrink-0 text-primary">
+<span class="material-symbols-outlined text-[20px]">transfer_within_a_station</span>
+</div>
+<div class="min-w-0">
+<div class="font-label-md text-label-md text-on-surface truncate">Transfer Certificate (Primary Wing)</div>
+<div class="font-body-sm text-body-sm text-on-surface-variant truncate">Verified • Ref #HJ-TC-2021-104</div>
+</div>
+</div>
+<div class="flex items-center gap-1 shrink-0">
+<button class="h-8 px-2.5 rounded-lg bg-surface-container font-label-sm text-label-sm text-on-surface hover:bg-surface-container-high transition-colors" type="button">View</button>
+</div>
+</div>
+<!-- Doc 3 -->
+<div class="p-space-md rounded-lg bg-surface flex items-center justify-between gap-space-md">
+<div class="flex items-center gap-space-sm min-w-0">
+<div class="w-9 h-9 rounded-lg bg-primary-fixed flex items-center justify-center shrink-0 text-primary">
+<span class="material-symbols-outlined text-[20px]">home_pin</span>
+</div>
+<div class="min-w-0">
+<div class="font-label-md text-label-md text-on-surface truncate">Domicile &amp; Address Proof (Aadhaar/Utility)</div>
+<div class="font-body-sm text-body-sm text-on-surface-variant truncate">Verified on 12 Jul 2021 • Permanent Match</div>
+</div>
+</div>
+<div class="flex items-center gap-1 shrink-0">
+<button class="h-8 px-2.5 rounded-lg bg-surface-container font-label-sm text-label-sm text-on-surface hover:bg-surface-container-high transition-colors" type="button">View</button>
+</div>
+</div>
+<!-- Doc 4 -->
+<div class="p-space-md rounded-lg bg-surface flex items-center justify-between gap-space-md">
+<div class="flex items-center gap-space-sm min-w-0">
+<div class="w-9 h-9 rounded-lg bg-secondary-fixed flex items-center justify-center shrink-0 text-on-secondary-fixed">
+<span class="material-symbols-outlined text-[20px]">local_hospital</span>
+</div>
+<div class="min-w-0">
+<div class="font-label-md text-label-md text-on-surface truncate">Medical Bay Condonation Certificate</div>
+<div class="font-body-sm text-body-sm text-on-surface-variant truncate">29 Jan 2025 • Clinical Docket #MC-882</div>
+</div>
+</div>
+<div class="flex items-center gap-1 shrink-0">
+<button class="h-8 px-2.5 rounded-lg bg-surface-container font-label-sm text-label-sm text-on-surface hover:bg-surface-container-high transition-colors" type="button">View Diff</button>
+</div>
+</div>
+</div>
+</div>
+<!-- SECTION 6: Change Justification & Audit Trail Note -->
+<div class="bg-surface-container-lowest rounded-lg p-space-xl shadow-sm">
+<div class="flex items-center gap-space-sm mb-space-sm">
+<span class="material-symbols-outlined text-primary text-[20px]">history_edu</span>
+<h2 class="font-headline-sm text-headline-sm text-on-surface">Administrative Reason for Modification <span class="text-tertiary">*</span></h2>
+</div>
+<p class="font-body-sm text-body-sm text-on-surface-variant mb-space-md">
+        This operation is immutably appended to the institutional audit log with your digital credentials (Dr. K. S. Rathore, EMP-001). Please state the official regulatory or pastoral rationale.
+      </p>
+<textarea class="w-full p-space-md bg-surface text-on-surface font-body-md text-body-md rounded-lg focus:outline-none focus:bg-surface-container transition-colors resize-none placeholder:text-on-surface-variant" placeholder="Enter institutional reason for editing record..." rows="3">Updating parent emergency landline and verifying homeroom proctorial custody following 14 Feb PTM conference.</textarea>
+<div class="flex items-center justify-between mt-space-sm text-body-sm font-body-sm text-on-surface-variant">
+<span>Logged under Compliance Policy SEC-HJ-2024.</span>
+<span>Character Count: 104 / 500</span>
+</div>
+</div>
+</form>
+<!-- Sticky Bottom Commit Ledger Bar -->
+<div class="fixed bottom-0 left-72 right-0 h-16 bg-surface/95 backdrop-blur-md px-margin-desktop flex items-center justify-between z-40 shadow-[0_-2px_10px_rgba(0,0,0,0.05)]">
+<div class="flex items-center gap-space-md">
+<span class="inline-flex items-center gap-1.5 px-2 py-1 rounded-lg bg-surface-container-high font-label-sm text-label-sm text-on-surface">
+<span class="w-2 h-2 rounded-full bg-primary animate-pulse"></span>
+        Editing Session: Lock Acquired
+      </span>
+<span class="font-body-sm text-body-sm text-on-surface-variant hidden sm:inline">
+        Student GRN: <strong class="text-on-surface">HJ-2021-0428</strong> (Aarav Singhania)
+      </span>
+</div>
+<div class="flex items-center gap-space-sm">
+<button class="h-9 px-space-md rounded-lg bg-surface-container font-label-md text-label-md text-on-surface hover:bg-surface-container-high transition-colors" onclick="window.history.back()" type="button">
+        Discard Unsaved Edits
+      </button>
+<button class="h-9 px-space-md rounded-lg bg-surface-container-high font-label-md text-label-md text-primary font-semibold hover:bg-surface-container transition-colors flex items-center gap-1" type="button">
+<span class="material-symbols-outlined text-[18px]">save</span>
+<span>Save Draft</span>
+</button>
+<button class="h-9 px-space-lg rounded-lg bg-primary text-on-primary font-label-md text-label-md font-semibold hover:bg-primary-container transition-colors flex items-center gap-2 shadow-sm" id="btn-update-master" type="button">
+<span class="material-symbols-outlined text-[18px]">verified_user</span>
+<span>Update Student Record (Principal / Registrar Countersign)</span>
+</button>
+</div>
+</div>
+<!-- Inline Micro-interaction Script -->
+<script>
+    document.getElementById('btn-update-master')?.addEventListener('click', function() {
+      const originalText = this.innerHTML;
+      this.innerHTML = '<span class="material-symbols-outlined text-[18px] animate-spin">refresh</span><span>Committing to Board Ledger...</span>';
+      this.classList.add('opacity-80', 'pointer-events-none');
+      setTimeout(() => {
+        this.innerHTML = '<span class="material-symbols-outlined text-[18px]">done_all</span><span>Record Committed Successfully</span>';
+        this.classList.remove('opacity-80');
+        this.classList.add('bg-primary');
+        setTimeout(() => {
+          this.innerHTML = originalText;
+          this.classList.remove('pointer-events-none');
+        }, 2200);
+      }, 1000);
+    });
+  </script>
+</div></main></div></body></html>
