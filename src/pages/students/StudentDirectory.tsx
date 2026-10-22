@@ -13,7 +13,6 @@ import type { NewStudentInput } from '../../data/provider';
 import {
   Users,
   Search,
-  Plus,
   FileSpreadsheet,
   Phone,
   Home,
@@ -327,16 +326,6 @@ export const StudentDirectory: React.FC = () => {
               <FileSpreadsheet size={15} />
               <span>Export CSV</span>
             </button>
-            {(currentUser?.role === 'principal' || currentUser?.role === 'office_admin') && (
-              <button
-                onClick={() => setIsEnrollModalOpen(true)}
-                className="hhs-btn hhs-btn-primary"
-                style={{ display: 'flex', alignItems: 'center', gap: '6px' }}
-              >
-                <Plus size={15} />
-                <span>Enroll New Student</span>
-              </button>
-            )}
           </div>
         }
       />
@@ -506,7 +495,7 @@ export const StudentDirectory: React.FC = () => {
             </div>
 
             {/* Guardian & Emergency Contact (Restricted Access) */}
-            {(currentUser?.role === 'principal' || currentUser?.role === 'office_admin' || (currentUser?.role === 'class_teacher' && currentUser.assignedClassId === activeStudent.classId)) ? (
+            {(currentUser?.role === 'principal' || (currentUser?.role === 'class_teacher' && currentUser.assignedClassId === activeStudent.classId)) ? (
               <div className="hhs-card" style={{ padding: '16px' }}>
                 <h4 className="hhs-headline-sm" style={{ fontSize: '0.86rem', marginBottom: '12px' }}>
                   Guardian & Residence
@@ -531,7 +520,7 @@ export const StudentDirectory: React.FC = () => {
             ) : (
               <div className="hhs-card" style={{ padding: '14px', backgroundColor: 'var(--hhs-surface-muted)' }}>
                 <div style={{ fontSize: '0.78rem', color: 'var(--hhs-text-muted)', fontStyle: 'italic' }}>
-                  Guardian contact and residential address are restricted to the Office Registrar and Assigned Class Tutor.
+                  Guardian contact and residential address are restricted to School Leadership and Assigned Class Teachers.
                 </div>
               </div>
             )}

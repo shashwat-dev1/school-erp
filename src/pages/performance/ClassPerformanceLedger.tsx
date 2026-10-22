@@ -103,8 +103,6 @@ export const ClassPerformanceLedger: React.FC = () => {
   // Clearance check: Subject teachers can ONLY see their assigned subjects
   const isFullMatrixAuthorized =
     currentUser?.role === 'principal' ||
-    currentUser?.role === 'office_admin' ||
-    currentUser?.role === 'office_staff' ||
     (currentUser?.role === 'class_teacher' && currentUser.assignedClassId === activeClassId);
 
   const visibleSubjects = useMemo(() => {

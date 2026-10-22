@@ -12,7 +12,7 @@ export const StaffLogin: React.FC = () => {
   const { login, isLoading, error: authError } = useAuth();
   const { dataMode } = useData();
 
-  const [email, setEmail] = useState('rathore.admin@hanujai.edu.in');
+  const [email, setEmail] = useState('principal@hanujai.edu.in');
   const [password, setPassword] = useState('demo-password');
   const [showPassword, setShowPassword] = useState(false);
   const [localError, setLocalError] = useState<string | null>(null);
@@ -73,7 +73,7 @@ export const StaffLogin: React.FC = () => {
 
         <div style={{ display: 'flex', alignItems: 'center', gap: '12px', fontSize: '0.75rem', color: 'var(--hhs-text-secondary)' }}>
           <span className="hhs-badge hhs-badge-primary" style={{ fontSize: '0.7rem' }}>
-            CBSE Node 1730198
+            CBSE Affiliated
           </span>
           <span style={{ color: 'var(--hhs-border)' }}>|</span>
           <span>Academic Session 2025–2026</span>
@@ -112,7 +112,7 @@ export const StaffLogin: React.FC = () => {
                     fontWeight: 700,
                     padding: '3px 8px',
                     borderRadius: 'var(--hhs-radius-sm)',
-                    border: '1px solid #c9d8d3',
+                    border: '1px solid var(--hhs-border)',
                     textTransform: 'uppercase',
                     letterSpacing: '0.04em',
                   }}
@@ -120,14 +120,14 @@ export const StaffLogin: React.FC = () => {
                   Authorized Staff Access
                 </span>
                 <span style={{ fontSize: '0.7rem', color: 'var(--hhs-text-muted)' }}>
-                  {dataMode === 'demo' ? 'Mode: Local Demo' : 'Mode: Firebase Cloud'}
+                  {dataMode === 'demo' ? 'Sample Data' : 'Cloud Mode'}
                 </span>
               </div>
               <h1 className="hhs-headline-md" style={{ marginBottom: '4px' }}>
                 Staff Authentication
               </h1>
               <p className="hhs-body-sm" style={{ color: 'var(--hhs-text-secondary)' }}>
-                Single-school internal portal for Faculty, Registrars & Leadership.
+                Single-school internal portal for Leadership and Teaching Faculty.
               </p>
             </div>
 
@@ -248,7 +248,7 @@ export const StaffLogin: React.FC = () => {
                   <span>Authenticating...</span>
                 ) : (
                   <>
-                    <span>Sign In to Operational Desk</span>
+                    <span>Sign In</span>
                     <ArrowRight size={16} />
                   </>
                 )}
@@ -281,7 +281,7 @@ export const StaffLogin: React.FC = () => {
                   <span>Prototype Review — Select Role Persona:</span>
                 </div>
 
-                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px' }}>
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: '8px' }}>
                   {initialStaff.map(s => {
                     const isSelected = email.toLowerCase() === s.email.toLowerCase();
                     return (
@@ -323,8 +323,8 @@ export const StaffLogin: React.FC = () => {
               lineHeight: 1.4,
             }}
           >
-            <div>HanuJai ERP Internal Infrastructure • Jaipur Zone</div>
-            <div>Strict dual-custody access policies enforced under CBSE and DPDP guidelines.</div>
+            <div>HanuJai High School ERP • Jaipur, Rajasthan</div>
+            <div>Single-School Operational Pilot • Academic Year 2025–2026</div>
           </div>
         </div>
       </main>

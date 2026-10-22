@@ -92,14 +92,14 @@ export const ClassesDirectory: React.FC = () => {
           { label: 'Classes & Sections', to: '/classes' },
         ]}
         actions={
-          (role === 'principal' || role === 'office_admin') ? (
+          role === 'principal' ? (
             <button
               onClick={() => navigate('/admin/class-teachers')}
-              className="hhs-btn hhs-btn-primary"
+              className="hhs-btn hhs-btn-secondary"
               style={{ display: 'inline-flex', alignItems: 'center', gap: '6px' }}
             >
               <UserCheck size={16} />
-              <span>Manage Class Tutors</span>
+              <span>View Class Tutors</span>
             </button>
           ) : undefined
         }

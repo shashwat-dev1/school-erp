@@ -16,11 +16,7 @@ service cloud.firestore {
     }
 
     function isPrincipal() {
-      return hasRole('principal') || hasRole('admin');
-    }
-
-    function isOfficeStaff() {
-      return hasRole('office_staff') || hasRole('office_admin') || hasRole('admin');
+      return hasRole('principal');
     }
 
     function isAssignedClassTeacher(classId) {
@@ -43,101 +39,91 @@ service cloud.firestore {
       allow read, write: if false;
     }
 
-    // School Settings: Read by all staff, written only by Principal
+    // School Settings: Read by authenticated staff; Principal is strictly read-only in pilot
     match /schoolSettings/{settingId} {
       allow read: if isAuthenticated();
-      allow write: if isPrincipal();
+      allow write: if false;
     }
 
-    // Academic Years: Read by all staff, written by Principal or Office Staff
+    // Academic Years: Read by authenticated staff; write disabled in pilot
     match /academicYears/{yearId} {
       allow read: if isAuthenticated();
-      allow write: if isPrincipal() || isOfficeStaff();
+      allow write: if false;
     }
 
-    // Classes & Sections: Read by all staff, written by Principal or Office Staff
+    // Classes & Sections: Read by authenticated staff; write disabled in pilot
     match /classes/{classId} {
       allow read: if isAuthenticated();
-      allow write: if isPrincipal() || isOfficeStaff();
+      allow write: if false;
     }
 
-    // Subjects: Read by all staff, written by Principal
+    // Subjects: Read by authenticated staff; write disabled in pilot
     match /subjects/{subjectId} {
       allow read: if isAuthenticated();
-      allow write: if isPrincipal();
+      allow write: if false;
     }
 
-    // Subject Assignments: Read by all staff, written by Principal
+    // Subject Assignments: Read by authenticated staff; write disabled in pilot
     match /subjectAssignments/{assignmentId} {
       allow read: if isAuthenticated();
-      allow write: if isPrincipal();
+      allow write: if false;
     }
 
-    // Staff Accounts: Read by all authenticated staff, written only by Principal
+    // Staff Accounts: Read by authenticated staff; write disabled in pilot
     match /staff/{staffId} {
       allow read: if isAuthenticated();
-      allow write: if isPrincipal();
+      allow write: if false;
     }
 
-    // Student Master Records: Read authorized by assigned class/section or admin privilege
+    // Student Master Records: Read authorized by assigned class/section or principal oversight.
+    // Writes are disabled in this pilot phase (managed via trusted server or read-only).
     match /students/{studentId} {
       allow read: if isAuthenticated() && (
         isPrincipal() ||
-        isOfficeStaff() ||
         isAssignedClassTeacher(resource.data.classId) ||
         (getUserData().role == 'subject_teacher' && resource.data.classId in getUserData().assignedClasses)
       );
-      allow create, update: if isPrincipal() || isOfficeStaff();
-      allow delete: if false; // Soft-deletes only
+      allow create, update, delete: if false;
     }
 
     // Attendance Sessions & Daily Registers:
+    // Only assigned Class Teacher can submit attendance for their section. Principal has read-only oversight.
     match /attendanceSessions/{sessionId} {
       allow read: if isAuthenticated() && (
         isPrincipal() || 
-        isOfficeStaff() || 
         isAssignedClassTeacher(resource.data.classId)
       );
       
-      allow create: if isAuthenticated() && (
-        isPrincipal() || 
-        isAssignedClassTeacher(request.resource.data.classId)
-      );
-
-      allow update: if isPrincipal();
+      allow create, update: if isAuthenticated() && isAssignedClassTeacher(request.resource.data.classId);
       allow delete: if false;
     }
 
-    // Attendance Correction Requests (SEC-201 Dual Custody):
+    // Attendance Correction Requests:
+    // Only assigned Class Teacher can request corrections for their section.
     match /attendanceCorrections/{correctionId} {
       allow read: if isAuthenticated() && (
         isPrincipal() || 
-        isOfficeStaff() ||
         resource.data.requestedByStaffId == request.auth.uid ||
         isAssignedClassTeacher(resource.data.classId)
       );
       
-      // Class teacher or Principal can request a correction
-      allow create: if isAuthenticated() && (
-        isPrincipal() || 
-        isAssignedClassTeacher(request.resource.data.classId)
-      ) && request.resource.data.requestedByStaffId == request.auth.uid;
+      allow create: if isAuthenticated() && 
+        isAssignedClassTeacher(request.resource.data.classId) && 
+        request.resource.data.requestedByStaffId == request.auth.uid;
 
-      // SEC-201: Principal can approve/reject, but CANNOT approve their own request (separation of duties)
-      allow update: if isAuthenticated() && isPrincipal() && (
-        resource.data.requestedByStaffId != request.auth.uid
-      );
-
-      allow delete: if false;
+      allow update, delete: if false;
     }
 
     // Assessment Definitions:
+    // Read by authenticated staff; write disabled in pilot
     match /assessments/{assessmentId} {
       allow read: if isAuthenticated();
-      allow write: if isPrincipal() || isOfficeStaff();
+      allow write: if false;
     }
 
     // Marks Registers:
+    // Principal can read all registers; Class Teacher can read assigned class; Subject Teacher can read their assigned subject.
+    // Writes strictly restricted to assigned Subject Teacher.
     match /marksRegisters/{registerId} {
       allow read: if isAuthenticated() && (
         isPrincipal() || 
@@ -145,30 +131,29 @@ service cloud.firestore {
         isAssignedSubjectTeacher(resource.data.classId, resource.data.subjectId)
       );
 
-      // Subject teachers can create and save drafts; cannot modify finalized records or un-finalize
       allow create, update: if isAuthenticated() && (
-        isPrincipal() || (
-          isAssignedSubjectTeacher(request.resource.data.classId, request.resource.data.subjectId) &&
-          (resource == null || resource.data.status != 'finalized') &&
-          request.resource.data.status != 'finalized'
-        )
+        isAssignedSubjectTeacher(request.resource.data.classId, request.resource.data.subjectId) &&
+        (resource == null || resource.data.status != 'submitted') &&
+        request.resource.data.maxMarks != null &&
+        request.resource.data.maxMarks > 0
       );
 
       allow delete: if false;
     }
 
-    // Behaviour & Disciplinary Incidents:
+    // Behaviour & Observations:
+    // Only assigned Class Teacher or Subject Teacher can record observations for students in their assigned classes.
+    // Principal has read-only oversight.
     match /incidents/{incidentId} {
       allow read: if isAuthenticated() && (
         isPrincipal() || 
         isAssignedClassTeacher(resource.data.classId)
       );
       allow create: if isAuthenticated() && (
-        isPrincipal() ||
         isAssignedClassTeacher(request.resource.data.classId) ||
         (getUserData().role == 'subject_teacher' && request.resource.data.classId in getUserData().assignedClasses)
       );
-      allow update, delete: if isPrincipal();
+      allow update, delete: if false;
     }
 
     // System Audit Log: Append-only, prevents forgery of actor identity

@@ -24,7 +24,7 @@ export const StaffAccountModal: React.FC<StaffAccountModalProps> = ({
   const [email, setEmail] = useState<string>(editingStaff?.email || '');
   const [role, setRole] = useState<StaffUser['role']>(editingStaff?.role || 'subject_teacher');
   const [department, setDepartment] = useState<string>(
-    editingStaff?.role === 'office_admin' ? 'Administration' : 'Academic Faculty'
+    editingStaff?.role === 'principal' ? 'Administration' : 'Academic Faculty'
   );
   const [phone, setPhone] = useState<string>('+91 98290 ');
   const [tempPassword, setTempPassword] = useState<string>('HanuJai@2025');
@@ -129,8 +129,7 @@ export const StaffAccountModal: React.FC<StaffAccountModalProps> = ({
               value={role}
               onChange={e => setRole(e.target.value as StaffUser['role'])}
             >
-              <option value="principal">Principal (Full Authority)</option>
-              <option value="office_admin">Office Registrar / Admin</option>
+              <option value="principal">Principal (School Leadership)</option>
               <option value="class_teacher">Class Teacher / Tutor</option>
               <option value="subject_teacher">Subject Faculty</option>
             </select>

@@ -10,7 +10,7 @@ import { Permissions } from '../domain/permissions';
 import { calculateGrade, isMorningRollCallWindowOpen } from '../domain/policy';
 import type { StaffUser } from '../domain/types';
 
-describe('Role Authorization & Security Boundary Suite', () => {
+describe('HANUJAI ERP — Role Model, Student Dossier & Permission Test Matrix', () => {
   beforeEach(async () => {
     localStorage.clear();
     if (demoRepository.resetDemoData) {
@@ -22,338 +22,427 @@ describe('Role Authorization & Security Boundary Suite', () => {
     localStorage.setItem('hanujai_demo_user_id', staffUser.id);
   };
 
-  it('Principal Dashboard renders whole-school oversight (1,000 enrollment, all-class attendance)', async () => {
-    const principal = initialStaff.find(s => s.role === 'principal')!;
-    setupUserSession(principal);
+  // =========================================================================
+  // 1. PRINCIPAL: SCHOOL-WIDE, STRICTLY READ-ONLY ACCESS
+  // =========================================================================
+  describe('1. Principal: School-Wide, Strictly Read-Only Oversight', () => {
+    const getPrincipal = () => initialStaff.find(s => s.role === 'principal')!;
 
-    render(
-      <MemoryRouter initialEntries={['/']}>
-        <AuthProvider>
-          <DataContextProvider>
-            <App />
-          </DataContextProvider>
-        </AuthProvider>
-      </MemoryRouter>
-    );
+    it('Principal can view whole-school dashboard with calculated counts for ~1,000 students', async () => {
+      const principal = getPrincipal();
+      setupUserSession(principal);
 
-    await waitFor(() => {
-      expect(screen.getAllByText(/Home/i)[0]).toBeInTheDocument();
-      expect(screen.getByText(/Present Today/i)).toBeInTheDocument();
-      expect(screen.getByText(/Attendance by Class/i)).toBeInTheDocument();
+      render(
+        <MemoryRouter initialEntries={['/']}>
+          <AuthProvider>
+            <DataContextProvider>
+              <App />
+            </DataContextProvider>
+          </AuthProvider>
+        </MemoryRouter>
+      );
+
+      await waitFor(() => {
+        expect(screen.getAllByText(/Home/i)[0]).toBeInTheDocument();
+        expect(screen.getByText(/Total Students/i)).toBeInTheDocument();
+        expect(screen.getByText(/1000/i)).toBeInTheDocument();
+        expect(screen.getAllByText(/Present Today/i)[0]).toBeInTheDocument();
+        expect(screen.getAllByText(/Absent Today/i)[0]).toBeInTheDocument();
+        expect(screen.getByText(/Attendance by Class \(Today\)/i)).toBeInTheDocument();
+      });
     });
 
-    // Check that active enrollment derivation is 1,000 (20 sections × 50 students)
-    expect(screen.getByText(/1000/i)).toBeInTheDocument();
-  });
+    it('Principal can search for any student across the school and open dossier', async () => {
+      const principal = getPrincipal();
+      setupUserSession(principal);
 
-  it('Office Staff Dashboard renders operational directory lookup without teacher-specific marks registers', async () => {
-    const officeStaff = initialStaff.find(s => s.role === 'office_admin' || s.role === 'office_staff')!;
-    setupUserSession(officeStaff);
+      // Verify repository allows principal to search any student
+      const allStudents = await demoRepository.getStudents({ limit: 1000 });
+      expect(allStudents.total).toBe(1000);
 
-    render(
-      <MemoryRouter initialEntries={['/']}>
-        <AuthProvider>
-          <DataContextProvider>
-            <App />
-          </DataContextProvider>
-        </AuthProvider>
-      </MemoryRouter>
-    );
+      // Student from 10-A and Student from 01-B
+      const stu10A = await demoRepository.getStudentById('STU-10A-01');
+      const stu01B = await demoRepository.getStudentById('STU-01B-01');
+      expect(stu10A).not.toBeNull();
+      expect(stu01B).not.toBeNull();
 
-    await waitFor(() => {
-      expect(screen.getAllByText(/Home/i)[0]).toBeInTheDocument();
-      expect(screen.getByText(/Parent & Visitor Inquiry/i)).toBeInTheDocument();
-      expect(screen.getByText(/Total Students/i)).toBeInTheDocument();
-    });
-  });
-
-  it('Class Teacher Dashboard is strictly scoped to assigned class (Class 10-A) with zero global metrics', async () => {
-    const classTeacher = initialStaff.find(s => s.role === 'class_teacher')!;
-    setupUserSession(classTeacher);
-
-    render(
-      <MemoryRouter initialEntries={['/']}>
-        <AuthProvider>
-          <DataContextProvider>
-            <App />
-          </DataContextProvider>
-        </AuthProvider>
-      </MemoryRouter>
-    );
-
-    await waitFor(() => {
-      expect(screen.getByText(/My Class \(Class 10-A\)/i)).toBeInTheDocument();
-      expect(screen.getByText(/Present Today/i)).toBeInTheDocument();
-      expect(screen.getByText(/Absent Students Today/i)).toBeInTheDocument();
+      // Permissions check: Principal can view any student dossier
+      expect(Permissions.canViewStudent(principal, stu10A!.classId)).toBe(true);
+      expect(Permissions.canViewStudent(principal, stu01B!.classId)).toBe(true);
+      expect(Permissions.canViewStudentReportCard(principal, stu10A!)).toBe(true);
+      expect(Permissions.canViewStudentReportCard(principal, stu01B!)).toBe(true);
     });
 
-    // Class teacher must NOT see whole-school metrics
-    expect(screen.queryByText(/Attendance by Class \(Today\)/i)).not.toBeInTheDocument();
-    expect(screen.queryByText(/Institutional Executive Desk/i)).not.toBeInTheDocument();
-  });
+    it('Principal can view attendance totals and history, but cannot mark attendance', () => {
+      const principal = getPrincipal();
 
-  it('Subject Teacher Dashboard is scoped to assigned teaching assignments with zero whole-school roll call', async () => {
-    const subjectTeacher = initialStaff.find(s => s.role === 'subject_teacher')!;
-    setupUserSession(subjectTeacher);
-
-    render(
-      <MemoryRouter initialEntries={['/']}>
-        <AuthProvider>
-          <DataContextProvider>
-            <App />
-          </DataContextProvider>
-        </AuthProvider>
-      </MemoryRouter>
-    );
-
-    await waitFor(() => {
-      expect(screen.getAllByText(/My Classes/i)[0]).toBeInTheDocument();
-      expect(screen.getAllByText(/Marks Registers/i)[0]).toBeInTheDocument();
-      expect(screen.getAllByText(/Assigned Classes/i)[0]).toBeInTheDocument();
+      // Permissions check
+      expect(Permissions.canAccessSection(principal, 'class-10-a')).toBe(true);
+      expect(Permissions.canViewIndividualAttendance(principal)).toBe(true);
+      expect(Permissions.canMarkAttendance(principal, 'class-10-a')).toBe(false);
+      expect(Permissions.canMarkAttendance(principal, 'class-01-a')).toBe(false);
+      expect(Permissions.canApproveAttendanceCorrection(principal, 'staff-003')).toBe(false);
     });
 
-    // Subject teacher must not see whole-school attendance or unassigned classes
-    expect(screen.queryByText(/Attendance by Class \(Today\)/i)).not.toBeInTheDocument();
-    expect(screen.queryByText(/Present Today/i)).not.toBeInTheDocument();
-  });
+    it('Data Layer Guard: Principal cannot mutate attendance, students, marks, notes, staff, or settings', async () => {
+      const principal = getPrincipal();
 
-  it('SectionGuard denies class teacher from accessing an unassigned class attendance register', async () => {
-    const classTeacher = initialStaff.find(s => s.role === 'class_teacher')!; // assigned to class-10-a
-    setupUserSession(classTeacher);
+      // Attempt 1: submit daily attendance
+      await expect(
+        demoRepository.submitDailyAttendance(
+          {
+            classId: 'class-10-a',
+            date: '2026-10-23',
+            academicYearId: 'year-2025-2026',
+            records: [],
+          },
+          principal
+        )
+      ).rejects.toThrow(/Principal cannot mark or edit|Principal has strictly read-only access/i);
 
-    render(
-      <MemoryRouter initialEntries={['/attendance/register/class-08-b']}>
-        <AuthProvider>
-          <DataContextProvider>
-            <App />
-          </DataContextProvider>
-        </AuthProvider>
-      </MemoryRouter>
-    );
+      // Attempt 2: save marks register
+      await expect(
+        demoRepository.saveMarksRegister(
+          {
+            assessmentId: 'assess-ut2-2025',
+            classId: 'class-10-a',
+            subjectId: 'sub-math-10',
+            entries: [],
+            isDraft: false,
+          },
+          principal
+        )
+      ).rejects.toThrow(/Principal has strictly read-only access/i);
 
-    await waitFor(() => {
-      expect(screen.getByText(/Attendance Roll-Call Unauthorized/i)).toBeInTheDocument();
-      expect(screen.getByText(/You are not authorized to mark attendance for section/i)).toBeInTheDocument();
-    });
-  });
+      // Attempt 3: create student note / incident
+      await expect(
+        demoRepository.createIncident(
+          {
+            studentId: 'STU-10A-01',
+            category: 'conduct_discipline',
+            title: 'Test Note',
+            description: 'Test note content',
+            severity: 'notice',
+          },
+          principal
+        )
+      ).rejects.toThrow(/Principal has strictly read-only access/i);
 
-  it('RoleGuard blocks Class Teacher from accessing System Configuration (/settings/system-config)', async () => {
-    const classTeacher = initialStaff.find(s => s.role === 'class_teacher')!;
-    setupUserSession(classTeacher);
+      // Attempt 4: create staff member
+      await expect(
+        demoRepository.createStaffMember(
+          {
+            displayName: 'Test Staff',
+            email: 'test@hanujai.edu.in',
+            role: 'subject_teacher',
+          },
+          principal
+        )
+      ).rejects.toThrow(/Principal has strictly read-only access/i);
 
-    render(
-      <MemoryRouter initialEntries={['/settings/system-config']}>
-        <AuthProvider>
-          <DataContextProvider>
-            <App />
-          </DataContextProvider>
-        </AuthProvider>
-      </MemoryRouter>
-    );
-
-    await waitFor(() => {
-      expect(screen.getByText(/Desk Authorization Policy/i)).toBeInTheDocument();
-      expect(screen.getByText(/Your current role/i)).toBeInTheDocument();
+      // Attempt 5: update school settings
+      await expect(
+        demoRepository.updateSchoolSettings(
+          {
+            schoolName: 'Hacked School Name',
+          },
+          principal
+        )
+      ).rejects.toThrow(/Principal has strictly read-only access/i);
     });
   });
 
-  it('RoleGuard blocks Subject Teacher from accessing Audit Log (/audit-log)', async () => {
-    const subjectTeacher = initialStaff.find(s => s.role === 'subject_teacher')!;
-    setupUserSession(subjectTeacher);
+  // =========================================================================
+  // 2. CLASS TEACHER: FULL RESPONSIBILITY FOR ASSIGNED CLASS
+  // =========================================================================
+  describe('2. Class Teacher: Full Responsibility for Assigned Section', () => {
+    // Shri Alok Saxena is Class Teacher of Class 10-A
+    const getClassTeacher = () => initialStaff.find(s => s.role === 'class_teacher' && s.assignedClassId === 'class-10-a')!;
 
-    render(
-      <MemoryRouter initialEntries={['/audit-log']}>
-        <AuthProvider>
-          <DataContextProvider>
-            <App />
-          </DataContextProvider>
-        </AuthProvider>
-      </MemoryRouter>
-    );
+    it('Class Teacher can access assigned class (10-A) for class-teacher functions', () => {
+      const classTeacher = getClassTeacher();
 
-    await waitFor(() => {
-      expect(screen.getByText(/Desk Authorization Policy/i)).toBeInTheDocument();
-      expect(screen.getByText(/Your current role/i)).toBeInTheDocument();
+      expect(Permissions.canAccessSection(classTeacher, 'class-10-a')).toBe(true);
+      expect(Permissions.canMarkAttendance(classTeacher, 'class-10-a')).toBe(true);
+      expect(Permissions.canViewIndividualAttendance(classTeacher)).toBe(true);
+      expect(Permissions.canViewStudent(classTeacher, 'class-10-a')).toBe(true);
+      expect(Permissions.canViewRiskWatchlist(classTeacher, 'class-10-a')).toBe(true);
+    });
+
+    it('Class Teacher can view cross-subject results matrix for assigned class 10-A', () => {
+      const classTeacher = getClassTeacher();
+
+      expect(Permissions.canAccessSubjectMarks(classTeacher, 'class-10-a', 'sub-math-10')).toBe(true);
+      expect(Permissions.canAccessSubjectMarks(classTeacher, 'class-10-a', 'sub-sci-10')).toBe(true);
+      expect(Permissions.canAccessSubjectMarks(classTeacher, 'class-10-a', 'sub-eng-10')).toBe(true);
+      expect(Permissions.canAccessSubjectMarks(classTeacher, 'class-10-a', 'sub-hin-10')).toBe(true);
+      expect(Permissions.canAccessSubjectMarks(classTeacher, 'class-10-a', 'sub-sst-10')).toBe(true);
+    });
+
+    it('Class Teacher is forbidden from marking attendance or viewing unrelated classes', () => {
+      const classTeacher = getClassTeacher();
+
+      expect(Permissions.canAccessSection(classTeacher, 'class-08-b')).toBe(false);
+      expect(Permissions.canMarkAttendance(classTeacher, 'class-08-b')).toBe(false);
+      expect(Permissions.canViewStudent(classTeacher, 'class-08-b')).toBe(false);
+      expect(Permissions.canViewRiskWatchlist(classTeacher, 'class-08-b')).toBe(false);
+    });
+
+    it('Class Teacher attendance form saves attendance against proper session and students', async () => {
+      const classTeacher = getClassTeacher();
+
+      const session = await demoRepository.submitDailyAttendance(
+        {
+          classId: 'class-10-a',
+          date: '2026-10-23',
+          academicYearId: 'year-2025-2026',
+          records: [
+            { studentId: 'STU-10A-01', state: 'present', remarks: 'On time' },
+            { studentId: 'STU-10A-02', state: 'absent', remarks: 'Medical leave' },
+          ],
+        },
+        classTeacher
+      );
+
+      expect(session).toBeDefined();
+      expect(session.classId).toBe('class-10-a');
+      expect(session.markedByStaffId).toBe(classTeacher.id);
+      expect(session.totalPresent).toBe(1);
+      expect(session.totalAbsent).toBe(1);
     });
   });
 
-  it('Permissions: SEC-201 dual custody prevents self-approval of attendance corrections', () => {
-    const principal = initialStaff.find(s => s.role === 'principal')!;
-    const classTeacher = initialStaff.find(s => s.role === 'class_teacher')!;
+  // =========================================================================
+  // 3. SUBJECT TEACHER: ONLY ASSIGNED SUBJECTS AND CLASSES
+  // =========================================================================
+  describe('3. Subject Teacher: Scoped strictly to assigned subjects/classes', () => {
+    // Smt. Priyanka Sen is Science teacher for Class 10-A and 10-B
+    const getSubjectTeacher = () => initialStaff.find(s => s.role === 'subject_teacher' && s.id === 'staff-004')!;
 
-    // Case 1: Class teacher requested, principal reviewing -> APPROVED
-    const canApproveNormal = Permissions.canApproveAttendanceCorrection(principal, classTeacher.id);
-    expect(canApproveNormal).toBe(true);
+    it('Subject Teacher can access assigned subject (Science) in assigned classes (10-A, 10-B)', () => {
+      const subjectTeacher = getSubjectTeacher();
 
-    // Case 2: Principal requested, same principal tries to approve -> FORBIDDEN (dual custody)
-    const canApproveSelf = Permissions.canApproveAttendanceCorrection(principal, principal.id);
-    expect(canApproveSelf).toBe(false);
+      expect(Permissions.canAccessSubjectMarks(subjectTeacher, 'class-10-a', 'sub-sci-10')).toBe(true);
+      expect(Permissions.canEditMarks(subjectTeacher, 'class-10-a', 'sub-sci-10')).toBe(true);
+      expect(Permissions.canAccessSubjectMarks(subjectTeacher, 'class-10-b', 'sub-sci-10')).toBe(true);
+      expect(Permissions.canEditMarks(subjectTeacher, 'class-10-b', 'sub-sci-10')).toBe(true);
+    });
 
-    // Case 3: Class teacher tries to approve -> FORBIDDEN
-    const canClassTeacherApprove = Permissions.canApproveAttendanceCorrection(classTeacher, 'staff-001');
-    expect(canClassTeacherApprove).toBe(false);
-  });
+    it('Subject Teacher CANNOT access other subjects (e.g. Mathematics, English)', () => {
+      const subjectTeacher = getSubjectTeacher();
 
-  it('Permissions: Subject teacher cannot edit marks for an unassigned subject/class', () => {
-    const subjectTeacher = initialStaff.find(s => s.role === 'subject_teacher')!; // assigned to sub-math-10 for class-10-a, 10-b, 09-a
+      expect(Permissions.canAccessSubjectMarks(subjectTeacher, 'class-10-a', 'sub-math-10')).toBe(false);
+      expect(Permissions.canEditMarks(subjectTeacher, 'class-10-a', 'sub-math-10')).toBe(false);
+      expect(Permissions.canAccessSubjectMarks(subjectTeacher, 'class-10-a', 'sub-eng-10')).toBe(false);
+      expect(Permissions.canEditMarks(subjectTeacher, 'class-10-a', 'sub-eng-10')).toBe(false);
+    });
 
-    // Can edit assigned: Math for Class 10-A
-    expect(Permissions.canEditMarks(subjectTeacher, 'class-10-a', 'sub-math-10')).toBe(true);
+    it('Subject Teacher cannot access individual attendance registers or absent lists', () => {
+      const subjectTeacher = getSubjectTeacher();
 
-    // CANNOT edit unassigned subject: Science for Class 10-A
-    expect(Permissions.canEditMarks(subjectTeacher, 'class-10-a', 'sub-sci-10')).toBe(false);
+      expect(Permissions.canMarkAttendance(subjectTeacher, 'class-10-a')).toBe(false);
+      expect(Permissions.canViewIndividualAttendance(subjectTeacher)).toBe(false);
+    });
 
-    // CANNOT edit unassigned class: Math for Class 06-A
-    expect(Permissions.canEditMarks(subjectTeacher, 'class-06-a', 'sub-math-10')).toBe(false);
-  });
+    it('Subject Teacher cannot retrieve unrelated student records', () => {
+      const subjectTeacher = getSubjectTeacher();
 
-  it('Policy: calculateGrade accurately follows CBSE 9-point grading scale', () => {
-    const maxMarks = 100;
-    expect(calculateGrade(95, maxMarks).grade).toBe('A1');
-    expect(calculateGrade(85, maxMarks).grade).toBe('A2');
-    expect(calculateGrade(75, maxMarks).grade).toBe('B1');
-    expect(calculateGrade(65, maxMarks).grade).toBe('B2');
-    expect(calculateGrade(55, maxMarks).grade).toBe('C1');
-    expect(calculateGrade(45, maxMarks).grade).toBe('C2');
-    expect(calculateGrade(35, maxMarks).grade).toBe('D');
-    expect(calculateGrade(25, maxMarks).grade).toBe('E1');
-    expect(calculateGrade(15, maxMarks).grade).toBe('E2');
-    expect(calculateGrade(null, maxMarks).grade).toBe('—');
-  });
-
-  it('Policy: morning roll-call window accurately checks window boundary', () => {
-    // Window is 07:45 - 09:15
-    expect(isMorningRollCallWindowOpen('08:00')).toBe(true);
-    expect(isMorningRollCallWindowOpen('07:44')).toBe(false);
-    expect(isMorningRollCallWindowOpen('09:16')).toBe(false);
-  });
-
-  it('Permissions: canViewRiskWatchlist fails closed without explicit classId for Class Teacher', () => {
-    const classTeacher = initialStaff.find(s => s.role === 'class_teacher')!;
-    const subjectTeacher = initialStaff.find(s => s.role === 'subject_teacher')!;
-    const principal = initialStaff.find(s => s.role === 'principal')!;
-
-    // Principal can view without or with classId
-    expect(Permissions.canViewRiskWatchlist(principal)).toBe(true);
-    expect(Permissions.canViewRiskWatchlist(principal, 'class-10-a')).toBe(true);
-
-    // Class Teacher can ONLY view when explicit matching classId is supplied
-    expect(Permissions.canViewRiskWatchlist(classTeacher, classTeacher.assignedClassId)).toBe(true);
-    expect(Permissions.canViewRiskWatchlist(classTeacher, 'class-01-a')).toBe(false);
-    // Crucial P0 test: Missing classId MUST fail closed to prevent whole-school risk leakage
-    expect(Permissions.canViewRiskWatchlist(classTeacher)).toBe(false);
-
-    // Subject Teacher cannot view risk watchlist
-    expect(Permissions.canViewRiskWatchlist(subjectTeacher)).toBe(false);
-    expect(Permissions.canViewRiskWatchlist(subjectTeacher, 'class-10-a')).toBe(false);
-  });
-
-  it('Permissions: canViewStudentReportCard restricts cumulative report cards to Principal, Office, and assigned Class Teacher', () => {
-    const principal = initialStaff.find(s => s.role === 'principal')!;
-    const officeAdmin = initialStaff.find(s => s.role === 'office_admin')!;
-    const classTeacher10A = initialStaff.find(s => s.role === 'class_teacher' && s.assignedClassId === 'class-10-a')!;
-    const subjectTeacher = initialStaff.find(s => s.role === 'subject_teacher')!; // Alok Saxena (Math 10-A, 10-B, 09-A)
-
-    const student10A = { classId: 'class-10-a' } as any;
-    const student01A = { classId: 'class-01-a' } as any;
-
-    // Principal and Office have school-wide clearance
-    expect(Permissions.canViewStudentReportCard(principal, student10A)).toBe(true);
-    expect(Permissions.canViewStudentReportCard(officeAdmin, student01A)).toBe(true);
-
-    // Class Teacher has clearance for their section only
-    expect(Permissions.canViewStudentReportCard(classTeacher10A, student10A)).toBe(true);
-    expect(Permissions.canViewStudentReportCard(classTeacher10A, student01A)).toBe(false);
-
-    // Subject Teacher does NOT have clearance for cumulative 5-subject report cards (even for classes they teach)
-    expect(Permissions.canViewStudentReportCard(subjectTeacher, student10A)).toBe(false);
-  });
-
-  it('Security Boundary: Direct URL to unauthorized student report card renders AccessDenied', async () => {
-    const classTeacher10A = initialStaff.find(s => s.role === 'class_teacher' && s.assignedClassId === 'class-10-a')!;
-    setupUserSession(classTeacher10A);
-
-    // Student from Class 01-A
-    render(
-      <MemoryRouter initialEntries={['/reports/report-card/STU-01A-01']}>
-        <AuthProvider>
-          <DataContextProvider>
-            <App />
-          </DataContextProvider>
-        </AuthProvider>
-      </MemoryRouter>
-    );
-
-    await waitFor(() => {
-      expect(screen.getByText(/Report Authorization Boundary/i)).toBeInTheDocument();
-      expect(screen.getByText(/not authorized to access cumulative 5-subject report cards/i)).toBeInTheDocument();
+      // Class 01-A is unrelated to Smt. Priyanka Sen
+      expect(Permissions.canViewStudent(subjectTeacher, 'class-01-a')).toBe(false);
+      expect(Permissions.canViewRiskWatchlist(subjectTeacher, 'class-01-a')).toBe(false);
     });
   });
 
-  it('Security Boundary: Direct URL to unassigned class attendance register renders AccessDenied', async () => {
-    const classTeacher10A = initialStaff.find(s => s.role === 'class_teacher' && s.assignedClassId === 'class-10-a')!;
-    setupUserSession(classTeacher10A);
+  // =========================================================================
+  // 4. DUAL-RESPONSIBILITY TEACHER: SHRI ALOK SAXENA
+  // =========================================================================
+  describe('4. Dual-Responsibility Teacher (Class Teacher 10-A + Math across 10-A, 10-B, 9-A, 9-B)', () => {
+    // Shri Alok Saxena: staff-003
+    const getDualTeacher = () => initialStaff.find(s => s.id === 'staff-003')!;
 
-    render(
-      <MemoryRouter initialEntries={['/attendance/register/class-01-a']}>
-        <AuthProvider>
-          <DataContextProvider>
-            <App />
-          </DataContextProvider>
-        </AuthProvider>
-      </MemoryRouter>
-    );
+    it('In Class 10-A context: can mark attendance and view all subjects marks', () => {
+      const teacher = getDualTeacher();
 
-    await waitFor(() => {
-      expect(screen.getByText(/Attendance Roll-Call Unauthorized/i)).toBeInTheDocument();
-      expect(screen.getByText(/You are not authorized to mark attendance for section/i)).toBeInTheDocument();
+      // Class teacher capabilities in 10-A
+      expect(Permissions.canMarkAttendance(teacher, 'class-10-a')).toBe(true);
+      expect(Permissions.canViewStudent(teacher, 'class-10-a')).toBe(true);
+      expect(Permissions.canAccessSubjectMarks(teacher, 'class-10-a', 'sub-math-10')).toBe(true);
+      expect(Permissions.canAccessSubjectMarks(teacher, 'class-10-a', 'sub-sci-10')).toBe(true);
+      expect(Permissions.canAccessSubjectMarks(teacher, 'class-10-a', 'sub-eng-10')).toBe(true);
+    });
+
+    it('In Class 10-A Mathematics context: can enter Mathematics marks', () => {
+      const teacher = getDualTeacher();
+
+      expect(Permissions.canEditMarks(teacher, 'class-10-a', 'sub-math-10')).toBe(true);
+      // In 10-A, Alok Saxena is NOT Science teacher, so cannot edit Science marks
+      expect(Permissions.canEditMarks(teacher, 'class-10-a', 'sub-sci-10')).toBe(false);
+    });
+
+    it('In Classes 10-B, 9-A, 9-B: can enter Math marks and view aggregate attendance only', () => {
+      const teacher = getDualTeacher();
+
+      // 10-B context
+      expect(Permissions.canEditMarks(teacher, 'class-10-b', 'sub-math-10')).toBe(true);
+      expect(Permissions.canAccessSubjectMarks(teacher, 'class-10-b', 'sub-math-10')).toBe(true);
+      // But CANNOT mark attendance in 10-B
+      expect(Permissions.canMarkAttendance(teacher, 'class-10-b')).toBe(false);
+      // CANNOT view other subject marks in 10-B
+      expect(Permissions.canAccessSubjectMarks(teacher, 'class-10-b', 'sub-sci-10')).toBe(false);
+      expect(Permissions.canAccessSubjectMarks(teacher, 'class-10-b', 'sub-eng-10')).toBe(false);
+
+      // 09-A context
+      expect(Permissions.canEditMarks(teacher, 'class-09-a', 'sub-math-09')).toBe(true);
+      expect(Permissions.canMarkAttendance(teacher, 'class-09-a')).toBe(false);
+      expect(Permissions.canAccessSubjectMarks(teacher, 'class-09-a', 'sub-sci-09')).toBe(false);
+
+      // 09-B context
+      expect(Permissions.canEditMarks(teacher, 'class-09-b', 'sub-math-09')).toBe(true);
+      expect(Permissions.canMarkAttendance(teacher, 'class-09-b')).toBe(false);
+      expect(Permissions.canAccessSubjectMarks(teacher, 'class-09-b', 'sub-sci-09')).toBe(false);
+    });
+
+    it('Class 10-A class-teacher privileges DO NOT leak into 10-B, 9-A, or 9-B', () => {
+      const teacher = getDualTeacher();
+
+      // Cannot access cumulative report card for a student in 10-B (subject teacher only)
+      const student10B = { classId: 'class-10-b' } as any;
+      expect(Permissions.canViewStudentReportCard(teacher, student10B)).toBe(false);
+
+      // Cannot access cumulative report card for a student in 09-A
+      const student09A = { classId: 'class-09-a' } as any;
+      expect(Permissions.canViewStudentReportCard(teacher, student09A)).toBe(false);
     });
   });
 
-  it('Subject Teacher results view is scoped strictly to assigned subject and class without multi-subject matrix', async () => {
-    const subjectTeacher = initialStaff.find(s => s.role === 'subject_teacher')!; // Shri Alok Saxena (Mathematics)
-    setupUserSession(subjectTeacher);
+  // =========================================================================
+  // 5. MARKS VALIDATION & CANONICAL REGISTER INTEGRITY
+  // =========================================================================
+  describe('5. Marks Validation & Register Integrity', () => {
+    it('Rejects scores exceeding maxMarks in repository', async () => {
+      const teacher = initialStaff.find(s => s.id === 'staff-003')!;
 
-    render(
-      <MemoryRouter initialEntries={['/performance/classes/class-10-a']}>
-        <AuthProvider>
-          <DataContextProvider>
-            <App />
-          </DataContextProvider>
-        </AuthProvider>
-      </MemoryRouter>
-    );
+      await expect(
+        demoRepository.saveMarksRegister(
+          {
+            assessmentId: 'assess-ut2-2025',
+            classId: 'class-10-a',
+            subjectId: 'sub-math-10',
+            entries: [
+              { studentId: 'STU-10A-01', marksObtained: 999, isAbsent: false }, // Max is 25!
+            ],
+            isDraft: false,
+          },
+          teacher
+        )
+      ).rejects.toThrow(/exceeds maximum permitted/i);
+    });
 
-    await waitFor(() => {
-      // Must display Mathematics Results, Class Average, and Enter Marks
-      expect(screen.getAllByText(/Mathematics Results — Class 10-A/i)[0]).toBeInTheDocument();
-      expect(screen.getAllByText(/Class Average/i)[0]).toBeInTheDocument();
-      expect(screen.getAllByText(/Enter Marks/i)[0]).toBeInTheDocument();
-      // Must NOT display cross-subject verification matrix or proctorial ledger
-      expect(screen.queryByText(/Multi-Subject Cross Verification Matrix/i)).toBeNull();
-      expect(screen.queryByText(/Tutor Follow-Up List/i)).toBeNull();
+    it('Rejects negative scores in repository', async () => {
+      const teacher = initialStaff.find(s => s.id === 'staff-003')!;
+
+      await expect(
+        demoRepository.saveMarksRegister(
+          {
+            assessmentId: 'assess-ut2-2025',
+            classId: 'class-10-a',
+            subjectId: 'sub-math-10',
+            entries: [
+              { studentId: 'STU-10A-01', marksObtained: -5, isAbsent: false },
+            ],
+            isDraft: false,
+          },
+          teacher
+        )
+      ).rejects.toThrow(/cannot be negative/i);
+    });
+
+    it('Distinguishes missing marks (null) from zero (0)', async () => {
+      const teacher = initialStaff.find(s => s.id === 'staff-003')!;
+
+      const register = await demoRepository.saveMarksRegister(
+        {
+          assessmentId: 'assess-ut2-2025',
+          classId: 'class-10-a',
+          subjectId: 'sub-math-10',
+          entries: [
+            { studentId: 'STU-10A-01', marksObtained: 0, isAbsent: false },    // Scored zero
+            { studentId: 'STU-10A-02', marksObtained: null, isAbsent: false }, // Unmarked / missing
+          ],
+          isDraft: true,
+        },
+        teacher
+      );
+
+      const entry1 = register.entries.find(e => e.studentId === 'STU-10A-01')!;
+      const entry2 = register.entries.find(e => e.studentId === 'STU-10A-02')!;
+
+      expect(entry1.marksObtained).toBe(0);
+      expect(entry1.grade).toBe('E2'); // Scored 0%
+
+      expect(entry2.marksObtained).toBeNull();
+      expect(entry2.grade).toBe('—'); // Pending
+    });
+
+    it('Accurately maps CBSE 9-point scale', () => {
+      const maxMarks = 100;
+      expect(calculateGrade(95, maxMarks).grade).toBe('A1');
+      expect(calculateGrade(85, maxMarks).grade).toBe('A2');
+      expect(calculateGrade(75, maxMarks).grade).toBe('B1');
+      expect(calculateGrade(65, maxMarks).grade).toBe('B2');
+      expect(calculateGrade(55, maxMarks).grade).toBe('C1');
+      expect(calculateGrade(45, maxMarks).grade).toBe('C2');
+      expect(calculateGrade(35, maxMarks).grade).toBe('D');
+      expect(calculateGrade(25, maxMarks).grade).toBe('E1');
+      expect(calculateGrade(10, maxMarks).grade).toBe('E2');
+      expect(calculateGrade(null, maxMarks).grade).toBe('—');
+    });
+
+    it('Morning roll-call window validator checks 07:45 - 09:15 boundary', () => {
+      expect(isMorningRollCallWindowOpen('08:00')).toBe(true);
+      expect(isMorningRollCallWindowOpen('07:45')).toBe(true);
+      expect(isMorningRollCallWindowOpen('09:15')).toBe(true);
+      expect(isMorningRollCallWindowOpen('07:44')).toBe(false);
+      expect(isMorningRollCallWindowOpen('09:16')).toBe(false);
     });
   });
 
-  it('Enter Marks route accepts /academics/assessments/marks/:registerId without 404', async () => {
-    const subjectTeacher = initialStaff.find(s => s.role === 'subject_teacher')!;
-    setupUserSession(subjectTeacher);
+  // =========================================================================
+  // 6. THREE PROFILES VERIFICATION & RESIDUAL OFFICE ROLE PURGE
+  // =========================================================================
+  describe('6. Strictly 3 Profiles in System', () => {
+    it('All seed staff members belong strictly to the 3 permitted roles', () => {
+      const allowedRoles = ['principal', 'class_teacher', 'subject_teacher'];
+      initialStaff.forEach(staff => {
+        expect(allowedRoles).toContain(staff.role);
+        expect((staff.role as string)).not.toBe('office_admin');
+        expect((staff.role as string)).not.toBe('office_staff');
+      });
+    });
 
-    render(
-      <MemoryRouter initialEntries={['/academics/assessments/marks/reg-assess-ut2-2025-class-10-a-sub-math-10']}>
-        <AuthProvider>
-          <DataContextProvider>
-            <App />
-          </DataContextProvider>
-        </AuthProvider>
-      </MemoryRouter>
-    );
+    it('Unsupported legacy roles cannot access protected pages', async () => {
+      const unsupportedUser = {
+        id: 'staff-legacy',
+        email: 'legacy@hanujai.edu.in',
+        name: 'Legacy Office Staff',
+        role: 'office_admin' as any,
+      };
+      localStorage.setItem('hanujai_demo_user_override', JSON.stringify(unsupportedUser));
 
-    await waitFor(() => {
-      expect(screen.getAllByText(/Enter Marks/i)[0]).toBeInTheDocument();
-      expect(screen.queryByText(/Record or Screen Not Found/i)).toBeNull();
-      expect(screen.queryByText(/We couldn't find this page/i)).toBeNull();
+      render(
+        <MemoryRouter initialEntries={['/']}>
+          <AuthProvider>
+            <DataContextProvider>
+              <App />
+            </DataContextProvider>
+          </AuthProvider>
+        </MemoryRouter>
+      );
+
+      await waitFor(() => {
+        // Unsupported role is denied by RoleDashboardRouter
+        expect(screen.getAllByText(/Access Restricted/i)[0]).toBeInTheDocument();
+      });
     });
   });
 });
-

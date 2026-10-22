@@ -139,7 +139,7 @@ export const MarksEntryRegister: React.FC = () => {
   // Scoped classes & subjects based on user assignment
   const availableClasses = useMemo(() => {
     if (!currentUser) return [];
-    if (currentUser.role === 'principal' || currentUser.role === 'admin' || currentUser.role === 'office_staff') {
+    if (currentUser.role === 'principal') {
       return classes;
     }
     const permittedIds = new Set<string>();
@@ -150,7 +150,7 @@ export const MarksEntryRegister: React.FC = () => {
 
   const availableSubjects = useMemo(() => {
     if (!currentUser) return [];
-    if (currentUser.role === 'principal' || currentUser.role === 'admin') {
+    if (currentUser.role === 'principal') {
       return subjects;
     }
     if (currentUser.role === 'subject_teacher') {
@@ -463,7 +463,7 @@ export const MarksEntryRegister: React.FC = () => {
                 }}
               >
                 <Lock size={15} />
-                <span>Read-Only Archive</span>
+                <span>{currentUser?.role === 'principal' ? 'Read-Only Oversight' : 'Read-Only Record'}</span>
               </div>
             ) : !isFinalized ? (
               <>
@@ -675,7 +675,7 @@ export const MarksEntryRegister: React.FC = () => {
             </div>
           </div>
           <span className="hhs-badge hhs-badge-primary">
-            {isFinalized ? 'Record Finalized' : 'Edit Mode'}
+            {!canEdit ? 'Read-Only' : isFinalized ? 'Record Finalized' : 'Edit Mode'}
           </span>
         </div>
 

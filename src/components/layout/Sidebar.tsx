@@ -6,8 +6,6 @@ import {
   Users,
   CalendarCheck,
   Award,
-  Settings,
-  FileText,
   FileCheck2,
   BookOpen,
   MessageSquare,
@@ -31,8 +29,6 @@ export const Sidebar: React.FC<SidebarProps> = ({ isMobileOpen = false, onClose 
   const roleLabel =
     role === 'principal'
       ? 'Principal'
-      : role === 'office_admin' || role === 'office_staff'
-      ? 'Office Staff'
       : role === 'class_teacher'
       ? (assignedClassLabel ? `${assignedClassLabel} Teacher` : 'Class Teacher')
       : role === 'subject_teacher'
@@ -101,12 +97,12 @@ export const Sidebar: React.FC<SidebarProps> = ({ isMobileOpen = false, onClose 
           <span style={{ color: 'var(--hhs-primary)', fontWeight: 600 }}>{roleLabel}</span>
         </div>
 
-        {/* Clean, Role-Specific Task Navigation (Max 5 items per role) */}
+        {/* Clean, Role-Specific Task Navigation (Max 4-5 items per role) */}
         <nav style={{ flex: 1, overflowY: 'auto', padding: '12px 8px' }}>
           <ul style={{ listStyle: 'none', display: 'flex', flexDirection: 'column', gap: '3px' }}>
             
-            {/* 1. PRINCIPAL WORKSPACE (5 items) */}
-            {(role === 'principal' || role === 'admin') && (
+            {/* 1. PRINCIPAL WORKSPACE (4 items: Home, Students, Attendance, Results & Reports) */}
+            {role === 'principal' && (
               <>
                 <li>
                   <SidebarItem to="/" icon={<Home size={16} />} label="Home" end />
@@ -118,31 +114,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ isMobileOpen = false, onClose 
                   <SidebarItem to="/attendance" icon={<CalendarCheck size={16} />} label="Attendance" />
                 </li>
                 <li>
-                  <SidebarItem to="/academics/assessments" icon={<Award size={16} />} label="Results" />
-                </li>
-                <li>
-                  <SidebarItem to="/settings/system-config" icon={<Settings size={16} />} label="School Setup" />
-                </li>
-              </>
-            )}
-
-            {/* 2. OFFICE STAFF WORKSPACE (5 items) */}
-            {(role === 'office_admin' || role === 'office_staff') && (
-              <>
-                <li>
-                  <SidebarItem to="/" icon={<Home size={16} />} label="Home" end />
-                </li>
-                <li>
-                  <SidebarItem to="/students" icon={<Users size={16} />} label="Students" />
-                </li>
-                <li>
-                  <SidebarItem to="/attendance" icon={<CalendarCheck size={16} />} label="Attendance" />
-                </li>
-                <li>
-                  <SidebarItem to="/academics/assessments" icon={<Award size={16} />} label="Results" />
-                </li>
-                <li>
-                  <SidebarItem to="/reports" icon={<FileText size={16} />} label="Reports" />
+                  <SidebarItem to="/reports" icon={<Award size={16} />} label="Results & Reports" />
                 </li>
               </>
             )}

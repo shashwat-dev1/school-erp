@@ -148,7 +148,7 @@ export const SubjectTeacherDashboard: React.FC = () => {
         />
         <ErrorBanner
           title="No Classes Assigned"
-          message="Your account has no subjects or classes assigned yet. Please contact the Principal or office staff to assign your teaching schedule."
+          message="Your account has no subjects or classes assigned yet. Please contact the Principal to assign your teaching schedule."
         />
       </div>
     );

@@ -50,7 +50,7 @@ import {
   initialIncidents,
   initialAuditEvents,
 } from './seedData';
-import { getSchoolLocalDate } from '../../domain/policy';
+import { getSchoolLocalDate, calculateGrade } from '../../domain/policy';
 
 const STORAGE_KEY = 'hanujai_erp_demo_store_v1';
 
@@ -97,6 +97,17 @@ class DemoRepository implements DataProvider {
       if (raw) {
         const parsed = JSON.parse(raw);
         if (parsed.students && parsed.students.length >= 500) {
+          // Sync staff to ensure 3-role model without legacy office_admin
+          if (
+            !parsed.staff ||
+            parsed.staff.some((s: StaffUser) => (s.role as string) === 'office_admin' || (s.role as string) === 'office_staff') ||
+            !parsed.staff.some((s: StaffUser) => s.email === 'alok.saxena@hanujai.edu.in')
+          ) {
+            parsed.staff = [...initialStaff];
+            parsed.classes = [...initialClasses];
+            parsed.subjectAssignments = [...initialSubjectAssignments];
+          }
+
           if (Array.isArray(parsed.marksRegisters)) {
             initialMarksRegisters.forEach(initReg => {
               if (!parsed.marksRegisters.some((r: { id: string }) => r.id === initReg.id)) {
@@ -134,6 +145,9 @@ class DemoRepository implements DataProvider {
     settings: Partial<SchoolSettings>,
     actor: StaffUser
   ): Promise<SchoolSettings> {
+    if (actor.role === 'principal') {
+      throw new Error('Unauthorized: Principal has strictly read-only access in this pilot.');
+    }
     const store = this.loadStore();
     store.settings = { ...store.settings, ...settings };
 
@@ -158,6 +172,9 @@ class DemoRepository implements DataProvider {
     policy: Partial<AttendancePolicy>,
     actor: StaffUser
   ): Promise<AttendancePolicy> {
+    if (actor.role === 'principal') {
+      throw new Error('Unauthorized: Principal has strictly read-only access in this pilot.');
+    }
     const store = this.loadStore();
     store.settings.attendancePolicy = {
       ...store.settings.attendancePolicy,
@@ -195,6 +212,9 @@ class DemoRepository implements DataProvider {
     updates: Partial<AcademicYear>,
     actor: StaffUser
   ): Promise<AcademicYear> {
+    if (actor.role === 'principal') {
+      throw new Error('Unauthorized: Principal has strictly read-only access in this pilot.');
+    }
     const store = this.loadStore();
     if (!store.academicYears) store.academicYears = [...initialAcademicYears];
     const idx = store.academicYears.findIndex(y => y.id === yearId);
@@ -236,6 +256,9 @@ class DemoRepository implements DataProvider {
   }
 
   public async createStaffMember(input: Partial<StaffUser>, actor: StaffUser): Promise<StaffUser> {
+    if (actor.role === 'principal') {
+      throw new Error('Unauthorized: Principal has strictly read-only access in this pilot.');
+    }
     const store = this.loadStore();
     const newStaff: StaffUser = {
       id: `staff-${Date.now()}`,
@@ -278,6 +301,9 @@ class DemoRepository implements DataProvider {
     updates: Partial<StaffUser>,
     actor: StaffUser
   ): Promise<StaffUser> {
+    if (actor.role === 'principal') {
+      throw new Error('Unauthorized: Principal has strictly read-only access in this pilot.');
+    }
     const store = this.loadStore();
     const idx = store.staff.findIndex(s => s.id === staffId);
     if (idx === -1) throw new Error('Staff member not found');
@@ -331,6 +357,9 @@ class DemoRepository implements DataProvider {
     teacherName: string,
     actor: StaffUser
   ): Promise<ClassSection> {
+    if (actor.role === 'principal') {
+      throw new Error('Unauthorized: Principal has strictly read-only access in this pilot.');
+    }
     const store = this.loadStore();
     const cls = store.classes.find(c => c.id === classId);
     if (!cls) throw new Error('Class section not found');
@@ -368,6 +397,9 @@ class DemoRepository implements DataProvider {
   }
 
   public async createSubject(subject: Partial<Subject>, actor: StaffUser): Promise<Subject> {
+    if (actor.role === 'principal') {
+      throw new Error('Unauthorized: Principal has strictly read-only access in this pilot.');
+    }
     const store = this.loadStore();
     const newSubject: Subject = {
       id: `sub-${Date.now()}`,
@@ -407,6 +439,9 @@ class DemoRepository implements DataProvider {
     assignment: Partial<SubjectAssignment>,
     actor: StaffUser
   ): Promise<SubjectAssignment> {
+    if (actor.role === 'principal') {
+      throw new Error('Unauthorized: Principal has strictly read-only access in this pilot.');
+    }
     const store = this.loadStore();
     if (!assignment.subjectId || !assignment.classId || !assignment.teacherId) {
       throw new Error('Subject assignment requires subjectId, classId, and teacherId.');
@@ -497,6 +532,9 @@ class DemoRepository implements DataProvider {
   }
 
   public async createStudent(input: NewStudentInput, actor: StaffUser): Promise<StudentRecord> {
+    if (actor.role === 'principal') {
+      throw new Error('Unauthorized: Principal has strictly read-only access in this pilot.');
+    }
     const store = this.loadStore();
 
     // Collision check
@@ -562,6 +600,9 @@ class DemoRepository implements DataProvider {
     actor: StaffUser,
     reason: string
   ): Promise<StudentRecord> {
+    if (actor.role === 'principal') {
+      throw new Error('Unauthorized: Principal has strictly read-only access in this pilot.');
+    }
     const store = this.loadStore();
     const idx = store.students.findIndex(
       s => s.id === studentId || s.id.toLowerCase() === studentId.toLowerCase()
@@ -630,33 +671,47 @@ class DemoRepository implements DataProvider {
     input: AttendanceSubmissionInput,
     actor: StaffUser
   ): Promise<AttendanceSession> {
+    if (actor.role === 'principal') {
+      throw new Error('Unauthorized: Principal has strictly read-only access. Principal cannot mark or edit classroom attendance.');
+    }
+
+    const isClassTeacher = actor.assignedClassId === input.classId || 
+      (actor.role === 'class_teacher' && actor.assignedClasses?.includes(input.classId));
+    if (!isClassTeacher) {
+      throw new Error(`Unauthorized: Only the assigned Class Teacher can mark attendance for class ${input.classId}.`);
+    }
+
     const store = this.loadStore();
     const cls = store.classes.find(c => c.id === input.classId);
 
-    const presentCount = input.records.filter(r => r.state === 'present').length;
-    const absentCount = input.records.filter(r => r.state === 'absent').length;
-    const lateCount = input.records.filter(r => r.state === 'late').length;
-    const excusedCount = input.records.filter(r => r.state === 'excused').length;
+    const recs = input.records || (input as any).entries || [];
+    const presentCount = recs.filter((r: any) => r.state === 'present').length;
+    const absentCount = recs.filter((r: any) => r.state === 'absent').length;
+    const lateCount = recs.filter((r: any) => r.state === 'late').length;
+    const excusedCount = recs.filter((r: any) => r.state === 'excused').length;
 
     const session: AttendanceSession = {
       id: `att-${input.classId}-${input.date}`,
       classId: input.classId,
       classLabel: cls ? cls.label : input.classId,
       date: input.date,
-      academicYearId: input.academicYearId,
+      academicYearId: input.academicYearId || 'year-2025-2026',
       takenByStaffId: actor.id,
       takenByStaffName: actor.name,
+      markedByStaffId: actor.id,
       takenAt: new Date().toISOString(),
       windowStart: '07:45',
       windowEnd: '09:15',
       isWindowOpen: true,
       status: 'submitted',
-      totalStudents: input.records.length,
+      totalStudents: recs.length,
       presentCount,
       absentCount,
+      totalPresent: presentCount,
+      totalAbsent: absentCount,
       lateCount,
       excusedCount,
-      records: input.records.map(r => {
+      records: recs.map((r: any) => {
         const student = store.students.find(s => s.id === r.studentId);
         return {
           studentId: r.studentId,
@@ -704,14 +759,25 @@ class DemoRepository implements DataProvider {
     input: AttendanceCorrectionInput,
     actor: StaffUser
   ): Promise<AttendanceCorrection> {
+    if (actor.role === 'principal') {
+      throw new Error('Unauthorized: Principal cannot request attendance corrections.');
+    }
+
     const store = this.loadStore();
     const session = store.attendanceSessions.find(s => s.id === input.sessionId);
     const student = store.students.find(s => s.id === input.studentId);
+    const classId = session ? session.classId : 'class-10-a';
+
+    const isClassTeacher = actor.assignedClassId === classId || 
+      (actor.role === 'class_teacher' && actor.assignedClasses?.includes(classId));
+    if (!isClassTeacher) {
+      throw new Error('Unauthorized: Only the assigned Class Teacher can request attendance corrections.');
+    }
 
     const correction: AttendanceCorrection = {
       id: `corr-${Date.now()}`,
       sessionId: input.sessionId,
-      classId: session ? session.classId : 'class-10-a',
+      classId,
       classLabel: session ? session.classLabel : 'Class 10-A',
       date: session ? session.date : new Date().toISOString().split('T')[0],
       studentId: input.studentId,
@@ -750,6 +816,9 @@ class DemoRepository implements DataProvider {
     approved: boolean,
     remarks?: string
   ): Promise<void> {
+    if (actor.role === 'principal') {
+      throw new Error('Unauthorized: Principal cannot approve attendance corrections in this pilot.');
+    }
     const store = this.loadStore();
     const corr = store.attendanceCorrections.find(c => c.id === correctionId);
     if (!corr) return;
@@ -805,6 +874,9 @@ class DemoRepository implements DataProvider {
     cycle: Partial<AssessmentCycle>,
     actor: StaffUser
   ): Promise<AssessmentCycle> {
+    if (actor.role === 'principal') {
+      throw new Error('Unauthorized: Principal has strictly read-only access in this pilot.');
+    }
     const store = this.loadStore();
     const newCycle: AssessmentCycle = {
       id: `assess-${Date.now()}`,
@@ -843,6 +915,9 @@ class DemoRepository implements DataProvider {
     updates: Partial<AssessmentCycle>,
     actor: StaffUser
   ): Promise<AssessmentCycle> {
+    if (actor.role === 'principal') {
+      throw new Error('Unauthorized: Principal has strictly read-only access in this pilot.');
+    }
     const store = this.loadStore();
     const idx = store.assessments.findIndex(a => a.id === cycleId);
     if (idx === -1) throw new Error('Assessment cycle not found');
@@ -885,6 +960,10 @@ class DemoRepository implements DataProvider {
 
     if (!assessment || !targetClass || !subject) return null;
 
+    const assignment = store.subjectAssignments.find(
+      a => a.classId === classId && a.subjectId === subjectId
+    );
+
     return {
       id: `reg-${assessmentId}-${classId}-${subjectId}`,
       assessmentId,
@@ -895,8 +974,8 @@ class DemoRepository implements DataProvider {
       subjectName: subject.name,
       maxMarks: assessment.maxMarks,
       passingMarks: assessment.passingMarks,
-      teacherId: 'staff-004',
-      teacherName: 'Shri Alok Saxena',
+      teacherId: assignment ? assignment.teacherId : 'staff-003',
+      teacherName: assignment ? assignment.teacherName : 'Shri Alok Saxena',
       status: 'draft',
       lastSavedAt: new Date().toISOString(),
       entries: students.map(s => ({
@@ -913,12 +992,39 @@ class DemoRepository implements DataProvider {
     input: MarksSubmissionInput,
     actor: StaffUser
   ): Promise<MarksRegister> {
+    if (actor.role === 'principal') {
+      throw new Error('Unauthorized: Principal has strictly read-only access. Principal cannot enter or edit marks.');
+    }
+
     const store = this.loadStore();
     const assessment = store.assessments.find(a => a.id === input.assessmentId);
     const targetClass = store.classes.find(c => c.id === input.classId);
     const subject = store.subjects.find(s => s.id === input.subjectId);
 
+    const isAssignedSubjectTeacher = store.subjectAssignments.some(
+      a => a.teacherId === actor.id && a.classId === input.classId && a.subjectId === input.subjectId
+    ) || (
+      actor.assignedClasses?.includes(input.classId) &&
+      actor.assignedSubjects?.includes(input.subjectId)
+    );
+
+    if (!isAssignedSubjectTeacher) {
+      throw new Error(`Unauthorized: Marks entry permitted only for assigned subject teachers of ${input.classId} (${input.subjectId}).`);
+    }
+
     const maxMarks = assessment ? assessment.maxMarks : 100;
+
+    // Validate marks against maxMarks and prevent negative numbers
+    for (const entry of input.entries) {
+      if (entry.marksObtained !== null && entry.marksObtained !== undefined) {
+        if (entry.marksObtained < 0) {
+          throw new Error(`Invalid mark ${entry.marksObtained}: Marks cannot be negative.`);
+        }
+        if (entry.marksObtained > maxMarks) {
+          throw new Error(`Invalid mark ${entry.marksObtained}: Marks exceeds maximum permitted (${maxMarks}).`);
+        }
+      }
+    }
 
     const register: MarksRegister = {
       id: `reg-${input.assessmentId}-${input.classId}-${input.subjectId}`,
@@ -941,16 +1047,10 @@ class DemoRepository implements DataProvider {
         let grade: string | undefined;
         let percentage: number | undefined;
 
-        if (marks !== null && !e.isAbsent) {
-          percentage = Math.round((marks / maxMarks) * 100);
-          if (percentage >= 91) grade = 'A1';
-          else if (percentage >= 81) grade = 'A2';
-          else if (percentage >= 71) grade = 'B1';
-          else if (percentage >= 61) grade = 'B2';
-          else if (percentage >= 51) grade = 'C1';
-          else if (percentage >= 41) grade = 'C2';
-          else if (percentage >= 33) grade = 'D';
-          else grade = 'E';
+        if (!e.isAbsent) {
+          const gradeRes = calculateGrade(marks, maxMarks);
+          percentage = gradeRes.percentage !== null ? gradeRes.percentage : undefined;
+          grade = gradeRes.grade;
         }
 
         return {
@@ -1061,10 +1161,21 @@ class DemoRepository implements DataProvider {
   }
 
   public async createIncident(input: NewIncidentInput, actor: StaffUser): Promise<IncidentRecord> {
+    if (actor.role === 'principal') {
+      throw new Error('Unauthorized: Principal has strictly read-only access. Principal cannot create student notes in this pilot.');
+    }
+
     const store = this.loadStore();
     const student = store.students.find(
       s => s.id === input.studentId || s.id.toLowerCase() === input.studentId.toLowerCase()
     );
+    if (!student) throw new Error('Student not found.');
+
+    const isAssigned = (actor.assignedClassId === student.classId) || 
+      (actor.assignedClasses && actor.assignedClasses.includes(student.classId));
+    if (!isAssigned) {
+      throw new Error('Unauthorized: Teachers can only add notes for students in their assigned classes.');
+    }
 
     const incident: IncidentRecord = {
       id: `inc-${Date.now()}`,
@@ -1109,6 +1220,9 @@ class DemoRepository implements DataProvider {
     updates: Partial<IncidentRecord>,
     actor: StaffUser
   ): Promise<IncidentRecord> {
+    if (actor.role === 'principal') {
+      throw new Error('Unauthorized: Principal has strictly read-only access. Principal cannot edit student notes in this pilot.');
+    }
     const store = this.loadStore();
     const idx = store.incidents.findIndex(i => i.id === incidentId);
     if (idx === -1) throw new Error('Incident not found');

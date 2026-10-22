@@ -76,11 +76,11 @@ export const App: React.FC = () => {
         <Route path="students" element={<StudentDirectory />} />
         <Route path="students/:id" element={<StudentDetail />} />
 
-        {/* Whole-School Attendance (Principal & Office Admin only) */}
+        {/* Whole-School Attendance (Principal only) */}
         <Route
           path="attendance"
           element={
-            <RoleGuard allowedRoles={['principal', 'office_admin']}>
+            <RoleGuard allowedRoles={['principal']}>
               <AttendanceDashboard />
             </RoleGuard>
           }
@@ -110,7 +110,7 @@ export const App: React.FC = () => {
         <Route
           path="classes"
           element={
-            <RoleGuard allowedRoles={['principal', 'office_admin']}>
+            <RoleGuard allowedRoles={['principal']}>
               <ClassesDirectory />
             </RoleGuard>
           }
@@ -149,11 +149,11 @@ export const App: React.FC = () => {
         <Route path="academics/assessments/marks/:registerId" element={<MarksEntryRegister />} />
         <Route path="assessments/marks/:registerId" element={<MarksEntryRegister />} />
 
-        {/* Performance Risk Watchlist (Principal, Office Admin, Class Teacher) */}
+        {/* Performance Risk Watchlist (Principal, Class Teacher) */}
         <Route
           path="risk-watchlist"
           element={
-            <RoleGuard allowedRoles={['principal', 'office_admin', 'class_teacher']}>
+            <RoleGuard allowedRoles={['principal', 'class_teacher']}>
               <RiskWatchlist />
             </RoleGuard>
           }
@@ -169,7 +169,7 @@ export const App: React.FC = () => {
         <Route
           path="reports/attendance"
           element={
-            <RoleGuard allowedRoles={['principal', 'office_admin', 'class_teacher']}>
+            <RoleGuard allowedRoles={['principal', 'class_teacher']}>
               <AttendanceReport />
             </RoleGuard>
           }
@@ -177,7 +177,7 @@ export const App: React.FC = () => {
         <Route
           path="reports/academic-comparison"
           element={
-            <RoleGuard allowedRoles={['principal', 'office_admin']}>
+            <RoleGuard allowedRoles={['principal']}>
               <AcademicComparisonReport />
             </RoleGuard>
           }
@@ -187,7 +187,7 @@ export const App: React.FC = () => {
         <Route
           path="staff"
           element={
-            <RoleGuard allowedRoles={['principal', 'office_admin']}>
+            <RoleGuard allowedRoles={['principal']}>
               <StaffDirectory />
             </RoleGuard>
           }
@@ -195,7 +195,7 @@ export const App: React.FC = () => {
         <Route
           path="admin/staff"
           element={
-            <RoleGuard allowedRoles={['principal', 'office_admin']}>
+            <RoleGuard allowedRoles={['principal']}>
               <StaffDirectory />
             </RoleGuard>
           }
@@ -203,7 +203,7 @@ export const App: React.FC = () => {
         <Route
           path="admin/class-teachers"
           element={
-            <RoleGuard allowedRoles={['principal', 'office_admin']}>
+            <RoleGuard allowedRoles={['principal']}>
               <ClassTeacherAssignments />
             </RoleGuard>
           }
@@ -211,7 +211,7 @@ export const App: React.FC = () => {
         <Route
           path="admin/subject-teachers"
           element={
-            <RoleGuard allowedRoles={['principal', 'office_admin']}>
+            <RoleGuard allowedRoles={['principal']}>
               <SubjectFacultyAssignments />
             </RoleGuard>
           }
@@ -219,7 +219,7 @@ export const App: React.FC = () => {
         <Route
           path="admin/roles"
           element={
-            <RoleGuard allowedRoles={['principal', 'office_admin']}>
+            <RoleGuard allowedRoles={['principal']}>
               <RolePermissionMatrix />
             </RoleGuard>
           }

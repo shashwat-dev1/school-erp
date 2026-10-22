@@ -159,6 +159,9 @@ export class FirestoreRepository implements DataProvider {
   }
 
   public async createStudent(input: NewStudentInput, actor: StaffUser): Promise<StudentRecord> {
+    if (actor.role === 'principal') {
+      throw new Error('Unauthorized: Principal profile is strictly read-only in this pilot.');
+    }
     ensureFirebaseReady();
     const [cls, activeYear] = await Promise.all([
       this.getClassById(input.classId),
@@ -216,6 +219,9 @@ export class FirestoreRepository implements DataProvider {
     actor: StaffUser,
     reason: string
   ): Promise<StudentRecord> {
+    if (actor.role === 'principal') {
+      throw new Error('Unauthorized: Principal profile is strictly read-only in this pilot.');
+    }
     ensureFirebaseReady();
     const docRef = doc(db!, 'students', studentId);
     await updateDoc(docRef, { ...updates, updatedAt: new Date().toISOString() });
@@ -247,6 +253,14 @@ export class FirestoreRepository implements DataProvider {
     input: AttendanceSubmissionInput,
     actor: StaffUser
   ): Promise<AttendanceSession> {
+    if (actor.role === 'principal') {
+      throw new Error('Unauthorized: Principal cannot mark or edit classroom attendance.');
+    }
+    const isClassTeacher = actor.assignedClassId === input.classId || 
+      (actor.role === 'class_teacher' && actor.assignedClasses?.includes(input.classId));
+    if (!isClassTeacher) {
+      throw new Error(`Unauthorized: Only the assigned Class Teacher can mark attendance for class ${input.classId}.`);
+    }
     ensureFirebaseReady();
     const [cls, students] = await Promise.all([
       this.getClassById(input.classId),
@@ -302,6 +316,9 @@ export class FirestoreRepository implements DataProvider {
     input: AttendanceCorrectionInput,
     actor: StaffUser
   ): Promise<AttendanceCorrection> {
+    if (actor.role === 'principal') {
+      throw new Error('Unauthorized: Principal cannot request attendance corrections.');
+    }
     ensureFirebaseReady();
     const [studDoc, sessDoc] = await Promise.all([
       getDoc(doc(db!, 'students', input.studentId)),
@@ -311,6 +328,12 @@ export class FirestoreRepository implements DataProvider {
     const sess = sessDoc.exists() ? (sessDoc.data() as AttendanceSession) : null;
 
     const classId = sess?.classId || stud?.classId || 'class-10-a';
+    const isClassTeacher = actor.assignedClassId === classId || 
+      (actor.role === 'class_teacher' && actor.assignedClasses?.includes(classId));
+    if (!isClassTeacher) {
+      throw new Error('Unauthorized: Only the assigned Class Teacher can request attendance corrections.');
+    }
+
     const classLabel = sess?.classLabel || stud?.classLabel || classId;
     const date = sess?.date || getSchoolLocalDate();
     const studentName = stud?.fullName || input.studentId;
@@ -342,6 +365,9 @@ export class FirestoreRepository implements DataProvider {
     approved: boolean,
     remarks?: string
   ): Promise<void> {
+    if (actor.role === 'principal') {
+      throw new Error('Unauthorized: Principal cannot approve attendance corrections in this pilot.');
+    }
     ensureFirebaseReady();
     const docRef = doc(db!, 'attendanceCorrections', correctionId);
     await updateDoc(docRef, {
@@ -376,6 +402,9 @@ export class FirestoreRepository implements DataProvider {
     input: MarksSubmissionInput,
     actor: StaffUser
   ): Promise<MarksRegister> {
+    if (actor.role === 'principal') {
+      throw new Error('Unauthorized: Principal cannot enter or edit marks.');
+    }
     ensureFirebaseReady();
     const [assessment, targetClass, allSubjects, students] = await Promise.all([
       this.getAssessmentCycleById(input.assessmentId),
@@ -388,6 +417,15 @@ export class FirestoreRepository implements DataProvider {
     const regId = `reg-${input.assessmentId}-${input.classId}-${input.subjectId}`;
     const maxMarks = assessment ? assessment.maxMarks : 100;
     const passingMarks = assessment ? assessment.passingMarks : 33;
+
+    // Validate marks against maxMarks
+    for (const entry of input.entries) {
+      if (entry.marksObtained !== null && entry.marksObtained !== undefined) {
+        if (entry.marksObtained < 0 || entry.marksObtained > maxMarks) {
+          throw new Error(`Invalid mark ${entry.marksObtained}: Marks must be between 0 and maximum ${maxMarks}.`);
+        }
+      }
+    }
 
     const register: MarksRegister = {
       id: regId,
@@ -430,6 +468,9 @@ export class FirestoreRepository implements DataProvider {
   }
 
   public async createIncident(input: NewIncidentInput, actor: StaffUser): Promise<IncidentRecord> {
+    if (actor.role === 'principal') {
+      throw new Error('Unauthorized: Principal cannot create student notes in this pilot.');
+    }
     ensureFirebaseReady();
     const studDoc = await getDoc(doc(db!, 'students', input.studentId));
     const stud = studDoc.exists() ? (studDoc.data() as StudentRecord) : null;
@@ -468,6 +509,9 @@ export class FirestoreRepository implements DataProvider {
   }
 
   public async updateSchoolSettings(settings: Partial<SchoolSettings>, _actor: StaffUser): Promise<SchoolSettings> {
+    if (_actor?.role === 'principal') {
+      throw new Error('Unauthorized: Principal profile is strictly read-only in this pilot.');
+    }
     ensureFirebaseReady();
     const ref = doc(db!, 'schoolSettings', 'hhs-settings-jaipur');
     await updateDoc(ref, settings);
@@ -476,6 +520,9 @@ export class FirestoreRepository implements DataProvider {
   }
 
   public async updateAttendancePolicy(policy: Partial<AttendancePolicy>, _actor: StaffUser): Promise<AttendancePolicy> {
+    if (_actor?.role === 'principal') {
+      throw new Error('Unauthorized: Principal profile is strictly read-only in this pilot.');
+    }
     ensureFirebaseReady();
     const ref = doc(db!, 'schoolSettings', 'hhs-settings-jaipur');
     const snapBefore = await getDoc(ref);
@@ -492,6 +539,9 @@ export class FirestoreRepository implements DataProvider {
   }
 
   public async updateAcademicYear(yearId: string, updates: Partial<AcademicYear>, _actor: StaffUser): Promise<AcademicYear> {
+    if (_actor?.role === 'principal') {
+      throw new Error('Unauthorized: Principal profile is strictly read-only in this pilot.');
+    }
     ensureFirebaseReady();
     const ref = doc(db!, 'academicYears', yearId);
     await updateDoc(ref, updates);
@@ -506,6 +556,9 @@ export class FirestoreRepository implements DataProvider {
   }
 
   public async createStaffMember(input: Partial<StaffUser>, _actor: StaffUser): Promise<StaffUser> {
+    if (_actor?.role === 'principal') {
+      throw new Error('Unauthorized: Principal profile is strictly read-only in this pilot.');
+    }
     ensureFirebaseReady();
     const id = `staff-${Date.now()}`;
     const staff = { id, ...input } as StaffUser;
@@ -514,6 +567,9 @@ export class FirestoreRepository implements DataProvider {
   }
 
   public async updateStaffMember(staffId: string, updates: Partial<StaffUser>, _actor: StaffUser): Promise<StaffUser> {
+    if (_actor?.role === 'principal') {
+      throw new Error('Unauthorized: Principal profile is strictly read-only in this pilot.');
+    }
     ensureFirebaseReady();
     const ref = doc(db!, 'staff', staffId);
     await updateDoc(ref, updates);
@@ -522,6 +578,9 @@ export class FirestoreRepository implements DataProvider {
   }
 
   public async updateClassTeacher(classId: string, teacherId: string, teacherName: string, _actor: StaffUser): Promise<ClassSection> {
+    if (_actor?.role === 'principal') {
+      throw new Error('Unauthorized: Principal profile is strictly read-only in this pilot.');
+    }
     ensureFirebaseReady();
     const ref = doc(db!, 'classes', classId);
     await updateDoc(ref, { classTeacherId: teacherId, classTeacherName: teacherName });
@@ -530,6 +589,9 @@ export class FirestoreRepository implements DataProvider {
   }
 
   public async createSubject(subject: Partial<Subject>, _actor: StaffUser): Promise<Subject> {
+    if (_actor?.role === 'principal') {
+      throw new Error('Unauthorized: Principal profile is strictly read-only in this pilot.');
+    }
     ensureFirebaseReady();
     const id = `sub-${Date.now()}`;
     const sub = { id, ...subject } as Subject;
@@ -538,6 +600,9 @@ export class FirestoreRepository implements DataProvider {
   }
 
   public async assignSubjectTeacher(assignment: Partial<SubjectAssignment>, _actor: StaffUser): Promise<SubjectAssignment> {
+    if (_actor?.role === 'principal') {
+      throw new Error('Unauthorized: Principal profile is strictly read-only in this pilot.');
+    }
     ensureFirebaseReady();
     const id = `assign-${Date.now()}`;
     const assign = { id, ...assignment } as SubjectAssignment;
@@ -571,6 +636,9 @@ export class FirestoreRepository implements DataProvider {
   }
 
   public async createAssessmentCycle(cycle: Partial<AssessmentCycle>, _actor: StaffUser): Promise<AssessmentCycle> {
+    if (_actor?.role === 'principal') {
+      throw new Error('Unauthorized: Principal profile is strictly read-only in this pilot.');
+    }
     ensureFirebaseReady();
     const id = `assess-${Date.now()}`;
     const c = { id, ...cycle } as AssessmentCycle;
@@ -579,6 +647,9 @@ export class FirestoreRepository implements DataProvider {
   }
 
   public async updateAssessmentCycle(cycleId: string, updates: Partial<AssessmentCycle>, _actor: StaffUser): Promise<AssessmentCycle> {
+    if (_actor?.role === 'principal') {
+      throw new Error('Unauthorized: Principal profile is strictly read-only in this pilot.');
+    }
     ensureFirebaseReady();
     const ref = doc(db!, 'assessments', cycleId);
     await updateDoc(ref, updates);
@@ -648,6 +719,9 @@ export class FirestoreRepository implements DataProvider {
   }
 
   public async updateIncident(incidentId: string, updates: Partial<IncidentRecord>, _actor: StaffUser): Promise<IncidentRecord> {
+    if (_actor?.role === 'principal') {
+      throw new Error('Unauthorized: Principal profile is strictly read-only in this pilot.');
+    }
     ensureFirebaseReady();
     const ref = doc(db!, 'incidents', incidentId);
     await updateDoc(ref, updates);

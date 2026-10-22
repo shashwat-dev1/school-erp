@@ -10,11 +10,8 @@
 // ============================================================================
 export type StaffRole =
   | 'principal'
-  | 'office_admin'
-  | 'office_staff'
   | 'class_teacher'
-  | 'subject_teacher'
-  | 'admin';
+  | 'subject_teacher';
 
 export interface StaffUser {
   id: string; // Firebase Auth UID or Synthetic Demo ID
@@ -217,6 +214,7 @@ export interface AttendanceSession {
   academicYearId: string;
   takenByStaffId: string;
   takenByStaffName: string;
+  markedByStaffId?: string;        // Backward compatible alias for takenByStaffId
   takenAt: string;                 // ISO Timestamp
   
   windowStart: string;
@@ -227,6 +225,8 @@ export interface AttendanceSession {
   totalStudents: number;
   presentCount: number;
   absentCount: number;
+  totalPresent?: number;           // Backward compatible alias for presentCount
+  totalAbsent?: number;            // Backward compatible alias for absentCount
   lateCount: number;
   excusedCount: number;
   

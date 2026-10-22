@@ -7,7 +7,6 @@ import React from 'react';
 import { Navigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import { PrincipalDashboard } from './PrincipalDashboard';
-import { OfficeDashboard } from './OfficeDashboard';
 import { ClassTeacherDashboard } from './ClassTeacherDashboard';
 import { SubjectTeacherDashboard } from './SubjectTeacherDashboard';
 import { LoadingState } from '../../components/feedback/LoadingState';
@@ -26,11 +25,7 @@ export const RoleDashboardRouter: React.FC = () => {
 
   switch (currentUser.role) {
     case 'principal':
-    case 'admin':
       return <PrincipalDashboard />;
-    case 'office_admin':
-    case 'office_staff':
-      return <OfficeDashboard />;
     case 'class_teacher':
       return <ClassTeacherDashboard />;
     case 'subject_teacher':
@@ -39,7 +34,7 @@ export const RoleDashboardRouter: React.FC = () => {
       return (
         <AccessDenied
           title="Access Restricted"
-          message={`Your account (${currentUser.name}) has no assigned role. Please contact the school administrator.`}
+          message={`Your account (${currentUser.name}) has no valid role assigned for this pilot. Please contact school administration.`}
         />
       );
   }

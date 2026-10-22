@@ -180,14 +180,15 @@ export const DailyAttendanceRegister: React.FC = () => {
     }
   };
 
-  // Section clearance check
-  const isAuthorized = selectedClassId
-    ? Permissions.canMarkAttendance(currentUser, selectedClassId)
-    : false;
+  // Section clearance check: Class Teacher marks their section; Principal has read-only oversight
+  const isPrincipal = currentUser?.role === 'principal';
+  const isClassTeacher = currentUser?.role === 'class_teacher' && currentUser.assignedClassId === selectedClassId;
+  const canMark = Permissions.canMarkAttendance(currentUser, selectedClassId);
+  const canView = isPrincipal || isClassTeacher;
 
   const availableClasses = useMemo(() => {
     if (!currentUser) return [];
-    if (currentUser.role === 'principal' || currentUser.role === 'admin') {
+    if (currentUser.role === 'principal') {
       return classes;
     }
     if (currentUser.role === 'class_teacher' && currentUser.assignedClassId) {
@@ -196,14 +197,16 @@ export const DailyAttendanceRegister: React.FC = () => {
     return [];
   }, [classes, currentUser]);
 
-  if (!currentUser || !selectedClassId || !isAuthorized) {
+  if (!currentUser || !selectedClassId || !canView) {
     return (
       <AccessDenied
-        title="Attendance Roll-Call Unauthorized"
+        title="Attendance Register Access Restricted"
         message={
-          currentUser?.role === 'class_teacher'
-            ? `Your assigned homeroom is ${currentUser.assignedClassId || 'unassigned'}. You do not have authorization to mark attendance for ${selectedClassId || 'another section'}.`
-            : "Only assigned class teachers and the school principal have authorization to mark homeroom daily attendance registers."
+          currentUser?.role === 'subject_teacher'
+            ? "Subject teachers can view aggregate attendance totals only. Individual attendance registers are restricted to the assigned Class Teacher."
+            : currentUser?.role === 'class_teacher'
+            ? `Your assigned class is ${currentUser.assignedClassLabel || currentUser.assignedClassId || 'unassigned'}. You do not have authorization to view or mark attendance for another section.`
+            : "You do not have authorization to access this attendance register."
         }
       />
     );
@@ -213,33 +216,77 @@ export const DailyAttendanceRegister: React.FC = () => {
     <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
       <PageHeader
         title={`Daily Attendance Register — ${activeClass?.label || 'Class Register'}`}
-        subtitle="HanuJai High School, Jaipur • Morning roll-call window (07:45 – 09:15 IST) with dual-custody audit compliance."
+        subtitle={
+          canMark
+            ? `Class Teacher: ${currentUser.name} • Morning roll call register for ${activeClass?.label || 'assigned section'}.`
+            : `Class Teacher: ${activeClass?.classTeacherName || 'Assigned Teacher'} • Principal read-only institutional inspection.`
+        }
         breadcrumbs={[
           { label: 'Campus' },
           { label: 'Attendance' },
           { label: activeClass?.label || 'Register' },
         ]}
         actions={
-          <div style={{ display: 'flex', gap: '10px' }}>
-            <button
-              onClick={handleMarkAllPresent}
-              className="hhs-btn hhs-btn-secondary"
-              style={{ display: 'flex', alignItems: 'center', gap: '6px' }}
-            >
-              <Check size={15} />
-              <span>Mark All Present</span>
-            </button>
-            <button
-              onClick={() => setIsConfirmModalOpen(true)}
-              className="hhs-btn hhs-btn-primary"
-              style={{ display: 'flex', alignItems: 'center', gap: '6px' }}
-            >
-              <Save size={15} />
-              <span>Finalize & Submit Register</span>
-            </button>
-          </div>
+          canMark ? (
+            <div style={{ display: 'flex', gap: '10px' }}>
+              <button
+                onClick={handleMarkAllPresent}
+                className="hhs-btn hhs-btn-secondary"
+                style={{ display: 'flex', alignItems: 'center', gap: '6px' }}
+              >
+                <Check size={15} />
+                <span>Mark All Present</span>
+              </button>
+              <button
+                onClick={() => setIsConfirmModalOpen(true)}
+                className="hhs-btn hhs-btn-primary"
+                style={{ display: 'flex', alignItems: 'center', gap: '6px' }}
+              >
+                <Save size={15} />
+                <span>Finalize & Submit Register</span>
+              </button>
+            </div>
+          ) : (
+            <div style={{ display: 'flex', gap: '10px', alignItems: 'center' }}>
+              <span
+                className="hhs-badge hhs-badge-accent"
+                style={{ display: 'flex', alignItems: 'center', gap: '6px', height: '32px', padding: '0 12px' }}
+              >
+                <ShieldCheck size={14} />
+                <span>Read-Only Oversight</span>
+              </span>
+              <button
+                onClick={() => window.print()}
+                className="hhs-btn hhs-btn-secondary"
+                style={{ display: 'flex', alignItems: 'center', gap: '6px' }}
+              >
+                <span>Print Register</span>
+              </button>
+            </div>
+          )
         }
       />
+
+      {!canMark && (
+        <div
+          style={{
+            padding: '12px 16px',
+            borderRadius: 'var(--hhs-radius-base)',
+            backgroundColor: 'var(--hhs-surface-muted)',
+            border: '1px solid var(--hhs-border)',
+            color: 'var(--hhs-text-secondary)',
+            fontSize: '0.84rem',
+            display: 'flex',
+            alignItems: 'center',
+            gap: '8px',
+          }}
+        >
+          <ShieldCheck size={16} color="var(--hhs-primary)" />
+          <span>
+            <strong>School-Wide Attendance Oversight (Read-Only):</strong> The Principal profile has read-only oversight across all classrooms. Marking, modifying, and submitting attendance is strictly reserved for the assigned Class Teacher ({activeClass?.classTeacherName || 'Class Teacher'}).
+          </span>
+        </div>
+      )}
 
       {error && <ErrorBanner title="Submission Error" message={error} />}
 
@@ -394,99 +441,122 @@ export const DailyAttendanceRegister: React.FC = () => {
                         {row.admissionNumber}
                       </td>
                       <td style={{ textAlign: 'center' }}>
-                        {/* Attendance State Segmented Buttons */}
-                        <div
-                          style={{
-                            display: 'inline-flex',
-                            borderRadius: 'var(--hhs-radius-base)',
-                            border: '1px solid var(--hhs-border)',
-                            overflow: 'hidden',
-                          }}
-                        >
-                          <button
-                            type="button"
-                            onClick={() => handleStateChange(row.studentId, 'present')}
+                        {canMark ? (
+                          /* Attendance State Segmented Buttons */
+                          <div
                             style={{
-                              padding: '5px 12px',
-                              border: 'none',
-                              fontSize: '0.76rem',
-                              fontWeight: 600,
-                              cursor: 'pointer',
-                              backgroundColor:
-                                row.state === 'present' ? 'var(--hhs-primary)' : 'var(--hhs-surface)',
-                              color: row.state === 'present' ? '#ffffff' : 'var(--hhs-text-primary)',
-                              borderRight: '1px solid var(--hhs-border)',
+                              display: 'inline-flex',
+                              borderRadius: 'var(--hhs-radius-base)',
+                              border: '1px solid var(--hhs-border)',
+                              overflow: 'hidden',
                             }}
                           >
-                            Present
-                          </button>
-                          <button
-                            type="button"
-                            onClick={() => handleStateChange(row.studentId, 'absent')}
-                            style={{
-                              padding: '5px 12px',
-                              border: 'none',
-                              fontSize: '0.76rem',
-                              fontWeight: 600,
-                              cursor: 'pointer',
-                              backgroundColor:
-                                row.state === 'absent' ? 'var(--hhs-danger)' : 'var(--hhs-surface)',
-                              color: row.state === 'absent' ? '#ffffff' : 'var(--hhs-text-primary)',
-                              borderRight: '1px solid var(--hhs-border)',
-                            }}
+                            <button
+                              type="button"
+                              onClick={() => handleStateChange(row.studentId, 'present')}
+                              style={{
+                                padding: '5px 12px',
+                                border: 'none',
+                                fontSize: '0.76rem',
+                                fontWeight: 600,
+                                cursor: 'pointer',
+                                backgroundColor:
+                                  row.state === 'present' ? 'var(--hhs-primary)' : 'var(--hhs-surface)',
+                                color: row.state === 'present' ? '#ffffff' : 'var(--hhs-text-primary)',
+                                borderRight: '1px solid var(--hhs-border)',
+                              }}
+                            >
+                              Present
+                            </button>
+                            <button
+                              type="button"
+                              onClick={() => handleStateChange(row.studentId, 'absent')}
+                              style={{
+                                padding: '5px 12px',
+                                border: 'none',
+                                fontSize: '0.76rem',
+                                fontWeight: 600,
+                                cursor: 'pointer',
+                                backgroundColor:
+                                  row.state === 'absent' ? 'var(--hhs-danger)' : 'var(--hhs-surface)',
+                                color: row.state === 'absent' ? '#ffffff' : 'var(--hhs-text-primary)',
+                                borderRight: '1px solid var(--hhs-border)',
+                              }}
+                            >
+                              Absent
+                            </button>
+                            <button
+                              type="button"
+                              onClick={() => handleStateChange(row.studentId, 'late')}
+                              style={{
+                                padding: '5px 12px',
+                                border: 'none',
+                                fontSize: '0.76rem',
+                                fontWeight: 600,
+                                cursor: 'pointer',
+                                backgroundColor:
+                                  row.state === 'late' ? 'var(--hhs-accent)' : 'var(--hhs-surface)',
+                                color: row.state === 'late' ? '#202b2a' : 'var(--hhs-text-primary)',
+                                borderRight: '1px solid var(--hhs-border)',
+                              }}
+                            >
+                              Late
+                            </button>
+                            <button
+                              type="button"
+                              onClick={() => handleStateChange(row.studentId, 'excused')}
+                              style={{
+                                padding: '5px 12px',
+                                border: 'none',
+                                fontSize: '0.76rem',
+                                fontWeight: 600,
+                                cursor: 'pointer',
+                                backgroundColor:
+                                  row.state === 'excused' ? 'var(--hhs-info)' : 'var(--hhs-surface)',
+                                color: row.state === 'excused' ? '#ffffff' : 'var(--hhs-text-primary)',
+                              }}
+                            >
+                              Excused
+                            </button>
+                          </div>
+                        ) : (
+                          <span
+                            className={`hhs-badge ${
+                              row.state === 'present'
+                                ? 'hhs-badge-primary'
+                                : row.state === 'absent'
+                                ? 'hhs-badge-danger'
+                                : row.state === 'late'
+                                ? 'hhs-badge-accent'
+                                : 'hhs-badge-secondary'
+                            }`}
+                            style={{ textTransform: 'capitalize', padding: '4px 10px' }}
                           >
-                            Absent
-                          </button>
-                          <button
-                            type="button"
-                            onClick={() => handleStateChange(row.studentId, 'late')}
-                            style={{
-                              padding: '5px 12px',
-                              border: 'none',
-                              fontSize: '0.76rem',
-                              fontWeight: 600,
-                              cursor: 'pointer',
-                              backgroundColor:
-                                row.state === 'late' ? 'var(--hhs-accent)' : 'var(--hhs-surface)',
-                              color: row.state === 'late' ? '#202b2a' : 'var(--hhs-text-primary)',
-                              borderRight: '1px solid var(--hhs-border)',
-                            }}
-                          >
-                            Late
-                          </button>
-                          <button
-                            type="button"
-                            onClick={() => handleStateChange(row.studentId, 'excused')}
-                            style={{
-                              padding: '5px 12px',
-                              border: 'none',
-                              fontSize: '0.76rem',
-                              fontWeight: 600,
-                              cursor: 'pointer',
-                              backgroundColor:
-                                row.state === 'excused' ? 'var(--hhs-info)' : 'var(--hhs-surface)',
-                              color: row.state === 'excused' ? '#ffffff' : 'var(--hhs-text-primary)',
-                            }}
-                          >
-                            Excused
-                          </button>
-                        </div>
+                            {row.state}
+                          </span>
+                        )}
                       </td>
                       <td>
-                        <input
-                          type="text"
-                          placeholder={
-                            row.state === 'absent'
-                              ? 'Unexplained absence (call parent)'
-                              : row.state === 'late'
-                              ? 'Arrived 08:05 AM'
-                              : 'Optional notes'
-                          }
-                          value={row.remarks}
-                          onChange={e => handleRemarksChange(row.studentId, e.target.value)}
-                          className="hhs-input"
-                          style={{ height: '30px', fontSize: '0.78rem' }}
-                        />
+                        {canMark ? (
+                          <input
+                            type="text"
+                            placeholder={
+                              row.state === 'absent'
+                                ? 'Unexplained absence (call parent)'
+                                : row.state === 'late'
+                                ? 'Arrived 08:05 AM'
+                                : 'Optional notes'
+                            }
+                            value={row.remarks}
+                            onChange={e => handleRemarksChange(row.studentId, e.target.value)}
+                            className="hhs-input"
+                            style={{ height: '30px', fontSize: '0.78rem' }}
+                          />
+                        ) : (
+                          <span style={{ fontSize: '0.8rem', color: 'var(--hhs-text-secondary)' }}>
+                            {row.remarks || '—'}
+                          </span>
+                        )}
                       </td>
                     </tr>
                   );

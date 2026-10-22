@@ -24,11 +24,15 @@ export const SectionGuard: React.FC<SectionGuardProps> = ({ action = 'view', chi
   }
 
   if (action === 'mark_attendance') {
+    // Principal has read-only oversight to inspect class attendance registers
+    if (currentUser?.role === 'principal') {
+      return <>{children}</>;
+    }
     if (!Permissions.canMarkAttendance(currentUser, classId)) {
       return (
         <AccessDenied
           title="Attendance Roll-Call Unauthorized"
-          message={`You are not authorized to mark attendance for section (${classId}). Only the designated Class Tutor or Principal can mark this register.`}
+          message={`You are not authorized to mark attendance for section (${classId}). Only the assigned Class Teacher can mark this register. School leadership has read-only oversight.`}
         />
       );
     }
@@ -37,7 +41,7 @@ export const SectionGuard: React.FC<SectionGuardProps> = ({ action = 'view', chi
       return (
         <AccessDenied
           title="Section Clearance Boundary"
-          message={`You are not authorized to view or administer records for section (${classId}). Access is restricted to assigned faculty and administrative leadership.`}
+          message={`You are not authorized to view or administer records for section (${classId}). Access is restricted to assigned teachers and school leadership.`}
         />
       );
     }

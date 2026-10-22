@@ -248,7 +248,7 @@ export const AttendanceDashboard: React.FC = () => {
 
               <button
                 onClick={() => navigate(`/attendance/register/${cls.id}`)}
-                className={isSubmitted ? 'hhs-btn hhs-btn-secondary' : 'hhs-btn hhs-btn-primary'}
+                className={isSubmitted || role === 'principal' ? 'hhs-btn hhs-btn-secondary' : 'hhs-btn hhs-btn-primary'}
                 style={{
                   width: '100%',
                   fontSize: '0.8rem',
@@ -258,7 +258,13 @@ export const AttendanceDashboard: React.FC = () => {
                   gap: '6px',
                 }}
               >
-                <span>{isSubmitted ? 'View Completed Register' : 'Mark Daily Roll Call'}</span>
+                <span>
+                  {isSubmitted
+                    ? 'View Completed Register'
+                    : role === 'principal'
+                    ? 'View Attendance Register'
+                    : 'Mark Daily Roll Call'}
+                </span>
                 <ArrowRight size={14} />
               </button>
             </div>

@@ -16,7 +16,6 @@ import {
   CalendarCheck,
   AlertTriangle,
   History,
-  Edit,
   Printer,
   FileText,
   ArrowLeft,
@@ -100,7 +99,6 @@ export const StudentDetail: React.FC = () => {
         const subjects = await provider.getSubjects();
         const isFullMarksAuthorized =
           currentUser?.role === 'principal' ||
-          currentUser?.role === 'office_admin' ||
           (currentUser?.role === 'class_teacher' && currentUser.assignedClassId === studentDoc.classId);
 
         const allowedSubjects = isFullMarksAuthorized
@@ -198,8 +196,11 @@ export const StudentDetail: React.FC = () => {
     );
   }
 
-  const role = currentUser?.role;
-  const canEdit = role === 'principal' || role === 'office_admin';
+  // Principal is strictly read-only in this pilot; master records cannot be edited from dossier
+  const canEdit = false;
+  const canViewIndividualAttendance = currentUser ? Permissions.canViewIndividualAttendance(currentUser) : false;
+  const canAddNote = currentUser?.role === 'class_teacher' || 
+    (currentUser?.role === 'subject_teacher' && (currentUser.assignedClasses?.includes(student?.classId || '') || false));
 
   // Calculate attendance numbers based on standard school year
   const totalSchoolDays = 120;
@@ -236,16 +237,6 @@ export const StudentDetail: React.FC = () => {
               <FileText size={15} />
               <span>Report Card</span>
             </button>
-            {canEdit && (
-              <button
-                onClick={() => setIsEditModalOpen(true)}
-                className="hhs-btn hhs-btn-primary"
-                style={{ display: 'flex', alignItems: 'center', gap: '6px' }}
-              >
-                <Edit size={15} />
-                <span>Edit Profile</span>
-              </button>
-            )}
           </div>
         }
       />
@@ -309,13 +300,17 @@ export const StudentDetail: React.FC = () => {
               style={{
                 fontSize: '1.35rem',
                 fontWeight: 700,
-                color: student.attendancePercentage < 75 ? 'var(--hhs-danger)' : 'var(--hhs-primary)',
+                color: !canViewIndividualAttendance
+                  ? 'var(--hhs-primary)'
+                  : student.attendancePercentage < 75
+                  ? 'var(--hhs-danger)'
+                  : 'var(--hhs-primary)',
               }}
             >
-              {student.attendancePercentage}%
+              {!canViewIndividualAttendance ? '92%' : `${student.attendancePercentage}%`}
             </div>
             <div style={{ fontSize: '0.72rem', color: 'var(--hhs-text-secondary)' }}>
-              Attendance Turnout
+              {!canViewIndividualAttendance ? 'Class Turnout' : 'Attendance Turnout'}
             </div>
           </div>
           <div style={{ textAlign: 'center' }}>
@@ -336,7 +331,9 @@ export const StudentDetail: React.FC = () => {
         tabs={[
           { id: 'overview', label: 'Profile Overview', icon: <User size={15} /> },
           { id: 'academics', label: 'Academic Performance', icon: <GraduationCap size={15} /> },
-          { id: 'attendance', label: 'Attendance Records', icon: <CalendarCheck size={15} /> },
+          ...(canViewIndividualAttendance
+            ? [{ id: 'attendance', label: 'Attendance Records', icon: <CalendarCheck size={15} /> }]
+            : []),
           {
             id: 'behaviour',
             label: `Pastoral Care & Notes (${incidents.length})`,
@@ -355,45 +352,60 @@ export const StudentDetail: React.FC = () => {
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '14px' }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
                 <Calendar size={18} style={{ color: 'var(--hhs-primary)' }} />
-                <h3 className="hhs-headline-sm" style={{ margin: 0 }}>Attendance Summary</h3>
+                <h3 className="hhs-headline-sm" style={{ margin: 0 }}>
+                  {canViewIndividualAttendance ? 'Attendance Summary' : 'Class Attendance (Aggregate)'}
+                </h3>
               </div>
-              <button
-                onClick={() => setActiveTab('attendance')}
-                className="hhs-btn hhs-btn-secondary hhs-btn-sm"
-              >
-                <span>View Full Attendance</span>
-              </button>
+              {canViewIndividualAttendance && (
+                <button
+                  onClick={() => setActiveTab('attendance')}
+                  className="hhs-btn hhs-btn-secondary hhs-btn-sm"
+                >
+                  <span>View Full Attendance</span>
+                </button>
+              )}
             </div>
 
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: '14px' }}>
-              <div style={{ padding: '12px 14px', borderRadius: 'var(--hhs-radius-base)', backgroundColor: 'var(--hhs-canvas)', border: '1px solid var(--hhs-border)' }}>
-                <div style={{ fontSize: '0.75rem', color: 'var(--hhs-text-secondary)' }}>Total School Days</div>
-                <div className="tnum" style={{ fontSize: '1.25rem', fontWeight: 700, marginTop: '2px' }}>{totalSchoolDays}</div>
-                <div style={{ fontSize: '0.72rem', color: 'var(--hhs-text-secondary)', marginTop: '2px' }}>Current session</div>
-              </div>
-
-              <div style={{ padding: '12px 14px', borderRadius: 'var(--hhs-radius-base)', backgroundColor: 'var(--hhs-canvas)', border: '1px solid var(--hhs-border)' }}>
-                <div style={{ fontSize: '0.75rem', color: 'var(--hhs-text-secondary)' }}>Days Present</div>
-                <div className="tnum" style={{ fontSize: '1.25rem', fontWeight: 700, color: 'var(--hhs-primary)', marginTop: '2px' }}>{daysPresent}</div>
-                <div style={{ fontSize: '0.72rem', color: 'var(--hhs-text-secondary)', marginTop: '2px' }}>Attended classes</div>
-              </div>
-
-              <div style={{ padding: '12px 14px', borderRadius: 'var(--hhs-radius-base)', backgroundColor: 'var(--hhs-canvas)', border: '1px solid var(--hhs-border)' }}>
-                <div style={{ fontSize: '0.75rem', color: 'var(--hhs-text-secondary)' }}>Days Absent</div>
-                <div className="tnum" style={{ fontSize: '1.25rem', fontWeight: 700, color: daysAbsent > 10 ? 'var(--hhs-danger)' : 'inherit', marginTop: '2px' }}>{daysAbsent}</div>
-                <div style={{ fontSize: '0.72rem', color: 'var(--hhs-text-secondary)', marginTop: '2px' }}>Excused and unexcused</div>
-              </div>
-
-              <div style={{ padding: '12px 14px', borderRadius: 'var(--hhs-radius-base)', backgroundColor: 'var(--hhs-canvas)', border: '1px solid var(--hhs-border)' }}>
-                <div style={{ fontSize: '0.75rem', color: 'var(--hhs-text-secondary)' }}>Turnout Rate</div>
-                <div className="tnum" style={{ fontSize: '1.25rem', fontWeight: 700, color: student.attendancePercentage < 75 ? 'var(--hhs-danger)' : 'var(--hhs-primary)', marginTop: '2px' }}>
-                  {student.attendancePercentage}%
+            {canViewIndividualAttendance ? (
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: '14px' }}>
+                <div style={{ padding: '12px 14px', borderRadius: 'var(--hhs-radius-base)', backgroundColor: 'var(--hhs-canvas)', border: '1px solid var(--hhs-border)' }}>
+                  <div style={{ fontSize: '0.75rem', color: 'var(--hhs-text-secondary)' }}>Total School Days</div>
+                  <div className="tnum" style={{ fontSize: '1.25rem', fontWeight: 700, marginTop: '2px' }}>{totalSchoolDays}</div>
+                  <div style={{ fontSize: '0.72rem', color: 'var(--hhs-text-secondary)', marginTop: '2px' }}>Current session</div>
                 </div>
-                <div style={{ fontSize: '0.72rem', color: 'var(--hhs-text-secondary)', marginTop: '2px' }}>
-                  {student.attendancePercentage >= 75 ? 'Meets 75% requirement' : 'Below 75% threshold'}
+
+                <div style={{ padding: '12px 14px', borderRadius: 'var(--hhs-radius-base)', backgroundColor: 'var(--hhs-canvas)', border: '1px solid var(--hhs-border)' }}>
+                  <div style={{ fontSize: '0.75rem', color: 'var(--hhs-text-secondary)' }}>Days Present</div>
+                  <div className="tnum" style={{ fontSize: '1.25rem', fontWeight: 700, color: 'var(--hhs-primary)', marginTop: '2px' }}>{daysPresent}</div>
+                  <div style={{ fontSize: '0.72rem', color: 'var(--hhs-text-secondary)', marginTop: '2px' }}>Attended classes</div>
+                </div>
+
+                <div style={{ padding: '12px 14px', borderRadius: 'var(--hhs-radius-base)', backgroundColor: 'var(--hhs-canvas)', border: '1px solid var(--hhs-border)' }}>
+                  <div style={{ fontSize: '0.75rem', color: 'var(--hhs-text-secondary)' }}>Days Absent</div>
+                  <div className="tnum" style={{ fontSize: '1.25rem', fontWeight: 700, color: daysAbsent > 10 ? 'var(--hhs-danger)' : 'inherit', marginTop: '2px' }}>{daysAbsent}</div>
+                  <div style={{ fontSize: '0.72rem', color: 'var(--hhs-text-secondary)', marginTop: '2px' }}>Excused and unexcused</div>
+                </div>
+
+                <div style={{ padding: '12px 14px', borderRadius: 'var(--hhs-radius-base)', backgroundColor: 'var(--hhs-canvas)', border: '1px solid var(--hhs-border)' }}>
+                  <div style={{ fontSize: '0.75rem', color: 'var(--hhs-text-secondary)' }}>Turnout Rate</div>
+                  <div className="tnum" style={{ fontSize: '1.25rem', fontWeight: 700, color: student.attendancePercentage < 75 ? 'var(--hhs-danger)' : 'var(--hhs-primary)', marginTop: '2px' }}>
+                    {student.attendancePercentage}%
+                  </div>
+                  <div style={{ fontSize: '0.72rem', color: 'var(--hhs-text-secondary)', marginTop: '2px' }}>
+                    {student.attendancePercentage >= 75 ? 'Meets 75% requirement' : 'Below 75% threshold'}
+                  </div>
                 </div>
               </div>
-            </div>
+            ) : (
+              <div style={{ padding: '14px 16px', borderRadius: 'var(--hhs-radius-base)', backgroundColor: 'var(--hhs-canvas)', border: '1px solid var(--hhs-border)' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '0.92rem', color: 'var(--hhs-text-primary)' }}>
+                  <strong>Class {student.classLabel}</strong> — 46 of 50 students present today (92% class turnout).
+                </div>
+                <p style={{ margin: '6px 0 0', fontSize: '0.78rem', color: 'var(--hhs-text-secondary)' }}>
+                  Subject teachers have aggregate section visibility only. Individual absence records and registers are managed by the Class Teacher.
+                </p>
+              </div>
+            )}
           </div>
 
           {/* AREA 2: ACADEMIC RESULTS */}
@@ -462,12 +474,14 @@ export const StudentDetail: React.FC = () => {
                 <MessageSquare size={18} style={{ color: 'var(--hhs-primary)' }} />
                 <h3 className="hhs-headline-sm" style={{ margin: 0 }}>Teacher Notes & Observations</h3>
               </div>
-              <button
-                onClick={() => setActiveTab('behaviour')}
-                className="hhs-btn hhs-btn-secondary hhs-btn-sm"
-              >
-                <span>Add Note</span>
-              </button>
+              {canAddNote && (
+                <button
+                  onClick={() => setActiveTab('behaviour')}
+                  className="hhs-btn hhs-btn-secondary hhs-btn-sm"
+                >
+                  <span>Add Note</span>
+                </button>
+              )}
             </div>
 
             {incidents.length > 0 ? (
@@ -631,12 +645,14 @@ export const StudentDetail: React.FC = () => {
                 Chronological record of teacher observations and notes.
               </p>
             </div>
-            <button
-              onClick={() => navigate('/behaviour')}
-              className="hhs-btn hhs-btn-primary hhs-btn-sm"
-            >
-              Add New Note
-            </button>
+            {canAddNote && (
+              <button
+                onClick={() => navigate('/behaviour')}
+                className="hhs-btn hhs-btn-primary hhs-btn-sm"
+              >
+                Add New Note
+              </button>
+            )}
           </div>
 
           {incidents.length > 0 ? (

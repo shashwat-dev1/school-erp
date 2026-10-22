@@ -92,7 +92,7 @@ export const ClassTeacherDashboard: React.FC = () => {
         />
         <ErrorBanner
           title="No Class Assigned"
-          message="Your account is not assigned to a class section yet. Please ask the Principal or office staff to assign your class."
+          message="Your account is not assigned to a class section yet. Please ask the Principal to assign your class."
         />
       </div>
     );

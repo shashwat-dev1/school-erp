@@ -80,11 +80,9 @@ export const OperationsHub: React.FC = () => {
       <PageHeader
         title={
           role === 'principal'
-            ? 'Operations Hub — Principal Desk'
-            : role === 'office_admin'
-            ? 'Operations Hub — Office Registrar'
+            ? 'Home — Principal'
             : role === 'class_teacher'
-            ? 'Class 10-A Operational Desk'
+            ? 'Class 10-A Desk'
             : 'Faculty Operations Desk'
         }
         subtitle="HanuJai High School, Jaipur • Real-time morning roll-call reconciliation, care registry, and institutional ledger."
@@ -110,7 +108,7 @@ export const OperationsHub: React.FC = () => {
                 style={{ display: 'flex', alignItems: 'center', gap: '6px' }}
               >
                 <CalendarCheck2 size={15} />
-                <span>Class Attendance Register</span>
+                <span>{role === 'principal' ? 'View Attendance' : 'Class Attendance Register'}</span>
               </button>
             )}
             <button

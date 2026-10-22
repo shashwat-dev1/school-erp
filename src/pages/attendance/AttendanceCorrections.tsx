@@ -141,8 +141,8 @@ export const AttendanceCorrections: React.FC = () => {
     return <LoadingState message="Loading dual-custody attendance correction authorizations..." />;
   }
 
-  const role = currentUser?.role;
-  const canApprove = role === 'principal' || role === 'office_admin';
+  // In this pilot, Principal has strictly read-only access and cannot approve attendance corrections
+  const canApprove = false;
 
   const pending = corrections.filter(c => c.status === 'pending_principal');
   const history = corrections.filter(c => c.status !== 'pending_principal');
@@ -151,21 +151,30 @@ export const AttendanceCorrections: React.FC = () => {
     <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
       <PageHeader
         title="Late Attendance Corrections"
-        subtitle="HanuJai High School, Jaipur • Dual-custody authorization queue enforcing institutional audit policy."
+        subtitle="HanuJai High School, Jaipur • Institutional correction history and review ledger."
         breadcrumbs={[
           { label: 'Campus' },
           { label: 'Attendance', to: '/attendance' },
           { label: 'Late Corrections' },
         ]}
         actions={
-          <button
-            onClick={() => setIsRequestModalOpen(true)}
-            className="hhs-btn hhs-btn-primary"
-            style={{ display: 'flex', alignItems: 'center', gap: '6px' }}
-          >
-            <Plus size={15} />
-            <span>Submit Correction Request</span>
-          </button>
+          currentUser?.role === 'class_teacher' ? (
+            <button
+              onClick={() => setIsRequestModalOpen(true)}
+              className="hhs-btn hhs-btn-primary"
+              style={{ display: 'flex', alignItems: 'center', gap: '6px' }}
+            >
+              <Plus size={15} />
+              <span>Submit Correction Request</span>
+            </button>
+          ) : (
+            <span
+              className="hhs-badge hhs-badge-secondary"
+              style={{ padding: '6px 12px', fontSize: '0.78rem' }}
+            >
+              Read-Only Review
+            </span>
+          )
         }
       />
 

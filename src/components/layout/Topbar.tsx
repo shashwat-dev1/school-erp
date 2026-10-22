@@ -16,7 +16,6 @@ export const Topbar: React.FC<TopbarProps> = ({ onToggleSidebar }) => {
 
   const roles: Array<{ key: StaffRole; label: string }> = [
     { key: 'principal', label: 'Principal' },
-    { key: 'office_staff', label: 'Office Staff' },
     { key: 'class_teacher', label: 'Class Teacher (10-A)' },
     { key: 'subject_teacher', label: 'Subject Teacher (Math)' },
   ];
@@ -30,11 +29,7 @@ export const Topbar: React.FC<TopbarProps> = ({ onToggleSidebar }) => {
   const getRoleDisplayName = (r?: StaffRole) => {
     switch (r) {
       case 'principal':
-      case 'admin':
         return 'Principal';
-      case 'office_admin':
-      case 'office_staff':
-        return 'Office Staff';
       case 'class_teacher':
         return 'Class Teacher';
       case 'subject_teacher':
@@ -166,10 +161,7 @@ export const Topbar: React.FC<TopbarProps> = ({ onToggleSidebar }) => {
                     Switch Demo View:
                   </div>
                   {roles.map((r) => {
-                    const isSelected =
-                      currentUser?.role === r.key ||
-                      (r.key === 'principal' && currentUser?.role === 'admin') ||
-                      (r.key === 'office_staff' && currentUser?.role === 'office_admin');
+                    const isSelected = currentUser?.role === r.key;
                     return (
                       <button
                         key={r.key}

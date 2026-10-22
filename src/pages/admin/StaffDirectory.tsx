@@ -5,13 +5,10 @@ import { PageHeader } from '../../components/layout/PageHeader';
 import { StatusBadge } from '../../components/ui/StatusBadge';
 import { LoadingState } from '../../components/feedback/LoadingState';
 import { ErrorBanner } from '../../components/feedback/ErrorBanner';
-import { StaffAccountModal } from './StaffAccountModal';
 import type { StaffUser } from '../../domain/types';
 import {
-  Plus,
   Search,
   UserCheck,
-  Edit,
   BookOpen,
 } from 'lucide-react';
 
@@ -26,10 +23,6 @@ export const StaffDirectory: React.FC = () => {
   // Filters
   const [searchQuery, setSearchQuery] = useState<string>('');
   const [roleFilter, setRoleFilter] = useState<string>('all');
-
-  // Modal
-  const [isModalOpen, setIsModalOpen] = useState<boolean>(false);
-  const [editingStaff, setEditingStaff] = useState<StaffUser | null>(null);
 
   const fetchStaff = async () => {
     try {
@@ -61,16 +54,6 @@ export const StaffDirectory: React.FC = () => {
       return matchesSearch && matchesRole;
     });
   }, [staffList, searchQuery, roleFilter]);
-
-  const handleOpenCreate = () => {
-    setEditingStaff(null);
-    setIsModalOpen(true);
-  };
-
-  const handleOpenEdit = (staff: StaffUser) => {
-    setEditingStaff(staff);
-    setIsModalOpen(true);
-  };
 
   if (isLoading) {
     return <LoadingState message="Loading institutional staff directory..." />;
@@ -104,14 +87,6 @@ export const StaffDirectory: React.FC = () => {
               <BookOpen size={15} />
               <span>Subject Matrix</span>
             </button>
-            <button
-              onClick={handleOpenCreate}
-              className="hhs-btn hhs-btn-primary"
-              style={{ display: 'inline-flex', alignItems: 'center', gap: '6px' }}
-            >
-              <Plus size={16} />
-              <span>Add Staff Member</span>
-            </button>
           </div>
         }
       />
@@ -144,9 +119,9 @@ export const StaffDirectory: React.FC = () => {
         <div className="hhs-metric-card">
           <div className="hhs-metric-label">Administrative Staff</div>
           <div className="hhs-metric-value" style={{ color: 'var(--hhs-accent-text)' }}>
-            {staffList.filter(s => s.role === 'office_admin' || s.role === 'principal').length} Members
+            {staffList.filter(s => s.role === 'principal').length} Members
           </div>
-          <div className="hhs-metric-sub">Super-users &amp; Registrars</div>
+          <div className="hhs-metric-sub">School Leadership</div>
         </div>
 
         <div className="hhs-metric-card">
@@ -196,7 +171,6 @@ export const StaffDirectory: React.FC = () => {
           >
             <option value="all">All Roles</option>
             <option value="principal">Principal</option>
-            <option value="office_admin">Office Admin</option>
             <option value="class_teacher">Class Teacher</option>
             <option value="subject_teacher">Subject Teacher</option>
           </select>
@@ -244,7 +218,7 @@ export const StaffDirectory: React.FC = () => {
             </thead>
             <tbody>
               {filteredStaff.map(staff => {
-                const isSuper = staff.role === 'principal' || staff.role === 'office_admin';
+                const isSuper = staff.role === 'principal';
 
                 return (
                   <tr key={staff.id}>
@@ -268,15 +242,11 @@ export const StaffDirectory: React.FC = () => {
                         className={`hhs-badge ${
                           staff.role === 'principal'
                             ? 'hhs-badge-primary'
-                            : staff.role === 'office_admin'
-                            ? 'hhs-badge-accent'
                             : 'hhs-badge-neutral'
                         }`}
                       >
                         {staff.role === 'principal'
                           ? 'Principal'
-                          : staff.role === 'office_admin'
-                          ? 'Office Registrar'
                           : staff.role === 'class_teacher'
                           ? 'Class Tutor'
                           : 'Subject Faculty'}
@@ -310,14 +280,7 @@ export const StaffDirectory: React.FC = () => {
                       <StatusBadge status="active" label="Active" />
                     </td>
                     <td style={{ textAlign: 'right' }}>
-                      <button
-                        onClick={() => handleOpenEdit(staff)}
-                        className="hhs-btn hhs-btn-secondary"
-                        style={{ fontSize: '0.75rem', padding: '4px 8px', height: '28px' }}
-                      >
-                        <Edit size={13} />
-                        <span>Edit</span>
-                      </button>
+                      <span style={{ fontSize: '0.75rem', color: 'var(--hhs-text-muted)' }}>Read-Only</span>
                     </td>
                   </tr>
                 );
@@ -326,14 +289,6 @@ export const StaffDirectory: React.FC = () => {
           </table>
         </div>
       </div>
-
-      {/* Staff Account Modal */}
-      <StaffAccountModal
-        isOpen={isModalOpen}
-        onClose={() => setIsModalOpen(false)}
-        editingStaff={editingStaff}
-        onSaved={fetchStaff}
-      />
     </div>
   );
 };

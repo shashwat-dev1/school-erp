@@ -31,8 +31,12 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   useEffect(() => {
     if (isDemoMode()) {
       // In demo mode, load last active demo user from localStorage or default to Principal
-      const savedUserId = localStorage.getItem('hanujai_demo_user_id') || 'staff-001';
-      const user = initialStaff.find(s => s.id === savedUserId) || initialStaff[0];
+      const overrideJson = localStorage.getItem('hanujai_demo_user_override');
+      let user = overrideJson ? JSON.parse(overrideJson) : null;
+      if (!user) {
+        const savedUserId = localStorage.getItem('hanujai_demo_user_id') || 'staff-001';
+        user = initialStaff.find(s => s.id === savedUserId) || initialStaff[0];
+      }
       setCurrentUser(user);
       setIsLoading(false);
     } else if (auth) {

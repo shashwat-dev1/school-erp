@@ -4,15 +4,12 @@ import { useAuth } from '../../context/AuthContext';
 import { useData } from '../../context/DataContext';
 import { PageHeader } from '../../components/layout/PageHeader';
 import { StatusBadge } from '../../components/ui/StatusBadge';
-import { Modal } from '../../components/ui/Modal';
 import { LoadingState } from '../../components/feedback/LoadingState';
 import { ErrorBanner } from '../../components/feedback/ErrorBanner';
 import type { AssessmentCycle } from '../../domain/types';
 import {
   FileCheck2,
   Calendar,
-  Plus,
-  Edit,
   BookOpen,
 } from 'lucide-react';
 
@@ -24,17 +21,6 @@ export const AssessmentList: React.FC = () => {
   const [cycles, setCycles] = useState<AssessmentCycle[]>([]);
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
-
-  // Configure Modal
-  const [isModalOpen, setIsModalOpen] = useState<boolean>(false);
-  const [editingCycle, setEditingCycle] = useState<AssessmentCycle | null>(null);
-  const [formName, setFormName] = useState<string>('');
-  const [formTerm, setFormTerm] = useState<'term1' | 'term2'>('term1');
-  const [formMaxMarks, setFormMaxMarks] = useState<number>(25);
-  const [formWeightage, setFormWeightage] = useState<number>(10);
-  const [formStartDate, setFormStartDate] = useState<string>('2025-08-01');
-  const [formEndDate, setFormEndDate] = useState<string>('2025-08-10');
-  const [isSaving, setIsSaving] = useState<boolean>(false);
 
   useEffect(() => {
     let isMounted = true;
@@ -58,73 +44,6 @@ export const AssessmentList: React.FC = () => {
     };
   }, [provider]);
 
-  const handleOpenCreateModal = () => {
-    setEditingCycle(null);
-    setFormName('');
-    setFormTerm('term1');
-    setFormMaxMarks(25);
-    setFormWeightage(10);
-    setFormStartDate('2025-08-01');
-    setFormEndDate('2025-08-10');
-    setIsModalOpen(true);
-  };
-
-  const handleOpenEditModal = (cycle: AssessmentCycle) => {
-    setEditingCycle(cycle);
-    setFormName(cycle.name || cycle.title || '');
-    setFormTerm(cycle.term || 'term1');
-    setFormMaxMarks(cycle.maxMarks);
-    setFormWeightage(cycle.weightagePercent);
-    setFormStartDate(cycle.startDate);
-    setFormEndDate(cycle.endDate);
-    setIsModalOpen(true);
-  };
-
-  const handleSaveCycle = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!currentUser) return;
-    setIsSaving(true);
-    try {
-      if (editingCycle) {
-        const updated = await provider.updateAssessmentCycle(
-          editingCycle.id,
-          {
-            name: formName,
-            term: formTerm,
-            maxMarks: Number(formMaxMarks),
-            passingMarks: Math.round(Number(formMaxMarks) * 0.33),
-            weightagePercent: Number(formWeightage),
-            startDate: formStartDate,
-            endDate: formEndDate,
-          },
-          currentUser
-        );
-        setCycles(prev => prev.map(c => (c.id === updated.id ? updated : c)));
-      } else {
-        const created = await provider.createAssessmentCycle(
-          {
-            name: formName,
-            term: formTerm,
-            academicYearId: 'year-2025-2026',
-            maxMarks: Number(formMaxMarks),
-            passingMarks: Math.round(Number(formMaxMarks) * 0.33),
-            weightagePercent: Number(formWeightage),
-            startDate: formStartDate,
-            endDate: formEndDate,
-            status: 'draft',
-          },
-          currentUser
-        );
-        setCycles(prev => [...prev, created]);
-      }
-      setIsModalOpen(false);
-    } catch (err: unknown) {
-      alert(err instanceof Error ? err.message : 'Error saving assessment cycle.');
-    } finally {
-      setIsSaving(false);
-    }
-  };
-
   if (isLoading) {
     return <LoadingState message="Loading assessment cycles..." />;
   }
@@ -142,18 +61,7 @@ export const AssessmentList: React.FC = () => {
           { label: currentUser?.role === 'principal' ? 'Academic Oversight' : 'My Teaching', to: '/' },
           { label: 'Assessments', to: '/assessments' },
         ]}
-        actions={
-          (role === 'principal' || role === 'office_admin') ? (
-            <button
-              onClick={handleOpenCreateModal}
-              className="hhs-btn hhs-btn-primary"
-              style={{ display: 'inline-flex', alignItems: 'center', gap: '6px' }}
-            >
-              <Plus size={16} />
-              <span>Configure Assessment</span>
-            </button>
-          ) : undefined
-        }
+        actions={undefined}
       />
 
       {error && <ErrorBanner message={error} />}
@@ -307,16 +215,7 @@ export const AssessmentList: React.FC = () => {
                           <BookOpen size={14} />
                         </button>
 
-                        {(role === 'principal' || role === 'office_admin') && (
-                          <button
-                            onClick={() => handleOpenEditModal(cycle)}
-                            className="hhs-btn hhs-btn-secondary"
-                            style={{ fontSize: '0.75rem', padding: '5px 8px', height: '30px' }}
-                            title="Edit Cycle Configuration"
-                          >
-                            <Edit size={14} />
-                          </button>
-                        )}
+
                       </div>
                     </td>
                   </tr>
@@ -326,123 +225,6 @@ export const AssessmentList: React.FC = () => {
           </table>
         </div>
       </div>
-
-      {/* Configure Cycle Modal */}
-      <Modal
-        isOpen={isModalOpen}
-        onClose={() => setIsModalOpen(false)}
-        title={editingCycle ? `Edit Cycle: ${editingCycle.name}` : 'Configure New Assessment Cycle'}
-        subtitle="CBSE Continuous and Comprehensive Evaluation policy definition."
-      >
-        <form onSubmit={handleSaveCycle} style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
-          <div>
-            <label className="hhs-label" htmlFor="cycle-name">Cycle Name</label>
-            <input
-              id="cycle-name"
-              required
-              className="hhs-input"
-              value={formName}
-              onChange={e => setFormName(e.target.value)}
-              placeholder="e.g. Periodic Assessment 3 / Pre-Board"
-            />
-          </div>
-
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
-            <div>
-              <label className="hhs-label" htmlFor="cycle-term">Academic Term</label>
-              <select
-                id="cycle-term"
-                className="hhs-select"
-                value={formTerm}
-                onChange={e => setFormTerm(e.target.value as 'term1' | 'term2')}
-              >
-                <option value="term1">Term 1</option>
-                <option value="term2">Term 2</option>
-              </select>
-            </div>
-            <div>
-              <label className="hhs-label" htmlFor="cycle-max">Maximum Marks</label>
-              <input
-                id="cycle-max"
-                type="number"
-                required
-                min={10}
-                max={100}
-                className="hhs-input"
-                value={formMaxMarks}
-                onChange={e => setFormMaxMarks(Number(e.target.value))}
-              />
-            </div>
-          </div>
-
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
-            <div>
-              <label className="hhs-label" htmlFor="cycle-weightage">Final Weightage (%)</label>
-              <input
-                id="cycle-weightage"
-                type="number"
-                required
-                min={0}
-                max={100}
-                className="hhs-input"
-                value={formWeightage}
-                onChange={e => setFormWeightage(Number(e.target.value))}
-              />
-            </div>
-            <div>
-              <label className="hhs-label">Auto Pass Mark (33%)</label>
-              <div
-                className="hhs-input"
-                style={{ backgroundColor: 'var(--hhs-surface-muted)', color: 'var(--hhs-text-secondary)' }}
-              >
-                {Math.round(formMaxMarks * 0.33)} Marks
-              </div>
-            </div>
-          </div>
-
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
-            <div>
-              <label className="hhs-label" htmlFor="cycle-start">Start Date</label>
-              <input
-                id="cycle-start"
-                type="date"
-                required
-                className="hhs-input"
-                value={formStartDate}
-                onChange={e => setFormStartDate(e.target.value)}
-              />
-            </div>
-            <div>
-              <label className="hhs-label" htmlFor="cycle-end">End Date</label>
-              <input
-                id="cycle-end"
-                type="date"
-                required
-                className="hhs-input"
-                value={formEndDate}
-                onChange={e => setFormEndDate(e.target.value)}
-              />
-            </div>
-          </div>
-
-          <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '10px', marginTop: '12px' }}>
-            <button
-              type="button"
-              onClick={() => setIsModalOpen(false)}
-              className="hhs-btn hhs-btn-secondary"
-            >
-              Cancel
-            </button>
-            <button
-              type="submit"
-              disabled={isSaving}
-              className="hhs-btn hhs-btn-primary"
-            >
-              {isSaving ? 'Saving...' : editingCycle ? 'Update Configuration' : 'Create Cycle'}
-            </button>
-          </div>
-        </form>
-      </Modal>
     </div>
   );
 };

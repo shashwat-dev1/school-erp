@@ -7,7 +7,6 @@ interface PermissionRow {
   capability: string;
   description: string;
   principal: boolean | string;
-  officeAdmin: boolean | string;
   classTeacher: boolean | string;
   subjectTeacher: boolean | string;
 }
@@ -15,127 +14,105 @@ interface PermissionRow {
 const PERMISSION_MATRIX: PermissionRow[] = [
   {
     domain: 'Student Master Ledger',
-    capability: 'View Student Demographic Profiles',
-    description: 'Access names, DOB, roll numbers, guardian contacts, and residential addresses.',
-    principal: true,
-    officeAdmin: true,
-    classTeacher: 'Assigned Class',
+    capability: 'View Student Directory & Dossier',
+    description: 'Access student identity, admission number, roll number, and academic overview.',
+    principal: 'School-Wide (Read-Only)',
+    classTeacher: 'Assigned Section',
     subjectTeacher: 'Assigned Classes',
   },
   {
     domain: 'Student Master Ledger',
-    capability: 'New Student Admission & Enrollment',
-    description: 'Register new students, assign admission numbers, and allocate classrooms.',
-    principal: true,
-    officeAdmin: true,
-    classTeacher: false,
-    subjectTeacher: false,
-  },
-  {
-    domain: 'Student Master Ledger',
-    capability: 'Edit Master Profile Records',
-    description: 'Revise demographic data with mandatory audit trail justification.',
-    principal: true,
-    officeAdmin: true,
+    capability: 'Enroll / Edit Master Student Records',
+    description: 'Add new students or modify demographic data. Strictly locked in pilot.',
+    principal: false,
     classTeacher: false,
     subjectTeacher: false,
   },
   {
     domain: 'Attendance Operations',
     capability: 'Mark Daily Attendance Register',
-    description: 'Toggle Present/Absent/Late during the active morning window (07:45–09:15).',
-    principal: true,
-    officeAdmin: false,
-    classTeacher: 'Assigned Section',
+    description: 'Record morning roll call attendance for students.',
+    principal: false,
+    classTeacher: 'Assigned Section Only',
     subjectTeacher: false,
   },
   {
     domain: 'Attendance Operations',
-    capability: 'Request Late Attendance Correction',
-    description: 'Submit formal post-window adjustment request with mandatory justification.',
-    principal: true,
-    officeAdmin: false,
-    classTeacher: 'Assigned Section',
+    capability: 'View Individual Attendance Registers',
+    description: 'Inspect daily attendance status and absence history for individual students.',
+    principal: 'School-Wide (Read-Only)',
+    classTeacher: 'Assigned Section Only',
     subjectTeacher: false,
   },
   {
     domain: 'Attendance Operations',
-    capability: 'Authorize Dual-Custody Corrections',
-    description: 'Approve or reject teacher correction requests to finalize official register.',
-    principal: true,
-    officeAdmin: false,
-    classTeacher: false,
-    subjectTeacher: false,
+    capability: 'Class Attendance Aggregate',
+    description: 'View aggregate class turnout totals (e.g. 46 of 50 present) without absent names.',
+    principal: 'School-Wide Overview',
+    classTeacher: 'Assigned Section',
+    subjectTeacher: 'Assigned Classes (Aggregate Only)',
   },
   {
-    domain: 'Academic Assessments',
-    capability: 'Configure Assessment Cycles & Weights',
-    description: 'Define max marks, terms, pass marks, and term weightages.',
-    principal: true,
-    officeAdmin: true,
-    classTeacher: false,
+    domain: 'Attendance Operations',
+    capability: 'Attendance Correction Requests',
+    description: 'Submit or approve official adjustments to daily attendance records.',
+    principal: false,
+    classTeacher: 'Assigned Section Only',
     subjectTeacher: false,
   },
   {
     domain: 'Academic Assessments',
     capability: 'Enter Subject Marks',
-    description: 'Spreadsheet score entry with real-time score caps and absent validations.',
-    principal: true,
-    officeAdmin: false,
-    classTeacher: 'Assigned Subject',
-    subjectTeacher: 'Assigned Subject',
+    description: 'Input marks for specific assessments and assigned subject/section registers.',
+    principal: false,
+    classTeacher: 'Assigned Subject Only',
+    subjectTeacher: 'Assigned Subject Only',
   },
   {
     domain: 'Academic Assessments',
-    capability: 'Consolidated Cross-Subject Gradebook',
-    description: 'Multi-subject comparative matrix and student deficiency inspections.',
-    principal: true,
-    officeAdmin: false,
+    capability: 'View Cross-Subject Results Matrix',
+    description: 'View consolidated results across all subjects for a class section.',
+    principal: 'School-Wide (Read-Only)',
+    classTeacher: 'Assigned Section Only',
+    subjectTeacher: false,
+  },
+  {
+    domain: 'Academic Assessments',
+    capability: 'Configure Assessment Cycles',
+    description: 'Create or update exam terms, maximum marks, and weightages.',
+    principal: false,
+    classTeacher: false,
+    subjectTeacher: false,
+  },
+  {
+    domain: 'Student Notes',
+    capability: 'Add Student Notes & Observations',
+    description: 'Record behavioral, academic, and pastoral observations for students.',
+    principal: false,
     classTeacher: 'Assigned Section',
-    subjectTeacher: false,
+    subjectTeacher: 'Assigned Classes',
   },
   {
     domain: 'Student Notes',
-    capability: 'Log Student Notes & Observations',
-    description: 'Document commendations, student notes, and conduct reports.',
-    principal: true,
-    officeAdmin: false,
-    classTeacher: true,
-    subjectTeacher: true,
+    capability: 'View Student Notes',
+    description: 'Inspect recorded teacher notes and student observations.',
+    principal: 'School-Wide (Read-Only)',
+    classTeacher: 'Assigned Section',
+    subjectTeacher: 'Own & Shared Notes',
   },
   {
-    domain: 'Student Notes',
-    capability: 'Access Confidential Student Records',
-    description: 'Inspect counseling files and critical disciplinary notes.',
-    principal: true,
-    officeAdmin: false,
-    classTeacher: 'Assigned Students',
-    subjectTeacher: false,
+    domain: 'Reports & Exports',
+    capability: 'Download Student Report Cards & PTM Slips',
+    description: 'Generate authorized printable progress reports and summary slips.',
+    principal: 'School-Wide PDF/Print',
+    classTeacher: 'Assigned Section',
+    subjectTeacher: 'Own Subject',
   },
   {
-    domain: 'Institutional Governance',
-    capability: 'CBSE Compliance & Form A Filing',
-    description: 'Official statutory filings, condonation certificates, and bulk exports.',
-    principal: true,
-    officeAdmin: true,
-    classTeacher: false,
-    subjectTeacher: false,
-  },
-  {
-    domain: 'Institutional Governance',
-    capability: 'Faculty Provisioning & Role Assignments',
-    description: 'Manage staff accounts, class educator assignments, and subject mappings.',
-    principal: true,
-    officeAdmin: true,
-    classTeacher: false,
-    subjectTeacher: false,
-  },
-  {
-    domain: 'System Security',
-    capability: 'Immutable Audit Trail Inspection',
-    description: 'Inspect cryptographic logs of logins, mutations, and dual-custody diffs.',
-    principal: true,
-    officeAdmin: false,
+    domain: 'System Governance',
+    capability: 'Staff Account & Role Allocations',
+    description: 'Modify staff accounts, class teacher allocations, or subject assignments.',
+    principal: false,
     classTeacher: false,
     subjectTeacher: false,
   },
@@ -182,8 +159,8 @@ export const RolePermissionMatrix: React.FC = () => {
           display: 'inline-block',
           padding: '2px 8px',
           borderRadius: 'var(--hhs-radius-pill)',
-          backgroundColor: 'var(--hhs-accent-light)',
-          color: 'var(--hhs-accent-text)',
+          backgroundColor: 'var(--hhs-primary-light)',
+          color: 'var(--hhs-primary-text)',
           fontWeight: 600,
           fontSize: '0.75rem',
         }}
@@ -196,12 +173,12 @@ export const RolePermissionMatrix: React.FC = () => {
   return (
     <div className="hhs-page-container">
       <PageHeader
-        title="Role & Assignment Authorization Matrix (RBAC)"
-        subtitle="Definitive institutional policy mapping functional capabilities to staff clearances under Firebase Security Rules."
+        title="Role & Assignment Authorization Matrix"
+        subtitle="School policy mapping functional capabilities to the three profiles under HanuJai ERP rules."
         roleScope="System Governance"
         breadcrumbs={[
           { label: 'Home', to: '/' },
-          { label: 'Staff', to: '/staff' },
+          { label: 'Staff Directory', to: '/staff' },
           { label: 'Role & Assignment Matrix', to: '/admin/roles' },
         ]}
       />
@@ -225,7 +202,7 @@ export const RolePermissionMatrix: React.FC = () => {
         <ShieldCheck size={24} style={{ color: 'var(--hhs-primary)', flexShrink: 0 }} />
         <div>
           <strong style={{ textTransform: 'uppercase', letterSpacing: '0.04em' }}>Principle of Least Privilege:</strong>{' '}
-          In HanuJai High School ERP, role boundaries are enforced both at the client routing level and in <code>firestore.rules</code>. Hiding navigation items is not sufficient; all database mutations check cryptographic token claims and assignment documents.
+          In HanuJai High School ERP, role boundaries are enforced both at the client routing level and in <code>firestore.rules</code> and <code>demoRepository.ts</code>. Principal access is strictly read-only school-wide. Teachers hold class and subject assignments independently.
         </div>
       </div>
 
@@ -249,7 +226,7 @@ export const RolePermissionMatrix: React.FC = () => {
               Active rules governing Session 2025–26
             </div>
           </div>
-          <span className="hhs-badge hhs-badge-primary">4 Staff Roles</span>
+          <span className="hhs-badge hhs-badge-primary">3 Role Profiles</span>
         </div>
 
         <div style={{ overflowX: 'auto' }}>
@@ -258,10 +235,9 @@ export const RolePermissionMatrix: React.FC = () => {
               <tr>
                 <th style={{ width: '180px' }}>Domain / Capability</th>
                 <th style={{ minWidth: '220px' }}>Description &amp; Operational Rule</th>
-                <th style={{ width: '140px' }}>Principal</th>
-                <th style={{ width: '140px' }}>Office Registrar</th>
-                <th style={{ width: '140px' }}>Class Tutor</th>
-                <th style={{ width: '140px' }}>Subject Faculty</th>
+                <th style={{ width: '170px' }}>Principal (Read-Only)</th>
+                <th style={{ width: '170px' }}>Class Teacher</th>
+                <th style={{ width: '170px' }}>Subject Teacher</th>
               </tr>
             </thead>
             <tbody>
@@ -281,7 +257,6 @@ export const RolePermissionMatrix: React.FC = () => {
                     </p>
                   </td>
                   <td>{renderBadge(row.principal)}</td>
-                  <td>{renderBadge(row.officeAdmin)}</td>
                   <td>{renderBadge(row.classTeacher)}</td>
                   <td>{renderBadge(row.subjectTeacher)}</td>
                 </tr>
