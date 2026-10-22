@@ -6,7 +6,6 @@ import { PageHeader } from '../../components/layout/PageHeader';
 import { LoadingState } from '../../components/feedback/LoadingState';
 import { ErrorBanner } from '../../components/feedback/ErrorBanner';
 import { AccessDenied } from '../error/AccessDenied';
-import { RiskEvidenceDrawer } from '../../features/risk/RiskEvidenceDrawer';
 import type {
   ClassSection,
   AssessmentCycle,
@@ -16,9 +15,9 @@ import type {
 } from '../../domain/types';
 import {
   Download,
-  AlertTriangle,
   BookOpen,
-  Printer,
+  Edit3,
+  Eye,
 } from 'lucide-react';
 
 export const ClassPerformanceLedger: React.FC = () => {
@@ -29,8 +28,8 @@ export const ClassPerformanceLedger: React.FC = () => {
 
   const activeClassId = classId || currentUser?.assignedClassId || currentUser?.assignedClasses?.[0];
 
-  const [activeTab, setActiveTab] = useState<'matrix' | 'watchlist'>('matrix');
-  const [selectedCycleId, setSelectedCycleId] = useState<string>('assess-ut1-2025');
+  const [selectedCycleId, setSelectedCycleId] = useState<string>('assess-ut2-2025');
+  const [filterMode, setFilterMode] = useState<'all' | 'review'>('all');
   const [cycles, setCycles] = useState<AssessmentCycle[]>([]);
   const [activeClass, setActiveClass] = useState<ClassSection | null>(null);
   const [subjects, setSubjects] = useState<Subject[]>([]);
@@ -41,8 +40,7 @@ export const ClassPerformanceLedger: React.FC = () => {
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
 
-  // Evidence Drawer state
-  const [drawerStudent, setDrawerStudent] = useState<StudentRecord | null>(null);
+  const isSubjectTeacher = currentUser?.role === 'subject_teacher';
 
   // Fetch cycles and class
   useEffect(() => {
@@ -57,6 +55,9 @@ export const ClassPerformanceLedger: React.FC = () => {
         if (!isMounted) return;
         setCycles(cList);
         setActiveClass(cls);
+        if (cList.length > 0 && !cList.some(c => c.id === selectedCycleId)) {
+          setSelectedCycleId(cList[0].id);
+        }
       } catch (err: unknown) {
         console.error('Error fetching performance metadata:', err);
       }
@@ -67,7 +68,7 @@ export const ClassPerformanceLedger: React.FC = () => {
     };
   }, [provider, activeClassId]);
 
-  // Fetch consolidated matrix for active class and cycle
+  // Fetch marks matrix for active class and cycle
   useEffect(() => {
     if (!activeClassId) return;
     let isMounted = true;
@@ -83,7 +84,7 @@ export const ClassPerformanceLedger: React.FC = () => {
         setSubjectAverages(res.subjectAverages);
       } catch (err: unknown) {
         if (!isMounted) return;
-        setError(err instanceof Error ? err.message : 'Failed to load consolidated performance ledger.');
+        setError(err instanceof Error ? err.message : 'Failed to load class performance data.');
       } finally {
         if (isMounted) setIsLoading(false);
       }
@@ -99,23 +100,57 @@ export const ClassPerformanceLedger: React.FC = () => {
   const maxMarks = activeCycle?.maxMarks || 25;
   const passMarks = Math.round(maxMarks * 0.33);
 
-  // Clearance calculation: Subject teachers can ONLY see their assigned subjects
+  // Clearance check: Subject teachers can ONLY see their assigned subjects
   const isFullMatrixAuthorized =
     currentUser?.role === 'principal' ||
     currentUser?.role === 'office_admin' ||
+    currentUser?.role === 'office_staff' ||
     (currentUser?.role === 'class_teacher' && currentUser.assignedClassId === activeClassId);
 
   const visibleSubjects = useMemo(() => {
     if (isFullMatrixAuthorized) return subjects;
-    const teacherSubIds = currentUser?.assignedSubjects || currentUser?.assignedSubjectIds || [];
+    const teacherSubIds = currentUser?.assignedSubjects || [];
     return subjects.filter(s => teacherSubIds.includes(s.id));
   }, [subjects, isFullMatrixAuthorized, currentUser]);
 
-  // Summary computations
+  // Single assigned subject for subject teacher view
+  const primarySubject = visibleSubjects[0] || subjects.find(s => s.name.toLowerCase().includes('math')) || subjects[0];
+
+  // Computations for Subject Teacher view
+  const subjectTeacherMetrics = useMemo(() => {
+    if (!primarySubject) return { averagePct: '—', totalStudents: students.length, reviewStudents: [] };
+
+    let totalScore = 0;
+    let counted = 0;
+    const reviewList: StudentRecord[] = [];
+
+    students.forEach(s => {
+      const entry = matrixData[s.id]?.[primarySubject.id];
+      if (entry?.isAbsent) {
+        reviewList.push(s);
+      } else if (entry && entry.marksObtained !== null) {
+        totalScore += entry.marksObtained;
+        counted++;
+        if (entry.marksObtained < passMarks) {
+          reviewList.push(s);
+        }
+      }
+    });
+
+    const averagePct = counted > 0 ? ((totalScore / (counted * maxMarks)) * 100).toFixed(1) : '—';
+
+    return {
+      averagePct,
+      totalStudents: students.length,
+      reviewStudents: reviewList,
+    };
+  }, [primarySubject, students, matrixData, maxMarks, passMarks]);
+
+  // Summary computations for School / Class Teacher view
   const summaryStats = useMemo(() => {
-    let cohortTotalScore = 0;
-    let cohortMaxPossible = 0;
-    let remedialCount = 0;
+    let totalScore = 0;
+    let maxPossible = 0;
+    let supportCount = 0;
     let distinctionCount = 0;
 
     students.forEach(s => {
@@ -130,45 +165,67 @@ export const ClassPerformanceLedger: React.FC = () => {
       });
 
       if (count > 0) {
-        cohortTotalScore += studentScore;
-        cohortMaxPossible += count * maxMarks;
+        totalScore += studentScore;
+        maxPossible += count * maxMarks;
         const pct = (studentScore / (count * maxMarks)) * 100;
-        if (pct < 33) remedialCount++;
+        if (pct < 33) supportCount++;
         if (pct >= 75) distinctionCount++;
       }
     });
 
-    const cohortAveragePct = cohortMaxPossible > 0 ? ((cohortTotalScore / cohortMaxPossible) * 100).toFixed(1) : '—';
+    const averagePct = maxPossible > 0 ? ((totalScore / maxPossible) * 100).toFixed(1) : '—';
 
     return {
-      cohortAveragePct,
-      remedialCount,
+      averagePct,
+      supportCount,
       distinctionCount,
       totalStudents: students.length,
     };
   }, [students, visibleSubjects, matrixData, maxMarks]);
 
+  // Filtered students for display
+  const displayedStudents = useMemo(() => {
+    if (filterMode === 'review') {
+      if (isSubjectTeacher) {
+        const reviewIds = new Set(subjectTeacherMetrics.reviewStudents.map(s => s.id));
+        return students.filter(s => reviewIds.has(s.id));
+      } else {
+        return students.filter(s => {
+          let score = 0;
+          let count = 0;
+          visibleSubjects.forEach(sub => {
+            const e = matrixData[s.id]?.[sub.id];
+            if (e && e.marksObtained !== null && e.marksObtained !== undefined && !e.isAbsent) {
+              score += e.marksObtained;
+              count++;
+            }
+          });
+          return count > 0 && (score / (count * maxMarks)) * 100 < 33;
+        });
+      }
+    }
+    return students;
+  }, [filterMode, isSubjectTeacher, subjectTeacherMetrics, students, visibleSubjects, matrixData, maxMarks]);
+
   // Export CSV
   const handleExportCSV = () => {
     if (!activeClass || !activeCycle) return;
+    const exportSubjects = isSubjectTeacher && primarySubject ? [primarySubject] : visibleSubjects;
+
     const headers = [
       'Roll #',
       'Admission #',
       'Student Name',
-      ...visibleSubjects.map(s => `"${s.name} (${maxMarks})"`),
-      'Total Marks',
-      'Max Total',
-      'Percentage',
-      'CBSE Grade',
-      'Care Flag',
+      ...exportSubjects.map(s => `"${s.name} (${maxMarks})"`),
+      ...(isSubjectTeacher ? ['Status'] : ['Total Marks', 'Max Total', 'Percentage', 'Grade']),
     ];
 
     const rows = students.map(s => {
       let tot = 0;
       let cnt = 0;
-      const subjVals = visibleSubjects.map(sub => {
+      const subjVals = exportSubjects.map(sub => {
         const e = matrixData[s.id]?.[sub.id];
-        if (e?.isAbsent) return 'ABS';
+        if (e?.isAbsent) return 'Absent';
         if (e && e.marksObtained !== null) {
           tot += e.marksObtained;
           cnt++;
@@ -177,9 +234,21 @@ export const ClassPerformanceLedger: React.FC = () => {
         return '—';
       });
 
-      const maxTot = visibleSubjects.length * maxMarks;
-      const pct = cnt > 0 ? ((tot / (cnt * maxMarks)) * 100).toFixed(1) + '%' : '—';
-      const flags = s.careFlags?.map(f => f.code).join(' ') || (s.activeFlags ? s.activeFlags.map(f => f.code).join(' ') : 'None');
+      if (isSubjectTeacher) {
+        const e = primarySubject ? matrixData[s.id]?.[primarySubject.id] : null;
+        const status = e?.isAbsent
+          ? 'Absent'
+          : e?.marksObtained !== null && e?.marksObtained !== undefined
+          ? e.marksObtained >= passMarks
+            ? 'Pass'
+            : 'Needs Review'
+          : 'Pending';
+        return [s.rollNumber, s.admissionNumber, `"${s.firstName} ${s.lastName}"`, ...subjVals, status].join(',');
+      }
+
+      const maxTot = exportSubjects.length * maxMarks;
+      const pct = cnt > 0 ? ((tot / maxTot) * 100).toFixed(1) + '%' : '—';
+      const grade = cnt > 0 ? (tot / maxTot >= 0.8 ? 'A1' : tot / maxTot >= 0.6 ? 'B1' : tot / maxTot >= 0.33 ? 'C1' : 'E') : '—';
 
       return [
         s.rollNumber,
@@ -189,8 +258,7 @@ export const ClassPerformanceLedger: React.FC = () => {
         tot,
         maxTot,
         pct,
-        'Auto',
-        `"${flags}"`,
+        grade,
       ].join(',');
     });
 
@@ -198,17 +266,18 @@ export const ClassPerformanceLedger: React.FC = () => {
     const encodedUri = encodeURI(csvContent);
     const link = document.createElement('a');
     link.setAttribute('href', encodedUri);
-    link.setAttribute('download', `${(activeClass.label || 'Class').replace(/\s+/g, '_')}_Performance_${activeCycle?.title || activeCycle?.name || 'Cycle'}.csv`);
+    link.setAttribute('download', `${(activeClass.label || 'Class').replace(/\s+/g, '_')}_Results_${activeCycle?.name || 'Cycle'}.csv`);
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
   };
 
+  // Permission guards
   if (currentUser?.role === 'subject_teacher' && !currentUser.assignedClasses?.includes(activeClassId || '')) {
     return (
       <AccessDenied
-        title="Section Performance Authorization"
-        message="You do not have instructional duties assigned to this section."
+        title="Class Results Access"
+        message="You do not have teaching assignments in this class section."
       />
     );
   }
@@ -216,25 +285,285 @@ export const ClassPerformanceLedger: React.FC = () => {
   if (currentUser?.role === 'subject_teacher' && visibleSubjects.length === 0) {
     return (
       <AccessDenied
-        title="Subject Performance Authorization"
+        title="Subject Results Access"
         message="You do not teach any subjects in this class section."
       />
     );
   }
 
   if (isLoading) {
-    return <LoadingState message="Loading class performance matrix..." />;
+    return <LoadingState message="Loading class results..." />;
   }
 
+  // =========================================================================
+  // VIEW A: SUBJECT TEACHER VIEW (SCOPED STRICTLY TO ASSIGNED SUBJECT & CLASS)
+  // =========================================================================
+  if (isSubjectTeacher) {
+    const subjectName = primarySubject?.name || 'Mathematics';
+    const registerId = `reg-${selectedCycleId}-${activeClassId}-${primarySubject?.id || 'sub-math-10'}`;
+
+    return (
+      <div className="hhs-page-container">
+        <PageHeader
+          title={`${subjectName} Results — ${activeClass?.label || 'Class'}`}
+          subtitle={`${activeCycle?.name || 'Examination'} • Session 2025–2026`}
+          roleScope={subjectName}
+          breadcrumbs={[
+            { label: 'Home', to: '/' },
+            { label: activeClass?.label ? `${activeClass.label} Results` : 'Results' },
+          ]}
+          actions={
+            <div style={{ display: 'flex', gap: '8px' }}>
+              <button
+                onClick={() => navigate(`/academics/assessments/marks/${registerId}`)}
+                className="hhs-btn hhs-btn-primary"
+                style={{ display: 'inline-flex', alignItems: 'center', gap: '6px' }}
+              >
+                <Edit3 size={15} />
+                <span>Enter Marks</span>
+              </button>
+              <button
+                onClick={handleExportCSV}
+                className="hhs-btn hhs-btn-secondary"
+                style={{ display: 'inline-flex', alignItems: 'center', gap: '6px' }}
+              >
+                <Download size={15} />
+                <span>Export CSV</span>
+              </button>
+            </div>
+          }
+        />
+
+        {error && <ErrorBanner message={error} />}
+
+        {/* Toolbar: Assessment Cycle & View Filter */}
+        <div
+          style={{
+            display: 'flex',
+            justifyContent: 'space-between',
+            alignItems: 'center',
+            flexWrap: 'wrap',
+            gap: '12px',
+            marginBottom: '16px',
+          }}
+        >
+          <div style={{ display: 'flex', gap: '6px', backgroundColor: 'var(--hhs-surface)', padding: '3px', borderRadius: 'var(--hhs-radius-base)', border: '1px solid var(--hhs-border)' }}>
+            <button
+              onClick={() => setFilterMode('all')}
+              style={{
+                padding: '6px 14px',
+                fontSize: '0.84rem',
+                fontWeight: filterMode === 'all' ? 700 : 500,
+                backgroundColor: filterMode === 'all' ? 'var(--hhs-primary)' : 'transparent',
+                color: filterMode === 'all' ? '#FFFFFF' : 'var(--hhs-text-primary)',
+                border: 'none',
+                borderRadius: 'var(--hhs-radius-sm)',
+                cursor: 'pointer',
+              }}
+            >
+              All Students ({students.length})
+            </button>
+            <button
+              onClick={() => setFilterMode('review')}
+              style={{
+                padding: '6px 14px',
+                fontSize: '0.84rem',
+                fontWeight: filterMode === 'review' ? 700 : 500,
+                backgroundColor: filterMode === 'review' ? 'var(--hhs-primary)' : 'transparent',
+                color: filterMode === 'review' ? '#FFFFFF' : 'var(--hhs-text-primary)',
+                border: 'none',
+                borderRadius: 'var(--hhs-radius-sm)',
+                cursor: 'pointer',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '6px',
+              }}
+            >
+              <span>Marks to Review</span>
+              {subjectTeacherMetrics.reviewStudents.length > 0 && (
+                <span
+                  style={{
+                    backgroundColor: filterMode === 'review' ? 'rgba(255,255,255,0.25)' : 'var(--hhs-danger)',
+                    color: '#FFFFFF',
+                    fontSize: '0.7rem',
+                    fontWeight: 700,
+                    padding: '1px 6px',
+                    borderRadius: 'var(--hhs-radius-pill)',
+                  }}
+                >
+                  {subjectTeacherMetrics.reviewStudents.length}
+                </span>
+              )}
+            </button>
+          </div>
+
+          <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+            <label className="hhs-label" style={{ margin: 0 }}>
+              Assessment:
+            </label>
+            <select
+              className="hhs-select"
+              value={selectedCycleId}
+              onChange={e => setSelectedCycleId(e.target.value)}
+              style={{ width: 'auto', minWidth: '180px' }}
+            >
+              {cycles.map(c => (
+                <option key={c.id} value={c.id}>
+                  {c.name} (Max {c.maxMarks})
+                </option>
+              ))}
+            </select>
+          </div>
+        </div>
+
+        {/* 3 Metric Cards for Subject Teacher */}
+        <div
+          style={{
+            display: 'grid',
+            gridTemplateColumns: 'repeat(auto-fit, minmax(210px, 1fr))',
+            gap: '14px',
+            marginBottom: '20px',
+          }}
+        >
+          <div className="hhs-metric-card primary">
+            <div className="hhs-metric-label">Class Average</div>
+            <div className="hhs-metric-value">{subjectTeacherMetrics.averagePct}%</div>
+            <div className="hhs-body-sm" style={{ color: 'var(--hhs-text-secondary)', marginTop: '4px' }}>
+              {subjectName} • {activeCycle?.name}
+            </div>
+          </div>
+
+          <div className="hhs-metric-card info">
+            <div className="hhs-metric-label">Enrolled Students</div>
+            <div className="hhs-metric-value">{subjectTeacherMetrics.totalStudents}</div>
+            <div className="hhs-body-sm" style={{ color: 'var(--hhs-text-secondary)', marginTop: '4px' }}>
+              {activeClass?.label || 'Class'} Nominal Roll
+            </div>
+          </div>
+
+          <div className="hhs-metric-card accent">
+            <div className="hhs-metric-label">Marks to Review</div>
+            <div className="hhs-metric-value" style={{ color: subjectTeacherMetrics.reviewStudents.length > 0 ? 'var(--hhs-danger-text)' : 'inherit' }}>
+              {subjectTeacherMetrics.reviewStudents.length} Students
+            </div>
+            <div className="hhs-body-sm" style={{ color: 'var(--hhs-text-secondary)', marginTop: '4px' }}>
+              Scored below passing ({passMarks}/{maxMarks}) or absent
+            </div>
+          </div>
+        </div>
+
+        {/* Subject Results Table */}
+        <div className="hhs-card">
+          <div className="hhs-table-container">
+            <table className="hhs-table">
+              <thead>
+                <tr>
+                  <th style={{ width: '70px' }}>Roll #</th>
+                  <th style={{ width: '130px' }}>Admission #</th>
+                  <th>Student Name</th>
+                  <th className="numeric" style={{ width: '140px' }}>
+                    Marks (Out of {maxMarks})
+                  </th>
+                  <th style={{ width: '120px', textAlign: 'center' }}>Status</th>
+                  <th style={{ width: '100px', textAlign: 'right' }}>Action</th>
+                </tr>
+              </thead>
+              <tbody>
+                {displayedStudents.length === 0 ? (
+                  <tr>
+                    <td colSpan={6} style={{ textAlign: 'center', padding: '32px', color: 'var(--hhs-text-secondary)' }}>
+                      No students found matching this view.
+                    </td>
+                  </tr>
+                ) : (
+                  displayedStudents.map(s => {
+                    const entry = primarySubject ? matrixData[s.id]?.[primarySubject.id] : null;
+                    const isAbsent = entry?.isAbsent;
+                    const marks = entry?.marksObtained;
+                    const isReview = isAbsent || (marks !== null && marks !== undefined && marks < passMarks);
+
+                    return (
+                      <tr key={s.id} style={{ backgroundColor: isReview ? 'var(--hhs-accent-light)' : undefined }}>
+                        <td className="numeric" style={{ fontWeight: 600 }}>{s.rollNumber}</td>
+                        <td style={{ fontFamily: 'monospace', fontSize: '0.8rem', color: 'var(--hhs-text-secondary)' }}>
+                          {s.admissionNumber}
+                        </td>
+                        <td>
+                          <button
+                            onClick={() => navigate(`/students/${s.id}`)}
+                            style={{
+                              border: 'none',
+                              background: 'none',
+                              padding: 0,
+                              font: 'inherit',
+                              fontWeight: 600,
+                              color: 'var(--hhs-text-primary)',
+                              cursor: 'pointer',
+                              textAlign: 'left',
+                            }}
+                          >
+                            {s.firstName} {s.lastName}
+                          </button>
+                        </td>
+                        <td className="numeric" style={{ fontWeight: 700, fontSize: '0.9rem' }}>
+                          {isAbsent ? (
+                            <span style={{ color: 'var(--hhs-danger)', fontWeight: 700 }}>Absent</span>
+                          ) : marks !== null && marks !== undefined ? (
+                            <span style={{ color: marks < passMarks ? 'var(--hhs-danger-text)' : 'inherit' }}>
+                              {marks}
+                            </span>
+                          ) : (
+                            <span style={{ color: 'var(--hhs-text-muted)' }}>—</span>
+                          )}
+                        </td>
+                        <td style={{ textAlign: 'center' }}>
+                          {isAbsent ? (
+                            <span className="hhs-badge hhs-badge-danger">Absent</span>
+                          ) : marks !== null && marks !== undefined ? (
+                            marks >= passMarks ? (
+                              <span className="hhs-badge hhs-badge-success">Passing</span>
+                            ) : (
+                              <span className="hhs-badge hhs-badge-danger">Review</span>
+                            )
+                          ) : (
+                            <span className="hhs-badge hhs-badge-neutral">Pending</span>
+                          )}
+                        </td>
+                        <td style={{ textAlign: 'right' }}>
+                          <button
+                            onClick={() => navigate(`/students/${s.id}`)}
+                            className="hhs-btn hhs-btn-secondary hhs-btn-sm"
+                            style={{ padding: '0 8px', fontSize: '0.74rem' }}
+                            title="View Student Summary"
+                          >
+                            <Eye size={12} />
+                            <span>View</span>
+                          </button>
+                        </td>
+                      </tr>
+                    );
+                  })
+                )}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // =========================================================================
+  // VIEW B: CLASS TEACHER / PRINCIPAL / OFFICE VIEW (CONSOLIDATED MARKS)
+  // =========================================================================
   return (
     <div className="hhs-page-container">
       <PageHeader
-        title={`${activeClass?.label || 'Class Section'} — ${isFullMatrixAuthorized ? 'Consolidated Subject Performance Matrix' : 'Subject Faculty Performance'}`}
-        subtitle="Cross-subject grade verification, deficiency identification, and parent conference inspection."
-        roleScope={isFullMatrixAuthorized ? 'Consolidated Scholastic Ledger' : 'Subject Faculty Performance'}
+        title={`Class Results — ${activeClass?.label || 'Class'}`}
+        subtitle={`${activeCycle?.name || 'Assessment'} • Consolidated Subject Performance`}
+        roleScope={activeClass?.label || 'Class Results'}
         breadcrumbs={[
-          { label: currentUser?.role === 'class_teacher' ? 'My Section' : currentUser?.role === 'subject_teacher' ? 'My Teaching' : 'Operations Hub', to: '/' },
-          { label: activeClass?.label || 'Class Performance' },
+          { label: 'Home', to: '/' },
+          { label: activeClass?.label ? `${activeClass.label} Results` : 'Class Results' },
         ]}
         actions={
           <div style={{ display: 'flex', gap: '8px' }}>
@@ -244,7 +573,7 @@ export const ClassPerformanceLedger: React.FC = () => {
               style={{ display: 'inline-flex', alignItems: 'center', gap: '6px' }}
             >
               <Download size={15} />
-              <span>Export Ledger CSV</span>
+              <span>Export CSV</span>
             </button>
             <button
               onClick={() => navigate('/reports/academic-comparison')}
@@ -252,7 +581,7 @@ export const ClassPerformanceLedger: React.FC = () => {
               style={{ display: 'inline-flex', alignItems: 'center', gap: '6px' }}
             >
               <BookOpen size={15} />
-              <span>Section Comparison Report</span>
+              <span>Class Comparison</span>
             </button>
           </div>
         }
@@ -260,7 +589,7 @@ export const ClassPerformanceLedger: React.FC = () => {
 
       {error && <ErrorBanner message={error} />}
 
-      {/* Cycle Selector & Navigation Tabs */}
+      {/* Cycle Selector & Filter */}
       <div
         style={{
           display: 'flex',
@@ -271,30 +600,30 @@ export const ClassPerformanceLedger: React.FC = () => {
           marginBottom: '16px',
         }}
       >
-        <div style={{ display: 'flex', gap: '4px', backgroundColor: 'var(--hhs-surface)', padding: '3px', borderRadius: 'var(--hhs-radius-base)', border: '1px solid var(--hhs-border)' }}>
+        <div style={{ display: 'flex', gap: '6px', backgroundColor: 'var(--hhs-surface)', padding: '3px', borderRadius: 'var(--hhs-radius-base)', border: '1px solid var(--hhs-border)' }}>
           <button
-            onClick={() => setActiveTab('matrix')}
+            onClick={() => setFilterMode('all')}
             style={{
               padding: '6px 14px',
               fontSize: '0.84rem',
-              fontWeight: activeTab === 'matrix' ? 700 : 500,
-              backgroundColor: activeTab === 'matrix' ? 'var(--hhs-primary)' : 'transparent',
-              color: activeTab === 'matrix' ? '#ffffff' : 'var(--hhs-text-primary)',
+              fontWeight: filterMode === 'all' ? 700 : 500,
+              backgroundColor: filterMode === 'all' ? 'var(--hhs-primary)' : 'transparent',
+              color: filterMode === 'all' ? '#FFFFFF' : 'var(--hhs-text-primary)',
               border: 'none',
               borderRadius: 'var(--hhs-radius-sm)',
               cursor: 'pointer',
             }}
           >
-            Subject Marks Matrix
+            All Students ({students.length})
           </button>
           <button
-            onClick={() => setActiveTab('watchlist')}
+            onClick={() => setFilterMode('review')}
             style={{
               padding: '6px 14px',
               fontSize: '0.84rem',
-              fontWeight: activeTab === 'watchlist' ? 700 : 500,
-              backgroundColor: activeTab === 'watchlist' ? 'var(--hhs-primary)' : 'transparent',
-              color: activeTab === 'watchlist' ? '#ffffff' : 'var(--hhs-text-primary)',
+              fontWeight: filterMode === 'review' ? 700 : 500,
+              backgroundColor: filterMode === 'review' ? 'var(--hhs-primary)' : 'transparent',
+              color: filterMode === 'review' ? '#FFFFFF' : 'var(--hhs-text-primary)',
               border: 'none',
               borderRadius: 'var(--hhs-radius-sm)',
               cursor: 'pointer',
@@ -303,25 +632,27 @@ export const ClassPerformanceLedger: React.FC = () => {
               gap: '6px',
             }}
           >
-            <span>Tutor Follow-Up List</span>
-            <span
-              style={{
-                backgroundColor: activeTab === 'watchlist' ? 'rgba(255,255,255,0.25)' : 'var(--hhs-danger)',
-                color: '#ffffff',
-                fontSize: '0.7rem',
-                fontWeight: 700,
-                padding: '1px 6px',
-                borderRadius: 'var(--hhs-radius-pill)',
-              }}
-            >
-              3
-            </span>
+            <span>Needs Support</span>
+            {summaryStats.supportCount > 0 && (
+              <span
+                style={{
+                  backgroundColor: filterMode === 'review' ? 'rgba(255,255,255,0.25)' : 'var(--hhs-danger)',
+                  color: '#FFFFFF',
+                  fontSize: '0.7rem',
+                  fontWeight: 700,
+                  padding: '1px 6px',
+                  borderRadius: 'var(--hhs-radius-pill)',
+                }}
+              >
+                {summaryStats.supportCount}
+              </span>
+            )}
           </button>
         </div>
 
         <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
           <label className="hhs-label" style={{ margin: 0 }}>
-            Assessment Cycle:
+            Assessment:
           </label>
           <select
             className="hhs-select"
@@ -347,443 +678,167 @@ export const ClassPerformanceLedger: React.FC = () => {
           marginBottom: '20px',
         }}
       >
-        <div className="hhs-metric-card">
-          <div className="hhs-metric-label">Cohort Aggregate Mean</div>
-          <div className="hhs-metric-value" style={{ color: 'var(--hhs-primary)' }}>
-            {summaryStats.cohortAveragePct}%
+        <div className="hhs-metric-card primary">
+          <div className="hhs-metric-label">Class Average</div>
+          <div className="hhs-metric-value">{summaryStats.averagePct}%</div>
+          <div className="hhs-body-sm" style={{ color: 'var(--hhs-text-secondary)', marginTop: '4px' }}>
+            {activeCycle?.name}
           </div>
-          <div className="hhs-metric-sub">Session 2025–26 • {activeCycle?.name}</div>
         </div>
 
-        <div className="hhs-metric-card">
-          <div className="hhs-metric-label">Distinction Cohort (≥75%)</div>
-          <div className="hhs-metric-value" style={{ color: 'var(--hhs-primary)' }}>
-            {summaryStats.distinctionCount} <span style={{ fontSize: '0.8rem', color: 'var(--hhs-text-muted)' }}>/ {summaryStats.totalStudents}</span>
+        <div className="hhs-metric-card success">
+          <div className="hhs-metric-label">Distinction (≥75%)</div>
+          <div className="hhs-metric-value">{summaryStats.distinctionCount} Students</div>
+          <div className="hhs-body-sm" style={{ color: 'var(--hhs-text-secondary)', marginTop: '4px' }}>
+            High academic progress
           </div>
-          <div className="hhs-metric-sub">High academic progress</div>
         </div>
 
-        <div className="hhs-metric-card">
-          <div className="hhs-metric-label">Remedial Flagged (&lt;33%)</div>
-          <div className="hhs-metric-value" style={{ color: 'var(--hhs-danger-text)' }}>
-            {summaryStats.remedialCount} Candidates
+        <div className="hhs-metric-card accent">
+          <div className="hhs-metric-label">Academic Support (&lt;33%)</div>
+          <div className="hhs-metric-value" style={{ color: summaryStats.supportCount > 0 ? 'var(--hhs-danger-text)' : 'inherit' }}>
+            {summaryStats.supportCount} Students
           </div>
-          <div className="hhs-metric-sub">Below passing threshold</div>
+          <div className="hhs-body-sm" style={{ color: 'var(--hhs-text-secondary)', marginTop: '4px' }}>
+            Eligible for remedial sessions
+          </div>
         </div>
 
-        <div className="hhs-metric-card">
-          <div className="hhs-metric-label">Assigned Class Tutor</div>
-          <div className="hhs-metric-value" style={{ fontSize: '1.05rem', paddingTop: '4px' }}>
-            Mrs. Ananya Sharma
+        <div className="hhs-metric-card info">
+          <div className="hhs-metric-label">Total Students</div>
+          <div className="hhs-metric-value">{summaryStats.totalStudents}</div>
+          <div className="hhs-body-sm" style={{ color: 'var(--hhs-text-secondary)', marginTop: '4px' }}>
+            Enrolled in {activeClass?.label}
           </div>
-          <div className="hhs-metric-sub">Senior Secondary Wing</div>
         </div>
       </div>
 
-      {activeTab === 'matrix' ? (
-        /* Consolidated Marks Matrix View */
-        <div className="hhs-panel" style={{ padding: 0, overflow: 'hidden' }}>
-          <div
-            style={{
-              padding: '12px 18px',
-              borderBottom: '1px solid var(--hhs-border)',
-              backgroundColor: 'var(--hhs-surface-muted)',
-              display: 'flex',
-              justifyContent: 'space-between',
-              alignItems: 'center',
-            }}
-          >
-            <div>
-              <h4 style={{ margin: 0, fontSize: '0.9rem', fontWeight: 700, color: 'var(--hhs-text-primary)' }}>
-                Multi-Subject Cross Verification Matrix — {activeCycle?.name}
-              </h4>
-              <div style={{ fontSize: '0.75rem', color: 'var(--hhs-text-secondary)' }}>
-                Max per subject: {maxMarks} marks • Passing threshold: {passMarks} (33%)
-              </div>
-            </div>
-            <span className="hhs-badge hhs-badge-primary">{students.length} Candidates Enrolled</span>
-          </div>
+      {/* Consolidated Table */}
+      <div className="hhs-card">
+        <div className="hhs-table-container">
+          <table className="hhs-table">
+            <thead>
+              <tr>
+                <th style={{ width: '60px' }}>Roll #</th>
+                <th style={{ width: '120px' }}>Admission #</th>
+                <th style={{ minWidth: '160px' }}>Student Name</th>
+                {visibleSubjects.map(sub => (
+                  <th key={sub.id} className="numeric" style={{ minWidth: '85px' }}>
+                    {sub.name}
+                  </th>
+                ))}
+                <th className="numeric" style={{ minWidth: '85px' }}>Total</th>
+                <th className="numeric" style={{ minWidth: '70px' }}>%</th>
+                <th style={{ width: '70px', textAlign: 'center' }}>Grade</th>
+              </tr>
+            </thead>
+            <tbody>
+              {displayedStudents.map(s => {
+                let studentTotal = 0;
+                let counted = 0;
 
-          <div style={{ overflowX: 'auto' }}>
-            <table className="hhs-table" style={{ width: '100%' }}>
-              <thead>
-                <tr>
-                  <th style={{ width: '45px' }} className="numeric">Roll</th>
-                  <th style={{ minWidth: '150px' }}>Student Candidate</th>
-                  {visibleSubjects.map(s => (
-                    <th key={s.id} className="numeric" style={{ minWidth: '95px' }}>
-                      {s.name}
-                      <div style={{ fontSize: '0.68rem', fontWeight: 'normal', color: 'var(--hhs-text-muted)' }}>
-                        ({s.code})
-                      </div>
-                    </th>
-                  ))}
-                  <th className="numeric" style={{ width: '80px' }}>Total</th>
-                  <th className="numeric" style={{ width: '75px' }}>%</th>
-                  <th style={{ width: '75px', textAlign: 'center' }}>Grade</th>
-                  <th style={{ width: '110px' }}>Care Flag</th>
-                </tr>
-              </thead>
-              <tbody>
-                {students.map(s => {
-                  let studentTotal = 0;
-                  let countedSubjects = 0;
+                return (
+                  <tr key={s.id}>
+                    <td className="numeric" style={{ fontWeight: 600 }}>{s.rollNumber}</td>
+                    <td style={{ fontFamily: 'monospace', fontSize: '0.8rem', color: 'var(--hhs-text-secondary)' }}>
+                      {s.admissionNumber}
+                    </td>
+                    <td>
+                      <button
+                        onClick={() => navigate(`/students/${s.id}`)}
+                        style={{
+                          border: 'none',
+                          background: 'none',
+                          padding: 0,
+                          font: 'inherit',
+                          fontWeight: 600,
+                          color: 'var(--hhs-text-primary)',
+                          cursor: 'pointer',
+                          textAlign: 'left',
+                        }}
+                      >
+                        {s.firstName} {s.lastName}
+                      </button>
+                    </td>
 
-                  return (
-                    <tr key={s.id}>
-                      <td className="numeric" style={{ fontWeight: 600 }}>
-                        {s.rollNumber}
-                      </td>
-                      <td>
-                        <button
-                          onClick={() => navigate(`/students/${s.id}`)}
-                          style={{
-                            background: 'none',
-                            border: 'none',
-                            padding: 0,
-                            textAlign: 'left',
-                            fontWeight: 600,
-                            color: 'var(--hhs-primary)',
-                            cursor: 'pointer',
-                            textDecoration: 'underline',
-                          }}
-                        >
-                          {s.firstName} {s.lastName}
-                        </button>
-                        <div style={{ fontSize: '0.72rem', color: 'var(--hhs-text-secondary)', fontFamily: 'monospace' }}>
-                          {s.admissionNumber}
-                        </div>
-                      </td>
-
-                      {visibleSubjects.map(sub => {
-                        const entry = matrixData[s.id]?.[sub.id];
-                        const isAbsent = entry?.isAbsent;
-                        const score = entry?.marksObtained;
-
-                        if (isAbsent) {
-                          return (
-                            <td key={sub.id} className="numeric" style={{ color: 'var(--hhs-danger-text)', fontWeight: 700 }}>
-                              ABS
-                            </td>
-                          );
-                        }
-
-                        if (score !== undefined && score !== null) {
-                          studentTotal += score;
-                          countedSubjects++;
-                          const isFailing = score < passMarks;
-                          const isHigh = score >= maxMarks * 0.85;
-
-                          return (
-                            <td
-                              key={sub.id}
-                              className="numeric"
-                              style={{
-                                fontWeight: 600,
-                                color: isFailing
-                                  ? 'var(--hhs-danger-text)'
-                                  : isHigh
-                                  ? 'var(--hhs-primary)'
-                                  : 'inherit',
-                                backgroundColor: isFailing ? 'var(--hhs-danger-light)' : undefined,
-                              }}
-                            >
-                              {score}
-                            </td>
-                          );
-                        }
-
+                    {visibleSubjects.map(sub => {
+                      const entry = matrixData[s.id]?.[sub.id];
+                      if (entry?.isAbsent) {
                         return (
-                          <td key={sub.id} className="numeric" style={{ color: 'var(--hhs-text-muted)' }}>
-                            —
+                          <td key={sub.id} className="numeric" style={{ color: 'var(--hhs-danger)', fontWeight: 600 }}>
+                            Abs
                           </td>
                         );
-                      })}
+                      }
+                      if (entry && entry.marksObtained !== null) {
+                        studentTotal += entry.marksObtained;
+                        counted++;
+                        return (
+                          <td key={sub.id} className="numeric" style={{ fontWeight: 600 }}>
+                            {entry.marksObtained}
+                          </td>
+                        );
+                      }
+                      return (
+                        <td key={sub.id} className="numeric" style={{ color: 'var(--hhs-text-muted)' }}>
+                          —
+                        </td>
+                      );
+                    })}
 
-                      {/* Total & Percentage */}
-                      <td className="numeric" style={{ fontWeight: 700 }}>
-                        {studentTotal}
-                        <span style={{ fontSize: '0.7rem', color: 'var(--hhs-text-muted)' }}>
-                          /{countedSubjects * maxMarks}
+                    <td className="numeric" style={{ fontWeight: 700 }}>
+                      {studentTotal}
+                    </td>
+                    <td className="numeric" style={{ fontWeight: 600 }}>
+                      {counted > 0 ? `${((studentTotal / (counted * maxMarks)) * 100).toFixed(1)}%` : '—'}
+                    </td>
+                    <td style={{ textAlign: 'center' }}>
+                      {counted > 0 ? (
+                        <span
+                          className="hhs-badge"
+                          style={{
+                            backgroundColor: 'var(--hhs-surface-muted)',
+                            color: 'var(--hhs-primary)',
+                            fontWeight: 700,
+                          }}
+                        >
+                          {(studentTotal / (counted * maxMarks)) * 100 >= 80
+                            ? 'A1'
+                            : (studentTotal / (counted * maxMarks)) * 100 >= 60
+                            ? 'B1'
+                            : (studentTotal / (counted * maxMarks)) * 100 >= 33
+                            ? 'C1'
+                            : 'E'}
                         </span>
-                      </td>
-                      <td className="numeric" style={{ fontWeight: 600 }}>
-                        {countedSubjects > 0
-                          ? `${((studentTotal / (countedSubjects * maxMarks)) * 100).toFixed(1)}%`
-                          : '—'}
-                      </td>
-                      <td style={{ textAlign: 'center' }}>
-                        {countedSubjects > 0 ? (
-                          <span
-                            style={{
-                              display: 'inline-block',
-                              padding: '2px 8px',
-                              borderRadius: 'var(--hhs-radius-pill)',
-                              fontSize: '0.75rem',
-                              fontWeight: 700,
-                              backgroundColor: 'var(--hhs-surface-muted)',
-                              color: 'var(--hhs-primary)',
-                            }}
-                          >
-                            {((studentTotal / (countedSubjects * maxMarks)) * 100) >= 80
-                              ? 'A1'
-                              : ((studentTotal / (countedSubjects * maxMarks)) * 100) >= 60
-                              ? 'B1'
-                              : ((studentTotal / (countedSubjects * maxMarks)) * 100) >= 33
-                              ? 'C1'
-                              : 'E'}
-                          </span>
-                        ) : (
-                          '—'
-                        )}
-                      </td>
-                      <td>
-                        {s.careFlags && s.careFlags.length > 0 ? (
-                          <button
-                            onClick={() => setDrawerStudent(s)}
-                            style={{
-                              border: 'none',
-                              background: 'none',
-                              padding: 0,
-                              cursor: 'pointer',
-                              display: 'flex',
-                              alignItems: 'center',
-                              gap: '4px',
-                            }}
-                            title="Inspect Evidence Dossier"
-                          >
-                            <span
-                              style={{
-                                display: 'inline-block',
-                                padding: '2px 6px',
-                                borderRadius: 'var(--hhs-radius-sm)',
-                                fontSize: '0.72rem',
-                                fontWeight: 700,
-                                fontFamily: 'monospace',
-                                backgroundColor: 'var(--hhs-danger-light)',
-                                color: 'var(--hhs-danger-text)',
-                              }}
-                            >
-                              {s.careFlags[0].code}
-                            </span>
-                          </button>
-                        ) : (
-                          <span style={{ fontSize: '0.75rem', color: 'var(--hhs-text-muted)' }}>None</span>
-                        )}
-                      </td>
-                    </tr>
+                      ) : (
+                        '—'
+                      )}
+                    </td>
+                  </tr>
+                );
+              })}
+
+              {/* Class Average Row */}
+              <tr style={{ backgroundColor: 'var(--hhs-surface-muted)', fontWeight: 700 }}>
+                <td colSpan={3} style={{ textAlign: 'right', paddingRight: '16px' }}>
+                  Subject Class Average:
+                </td>
+                {visibleSubjects.map(sub => {
+                  const avg = subjectAverages[sub.id] || 0;
+                  return (
+                    <td key={sub.id} className="numeric" style={{ color: 'var(--hhs-primary)' }}>
+                      {avg.toFixed(1)}
+                    </td>
                   );
                 })}
-
-                {/* Cohort Mean Bottom Row */}
-                <tr style={{ backgroundColor: 'var(--hhs-surface-muted)', fontWeight: 700 }}>
-                  <td colSpan={2} style={{ textAlign: 'right', paddingRight: '16px' }}>
-                    Subject Aggregate Average:
-                  </td>
-                  {visibleSubjects.map(sub => {
-                    const avg = subjectAverages[sub.id] || 0;
-                    return (
-                      <td key={sub.id} className="numeric" style={{ color: 'var(--hhs-primary)' }}>
-                        {avg.toFixed(1)}
-                      </td>
-                    );
-                  })}
-                  <td colSpan={4} style={{ fontSize: '0.75rem', color: 'var(--hhs-text-secondary)' }}>
-                    Standard Class Benchmark
-                  </td>
-                </tr>
-              </tbody>
-            </table>
-          </div>
+                <td colSpan={3} style={{ fontSize: '0.75rem', color: 'var(--hhs-text-secondary)' }}>
+                  Class Benchmark
+                </td>
+              </tr>
+            </tbody>
+          </table>
         </div>
-      ) : (
-        /* Class Teacher Assigned Student Follow-Up List View */
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
-          <div
-            style={{
-              padding: '12px 16px',
-              backgroundColor: 'var(--hhs-surface)',
-              border: '1px solid var(--hhs-border)',
-              borderRadius: 'var(--hhs-radius-container)',
-              display: 'flex',
-              justifyContent: 'space-between',
-              alignItems: 'center',
-            }}
-          >
-            <div>
-              <h4 style={{ margin: 0, fontSize: '0.92rem', fontWeight: 700 }}>
-                Class 10-A Priority Intervention Watchlist
-              </h4>
-              <p style={{ margin: '2px 0 0', fontSize: '0.78rem', color: 'var(--hhs-text-secondary)' }}>
-                Tutor-monitored candidates flagged under deterministic rules for attendance, academic decline, or conduct.
-              </p>
-            </div>
-            <span className="hhs-badge hhs-badge-accent">3 Candidates Require Review</span>
-          </div>
-
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))', gap: '14px' }}>
-            {/* Student 1: Aarav Singhania */}
-            <div
-              className="hhs-panel"
-              style={{
-                borderLeft: '4px solid var(--hhs-danger)',
-                display: 'flex',
-                flexDirection: 'column',
-                justifyContent: 'space-between',
-                gap: '12px',
-              }}
-            >
-              <div>
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
-                  <div>
-                    <h4 style={{ margin: 0, fontSize: '1rem', fontWeight: 700, color: 'var(--hhs-text-primary)' }}>
-                      Aarav Singhania (Roll 1)
-                    </h4>
-                    <div style={{ fontSize: '0.75rem', color: 'var(--hhs-text-secondary)', fontFamily: 'monospace' }}>
-                      Admission #HJ-2025-1042
-                    </div>
-                  </div>
-                  <div style={{ display: 'flex', gap: '4px' }}>
-                    <span className="hhs-badge hhs-badge-danger">#ATT-01</span>
-                    <span className="hhs-badge hhs-badge-danger">#ACAD-04</span>
-                  </div>
-                </div>
-
-                <p style={{ margin: '10px 0 0', fontSize: '0.82rem', color: 'var(--hhs-text-secondary)', lineHeight: 1.45 }}>
-                  <strong>Trigger Evidence:</strong> 3 consecutive unexcused operational absences, coupled with a 28% drop in Mathematics from UT-1 (22/25) to UT-2 (15/25).
-                </p>
-              </div>
-
-              <div style={{ display: 'flex', gap: '8px', borderTop: '1px solid var(--hhs-border)', paddingTop: '10px' }}>
-                <button
-                  onClick={() => {
-                    const st = students.find(s => s.id === 'stu-10a-01') || students[0];
-                    setDrawerStudent(st);
-                  }}
-                  className="hhs-btn hhs-btn-secondary"
-                  style={{ flex: 1, fontSize: '0.78rem', height: '32px' }}
-                >
-                  <AlertTriangle size={14} />
-                  <span>Inspect Evidence</span>
-                </button>
-                <button
-                  onClick={() => navigate('/reports/ptm-slip/stu-10a-01')}
-                  className="hhs-btn hhs-btn-primary"
-                  style={{ fontSize: '0.78rem', height: '32px' }}
-                >
-                  <Printer size={14} />
-                  <span>PTM Slip</span>
-                </button>
-              </div>
-            </div>
-
-            {/* Student 2: Rohan Verma */}
-            <div
-              className="hhs-panel"
-              style={{
-                borderLeft: '4px solid var(--hhs-accent)',
-                display: 'flex',
-                flexDirection: 'column',
-                justifyContent: 'space-between',
-                gap: '12px',
-              }}
-            >
-              <div>
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
-                  <div>
-                    <h4 style={{ margin: 0, fontSize: '1rem', fontWeight: 700, color: 'var(--hhs-text-primary)' }}>
-                      Rohan Verma (Roll 3)
-                    </h4>
-                    <div style={{ fontSize: '0.75rem', color: 'var(--hhs-text-secondary)', fontFamily: 'monospace' }}>
-                      Admission #HJ-2025-1044
-                    </div>
-                  </div>
-                  <span className="hhs-badge hhs-badge-accent">#DISC-02</span>
-                </div>
-
-                <p style={{ margin: '10px 0 0', fontSize: '0.82rem', color: 'var(--hhs-text-secondary)', lineHeight: 1.45 }}>
-                  <strong>Trigger Evidence:</strong> Punctuality notice and classroom conduct observation logged during Physics laboratory session.
-                </p>
-              </div>
-
-              <div style={{ display: 'flex', gap: '8px', borderTop: '1px solid var(--hhs-border)', paddingTop: '10px' }}>
-                <button
-                  onClick={() => navigate('/students/stu-10a-03')}
-                  className="hhs-btn hhs-btn-secondary"
-                  style={{ flex: 1, fontSize: '0.78rem', height: '32px' }}
-                >
-                  <span>Student Dossier</span>
-                </button>
-                <button
-                  onClick={() => navigate('/behaviour')}
-                  className="hhs-btn hhs-btn-primary"
-                  style={{ fontSize: '0.78rem', height: '32px' }}
-                >
-                  <span>Care Log</span>
-                </button>
-              </div>
-            </div>
-
-            {/* Student 3: Ananya Gupta */}
-            <div
-              className="hhs-panel"
-              style={{
-                borderLeft: '4px solid var(--hhs-danger)',
-                display: 'flex',
-                flexDirection: 'column',
-                justifyContent: 'space-between',
-                gap: '12px',
-              }}
-            >
-              <div>
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
-                  <div>
-                    <h4 style={{ margin: 0, fontSize: '1rem', fontWeight: 700, color: 'var(--hhs-text-primary)' }}>
-                      Ananya Gupta (Roll 4)
-                    </h4>
-                    <div style={{ fontSize: '0.75rem', color: 'var(--hhs-text-secondary)', fontFamily: 'monospace' }}>
-                      Admission #HJ-2025-1045
-                    </div>
-                  </div>
-                  <span className="hhs-badge hhs-badge-danger">#ATT-03</span>
-                </div>
-
-                <p style={{ margin: '10px 0 0', fontSize: '0.82rem', color: 'var(--hhs-text-secondary)', lineHeight: 1.45 }}>
-                  <strong>Trigger Evidence:</strong> Aggregate instruction days at 71.4%, falling below the mandatory CBSE 75.0% statutory threshold.
-                </p>
-              </div>
-
-              <div style={{ display: 'flex', gap: '8px', borderTop: '1px solid var(--hhs-border)', paddingTop: '10px' }}>
-                <button
-                  onClick={() => {
-                    const st = students.find(s => s.id === 'stu-10a-04') || students[0];
-                    setDrawerStudent(st);
-                  }}
-                  className="hhs-btn hhs-btn-secondary"
-                  style={{ flex: 1, fontSize: '0.78rem', height: '32px' }}
-                >
-                  <AlertTriangle size={14} />
-                  <span>Inspect Evidence</span>
-                </button>
-                <button
-                  onClick={() => navigate('/reports/attendance')}
-                  className="hhs-btn hhs-btn-primary"
-                  style={{ fontSize: '0.78rem', height: '32px' }}
-                >
-                  <span>Attendance Audit</span>
-                </button>
-              </div>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* Evidence Drawer */}
-      <RiskEvidenceDrawer
-        isOpen={Boolean(drawerStudent)}
-        onClose={() => setDrawerStudent(null)}
-        student={drawerStudent}
-      />
+      </div>
     </div>
   );
 };

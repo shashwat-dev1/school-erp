@@ -78,7 +78,7 @@ export const ReportsHub: React.FC = () => {
         subtitle="Institutional reporting repository across student records, attendance muster, academic moderation, and board compliance."
         roleScope="Institutional Governance"
         breadcrumbs={[
-          { label: 'Operations Hub', to: '/' },
+          { label: 'Home', to: '/' },
           { label: 'Reports Hub', to: '/reports' },
         ]}
       />

@@ -92,7 +92,7 @@ export const PTMSlip: React.FC = () => {
           subtitle="Print-optimized alignment summary for guardian conference and remediation commitments."
           roleScope="Guardian & Educator Consultation"
           breadcrumbs={[
-            { label: 'Operations Hub', to: '/' },
+            { label: 'Home', to: '/' },
             { label: 'Reports', to: '/reports' },
             { label: 'PTM Slip', to: `/reports/ptm-slip/${student.id}` },
           ]}
@@ -173,7 +173,7 @@ export const PTMSlip: React.FC = () => {
           }}
         >
           <div>
-            <span style={{ fontSize: '0.7rem', color: '#5d6b68' }}>CANDIDATE:</span>
+            <span style={{ fontSize: '0.7rem', color: '#5d6b68' }}>STUDENT:</span>
             <div style={{ fontWeight: 700 }}>{student.firstName} {student.lastName} (Roll {student.rollNumber})</div>
           </div>
           <div>
@@ -230,7 +230,7 @@ export const PTMSlip: React.FC = () => {
             Agreed Parent-School Action Plan:
           </h5>
           <ol style={{ margin: 0, paddingLeft: '18px', fontSize: '0.8rem', lineHeight: 1.5, color: '#202b2a' }}>
-            <li>Guardian ensures candidate attends daily 07:45 AM Zero-Period Remedial Mathematics clinics.</li>
+            <li>Guardian ensures student attends daily 07:45 AM Zero-Period Remedial Mathematics clinics.</li>
             <li>Zero unexcused absences permitted for the remainder of Term II. Certified medical certificates mandatory for any sick leave.</li>
             <li>Bi-weekly progress check-ins between primary guardian and Class Tutor Mrs. Ananya Sharma.</li>
           </ol>

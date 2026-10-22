@@ -114,7 +114,7 @@ export const SubjectFacultyAssignments: React.FC = () => {
         subtitle="Departmental subject mappings, weekly period workloads, and marks entry authorization clearances."
         roleScope="Academic Governance"
         breadcrumbs={[
-          { label: 'Operations Hub', to: '/' },
+          { label: 'Home', to: '/' },
           { label: 'Staff', to: '/staff' },
           { label: 'Subject Faculty Matrix', to: '/admin/subject-teachers' },
         ]}

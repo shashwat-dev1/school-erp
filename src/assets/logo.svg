@@ -1,12 +1,12 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 380 72" width="380" height="72">
   <defs>
     <linearGradient id="shieldGrad" x1="0%" y1="0%" x2="0%" y2="100%">
-      <stop offset="0%" stop-color="#19243A"/>
-      <stop offset="100%" stop-color="#233554"/>
+      <stop offset="0%" stop-color="#28251F"/>
+      <stop offset="100%" stop-color="#3D372E"/>
     </linearGradient>
     <linearGradient id="goldGrad" x1="0%" y1="0%" x2="100%" y2="100%">
-      <stop offset="0%" stop-color="#E5A83B"/>
-      <stop offset="100%" stop-color="#D99A37"/>
+      <stop offset="0%" stop-color="#B99452"/>
+      <stop offset="100%" stop-color="#795D2D"/>
     </linearGradient>
   </defs>
   
@@ -17,23 +17,23 @@
     
     <!-- Sunburst Symbolism -->
     <circle cx="30" cy="18" r="4.5" fill="url(#goldGrad)"/>
-    <path d="M30 8 L30 12 M30 24 L30 28 M20 18 L24 18 M36 18 L40 18 M23 11 L26 14 M34 22 L37 25 M23 25 L26 22 M34 14 L37 11" stroke="#D99A37" stroke-width="1.2" stroke-linecap="round"/>
+    <path d="M30 8 L30 12 M30 24 L30 28 M20 18 L24 18 M36 18 L40 18 M23 11 L26 14 M34 22 L37 25 M23 25 L26 22 M34 14 L37 11" stroke="#B99452" stroke-width="1.2" stroke-linecap="round"/>
     
     <!-- Open Book of Knowledge -->
-    <path d="M18 36 Q30 32 30 42 Q30 32 42 36 L42 46 Q30 42 30 50 Q30 42 18 46 Z" fill="none" stroke="#E5A83B" stroke-width="1.8" stroke-linejoin="round"/>
-    <line x1="30" y1="42" x2="30" y2="50" stroke="#E5A83B" stroke-width="1.8"/>
+    <path d="M18 36 Q30 32 30 42 Q30 32 42 36 L42 46 Q30 42 30 50 Q30 42 18 46 Z" fill="none" stroke="#B99452" stroke-width="1.8" stroke-linejoin="round"/>
+    <line x1="30" y1="42" x2="30" y2="50" stroke="#B99452" stroke-width="1.8"/>
   </g>
 
   <!-- Institutional Typography -->
   <g transform="translate(82, 24)">
-    <text x="0" y="8" font-family="'Inter', sans-serif" font-weight="800" font-size="19" fill="#19243A" letter-spacing="0.5">
-      HANUJAI <tspan fill="#3458D4">HIGH SCHOOL</tspan>
+    <text x="0" y="8" font-family="'Inter', sans-serif" font-weight="800" font-size="19" fill="#28251F" letter-spacing="0.5">
+      HANUJAI <tspan fill="#795D2D">HIGH SCHOOL</tspan>
     </text>
-    <text x="0" y="25" font-family="'Inter', sans-serif" font-weight="600" font-size="10.5" fill="#657083" letter-spacing="1.5">
+    <text x="0" y="25" font-family="'Inter', sans-serif" font-weight="600" font-size="10.5" fill="#6B655A" letter-spacing="1.5">
       JAIPUR, RAJASTHAN &#8226; EST. 1998
     </text>
-    <text x="0" y="38" font-family="'Inter', sans-serif" font-weight="500" font-style="italic" font-size="9" fill="#95A0B2" letter-spacing="0.2">
-      Vidya Dadati Vinayam &#8226; Internal Operational Platform
+    <text x="0" y="38" font-family="'Inter', sans-serif" font-weight="500" font-style="italic" font-size="9" fill="#9E9689" letter-spacing="0.2">
+      Vidya Dadati Vinayam &#8226; Internal Staff Portal
     </text>
   </g>
 </svg>

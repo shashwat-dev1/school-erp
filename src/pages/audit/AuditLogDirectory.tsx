@@ -120,7 +120,7 @@ export const AuditLogDirectory: React.FC = () => {
         subtitle="Cryptographically verified append-only audit trail logging database mutations, auth sessions, and dual-custody overrides."
         roleScope="Principal & Security Governance"
         breadcrumbs={[
-          { label: 'Operations Hub', to: '/' },
+          { label: 'Home', to: '/' },
           { label: 'Audit Log', to: '/admin/audit-log' },
         ]}
         actions={

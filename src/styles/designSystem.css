@@ -6,47 +6,48 @@
 
 :root {
   /* Surface Architecture */
-  --hhs-canvas: #F7F6F2;           /* Warm paper ground */
-  --hhs-surface: #FFFFFF;          /* Card & panel surface */
-  --hhs-surface-muted: #F0F2F5;    /* Table headers, read-only containers */
-  --hhs-surface-hover: #F4F6F9;    /* Hover state */
+  --hhs-canvas: #F8F6F0;           /* Warm ivory page background */
+  --hhs-surface: #FFFFFF;          /* Crisp white surfaces */
+  --hhs-surface-muted: #F2ECE1;    /* Table headers, read-only containers */
+  --hhs-surface-hover: #EFE8DC;    /* Hover state */
   
   /* Typographic Hierarchy & Contrast */
-  --hhs-text-primary: #19243A;     /* Midnight navy */
-  --hhs-text-secondary: #657083;   /* Secondary slate text */
-  --hhs-text-muted: #95A0B2;       /* Disabled, placeholder */
+  --hhs-text-primary: #28251F;     /* Deep charcoal text */
+  --hhs-text-secondary: #6B655A;   /* Muted body text */
+  --hhs-text-muted: #9E9689;       /* Disabled, placeholder */
   
   /* Borders & Dividers */
-  --hhs-border: #E2E5EB;           /* Subtle 1px structural hairline */
-  --hhs-border-strong: #CBD2DE;
-  --hhs-border-focus: #3458D4;     /* Primary blue focus ring */
+  --hhs-border: #E5DED1;           /* Warm border */
+  --hhs-border-strong: #D1C7B7;
+  --hhs-border-focus: #795D2D;     /* Antique-gold focus ring */
   
   /* Brand & Actions */
-  --hhs-brand-navy: #19243A;       /* Midnight navy for structure */
-  --hhs-primary: #3458D4;          /* Primary blue */
-  --hhs-primary-hover: #2A48B8;
-  --hhs-primary-active: #1F3899;
-  --hhs-primary-light: #E9EDF5;     /* Soft blue-grey */
-  --hhs-primary-text: #203B9E;
+  --hhs-brand-navy: #28251F;       /* Structural deep charcoal */
+  --hhs-brand-charcoal: #28251F;
+  --hhs-primary: #795D2D;          /* Antique-gold primary action */
+  --hhs-primary-hover: #654E25;
+  --hhs-primary-active: #53401E;
+  --hhs-primary-light: #F3E8D0;     /* Pale-gold highlight surface */
+  --hhs-primary-text: #4E3B1B;
   
   /* Semantic Indicators */
-  --hhs-accent: #D99A37;           /* Muted amber for attention / pending */
-  --hhs-accent-hover: #C5882B;
-  --hhs-accent-text: #8C5D14;
-  --hhs-accent-light: #FDF6E9;
+  --hhs-accent: #B99452;           /* Refined gold accent */
+  --hhs-accent-hover: #A58244;
+  --hhs-accent-text: #5A4318;
+  --hhs-accent-light: #F9F2E4;
   
-  --hhs-danger: #B94141;           /* Muted red for errors / absent */
-  --hhs-danger-hover: #9E3232;
-  --hhs-danger-text: #8A2626;
-  --hhs-danger-light: #FBEFEF;
+  --hhs-danger: #B7463F;           /* Muted red for genuine errors */
+  --hhs-danger-hover: #9E3731;
+  --hhs-danger-text: #7D2722;
+  --hhs-danger-light: #FAECEB;
   
-  --hhs-success: #2E7D5A;          /* Present / complete */
-  --hhs-success-hover: #256A4C;
-  --hhs-success-text: #1B5E3F;
-  --hhs-success-light: #EEF7F2;
+  --hhs-success: #3F735A;          /* Restrained success colour */
+  --hhs-success-hover: #335E49;
+  --hhs-success-text: #234534;
+  --hhs-success-light: #EEF5F1;
 
-  --hhs-info: #3458D4;             /* Blue */
-  --hhs-info-light: #E9EDF5;
+  --hhs-info: #795D2D;
+  --hhs-info-light: #F3E8D0;
   
   /* Layout Metrics */
   --hhs-sidebar-width: 236px;
@@ -65,8 +66,8 @@
   
   /* Restrained Shadows */
   --hhs-shadow-level-1: none;
-  --hhs-shadow-level-2: 0 1px 3px rgba(25, 36, 58, 0.05);
-  --hhs-shadow-level-3: 0 4px 16px rgba(25, 36, 58, 0.08);
+  --hhs-shadow-level-2: 0 1px 3px rgba(40, 37, 31, 0.05);
+  --hhs-shadow-level-3: 0 4px 16px rgba(40, 37, 31, 0.08);
 }
 
 /* Global Reset & Base Typography */
@@ -262,7 +263,7 @@ table td.numeric,
 .hhs-input:focus, .hhs-select:focus, .hhs-textarea:focus {
   outline: none;
   border-color: var(--hhs-border-focus);
-  box-shadow: 0 0 0 2px rgba(52, 88, 212, 0.15);
+  box-shadow: 0 0 0 2px rgba(121, 93, 45, 0.2);
 }
 
 .hhs-input.error, .hhs-select.error {
@@ -406,7 +407,7 @@ table td.numeric,
 .hhs-badge-primary {
   background-color: var(--hhs-primary-light);
   color: var(--hhs-primary-text);
-  border: 1px solid rgba(52, 88, 212, 0.2);
+  border: 1px solid rgba(121, 93, 45, 0.25);
 }
 
 .hhs-badge-accent {

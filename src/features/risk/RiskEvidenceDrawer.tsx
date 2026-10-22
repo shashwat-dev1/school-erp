@@ -126,7 +126,7 @@ export const RiskEvidenceDrawer: React.FC<RiskEvidenceDrawerProps> = ({
                 </div>
               </div>
               <p style={{ margin: '8px 0 0', fontSize: '0.8rem', color: 'var(--hhs-text-primary)', lineHeight: 1.4 }}>
-                Pursuant to <strong>CBSE Examination Bye-Laws Rule 14.1</strong>, candidates registering below 75% aggregate instruction days risk debarment from board examinations without formal condonation.
+                Pursuant to <strong>CBSE Examination Bye-Laws Rule 14.1</strong>, students with attendance below 75% aggregate instruction days risk debarment from board examinations without formal condonation.
               </p>
               <div style={{ marginTop: '8px', fontSize: '0.78rem', color: 'var(--hhs-danger-text)', fontWeight: 600 }}>
                 Shortfall delta: -{(75.0 - attendanceRate).toFixed(1)}% absolute attendance gap.
@@ -239,7 +239,7 @@ export const RiskEvidenceDrawer: React.FC<RiskEvidenceDrawerProps> = ({
           <ul style={{ margin: 0, paddingLeft: '18px', fontSize: '0.82rem', color: 'var(--hhs-text-secondary)', lineHeight: 1.5 }}>
             <li>1. Issue Formal Form A Condonation Warning to Primary Guardian.</li>
             <li>2. Schedule Tutor &amp; Guardian Alignment Conference (PTM Slip).</li>
-            <li>3. Enroll candidate into 07:45 AM Zero-Period Mathematics Remedial Clinic.</li>
+            <li>3. Enroll student into 07:45 AM Zero-Period Mathematics Remedial Clinic.</li>
           </ul>
 
           <div style={{ display: 'flex', gap: '10px', marginTop: '10px' }}>

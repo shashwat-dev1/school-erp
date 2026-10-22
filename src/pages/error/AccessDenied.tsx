@@ -52,7 +52,7 @@ export const AccessDenied: React.FC<AccessDeniedProps> = ({ title, message }) =>
       <p className="hhs-body-md" style={{ color: 'var(--hhs-text-secondary)', marginBottom: '24px' }}>
         {message || (
           <>
-            Your current role (<strong>{currentUser?.role || 'Unassigned'}</strong>) does not hold clearance for this institutional screen. School policy strictly enforces separation of concerns between Principal, Registrar, Class Tutors, and Faculty.
+            Your current role (<strong>{currentUser?.role || 'Unassigned'}</strong>) does not have permission to view this page. If you believe you should have access, please check with the school office or Principal.
           </>
         )}
       </p>
@@ -64,7 +64,7 @@ export const AccessDenied: React.FC<AccessDeniedProps> = ({ title, message }) =>
           style={{ display: 'flex', alignItems: 'center', gap: '6px' }}
         >
           <ArrowLeft size={15} />
-          <span>Return to Previous Screen</span>
+          <span>Go Back</span>
         </button>
 
         <button
@@ -73,7 +73,7 @@ export const AccessDenied: React.FC<AccessDeniedProps> = ({ title, message }) =>
           style={{ display: 'flex', alignItems: 'center', gap: '6px' }}
         >
           <Home size={15} />
-          <span>Go to Operations Hub</span>
+          <span>Return Home</span>
         </button>
       </div>
     </div>

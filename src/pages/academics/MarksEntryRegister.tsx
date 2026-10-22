@@ -19,6 +19,7 @@ import {
   Download,
   ShieldCheck,
   Lock,
+  BookOpen,
 } from 'lucide-react';
 
 interface MarkRowDraft {
@@ -32,7 +33,12 @@ interface MarkRowDraft {
 }
 
 export const MarksEntryRegister: React.FC = () => {
-  const { assessmentId } = useParams<{ assessmentId?: string }>();
+  const { assessmentId, registerId, classId, subjectId } = useParams<{
+    assessmentId?: string;
+    registerId?: string;
+    classId?: string;
+    subjectId?: string;
+  }>();
   const navigate = useNavigate();
   const { currentUser } = useAuth();
   const { provider } = useData();
@@ -42,11 +48,40 @@ export const MarksEntryRegister: React.FC = () => {
   const [classes, setClasses] = useState<ClassSection[]>([]);
   const [subjects, setSubjects] = useState<Subject[]>([]);
 
-  const initialClassId = currentUser?.assignedClassId || currentUser?.assignedClasses?.[0] || (currentUser?.role === 'principal' ? 'class-10-a' : '');
-  const initialSubjectId = currentUser?.assignedSubjects?.[0] || (currentUser?.role === 'principal' ? 'sub-math-10' : '');
+  // Parse route parameters or registerId
+  const parsedParams = useMemo(() => {
+    let cCycle = assessmentId;
+    let cClass = classId;
+    let cSub = subjectId;
+
+    if (registerId) {
+      // Pattern: reg-{cycleId}-{classId}-{subjectId}
+      // Example: reg-assess-ut2-2025-class-10-b-sub-math-10
+      const match = registerId.match(/^reg-(assess-[a-zA-Z0-9_-]+)-(class-[a-zA-Z0-9_-]+)-(sub-[a-zA-Z0-9_-]+)$/);
+      if (match) {
+        cCycle = match[1];
+        cClass = match[2];
+        cSub = match[3];
+      } else {
+        cCycle = registerId;
+      }
+    }
+
+    return { cycleId: cCycle, classId: cClass, subjectId: cSub };
+  }, [assessmentId, registerId, classId, subjectId]);
+
+  const initialClassId =
+    parsedParams.classId ||
+    currentUser?.assignedClassId ||
+    currentUser?.assignedClasses?.[0] ||
+    (currentUser?.role === 'principal' ? 'class-10-a' : '');
+  const initialSubjectId =
+    parsedParams.subjectId ||
+    currentUser?.assignedSubjects?.[0] ||
+    (currentUser?.role === 'principal' ? 'sub-math-10' : '');
 
   const [selectedCycleId, setSelectedCycleId] = useState<string>(
-    assessmentId || 'assess-ut2-2025'
+    parsedParams.cycleId || 'assess-ut2-2025'
   );
   const [selectedClassId, setSelectedClassId] = useState<string>(initialClassId);
   const [selectedSubjectId, setSelectedSubjectId] = useState<string>(initialSubjectId);
@@ -66,10 +101,16 @@ export const MarksEntryRegister: React.FC = () => {
 
   // Sync route param
   useEffect(() => {
-    if (assessmentId && assessmentId !== selectedCycleId) {
-      setSelectedCycleId(assessmentId);
+    if (parsedParams.cycleId && parsedParams.cycleId !== selectedCycleId) {
+      setSelectedCycleId(parsedParams.cycleId);
     }
-  }, [assessmentId, selectedCycleId]);
+    if (parsedParams.classId && parsedParams.classId !== selectedClassId) {
+      setSelectedClassId(parsedParams.classId);
+    }
+    if (parsedParams.subjectId && parsedParams.subjectId !== selectedSubjectId) {
+      setSelectedSubjectId(parsedParams.subjectId);
+    }
+  }, [parsedParams, selectedCycleId, selectedClassId, selectedSubjectId]);
 
   // Load Metadata (Cycles, Classes, Subjects)
   useEffect(() => {
@@ -288,7 +329,7 @@ export const MarksEntryRegister: React.FC = () => {
     if (pct >= 51) return { grade: 'C1', label: 'Fair', color: 'var(--hhs-text-primary)' };
     if (pct >= 41) return { grade: 'C2', label: 'Average', color: 'var(--hhs-accent-text)' };
     if (pct >= 33) return { grade: 'D', label: 'Pass', color: 'var(--hhs-accent-text)' };
-    return { grade: 'E', label: 'Remedial', color: 'var(--hhs-danger-text)' };
+    return { grade: 'E', label: 'Needs Review', color: 'var(--hhs-danger-text)' };
   };
 
   // Save / Finalize submission
@@ -376,16 +417,27 @@ export const MarksEntryRegister: React.FC = () => {
   return (
     <div className="hhs-page-container">
       <PageHeader
-        title="Subject-Wise Marks Entry Register"
-        subtitle="Spreadsheet evaluation ledger tracking periodic unit tests, absent validations, and auto-computed grades."
-        roleScope="Academic Marks Registry"
+        title="Enter Marks"
+        subtitle={`Enter and review student marks for ${activeClass?.label || 'class'} • ${activeSubject?.name || 'subject'}`}
+        roleScope={activeSubject?.name || 'Marks'}
         breadcrumbs={[
-          { label: currentUser.role === 'principal' ? 'Academic Oversight' : 'My Teaching', to: '/' },
+          { label: 'Home', to: '/' },
           { label: 'Assessments', to: '/assessments' },
-          { label: 'Marks Register', to: `/academics/marks/${selectedCycleId}` },
+          { label: activeClass ? `${activeClass.label} Marks` : 'Enter Marks' },
         ]}
         actions={
           <div style={{ display: 'flex', gap: '8px' }}>
+            {selectedClassId && (
+              <button
+                onClick={() => navigate(`/performance/classes/${selectedClassId}`)}
+                className="hhs-btn hhs-btn-secondary"
+                style={{ display: 'inline-flex', alignItems: 'center', gap: '6px' }}
+                title="View Results for this class"
+              >
+                <BookOpen size={15} />
+                <span>View Results</span>
+              </button>
+            )}
             <button
               onClick={handleExportCSV}
               className="hhs-btn hhs-btn-secondary"
@@ -581,9 +633,9 @@ export const MarksEntryRegister: React.FC = () => {
           <div className="hhs-metric-value" style={{ fontSize: '1.25rem' }}>
             <span style={{ color: 'var(--hhs-primary)' }}>{stats.passCount} Pass</span>
             <span style={{ color: 'var(--hhs-text-muted)', margin: '0 6px' }}>•</span>
-            <span style={{ color: 'var(--hhs-danger-text)' }}>{stats.remedialCount} Remedial</span>
+            <span style={{ color: 'var(--hhs-danger-text)' }}>{stats.remedialCount} Needs Support</span>
           </div>
-          <div className="hhs-metric-sub">{stats.absentCount} Absent candidates</div>
+          <div className="hhs-metric-sub">{stats.absentCount} Absent students</div>
         </div>
 
         <div className="hhs-metric-card">
@@ -616,7 +668,7 @@ export const MarksEntryRegister: React.FC = () => {
         >
           <div>
             <h4 style={{ margin: 0, fontSize: '0.9rem', fontWeight: 700, color: 'var(--hhs-text-primary)' }}>
-              Candidate Evaluation Sheet — {activeClass?.label} — {activeSubject?.name}
+              Student Marks Sheet — {activeClass?.label} — {activeSubject?.name}
             </h4>
             <div style={{ fontSize: '0.75rem', color: 'var(--hhs-text-secondary)' }}>
               Evaluation cycle: {activeCycle?.name} • Passing: {passMarks}/{maxMarks}
@@ -633,7 +685,7 @@ export const MarksEntryRegister: React.FC = () => {
               <tr>
                 <th style={{ width: '45px' }} className="numeric">Roll</th>
                 <th style={{ width: '110px' }}>Admission #</th>
-                <th>Student Candidate</th>
+                <th>Student Name</th>
                 <th style={{ width: '140px' }} className="numeric">Marks Obtained</th>
                 <th style={{ width: '90px', textAlign: 'center' }}>Absent</th>
                 <th style={{ width: '80px' }} className="numeric">% Score</th>
@@ -759,7 +811,7 @@ export const MarksEntryRegister: React.FC = () => {
                         className="hhs-input"
                         value={row.remarks}
                         onChange={e => handleRemarksChange(row.studentId, e.target.value)}
-                        placeholder="Optional remarks (e.g. Remedial focus)"
+                        placeholder="Optional remarks (e.g. Needs extra practice)"
                         style={{ fontSize: '0.8rem', height: '30px' }}
                       />
                     </td>
@@ -775,8 +827,8 @@ export const MarksEntryRegister: React.FC = () => {
       <Modal
         isOpen={isConfirmModalOpen}
         onClose={() => setIsConfirmModalOpen(false)}
-        title="Finalize & Sign Off Marks Register"
-        subtitle="This action commits the marksheet to permanent student dossiers and locks editing."
+        title="Finalize & Submit Marks"
+        subtitle="This action saves the marks sheet and submits it for review."
       >
         <div style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
           <div
@@ -789,18 +841,18 @@ export const MarksEntryRegister: React.FC = () => {
               color: 'var(--hhs-accent-text)',
             }}
           >
-            <strong>Dual-Custody Notice:</strong> Finalizing this marks sheet prevents further changes without Principal approval and formal justification logging.
+            <strong>Submission Notice:</strong> Submitting this marks sheet will lock marks from accidental edits. Any subsequent correction will require Principal sign-off.
           </div>
 
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px', fontSize: '0.85rem' }}>
             <div>Assessment: <strong>{activeCycle?.name}</strong></div>
-            <div>Class Cohort: <strong>{activeClass?.label}</strong></div>
+            <div>Class: <strong>{activeClass?.label}</strong></div>
             <div>Subject: <strong>{activeSubject?.name}</strong></div>
-            <div>Total Candidates: <strong>{stats.total}</strong></div>
+            <div>Total Students: <strong>{stats.total}</strong></div>
             <div>Scored: <strong>{stats.scoredCount}</strong></div>
             <div>Absent (ABS): <strong>{stats.absentCount}</strong></div>
             <div>Class Average: <strong>{stats.average} / {maxMarks}</strong></div>
-            <div>Remedial Count: <strong>{stats.remedialCount}</strong></div>
+            <div>Needs Support: <strong>{stats.remedialCount}</strong></div>
           </div>
 
           {stats.unscoredCount > 0 && (

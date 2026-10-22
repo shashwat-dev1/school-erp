@@ -143,7 +143,11 @@ export const App: React.FC = () => {
         {/* Assessment Cycles & Marks Sheets */}
         <Route path="assessments" element={<AssessmentList />} />
         <Route path="academics/assessments" element={<AssessmentList />} />
+        <Route path="academics/marks" element={<MarksEntryRegister />} />
         <Route path="academics/marks/:assessmentId" element={<MarksEntryRegister />} />
+        <Route path="academics/marks/:assessmentId/:classId/:subjectId" element={<MarksEntryRegister />} />
+        <Route path="academics/assessments/marks/:registerId" element={<MarksEntryRegister />} />
+        <Route path="assessments/marks/:registerId" element={<MarksEntryRegister />} />
 
         {/* Performance Risk Watchlist (Principal, Office Admin, Class Teacher) */}
         <Route

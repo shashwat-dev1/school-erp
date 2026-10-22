@@ -106,7 +106,7 @@ export const StudentReportCard: React.FC = () => {
           subtitle="Continuous and Comprehensive Evaluation (CCE) cumulative dossier with printable layout."
           roleScope="Institutional Certification"
           breadcrumbs={[
-            { label: 'Operations Hub', to: '/' },
+            { label: 'Home', to: '/' },
             { label: 'Reports', to: '/reports' },
             { label: `${student.firstName} ${student.lastName}`, to: `/students/${student.id}` },
             { label: 'Report Card', to: `/reports/report-card/${student.id}` },
@@ -207,7 +207,7 @@ export const StudentReportCard: React.FC = () => {
           }}
         >
           <div>
-            <div style={{ fontSize: '0.7rem', color: '#5d6b68', textTransform: 'uppercase' }}>Candidate Name</div>
+            <div style={{ fontSize: '0.7rem', color: '#5d6b68', textTransform: 'uppercase' }}>Student Name</div>
             <div style={{ fontWeight: 700, fontSize: '1.05rem', color: '#202b2a' }}>
               {student.firstName} {student.lastName}
             </div>
@@ -331,7 +331,7 @@ export const StudentReportCard: React.FC = () => {
               <strong>142 Days</strong>
             </div>
             <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.8rem', marginBottom: '4px' }}>
-              <span>Candidate Attendance:</span>
+              <span>Student Attendance:</span>
               <strong style={{ color: attendance < 75 ? 'var(--hhs-danger-text)' : 'var(--hhs-primary)' }}>
                 {attendance.toFixed(1)}% ({Math.round(142 * (attendance / 100))} Days)
               </strong>

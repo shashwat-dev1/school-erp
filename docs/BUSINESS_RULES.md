@@ -140,3 +140,30 @@ All user-facing screens use everyday school terminology instead of software engi
 
 - **Single Class Teacher Constraint (SEC-108)**: A faculty member may serve as the designated Class Teacher for at most one class section.
 - **Subject-Class Allocation**: A faculty member may teach multiple subjects across different class sections, and can only access marks registers matching their active assignments.
+
+---
+
+## 8. Corrective Release Policy Rules (Defects A–F)
+
+### Rule CR-101: Subject Teacher Academic Isolation (Defect A)
+- When a Subject Teacher accesses class performance (`/performance/classes/:classId`), the interface must render a single-subject ledger strictly scoped to their assigned subject (e.g. Mathematics).
+- Displays solely: Class Average (calculated from valid recorded marks), Total Students, and Marks to Review (< 33% or absent).
+- Multi-subject cross-verification matrices, whole-class tutor watchlists, and cohort cards are inaccessible to subject teachers.
+- A direct "Enter Marks" action provides seamless navigation to the active marks register.
+
+### Rule CR-102: Student Notes Privacy & De-bureaucratization (Defect B)
+- All statutory compliance claims, proctorial ledger labels, and candidate terminology are replaced with plain-language "Student Notes".
+- Subject Teachers are strictly scoped to viewing notes they authored or notes for students enrolled in their assigned classes.
+- School-wide disciplinary archives remain restricted to the Principal and authorized leadership.
+
+### Rule CR-103: Canonical Assignment & Register Consistency (Defect C)
+- Register counts (completed vs. draft) must derive directly from unique assignment and register records, never hardcoded.
+- Duplicate class names in pending banners and redundant room labels ("Room Room 301") are strictly prohibited.
+
+### Rule CR-104: Marks Entry Routing Guarantee (Defect D)
+- All "Enter Marks" navigation triggers must resolve to canonical routes: `/academics/assessments/marks/:registerId` or `/academics/marks/:assessmentId/:classId/:subjectId`.
+- No broken 404 routes or technical HTTP status messages are exposed to users. A friendly plain-language fallback is rendered with a direct return path.
+
+### Rule CR-105: Warm Gold Institutional Palette Standard (Defect E)
+- The application visual design is standardized on Warm Ivory (`#F8F6F0`), Deep Charcoal (`#28251F`), Antique Gold (`#795D2D`), Refined Gold (`#B99452`), Pale Gold (`#F3E8D0`), Warm Border (`#E5DED1`), and Muted Red (`#B7463F`).
+

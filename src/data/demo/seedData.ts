@@ -519,8 +519,11 @@ export const initialMarksRegisters: MarksRegister[] = [
   generateMarksRegister('assess-ut1-2025', 'class-10-a', 'sub-sci-10', 25, 9, 'finalized'),
   generateMarksRegister('assess-ut1-2025', 'class-10-a', 'sub-eng-10', 25, 9, 'finalized'),
   generateMarksRegister('assess-ut1-2025', 'class-10-a', 'sub-sst-10', 25, 9, 'finalized'),
+  generateMarksRegister('assess-ut1-2025', 'class-10-b', 'sub-math-10', 25, 9, 'finalized'),
+  generateMarksRegister('assess-ut1-2025', 'class-09-a', 'sub-math-09', 25, 9, 'finalized'),
   generateMarksRegister('assess-ut2-2025', 'class-10-a', 'sub-math-10', 25, 9, 'submitted'),
   generateMarksRegister('assess-ut2-2025', 'class-10-b', 'sub-math-10', 25, 9, 'draft'),
+  generateMarksRegister('assess-ut2-2025', 'class-09-a', 'sub-math-09', 25, 9, 'draft'),
 ];
 
 // ============================================================================

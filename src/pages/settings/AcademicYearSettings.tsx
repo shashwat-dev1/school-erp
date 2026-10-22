@@ -83,7 +83,7 @@ export const AcademicYearSettings: React.FC = () => {
         subtitle="School calendar cycles, term boundaries, and statutory examination gazette seals."
         roleScope="Administrative Policy"
         breadcrumbs={[
-          { label: 'Operations Hub', to: '/' },
+          { label: 'Home', to: '/' },
           { label: 'Settings', to: '/settings/system-config' },
           { label: 'Academic Years', to: '/settings/academic-years' },
         ]}

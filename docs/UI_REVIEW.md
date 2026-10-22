@@ -117,7 +117,7 @@ All screenshots have been cataloged and saved to the QA artifacts repository:
 
 ## 6. Verification Status & Remaining Scope
 
-- **Automated Test Suite**: 25 / 25 tests passing (`npm test -- --run`).
+- **Automated Test Suite**: 27 / 27 tests passing (`npm test -- --run`).
 - **TypeScript Type Checks**: 0 errors (`tsc -b`).
 - **Production Build**: Successful bundle generated (`vite build`).
 - **ESLint Code Quality**: 0 errors (`npm run lint`).
@@ -125,3 +125,34 @@ All screenshots have been cataloged and saved to the QA artifacts repository:
 - **Known Remaining Scope for Production Launch**:
   - Firebase Cloud Deployment: Ready for production configuration once the school provides live Google Cloud / Firebase credentials and domain DNS records.
   - Real-time SMS / WhatsApp Gateway: Demo mode simulates parent notification; integration with Twilio / MSG91 is marked for post-pilot phase.
+
+---
+
+## 7. Critical Corrective Release Audit & Defect Verification (Defects A–F)
+
+In response to school stakeholder feedback, a critical corrective release was executed to eliminate remaining inconsistencies, role leakage, and visual defects.
+
+### Defect Verification Summary
+
+| Defect | Original Problem | Corrective Implementation | Verification Status |
+| :--- | :--- | :--- | :--- |
+| **Defect A** | Subject teacher seeing cross-subject verification matrix, tutor list, and cohort language on `/performance/classes/class-10-a`. | Scoped strictly to Mathematics results with 3 clear cards: Class Average, Total Students, Marks to Review (<33% or absent). Removed all other subjects, tutor lists, and cohort badges. Added direct "Enter Marks" button. | **VERIFIED** (`class_performance_ledger_10a_*.png`) |
+| **Defect B** | Student notes on `/behaviour` exposing proctorial ledger, statutory compliance, DPDP claims, and unrestricted school-wide history. | Converted to simple "Student Notes" page scoped to assigned classes and author ownership. Replaced bureaucratic jargon with plain school labels ("Date", "Student", "Type", "Note", "Action Taken"). | **VERIFIED** (`student_notes_page_*.png`, `student_notes_modal_*.png`) |
+| **Defect C** | Subject teacher dashboard had duplicated classes in pending banner, 6 registers with mismatching drafts/completed, and "Room Room 301". | Seed data populated with canonical registers for classes 10-A, 10-B, and 9-A across cycles. Calculated counts strictly from unique assignments and registers. Fixed "Room Room 301" by stripping duplicate room labels. | **VERIFIED** (`subject_teacher_dashboard_*.png`) |
+| **Defect D** | "Enter Marks" resulted in broken route ("HTTP 404 • Operational Route Missing"). | Added canonical routes (`/academics/assessments/marks/:registerId`, `/academics/marks/:assessmentId/:classId/:subjectId`, `/assessments/marks/:registerId`). Linked all buttons directly. Replaced technical 404 with friendly plain-language recovery view. | **VERIFIED** (`marks_entry_register_10a_*.png`) |
+| **Defect E** | Dominant blue styling throughout interface. | Migrated to refined institutional warm gold palette: Warm Ivory (`#F8F6F0`), Deep Charcoal (`#28251F`), Antique Gold (`#795D2D`), Refined Gold (`#B99452`), Pale Gold (`#F3E8D0`), Warm Border (`#E5DED1`). | **VERIFIED** (All updated screenshots) |
+| **Defect F** | Visual clutter and technical terminology ("Operations Hub", "Candidate", "Cohort", "Remedial"). | Standardized terminology across the application to "Home", "Student", "Results", "Marks to Review". Reduced element density. | **VERIFIED** (Full codebase audit & lint) |
+
+### Corrective Release Screenshot Catalog
+
+All evidence screenshots are stored under `artifacts/qa/screenshots/corrective/`:
+1. `subject_teacher_dashboard_*.png`: Mathematics Teacher Dashboard with "Room 301", clean pending banner, and canonical registers.
+2. `subject_teacher_dashboard_scrolled_*.png`: Full view of teaching schedule and assigned classes.
+3. `class_performance_ledger_10a_*.png`: Clean Mathematics Results page for Class 10-A with Class Average, Total Students, Marks to Review, and Enter Marks action.
+4. `marks_entry_register_10a_*.png`: Working Enter Marks register page reached seamlessly without 404 error.
+5. `student_notes_page_*.png`: Simple, friendly Student Notes table scoped to assigned classes.
+6. `student_notes_modal_*.png`: Add Note dialog with clear, plain-language form inputs.
+7. `responsive_1024_768_*.png`: Tablet viewport audit (1024 × 768).
+8. `responsive_768_1024_*.png`: Portrait tablet audit (768 × 1024).
+9. `responsive_390_844_*.png`: Mobile viewport audit (390 × 844) with zero horizontal overflow.
+

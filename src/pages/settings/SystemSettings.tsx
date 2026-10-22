@@ -93,7 +93,7 @@ export const SystemSettings: React.FC = () => {
         subtitle="School identity, CBSE affiliation credentials, localized timezones, and pilot demo controls."
         roleScope="System Governance"
         breadcrumbs={[
-          { label: 'Operations Hub', to: '/' },
+          { label: 'Home', to: '/' },
           { label: 'Settings', to: '/settings/system-config' },
         ]}
       />

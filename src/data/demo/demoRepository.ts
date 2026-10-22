@@ -97,6 +97,15 @@ class DemoRepository implements DataProvider {
       if (raw) {
         const parsed = JSON.parse(raw);
         if (parsed.students && parsed.students.length >= 500) {
+          if (Array.isArray(parsed.marksRegisters)) {
+            initialMarksRegisters.forEach(initReg => {
+              if (!parsed.marksRegisters.some((r: { id: string }) => r.id === initReg.id)) {
+                parsed.marksRegisters.push(initReg);
+              }
+            });
+          } else {
+            parsed.marksRegisters = [...initialMarksRegisters];
+          }
           return parsed;
         }
       }

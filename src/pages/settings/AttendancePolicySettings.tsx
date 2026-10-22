@@ -85,7 +85,7 @@ export const AttendancePolicySettings: React.FC = () => {
         subtitle="Morning roll-call submission windows, dual-custody verification rules, and CBSE 75% attendance floors."
         roleScope="Administrative Settings"
         breadcrumbs={[
-          { label: 'Operations Hub', to: '/' },
+          { label: 'Home', to: '/' },
           { label: 'Settings', to: '/settings/system-config' },
           { label: 'Attendance Policy', to: '/settings/attendance-policy' },
         ]}

@@ -106,7 +106,7 @@ export const ClassTeacherAssignments: React.FC = () => {
         subtitle="Sanctioned section custodians, single-custody integrity verification, and pastoral supervision rights."
         roleScope="Administrative Structure"
         breadcrumbs={[
-          { label: 'Operations Hub', to: '/' },
+          { label: 'Home', to: '/' },
           { label: 'Classes', to: '/classes' },
           { label: 'Class Teacher Assignments', to: '/admin/class-teachers' },
         ]}

@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useAuth } from '../../context/AuthContext';
 import { useData } from '../../context/DataContext';
 import { PageHeader } from '../../components/layout/PageHeader';
 import { LoadingState } from '../../components/feedback/LoadingState';
@@ -10,11 +11,12 @@ import {
   Plus,
   Download,
   Search,
-  Lock,
+  Eye,
 } from 'lucide-react';
 
 export const BehaviourDirectory: React.FC = () => {
   const navigate = useNavigate();
+  const { currentUser } = useAuth();
   const { provider } = useData();
 
   const [incidents, setIncidents] = useState<IncidentRecord[]>([]);
@@ -25,30 +27,79 @@ export const BehaviourDirectory: React.FC = () => {
   // Filters
   const [searchQuery, setSearchQuery] = useState<string>('');
   const [categoryFilter, setCategoryFilter] = useState<string>('all');
-  const [severityFilter, setSeverityFilter] = useState<string>('all');
 
   // Modal
   const [isModalOpen, setIsModalOpen] = useState<boolean>(false);
 
-  const fetchIncidents = async () => {
+  const isSubjectTeacher = currentUser?.role === 'subject_teacher';
+  const isClassTeacher = currentUser?.role === 'class_teacher';
+
+  const assignedClassIds = useMemo(() => {
+    if (isClassTeacher && currentUser?.assignedClassId) {
+      return [currentUser.assignedClassId];
+    }
+    if (isSubjectTeacher) {
+      return currentUser?.assignedClasses || ['class-10-a', 'class-10-b', 'class-09-a'];
+    }
+    return [];
+  }, [isClassTeacher, isSubjectTeacher, currentUser]);
+
+  const fetchNotesAndStudents = async () => {
     try {
-      const [incRes, studRes] = await Promise.all([
-        provider.getIncidents(),
-        provider.getClassStudents('class-10-a'),
-      ]);
-      setIncidents(incRes);
-      setStudents(studRes);
+      setIsLoading(true);
+      setError(null);
+
+      // 1. Fetch available students based on role scope
+      let scopedStudents: StudentRecord[] = [];
+      if (isClassTeacher && currentUser?.assignedClassId) {
+        scopedStudents = await provider.getClassStudents(currentUser.assignedClassId);
+      } else if (isSubjectTeacher && assignedClassIds.length > 0) {
+        const studentLists = await Promise.all(
+          assignedClassIds.map(cId => provider.getClassStudents(cId))
+        );
+        scopedStudents = studentLists.flat();
+      } else {
+        scopedStudents = (await provider.getStudents()).items;
+      }
+
+      // Deduplicate students
+      const studentMap = new Map<string, StudentRecord>();
+      scopedStudents.forEach(s => studentMap.set(s.id, s));
+      const uniqueStudents = Array.from(studentMap.values());
+      setStudents(uniqueStudents);
+
+      // 2. Fetch notes / observations
+      const allIncidents = await provider.getIncidents();
+
+      // Filter notes according to role permissions:
+      // - Subject teacher: only notes they authored OR notes for students in their assigned classes
+      // - Class teacher: only notes for students in their assigned class
+      // - Principal/Office: school-wide notes
+      let permittedNotes = allIncidents;
+      if (isSubjectTeacher) {
+        const studentIdSet = new Set(uniqueStudents.map(s => s.id));
+        permittedNotes = allIncidents.filter(
+          i =>
+            (currentUser?.id && i.loggedByStaffId === currentUser.id) ||
+            (currentUser?.name && (i.loggedByStaffName || '').toLowerCase().includes(currentUser.name.toLowerCase())) ||
+            studentIdSet.has(i.studentId)
+        );
+      } else if (isClassTeacher && currentUser?.assignedClassId) {
+        const studentIdSet = new Set(uniqueStudents.map(s => s.id));
+        permittedNotes = allIncidents.filter(i => studentIdSet.has(i.studentId));
+      }
+
+      setIncidents(permittedNotes);
     } catch (err: unknown) {
-      setError(err instanceof Error ? err.message : 'Failed to load behaviour records.');
+      setError(err instanceof Error ? err.message : 'Failed to load student notes.');
     } finally {
       setIsLoading(false);
     }
   };
 
   useEffect(() => {
-    setIsLoading(true);
-    fetchIncidents();
-  }, [provider]);
+    fetchNotesAndStudents();
+  }, [provider, currentUser, assignedClassIds, isClassTeacher, isSubjectTeacher]);
 
   const filteredIncidents = useMemo(() => {
     return incidents.filter(inc => {
@@ -57,95 +108,111 @@ export const BehaviourDirectory: React.FC = () => {
         !q ||
         inc.studentName.toLowerCase().includes(q) ||
         inc.title.toLowerCase().includes(q) ||
-        inc.description.toLowerCase().includes(q) ||
-        inc.id.toLowerCase().includes(q);
+        inc.description.toLowerCase().includes(q);
 
       const matchesCat = categoryFilter === 'all' || inc.category === categoryFilter;
-      const matchesSev = severityFilter === 'all' || inc.severity === severityFilter;
 
-      return matchesSearch && matchesCat && matchesSev;
+      return matchesSearch && matchesCat;
     });
-  }, [incidents, searchQuery, categoryFilter, severityFilter]);
+  }, [incidents, searchQuery, categoryFilter]);
 
   // Statistics
   const stats = useMemo(() => {
     const total = incidents.length;
     const commendations = incidents.filter(i => i.severity === 'commendation').length;
-    const notices = incidents.filter(i => i.severity === 'notice').length;
-    const critical = incidents.filter(i => i.severity === 'critical' || i.severity === 'disciplinary').length;
+    const notices = incidents.filter(i => i.severity === 'notice' || i.severity === 'disciplinary').length;
 
-    return { total, commendations, notices, critical };
+    return { total, commendations, notices };
   }, [incidents]);
 
   // Export CSV
   const handleExportCSV = () => {
     const headers = [
-      'Reference ID',
       'Date Logged',
       'Student Name',
       'Class',
-      'Category',
-      'Severity',
-      'Summary Title',
-      'Factual Description',
+      'Note Type',
+      'Feedback Type',
+      'Summary / Title',
+      'Note Details',
       'Action Taken',
       'Logged By',
     ];
 
     const rows = filteredIncidents.map(i => [
-      i.id,
       i.date,
       `"${i.studentName}"`,
       i.classId,
       i.category,
       i.severity,
-      `"${i.title}"`,
-      `"${i.description}"`,
-      `"${i.actionTaken || 'None'}"`,
-      `"${i.loggedByName}"`,
+      `"${i.title.replace(/"/g, '""')}"`,
+      `"${i.description.replace(/"/g, '""')}"`,
+      `"${(i.actionTaken || '').replace(/"/g, '""')}"`,
+      `"${i.loggedByStaffName || i.loggedByName || ''}"`,
     ]);
 
-    const csvContent = 'data:text/csv;charset=utf-8,' + [headers.join(','), ...rows].join('\n');
+    const csvContent = 'data:text/csv;charset=utf-8,' + [headers.join(','), ...rows.map(e => e.join(','))].join('\n');
     const encodedUri = encodeURI(csvContent);
     const link = document.createElement('a');
     link.setAttribute('href', encodedUri);
-    link.setAttribute('download', `Behaviour_Records_${new Date().toISOString().split('T')[0]}.csv`);
+    link.setAttribute('download', `Student_Notes_${new Date().toISOString().split('T')[0]}.csv`);
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
   };
 
-  if (isLoading) {
-    return <LoadingState message="Loading pastoral care & observation records..." />;
-  }
+  const getCategoryLabel = (cat: string) => {
+    switch (cat) {
+      case 'commendation':
+      case 'academic_excellence':
+        return 'Commendation';
+      case 'academic_integrity':
+        return 'Academic';
+      case 'conduct_discipline':
+        return 'Conduct';
+      case 'punctuality':
+      case 'punctuality_attendance':
+        return 'Punctuality';
+      case 'sports_arts':
+        return 'Co-Curricular';
+      default:
+        return 'General';
+    }
+  };
 
   return (
     <div className="hhs-page-container">
       <PageHeader
-        title="Student Behaviour & Observation Ledger"
-        subtitle="Pastoral care and proctorial observation dossier governed under statutory child protection protocols."
-        roleScope="Senior Wing Proctorial Ledger"
+        title="Student Notes"
+        subtitle={
+          isSubjectTeacher
+            ? 'Notes and observations for students in your assigned classes.'
+            : isClassTeacher
+            ? 'Pastoral notes and observations for students in your class.'
+            : 'School-wide student notes and observations.'
+        }
+        roleScope={isSubjectTeacher ? 'Teaching Notes' : isClassTeacher ? 'Class Notes' : 'Student Notes'}
         breadcrumbs={[
-          { label: 'Operations Hub', to: '/' },
-          { label: 'Pastoral Care', to: '/behaviour' },
+          { label: 'Home', to: '/' },
+          { label: 'Student Notes' },
         ]}
         actions={
           <div style={{ display: 'flex', gap: '8px' }}>
+            <button
+              onClick={() => setIsModalOpen(true)}
+              className="hhs-btn hhs-btn-primary"
+              style={{ display: 'inline-flex', alignItems: 'center', gap: '6px' }}
+            >
+              <Plus size={15} />
+              <span>Add Note</span>
+            </button>
             <button
               onClick={handleExportCSV}
               className="hhs-btn hhs-btn-secondary"
               style={{ display: 'inline-flex', alignItems: 'center', gap: '6px' }}
             >
               <Download size={15} />
-              <span>Export Summary (CSV)</span>
-            </button>
-            <button
-              onClick={() => setIsModalOpen(true)}
-              className="hhs-btn hhs-btn-primary"
-              style={{ display: 'inline-flex', alignItems: 'center', gap: '6px' }}
-            >
-              <Plus size={16} />
-              <span>Record New Observation</span>
+              <span>Export CSV</span>
             </button>
           </div>
         }
@@ -153,70 +220,43 @@ export const BehaviourDirectory: React.FC = () => {
 
       {error && <ErrorBanner message={error} />}
 
-      {/* DPDP Act Compliance & Confidentiality Notice */}
-      <div
-        style={{
-          padding: '12px 16px',
-          backgroundColor: 'var(--hhs-surface-muted)',
-          borderLeft: '4px solid var(--hhs-primary)',
-          borderRadius: 'var(--hhs-radius-base)',
-          marginBottom: '16px',
-          fontSize: '0.8rem',
-          color: 'var(--hhs-text-primary)',
-          display: 'flex',
-          alignItems: 'center',
-          gap: '10px',
-        }}
-      >
-        <Lock size={16} style={{ color: 'var(--hhs-primary)', flexShrink: 0 }} />
-        <span>
-          <strong>Confidential Proctorial Dossier:</strong> Records maintained under Digital Personal Data Protection (DPDP) Act 2023. Entries are immutable, auditable, and accessible only to authorized faculty mentors and school leadership.
-        </span>
-      </div>
-
-      {/* KPI Cards Strip */}
+      {/* 3 Calm Metric Cards */}
       <div
         style={{
           display: 'grid',
-          gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))',
-          gap: '12px',
+          gridTemplateColumns: 'repeat(auto-fit, minmax(210px, 1fr))',
+          gap: '14px',
           marginBottom: '20px',
         }}
       >
-        <div className="hhs-metric-card">
-          <div className="hhs-metric-label">Total Observations</div>
-          <div className="hhs-metric-value">{stats.total} Entries</div>
-          <div className="hhs-metric-sub">Session 2025–26</div>
+        <div className="hhs-metric-card primary">
+          <div className="hhs-metric-label">Total Notes</div>
+          <div className="hhs-metric-value">{stats.total}</div>
+          <div className="hhs-body-sm" style={{ color: 'var(--hhs-text-secondary)', marginTop: '4px' }}>
+            Session 2025–2026
+          </div>
         </div>
 
-        <div className="hhs-metric-card">
-          <div className="hhs-metric-label">Commendations &amp; Honours</div>
-          <div className="hhs-metric-value" style={{ color: 'var(--hhs-primary)' }}>
-            {stats.commendations} Commendations
+        <div className="hhs-metric-card success">
+          <div className="hhs-metric-label">Positive Progress</div>
+          <div className="hhs-metric-value">{stats.commendations}</div>
+          <div className="hhs-body-sm" style={{ color: 'var(--hhs-text-secondary)', marginTop: '4px' }}>
+            Academic merit & positive contributions
           </div>
-          <div className="hhs-metric-sub">Exemplary academic/sports merit</div>
         </div>
 
-        <div className="hhs-metric-card">
-          <div className="hhs-metric-label">Proctorial Notices</div>
-          <div className="hhs-metric-value" style={{ color: 'var(--hhs-accent-text)' }}>
-            {stats.notices} Notices
+        <div className="hhs-metric-card accent">
+          <div className="hhs-metric-label">Observations & Follow-Up</div>
+          <div className="hhs-metric-value">{stats.notices}</div>
+          <div className="hhs-body-sm" style={{ color: 'var(--hhs-text-secondary)', marginTop: '4px' }}>
+            Support notes & tutor follow-up
           </div>
-          <div className="hhs-metric-sub">Punctuality and dress code</div>
-        </div>
-
-        <div className="hhs-metric-card">
-          <div className="hhs-metric-label">Disciplinary / Formal Action</div>
-          <div className="hhs-metric-value" style={{ color: 'var(--hhs-danger-text)' }}>
-            {stats.critical} Cases
-          </div>
-          <div className="hhs-metric-sub">Guardian alignment initiated</div>
         </div>
       </div>
 
       {/* Filter Toolbar */}
       <div
-        className="hhs-panel"
+        className="hhs-card"
         style={{
           padding: '12px 16px',
           marginBottom: '16px',
@@ -224,12 +264,11 @@ export const BehaviourDirectory: React.FC = () => {
           flexWrap: 'wrap',
           gap: '12px',
           alignItems: 'center',
-          backgroundColor: 'var(--hhs-surface)',
         }}
       >
         <div style={{ position: 'relative', flex: '1', minWidth: '220px' }}>
           <Search
-            size={16}
+            size={15}
             style={{ position: 'absolute', left: '10px', top: '10px', color: 'var(--hhs-text-muted)' }}
           />
           <input
@@ -237,169 +276,124 @@ export const BehaviourDirectory: React.FC = () => {
             className="hhs-input"
             value={searchQuery}
             onChange={e => setSearchQuery(e.target.value)}
-            placeholder="Search candidate name, summary, proctor ID..."
+            placeholder="Search by student name or note title..."
             style={{ paddingLeft: '32px' }}
           />
         </div>
 
         <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-          <label className="hhs-label" style={{ margin: 0 }}>Category:</label>
+          <label className="hhs-label" style={{ margin: 0 }}>
+            Note Type:
+          </label>
           <select
             className="hhs-select"
             value={categoryFilter}
             onChange={e => setCategoryFilter(e.target.value)}
-            style={{ width: 'auto' }}
+            style={{ width: 'auto', minWidth: '160px' }}
           >
-            <option value="all">All Categories</option>
-            <option value="conduct_discipline">Conduct &amp; Discipline</option>
-            <option value="punctuality">Punctuality &amp; Uniform</option>
-            <option value="academic_integrity">Academic Integrity</option>
+            <option value="all">All Note Types</option>
             <option value="commendation">Commendations</option>
-          </select>
-        </div>
-
-        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-          <label className="hhs-label" style={{ margin: 0 }}>Classification:</label>
-          <select
-            className="hhs-select"
-            value={severityFilter}
-            onChange={e => setSeverityFilter(e.target.value)}
-            style={{ width: 'auto' }}
-          >
-            <option value="all">All Classifications</option>
-            <option value="commendation">Commendation</option>
-            <option value="notice">Notice</option>
-            <option value="disciplinary">Disciplinary</option>
-            <option value="critical">Critical</option>
+            <option value="academic_integrity">Academic Progress</option>
+            <option value="conduct_discipline">Conduct</option>
+            <option value="punctuality">Attendance & Punctuality</option>
           </select>
         </div>
       </div>
 
-      {/* Incidents Table */}
-      <div className="hhs-panel" style={{ padding: 0, overflow: 'hidden' }}>
-        <div
-          style={{
-            padding: '12px 18px',
-            borderBottom: '1px solid var(--hhs-border)',
-            backgroundColor: 'var(--hhs-surface-muted)',
-            display: 'flex',
-            justifyContent: 'space-between',
-            alignItems: 'center',
-          }}
-        >
-          <div>
-            <h4 style={{ margin: 0, fontSize: '0.9rem', fontWeight: 700, color: 'var(--hhs-text-primary)' }}>
-              Proctorial Observation Register
-            </h4>
-            <div style={{ fontSize: '0.75rem', color: 'var(--hhs-text-secondary)' }}>
-              Sequential chronological entries • Factual records only
-            </div>
-          </div>
-          <span className="hhs-badge hhs-badge-primary">
-            Showing {filteredIncidents.length} of {incidents.length} Records
-          </span>
-        </div>
-
-        <div style={{ overflowX: 'auto' }}>
-          <table className="hhs-table" style={{ width: '100%' }}>
-            <thead>
-              <tr>
-                <th style={{ width: '110px' }}>Date &amp; ID</th>
-                <th style={{ width: '160px' }}>Student Candidate</th>
-                <th style={{ width: '120px' }}>Classification</th>
-                <th>Observation Summary &amp; Description</th>
-                <th>Action Taken &amp; Intervention</th>
-                <th style={{ width: '140px' }}>Recorded By</th>
-              </tr>
-            </thead>
-            <tbody>
-              {filteredIncidents.map(inc => {
-                const isCommendation = inc.severity === 'commendation';
-                const isNotice = inc.severity === 'notice';
-
-                return (
-                  <tr key={inc.id}>
-                    <td>
-                      <div style={{ fontWeight: 600, fontSize: '0.8rem' }}>{inc.date}</div>
-                      <div style={{ fontSize: '0.7rem', color: 'var(--hhs-text-muted)', fontFamily: 'monospace' }}>
-                        {inc.id}
-                      </div>
-                    </td>
-                    <td>
-                      <button
-                        onClick={() => navigate(`/students/${inc.studentId}`)}
-                        style={{
-                          background: 'none',
-                          border: 'none',
-                          padding: 0,
-                          textAlign: 'left',
-                          fontWeight: 600,
-                          color: 'var(--hhs-primary)',
-                          cursor: 'pointer',
-                          textDecoration: 'underline',
-                        }}
-                      >
-                        {inc.studentName}
-                      </button>
-                      <div style={{ fontSize: '0.72rem', color: 'var(--hhs-text-secondary)' }}>
-                        Class 10-A
-                      </div>
-                    </td>
-                    <td>
-                      <span
-                        style={{
-                          display: 'inline-block',
-                          padding: '2px 8px',
-                          borderRadius: 'var(--hhs-radius-pill)',
-                          fontSize: '0.72rem',
-                          fontWeight: 700,
-                          textTransform: 'uppercase',
-                          backgroundColor: isCommendation
-                            ? 'var(--hhs-primary-light)'
-                            : isNotice
-                            ? 'var(--hhs-accent-light)'
-                            : 'var(--hhs-danger-light)',
-                          color: isCommendation
-                            ? 'var(--hhs-primary-text)'
-                            : isNotice
-                            ? 'var(--hhs-accent-text)'
-                            : 'var(--hhs-danger-text)',
-                        }}
-                      >
-                        {inc.severity}
-                      </span>
-                    </td>
-                    <td>
-                      <div style={{ fontWeight: 600, color: 'var(--hhs-text-primary)' }}>
-                        {inc.title}
-                      </div>
-                      <p style={{ margin: '2px 0 0', fontSize: '0.8rem', color: 'var(--hhs-text-secondary)', lineHeight: 1.4 }}>
-                        {inc.description}
-                      </p>
-                    </td>
-                    <td>
-                      <div style={{ fontSize: '0.82rem', color: 'var(--hhs-text-primary)' }}>
-                        {inc.actionTaken || 'Documented on record.'}
-                      </div>
-                    </td>
-                    <td>
-                      <div style={{ fontSize: '0.8rem', fontWeight: 600 }}>{inc.loggedByName}</div>
-                      <div style={{ fontSize: '0.7rem', color: 'var(--hhs-text-muted)' }}>Faculty Proctor</div>
+      {/* Notes Table */}
+      {isLoading ? (
+        <LoadingState message="Loading student notes..." />
+      ) : (
+        <div className="hhs-card">
+          <div className="hhs-table-container">
+            <table className="hhs-table">
+              <thead>
+                <tr>
+                  <th style={{ width: '100px' }}>Date</th>
+                  <th style={{ minWidth: '150px' }}>Student</th>
+                  <th style={{ width: '130px' }}>Type</th>
+                  <th style={{ minWidth: '180px' }}>Subject / Note</th>
+                  <th style={{ minWidth: '180px' }}>Action Taken</th>
+                  <th style={{ width: '130px' }}>Logged By</th>
+                  <th style={{ width: '80px', textAlign: 'right' }}>Action</th>
+                </tr>
+              </thead>
+              <tbody>
+                {filteredIncidents.length === 0 ? (
+                  <tr>
+                    <td colSpan={7} style={{ textAlign: 'center', padding: '36px', color: 'var(--hhs-text-secondary)' }}>
+                      No student notes found matching this view.
                     </td>
                   </tr>
-                );
-              })}
-            </tbody>
-          </table>
+                ) : (
+                  filteredIncidents.map(i => {
+                    const isPositive = i.severity === 'commendation';
+                    return (
+                      <tr key={i.id}>
+                        <td style={{ fontSize: '0.82rem', color: 'var(--hhs-text-secondary)', whiteSpace: 'nowrap' }}>
+                          {i.date}
+                        </td>
+                        <td>
+                          <button
+                            onClick={() => navigate(`/students/${i.studentId}`)}
+                            style={{
+                              border: 'none',
+                              background: 'none',
+                              padding: 0,
+                              font: 'inherit',
+                              fontWeight: 600,
+                              color: 'var(--hhs-text-primary)',
+                              cursor: 'pointer',
+                              textAlign: 'left',
+                            }}
+                          >
+                            {i.studentName}
+                          </button>
+                        </td>
+                        <td>
+                          <span className={`hhs-badge ${isPositive ? 'hhs-badge-success' : 'hhs-badge-accent'}`}>
+                            {getCategoryLabel(i.category)}
+                          </span>
+                        </td>
+                        <td>
+                          <div style={{ fontWeight: 600, fontSize: '0.86rem' }}>{i.title}</div>
+                          <div style={{ fontSize: '0.78rem', color: 'var(--hhs-text-secondary)', marginTop: '2px' }}>
+                            {i.description}
+                          </div>
+                        </td>
+                        <td style={{ fontSize: '0.82rem', color: 'var(--hhs-text-secondary)' }}>
+                          {i.actionTaken || 'None specified'}
+                        </td>
+                        <td style={{ fontSize: '0.8rem', color: 'var(--hhs-text-secondary)', whiteSpace: 'nowrap' }}>
+                          {i.loggedByStaffName || i.loggedByName || 'Staff Member'}
+                        </td>
+                        <td style={{ textAlign: 'right' }}>
+                          <button
+                            onClick={() => navigate(`/students/${i.studentId}`)}
+                            className="hhs-btn hhs-btn-secondary hhs-btn-sm"
+                            style={{ padding: '0 8px', fontSize: '0.74rem' }}
+                            title="Open Student Profile"
+                          >
+                            <Eye size={12} />
+                            <span>View</span>
+                          </button>
+                        </td>
+                      </tr>
+                    );
+                  })
+                )}
+              </tbody>
+            </table>
+          </div>
         </div>
-      </div>
+      )}
 
-      {/* New Observation Modal */}
+      {/* Modal */}
       <NewObservationModal
         isOpen={isModalOpen}
         onClose={() => setIsModalOpen(false)}
         students={students}
-        onIncidentCreated={fetchIncidents}
+        onIncidentCreated={fetchNotesAndStudents}
       />
     </div>
   );

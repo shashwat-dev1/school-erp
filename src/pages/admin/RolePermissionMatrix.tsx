@@ -25,7 +25,7 @@ const PERMISSION_MATRIX: PermissionRow[] = [
   {
     domain: 'Student Master Ledger',
     capability: 'New Student Admission & Enrollment',
-    description: 'Register new candidates, assign admission numbers, and allocate classrooms.',
+    description: 'Register new students, assign admission numbers, and allocate classrooms.',
     principal: true,
     officeAdmin: true,
     classTeacher: false,
@@ -95,18 +95,18 @@ const PERMISSION_MATRIX: PermissionRow[] = [
     subjectTeacher: false,
   },
   {
-    domain: 'Pastoral Care',
-    capability: 'Log Observations & Incidents',
-    description: 'Document commendations, proctorial notices, and conduct reports.',
+    domain: 'Student Notes',
+    capability: 'Log Student Notes & Observations',
+    description: 'Document commendations, student notes, and conduct reports.',
     principal: true,
     officeAdmin: false,
     classTeacher: true,
     subjectTeacher: true,
   },
   {
-    domain: 'Pastoral Care',
-    capability: 'Access Confidential Proctorial Records',
-    description: 'Inspect privileged counseling files and critical disciplinary hearings.',
+    domain: 'Student Notes',
+    capability: 'Access Confidential Student Records',
+    description: 'Inspect counseling files and critical disciplinary notes.',
     principal: true,
     officeAdmin: false,
     classTeacher: 'Assigned Students',
@@ -200,7 +200,7 @@ export const RolePermissionMatrix: React.FC = () => {
         subtitle="Definitive institutional policy mapping functional capabilities to staff clearances under Firebase Security Rules."
         roleScope="System Governance"
         breadcrumbs={[
-          { label: 'Operations Hub', to: '/' },
+          { label: 'Home', to: '/' },
           { label: 'Staff', to: '/staff' },
           { label: 'Role & Assignment Matrix', to: '/admin/roles' },
         ]}

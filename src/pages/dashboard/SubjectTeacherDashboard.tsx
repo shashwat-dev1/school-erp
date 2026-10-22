@@ -60,30 +60,70 @@ export const SubjectTeacherDashboard: React.FC = () => {
       setIsLoading(true);
       setError(null);
       try {
-        const [subList, clsList, cycleList] = await Promise.all([
+        const [subList, clsList, cycleList, assignments] = await Promise.all([
           provider.getSubjects(),
           provider.getClasses(),
           provider.getAssessmentCycles(),
+          provider.getSubjectAssignments(currentUser?.id),
         ]);
 
         if (!isMounted) return;
-        setSubjects(subList.filter(s => assignedSubjectIds.includes(s.id)));
-        setClasses(clsList.filter(c => assignedClassIds.includes(c.id)));
+
+        // Deduplicate and filter teacher's actual assignments
+        let teacherAssignments = assignments.filter(
+          a => (currentUser?.id && a.teacherId === currentUser.id) ||
+               (assignedClassIds.includes(a.classId) && assignedSubjectIds.includes(a.subjectId))
+        );
+
+        // Fallback pairing class with matching subject if no explicit DB assignments
+        if (teacherAssignments.length === 0) {
+          teacherAssignments = assignedClassIds.map(cId => {
+            const cls = clsList.find(c => c.id === cId);
+            const matchingSub = subList.find(
+              s => assignedSubjectIds.includes(s.id) &&
+                   (s.id.includes(String(cls?.grade)) || s.name.toLowerCase().includes('math'))
+            );
+            return {
+              id: `asgn-${cId}`,
+              classId: cId,
+              classLabel: cls?.label || cId,
+              subjectId: matchingSub?.id || assignedSubjectIds[0],
+              subjectName: matchingSub?.name || 'Mathematics',
+              teacherId: currentUser?.id || 'staff-004',
+              teacherName: currentUser?.name || 'Subject Teacher',
+              academicYearId: 'year-2025-2026',
+            };
+          });
+        }
+
+        // Deduplicate assignments by classId + subjectId
+        const seenTuples = new Set<string>();
+        const uniqueAssignments = teacherAssignments.filter(a => {
+          const key = `${a.classId}-${a.subjectId}`;
+          if (seenTuples.has(key)) return false;
+          seenTuples.add(key);
+          return true;
+        });
+
+        const uniqueClassIds = Array.from(new Set(uniqueAssignments.map(a => a.classId)));
+        const uniqueSubjectIds = Array.from(new Set(uniqueAssignments.map(a => a.subjectId)));
+
+        setSubjects(subList.filter(s => uniqueSubjectIds.includes(s.id)));
+        setClasses(clsList.filter(c => uniqueClassIds.includes(c.id)));
 
         const targetCycle = cycleList.find(c => c.status === 'active_marking') || cycleList[0] || null;
         setActiveCycle(targetCycle);
 
-        if (targetCycle) {
-          const regPromises: Promise<MarksRegister | null>[] = [];
-          for (const cId of assignedClassIds) {
-            for (const sId of assignedSubjectIds) {
-              regPromises.push(provider.getMarksRegister(targetCycle.id, cId, sId));
-            }
+        // Fetch registers across cycles for unique class & subject assignments
+        const regPromises: Promise<MarksRegister | null>[] = [];
+        for (const cycle of cycleList) {
+          for (const asgn of uniqueAssignments) {
+            regPromises.push(provider.getMarksRegister(cycle.id, asgn.classId, asgn.subjectId));
           }
-          const regs = await Promise.all(regPromises);
-          if (isMounted) {
-            setMarksRegisters(regs.filter((r): r is MarksRegister => r !== null));
-          }
+        }
+        const regs = await Promise.all(regPromises);
+        if (isMounted) {
+          setMarksRegisters(regs.filter((r): r is MarksRegister => r !== null));
         }
       } catch (err: unknown) {
         if (!isMounted) return;
@@ -185,7 +225,7 @@ export const SubjectTeacherDashboard: React.FC = () => {
               Marks Entry in Progress ({pendingRegisters.length} Registers Pending)
             </div>
             <div style={{ fontSize: '0.8rem', color: 'var(--hhs-text-secondary)', marginTop: '2px' }}>
-              Please enter and submit marks for {pendingRegisters.map(r => r.classLabel).join(', ')}.
+              Please enter and submit marks for {Array.from(new Set(pendingRegisters.map(r => r.classLabel))).join(', ')}.
             </div>
           </div>
           <button
@@ -236,9 +276,9 @@ export const SubjectTeacherDashboard: React.FC = () => {
         <div className="hhs-card" style={{ padding: '20px' }}>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '14px' }}>
             <div>
-              <h3 className="hhs-headline-sm">Marks Registers {activeCycle ? `(${activeCycle.title})` : ''}</h3>
+              <h3 className="hhs-headline-sm">Marks Registers</h3>
               <p className="hhs-body-sm" style={{ color: 'var(--hhs-text-secondary)' }}>
-                Enter or review marks for each assigned class.
+                Enter or review marks for your assigned classes across active cycles.
               </p>
             </div>
           </div>
@@ -270,6 +310,9 @@ export const SubjectTeacherDashboard: React.FC = () => {
                     <div>
                       <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
                         <span style={{ fontWeight: 600, fontSize: '0.9rem' }}>{reg.classLabel}</span>
+                        <span style={{ fontSize: '0.8rem', color: 'var(--hhs-text-secondary)' }}>
+                          • {reg.assessmentTitle || (reg.assessmentId === 'assess-ut1-2025' ? 'Unit Test 1' : 'Unit Test 2')}
+                        </span>
                         <span style={{ fontSize: '0.8rem', color: 'var(--hhs-text-secondary)' }}>• {reg.subjectName}</span>
                         <StatusBadge
                           status={isComplete ? 'submitted' : 'draft'}
@@ -306,35 +349,38 @@ export const SubjectTeacherDashboard: React.FC = () => {
           </div>
 
           <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-            {classes.map(cls => (
-              <div
-                key={cls.id}
-                style={{
-                  padding: '12px 14px',
-                  borderRadius: 'var(--hhs-radius-base)',
-                  border: '1px solid var(--hhs-border)',
-                  backgroundColor: 'var(--hhs-canvas)',
-                  display: 'flex',
-                  justifyContent: 'space-between',
-                  alignItems: 'center',
-                }}
-              >
-                <div>
-                  <div style={{ fontWeight: 600, fontSize: '0.88rem' }}>{cls.label}</div>
-                  <div style={{ fontSize: '0.78rem', color: 'var(--hhs-text-secondary)', marginTop: '2px' }}>
-                    Room {cls.roomNumber} • {cls.studentCount} Students
-                  </div>
-                </div>
-
-                <button
-                  onClick={() => navigate(`/performance/classes/${cls.id}`)}
-                  className="hhs-btn hhs-btn-secondary hhs-btn-sm"
-                  style={{ fontSize: '0.76rem' }}
+            {classes.map(cls => {
+              const cleanRoom = cls.roomNumber ? cls.roomNumber.replace(/^Room\s+/i, 'Room ') : 'Room Unassigned';
+              return (
+                <div
+                  key={cls.id}
+                  style={{
+                    padding: '12px 14px',
+                    borderRadius: 'var(--hhs-radius-base)',
+                    border: '1px solid var(--hhs-border)',
+                    backgroundColor: 'var(--hhs-canvas)',
+                    display: 'flex',
+                    justifyContent: 'space-between',
+                    alignItems: 'center',
+                  }}
                 >
-                  <span>Results</span>
-                </button>
-              </div>
-            ))}
+                  <div>
+                    <div style={{ fontWeight: 600, fontSize: '0.88rem' }}>{cls.label}</div>
+                    <div style={{ fontSize: '0.78rem', color: 'var(--hhs-text-secondary)', marginTop: '2px' }}>
+                      {cleanRoom} • {cls.studentCount} Students
+                    </div>
+                  </div>
+
+                  <button
+                    onClick={() => navigate(`/performance/classes/${cls.id}`)}
+                    className="hhs-btn hhs-btn-secondary hhs-btn-sm"
+                    style={{ fontSize: '0.76rem' }}
+                  >
+                    <span>Results</span>
+                  </button>
+                </div>
+              );
+            })}
           </div>
         </div>
 

@@ -309,4 +309,51 @@ describe('Role Authorization & Security Boundary Suite', () => {
       expect(screen.getByText(/You are not authorized to mark attendance for section/i)).toBeInTheDocument();
     });
   });
+
+  it('Subject Teacher results view is scoped strictly to assigned subject and class without multi-subject matrix', async () => {
+    const subjectTeacher = initialStaff.find(s => s.role === 'subject_teacher')!; // Shri Alok Saxena (Mathematics)
+    setupUserSession(subjectTeacher);
+
+    render(
+      <MemoryRouter initialEntries={['/performance/classes/class-10-a']}>
+        <AuthProvider>
+          <DataContextProvider>
+            <App />
+          </DataContextProvider>
+        </AuthProvider>
+      </MemoryRouter>
+    );
+
+    await waitFor(() => {
+      // Must display Mathematics Results, Class Average, and Enter Marks
+      expect(screen.getAllByText(/Mathematics Results — Class 10-A/i)[0]).toBeInTheDocument();
+      expect(screen.getAllByText(/Class Average/i)[0]).toBeInTheDocument();
+      expect(screen.getAllByText(/Enter Marks/i)[0]).toBeInTheDocument();
+      // Must NOT display cross-subject verification matrix or proctorial ledger
+      expect(screen.queryByText(/Multi-Subject Cross Verification Matrix/i)).toBeNull();
+      expect(screen.queryByText(/Tutor Follow-Up List/i)).toBeNull();
+    });
+  });
+
+  it('Enter Marks route accepts /academics/assessments/marks/:registerId without 404', async () => {
+    const subjectTeacher = initialStaff.find(s => s.role === 'subject_teacher')!;
+    setupUserSession(subjectTeacher);
+
+    render(
+      <MemoryRouter initialEntries={['/academics/assessments/marks/reg-assess-ut2-2025-class-10-a-sub-math-10']}>
+        <AuthProvider>
+          <DataContextProvider>
+            <App />
+          </DataContextProvider>
+        </AuthProvider>
+      </MemoryRouter>
+    );
+
+    await waitFor(() => {
+      expect(screen.getAllByText(/Enter Marks/i)[0]).toBeInTheDocument();
+      expect(screen.queryByText(/Record or Screen Not Found/i)).toBeNull();
+      expect(screen.queryByText(/We couldn't find this page/i)).toBeNull();
+    });
+  });
 });
+

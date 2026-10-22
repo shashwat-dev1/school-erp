@@ -115,7 +115,7 @@ export const AttendanceReport: React.FC = () => {
     const headers = [
       'Roll #',
       'Admission #',
-      'Candidate Name',
+      'Student Name',
       'Class',
       'Total Session Days',
       'Present Days',
@@ -168,7 +168,7 @@ export const AttendanceReport: React.FC = () => {
           subtitle="Mandatory CBSE Examination Rule 14.1 compliance muster tracking cumulative instruction days and condonations."
           roleScope="Compliance & Registrars"
           breadcrumbs={[
-            { label: 'Operations Hub', to: '/' },
+            { label: 'Home', to: '/' },
             { label: 'Reports', to: '/reports' },
             { label: 'Attendance Audit', to: '/reports/attendance' },
           ]}
@@ -223,7 +223,7 @@ export const AttendanceReport: React.FC = () => {
         <div className="hhs-metric-card">
           <div className="hhs-metric-label">CBSE &lt;75% Statutory Deficit</div>
           <div className="hhs-metric-value" style={{ color: 'var(--hhs-danger-text)' }}>
-            {stats.deficitCount} Candidates
+            {stats.deficitCount} Students
           </div>
           <div className="hhs-metric-sub">Condonation Required</div>
         </div>
@@ -260,7 +260,7 @@ export const AttendanceReport: React.FC = () => {
             className="hhs-input"
             value={searchQuery}
             onChange={e => setSearchQuery(e.target.value)}
-            placeholder="Search candidate name, admission number..."
+            placeholder="Search student name, admission number..."
             style={{ paddingLeft: '32px' }}
           />
         </div>
@@ -289,7 +289,7 @@ export const AttendanceReport: React.FC = () => {
             onChange={e => setStatusFilter(e.target.value as 'all' | 'deficit' | 'compliant')}
             style={{ width: 'auto' }}
           >
-            <option value="all">All Candidates ({students.length})</option>
+            <option value="all">All Students ({students.length})</option>
             <option value="deficit">Statutory Deficit &lt;75% ({stats.deficitCount})</option>
             <option value="compliant">Compliant ≥75% ({students.length - stats.deficitCount})</option>
           </select>
@@ -325,7 +325,7 @@ export const AttendanceReport: React.FC = () => {
               <tr>
                 <th style={{ width: '45px' }} className="numeric">Roll</th>
                 <th style={{ width: '110px' }}>Admission #</th>
-                <th>Candidate Full Name</th>
+                <th>Student Name</th>
                 <th className="numeric" style={{ width: '90px' }}>Total Days</th>
                 <th className="numeric" style={{ width: '90px' }}>Present</th>
                 <th className="numeric" style={{ width: '90px' }}>Absent</th>

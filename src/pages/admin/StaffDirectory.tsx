@@ -83,7 +83,7 @@ export const StaffDirectory: React.FC = () => {
         subtitle="Manage faculty accounts, role clearances, and academic assignments for HanuJai High School."
         roleScope="Administrative Governance"
         breadcrumbs={[
-          { label: 'Operations Hub', to: '/' },
+          { label: 'Home', to: '/' },
           { label: 'Staff Directory', to: '/staff' },
         ]}
         actions={

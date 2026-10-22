@@ -35,7 +35,7 @@ export const AssessmentTypeSettings: React.FC = () => {
         subtitle="Standardized 9-point evaluation grading scale, weightage distribution, and remedial thresholds."
         roleScope="Academic Policy"
         breadcrumbs={[
-          { label: 'Operations Hub', to: '/' },
+          { label: 'Home', to: '/' },
           { label: 'Settings', to: '/settings/system-config' },
           { label: 'Assessment Types', to: '/settings/assessment-types' },
         ]}

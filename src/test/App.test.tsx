@@ -113,7 +113,7 @@ describe('HanuJai ERP Foundation — Core Workflows', () => {
     );
 
     await waitFor(() => {
-      expect(screen.getByText(/Record or Screen Not Found/i)).toBeInTheDocument();
+      expect(screen.getByText(/We couldn't find this page/i)).toBeInTheDocument();
     });
   });
 
@@ -167,9 +167,9 @@ describe('HanuJai ERP Foundation — Core Workflows', () => {
     );
 
     await waitFor(() => {
-      expect(screen.getByText(/Consolidated Subject Performance Matrix/i)).toBeInTheDocument();
-      expect(screen.getByText(/Cohort Aggregate Mean/i)).toBeInTheDocument();
-      expect(screen.getByText(/Export Ledger CSV/i)).toBeInTheDocument();
+      expect(screen.getAllByText(/Class Results/i)[0]).toBeInTheDocument();
+      expect(screen.getAllByText(/Class Average/i)[0]).toBeInTheDocument();
+      expect(screen.getByText(/Export CSV/i)).toBeInTheDocument();
     });
   });
 

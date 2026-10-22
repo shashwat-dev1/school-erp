@@ -148,7 +148,7 @@ export const RiskWatchlist: React.FC = () => {
         breadcrumbs={
           isClassTeacher
             ? [{ label: 'My Section', to: '/' }, { label: 'Care Watchlist' }]
-            : [{ label: 'Operations Hub', to: '/' }, { label: 'Risk Watchlist', to: '/risk-watchlist' }]
+            : [{ label: 'Home', to: '/' }, { label: 'Risk Watchlist', to: '/risk-watchlist' }]
         }
         actions={
           <div style={{ display: 'flex', gap: '8px' }}>
@@ -186,7 +186,7 @@ export const RiskWatchlist: React.FC = () => {
         <div className="hhs-metric-card">
           <div className="hhs-metric-label">Total Flagged Cohort</div>
           <div className="hhs-metric-value" style={{ color: 'var(--hhs-text-primary)' }}>
-            {stats.total} Candidates
+            {stats.total} Students
           </div>
           <div className="hhs-metric-sub">Across Class 10-A &amp; 10-B</div>
         </div>
@@ -239,7 +239,7 @@ export const RiskWatchlist: React.FC = () => {
             className="hhs-input"
             value={searchQuery}
             onChange={e => setSearchQuery(e.target.value)}
-            placeholder="Search candidate name, admission #, trigger rule..."
+            placeholder="Search student name, admission #..."
             style={{ paddingLeft: '32px' }}
           />
         </div>
@@ -297,7 +297,7 @@ export const RiskWatchlist: React.FC = () => {
             </div>
           </div>
           <span className="hhs-badge hhs-badge-primary">
-            Showing {filteredItems.length} of {watchlist.length} Candidates
+            Showing {filteredItems.length} of {watchlist.length} Students
           </span>
         </div>
 
@@ -307,7 +307,7 @@ export const RiskWatchlist: React.FC = () => {
               <tr>
                 <th style={{ width: '45px' }} className="numeric">Roll</th>
                 <th style={{ width: '110px' }}>Admission #</th>
-                <th>Student Candidate</th>
+                <th>Student Name</th>
                 <th>Class</th>
                 <th>Trigger Verification</th>
                 <th className="numeric" style={{ width: '110px' }}>Attendance Rate</th>

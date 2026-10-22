@@ -113,7 +113,7 @@ export const AcademicComparisonReport: React.FC = () => {
           subtitle="Comparative analysis of Class 10-A versus Class 10-B across curricular subjects and examination cycles."
           roleScope="Academic Moderation"
           breadcrumbs={[
-            { label: 'Operations Hub', to: '/' },
+            { label: 'Home', to: '/' },
             { label: 'Reports', to: '/reports' },
             { label: 'Cohort Comparison', to: '/reports/academic-comparison' },
           ]}

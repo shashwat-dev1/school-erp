@@ -99,7 +99,7 @@ export const SectionRoster: React.FC = () => {
         subtitle="Sequential roll-number register, demographic master records, and guardian communication channels."
         roleScope="Section Roster Management"
         breadcrumbs={[
-          { label: 'Operations Hub', to: '/' },
+          { label: 'Home', to: '/' },
           { label: 'Classes', to: '/classes' },
           { label: 'Roster', to: `/classes/${classId}/students` },
         ]}
@@ -178,7 +178,7 @@ export const SectionRoster: React.FC = () => {
               {students.length} / 40
             </div>
             <div style={{ fontSize: '0.72rem', color: 'var(--hhs-text-secondary)' }}>
-              Active Enrolled Candidates
+              Active Enrolled Students
             </div>
           </div>
           <span className="hhs-badge hhs-badge-primary">Statutory Quorum OK</span>
@@ -199,14 +199,14 @@ export const SectionRoster: React.FC = () => {
         >
           <div>
             <h4 style={{ margin: 0, fontSize: '0.9rem', fontWeight: 700, color: 'var(--hhs-text-primary)' }}>
-              Master Candidate Register
+              Class Student Register
             </h4>
             <div style={{ fontSize: '0.75rem', color: 'var(--hhs-text-secondary)' }}>
               Sequential roll order • Verified institutional dossiers
             </div>
           </div>
           <span className="hhs-badge hhs-badge-primary">
-            {students.length} Active Candidates
+            {students.length} Enrolled Students
           </span>
         </div>
 
@@ -216,7 +216,7 @@ export const SectionRoster: React.FC = () => {
               <tr>
                 <th style={{ width: '45px' }} className="numeric">Roll</th>
                 <th style={{ width: '120px' }}>Admission #</th>
-                <th>Candidate Full Name</th>
+                <th>Student Full Name</th>
                 <th style={{ width: '60px' }}>Gender</th>
                 <th style={{ width: '110px' }}>Date of Birth</th>
                 <th>Primary Guardian</th>
