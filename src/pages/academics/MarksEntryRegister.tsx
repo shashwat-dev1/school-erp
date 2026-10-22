@@ -6,6 +6,7 @@ import { PageHeader } from '../../components/layout/PageHeader';
 import { Modal } from '../../components/ui/Modal';
 import { LoadingState } from '../../components/feedback/LoadingState';
 import { ErrorBanner } from '../../components/feedback/ErrorBanner';
+import { AccessDenied } from '../error/AccessDenied';
 import type {
   AssessmentCycle,
   ClassSection,
@@ -41,15 +42,14 @@ export const MarksEntryRegister: React.FC = () => {
   const [classes, setClasses] = useState<ClassSection[]>([]);
   const [subjects, setSubjects] = useState<Subject[]>([]);
 
+  const initialClassId = currentUser?.assignedClassId || currentUser?.assignedClasses?.[0] || (currentUser?.role === 'principal' ? 'class-10-a' : '');
+  const initialSubjectId = currentUser?.assignedSubjects?.[0] || (currentUser?.role === 'principal' ? 'sub-math-10' : '');
+
   const [selectedCycleId, setSelectedCycleId] = useState<string>(
     assessmentId || 'assess-ut2-2025'
   );
-  const [selectedClassId, setSelectedClassId] = useState<string>(
-    currentUser?.assignedClassId || currentUser?.assignedClasses?.[0] || 'class-10-a'
-  );
-  const [selectedSubjectId, setSelectedSubjectId] = useState<string>(
-    currentUser?.assignedSubjects?.[0] || 'sub-math-10'
-  );
+  const [selectedClassId, setSelectedClassId] = useState<string>(initialClassId);
+  const [selectedSubjectId, setSelectedSubjectId] = useState<string>(initialSubjectId);
 
   // Active register state
   const [activeCycle, setActiveCycle] = useState<AssessmentCycle | null>(null);
@@ -360,6 +360,15 @@ export const MarksEntryRegister: React.FC = () => {
     document.body.removeChild(link);
   };
 
+  if (!currentUser || (availableClasses.length === 0 && currentUser.role !== 'principal')) {
+    return (
+      <AccessDenied
+        title="Faculty Assignment Required"
+        message="You do not have any teaching section assignments registered to enter or review marks."
+      />
+    );
+  }
+
   if (isLoading) {
     return <LoadingState message="Loading marks entry register..." />;
   }
@@ -371,7 +380,7 @@ export const MarksEntryRegister: React.FC = () => {
         subtitle="Spreadsheet evaluation ledger tracking periodic unit tests, absent validations, and auto-computed grades."
         roleScope="Academic Marks Registry"
         breadcrumbs={[
-          { label: 'Operations Hub', to: '/' },
+          { label: currentUser.role === 'principal' ? 'Academic Oversight' : 'My Teaching', to: '/' },
           { label: 'Assessments', to: '/assessments' },
           { label: 'Marks Register', to: `/academics/marks/${selectedCycleId}` },
         ]}

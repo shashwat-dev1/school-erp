@@ -47,14 +47,14 @@ export const Topbar: React.FC<TopbarProps> = ({ onToggleSidebar }) => {
         {onToggleSidebar && (
           <button
             onClick={onToggleSidebar}
-            className="hhs-btn hhs-btn-secondary"
+            className="hhs-btn hhs-btn-secondary hhs-mobile-nav-toggle"
             style={{
-              display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
               padding: '6px',
               height: '32px',
               width: '32px',
+              flexShrink: 0,
             }}
             aria-label="Toggle navigation menu"
           >
@@ -63,7 +63,7 @@ export const Topbar: React.FC<TopbarProps> = ({ onToggleSidebar }) => {
         )}
         <span
           className="hhs-badge hhs-badge-primary"
-          style={{ fontSize: '0.72rem', padding: '4px 10px', height: 'auto' }}
+          style={{ fontSize: '0.72rem', padding: '4px 10px', height: 'auto', whiteSpace: 'nowrap', flexShrink: 0 }}
         >
           Session 2025–2026 (Active)
         </span>

@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useAuth } from '../../context/AuthContext';
 import { useData } from '../../context/DataContext';
 import { PageHeader } from '../../components/layout/PageHeader';
 import { StatusBadge } from '../../components/ui/StatusBadge';
@@ -17,7 +18,12 @@ import {
 
 export const RiskWatchlist: React.FC = () => {
   const navigate = useNavigate();
+  const { currentUser } = useAuth();
   const { provider } = useData();
+
+  const isClassTeacher = currentUser?.role === 'class_teacher';
+  const assignedClassId = currentUser?.assignedClassId;
+  const assignedClassLabel = currentUser?.assignedClassLabel || (assignedClassId ? `Class ${assignedClassId.toUpperCase()}` : '');
 
   const [watchlist, setWatchlist] = useState<RiskWatchlistItem[]>([]);
   const [isLoading, setIsLoading] = useState<boolean>(true);
@@ -34,10 +40,17 @@ export const RiskWatchlist: React.FC = () => {
   useEffect(() => {
     let isMounted = true;
     async function loadWatchlist() {
+      if (isClassTeacher && !assignedClassId) {
+        setError('Classroom section assignment required to view risk watchlist.');
+        setIsLoading(false);
+        return;
+      }
+
       setIsLoading(true);
       setError(null);
       try {
-        const data = await provider.getRiskWatchlist();
+        const targetClassId = isClassTeacher ? assignedClassId : undefined;
+        const data = await provider.getRiskWatchlist(targetClassId);
         if (!isMounted) return;
         setWatchlist(data);
       } catch (err: unknown) {
@@ -51,7 +64,7 @@ export const RiskWatchlist: React.FC = () => {
     return () => {
       isMounted = false;
     };
-  }, [provider]);
+  }, [provider, isClassTeacher, assignedClassId]);
 
   const filteredItems = useMemo(() => {
     return watchlist.filter(item => {
@@ -112,10 +125,10 @@ export const RiskWatchlist: React.FC = () => {
       w.followUpStatus,
     ]);
 
-    const csvContent = 'data:text/csv;charset=utf-8,' + [headers.join(','), ...rows.join('\n')].join('\n');
-    const encodedUri = encodeURI(csvContent);
+    const csvRows = [headers.join(','), ...rows.map(r => r.join(','))].join('\n');
+    const csvContent = 'data:text/csv;charset=utf-8,' + encodeURIComponent(csvRows);
     const link = document.createElement('a');
-    link.setAttribute('href', encodedUri);
+    link.setAttribute('href', csvContent);
     link.setAttribute('download', `HanuJai_Risk_Watchlist_${new Date().toISOString().split('T')[0]}.csv`);
     document.body.appendChild(link);
     link.click();
@@ -129,13 +142,14 @@ export const RiskWatchlist: React.FC = () => {
   return (
     <div className="hhs-page-container">
       <PageHeader
-        title="Student Follow-Up & Performance Risk Watchlist"
-        subtitle="Transparent, rule-based indicators exposing statutory attendance deficits, term score drops, and tutor follow-ups."
-        roleScope="Pastoral & Academic Governance"
-        breadcrumbs={[
-          { label: 'Operations Hub', to: '/' },
-          { label: 'Risk Watchlist', to: '/risk-watchlist' },
-        ]}
+        title={isClassTeacher ? `${assignedClassLabel} Student Care Watchlist` : "Student Follow-Up & Performance Risk Watchlist"}
+        subtitle={isClassTeacher ? `Section ${assignedClassLabel} rule-based indicators and follow-up ledger.` : "Transparent, rule-based indicators exposing attendance deficits, term score drops, and tutor follow-ups."}
+        roleScope={isClassTeacher ? `${assignedClassLabel} Tutor` : "Pastoral & Academic Governance"}
+        breadcrumbs={
+          isClassTeacher
+            ? [{ label: 'My Section', to: '/' }, { label: 'Care Watchlist' }]
+            : [{ label: 'Operations Hub', to: '/' }, { label: 'Risk Watchlist', to: '/risk-watchlist' }]
+        }
         actions={
           <div style={{ display: 'flex', gap: '8px' }}>
             <button

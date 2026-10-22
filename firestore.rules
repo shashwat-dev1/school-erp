@@ -20,7 +20,7 @@ service cloud.firestore {
     }
 
     function isOfficeStaff() {
-      return hasRole('office_staff') || hasRole('admin');
+      return hasRole('office_staff') || hasRole('office_admin') || hasRole('admin');
     }
 
     function isAssignedClassTeacher(classId) {
@@ -79,9 +79,14 @@ service cloud.firestore {
       allow write: if isPrincipal();
     }
 
-    // Student Master Records:
+    // Student Master Records: Read authorized by assigned class/section or admin privilege
     match /students/{studentId} {
-      allow read: if isAuthenticated();
+      allow read: if isAuthenticated() && (
+        isPrincipal() ||
+        isOfficeStaff() ||
+        isAssignedClassTeacher(resource.data.classId) ||
+        (getUserData().role == 'subject_teacher' && resource.data.classId in getUserData().assignedClasses)
+      );
       allow create, update: if isPrincipal() || isOfficeStaff();
       allow delete: if false; // Soft-deletes only
     }
@@ -140,10 +145,11 @@ service cloud.firestore {
         isAssignedSubjectTeacher(resource.data.classId, resource.data.subjectId)
       );
 
-      // Subject teachers can create and save drafts; cannot modify finalized records
+      // Subject teachers can create and save drafts; cannot modify finalized records or un-finalize
       allow create, update: if isAuthenticated() && (
         isPrincipal() || (
           isAssignedSubjectTeacher(request.resource.data.classId, request.resource.data.subjectId) &&
+          (resource == null || resource.data.status != 'finalized') &&
           request.resource.data.status != 'finalized'
         )
       );
@@ -157,7 +163,11 @@ service cloud.firestore {
         isPrincipal() || 
         isAssignedClassTeacher(resource.data.classId)
       );
-      allow create: if isAuthenticated();
+      allow create: if isAuthenticated() && (
+        isPrincipal() ||
+        isAssignedClassTeacher(request.resource.data.classId) ||
+        (getUserData().role == 'subject_teacher' && request.resource.data.classId in getUserData().assignedClasses)
+      );
       allow update, delete: if isPrincipal();
     }
 

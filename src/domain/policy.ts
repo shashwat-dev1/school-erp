@@ -29,10 +29,10 @@ export const INSTITUTIONAL_CONFIG = {
   activeAcademicYearId: 'year-2025-2026',
   activeAcademicYearLabel: '2025–2026',
   
-  // Planning Scale: 10 Grades, 2 Sections each = 20 Sections (~35-40 students/section = ~760 total)
+  // Planning Scale: 10 Grades, 2 Sections each = 20 Sections (50 students/section = 1,000 total)
   totalGrades: 10,
   sectionsPerGrade: ['A', 'B'] as const,
-  nominalCapacityPerSection: 40,
+  nominalCapacityPerSection: 50,
   
   // Operational Attendance Policy (Configurable Demonstration Values)
   attendance: {
@@ -129,5 +129,34 @@ export function isMorningRollCallWindowOpen(
   policy: AttendancePolicy = INSTITUTIONAL_CONFIG.attendance
 ): boolean {
   return timeStr >= policy.dailyMarkingWindowStart && timeStr <= policy.dailyMarkingWindowEnd;
+}
+
+/**
+ * Returns current school-local date (YYYY-MM-DD) in Asia/Kolkata timezone.
+ */
+export function getSchoolLocalDate(date: Date = new Date()): string {
+  try {
+    return new Intl.DateTimeFormat('en-CA', { timeZone: 'Asia/Kolkata' }).format(date);
+  } catch {
+    return date.toISOString().split('T')[0];
+  }
+}
+
+/**
+ * Returns formatted school-local display date (e.g. 21 October 2026).
+ */
+export function formatSchoolDisplayDate(dateStr?: string): string {
+  if (!dateStr) return '—';
+  try {
+    const d = new Date(dateStr + 'T00:00:00');
+    return new Intl.DateTimeFormat('en-IN', {
+      day: 'numeric',
+      month: 'long',
+      year: 'numeric',
+      timeZone: 'Asia/Kolkata',
+    }).format(d);
+  } catch {
+    return dateStr;
+  }
 }
 

@@ -79,7 +79,7 @@ export const ClassesDirectory: React.FC = () => {
     return <LoadingState message="Loading classes & sections..." />;
   }
 
-  const role = currentUser?.role || 'principal';
+  const role = currentUser?.role;
 
   return (
     <div className="hhs-page-container">
@@ -88,7 +88,7 @@ export const ClassesDirectory: React.FC = () => {
         subtitle="Roster configurations, room assignments, and class educator allocations for Academic Session 2025–26."
         roleScope="Academic Structure"
         breadcrumbs={[
-          { label: 'Operations Hub', to: '/' },
+          { label: currentUser?.role === 'principal' ? 'Academic Oversight' : 'Campus', to: '/' },
           { label: 'Classes & Sections', to: '/classes' },
         ]}
         actions={

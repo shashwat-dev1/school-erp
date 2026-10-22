@@ -37,8 +37,8 @@ export const ClassTeacherDashboard: React.FC = () => {
   const { currentUser } = useAuth();
   const { provider } = useData();
 
-  const assignedClassId = currentUser?.assignedClassId || 'class-10-a';
-  const assignedClassLabel = currentUser?.assignedClassLabel || 'Class 10-A';
+  const assignedClassId = currentUser?.assignedClassId;
+  const assignedClassLabel = currentUser?.assignedClassLabel || (assignedClassId ? `Class ${assignedClassId.toUpperCase()}` : 'Assigned Section');
 
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
@@ -51,19 +51,27 @@ export const ClassTeacherDashboard: React.FC = () => {
   const [consolidatedMarks, setConsolidatedMarks] = useState<ConsolidatedClassMarks | null>(null);
 
   useEffect(() => {
+    if (!assignedClassId) {
+      setIsLoading(false);
+      return;
+    }
+
     let isMounted = true;
     async function loadClassTeacherData() {
       setIsLoading(true);
       setError(null);
       try {
-        const today = '2026-10-21';
+        const today = new Intl.DateTimeFormat('en-CA', { timeZone: 'Asia/Kolkata' }).format(new Date());
+        const cycles = await provider.getAssessmentCycles();
+        const targetCycleId = cycles.find(c => c.status === 'active_marking' || c.status === 'locked')?.id || cycles[0]?.id || 'assess-ut1-2025';
+
         const [cls, stuList, session, corrList, watchlist, marks] = await Promise.all([
-          provider.getClassById(assignedClassId),
-          provider.getClassStudents(assignedClassId),
-          provider.getAttendanceSession(assignedClassId, today),
-          provider.getAttendanceCorrections(assignedClassId),
-          provider.getRiskWatchlist(assignedClassId),
-          provider.getConsolidatedClassMarks(assignedClassId, 'assess-ut1-2025'),
+          provider.getClassById(assignedClassId!),
+          provider.getClassStudents(assignedClassId!),
+          provider.getAttendanceSession(assignedClassId!, today),
+          provider.getAttendanceCorrections(assignedClassId!),
+          provider.getRiskWatchlist(assignedClassId!),
+          provider.getConsolidatedClassMarks(assignedClassId!, targetCycleId),
         ]);
 
         if (!isMounted) return;
@@ -86,6 +94,17 @@ export const ClassTeacherDashboard: React.FC = () => {
       isMounted = false;
     };
   }, [provider, assignedClassId]);
+
+  if (!assignedClassId) {
+    return (
+      <div className="hhs-page-container">
+        <ErrorBanner
+          title="Classroom Section Allocation Required"
+          message="Your account is designated as a Class Teacher, but has not yet been assigned to a classroom section. Please contact the Principal's desk to allocate a section."
+        />
+      </div>
+    );
+  }
 
   if (isLoading) {
     return <LoadingState message={`Retrieving ${assignedClassLabel} classroom records, roll muster, and pastoral care ledger...`} />;
@@ -115,7 +134,12 @@ export const ClassTeacherDashboard: React.FC = () => {
       {/* Header */}
       <PageHeader
         title={`${assignedClassLabel} Classroom Desk`}
-        subtitle={`Class Tutor: ${currentUser?.name} • Room: ${classSection.roomNumber} • Academic Session 2025–2026`}
+        subtitle={`Class Tutor: ${currentUser?.name} • Room: ${classSection.roomNumber}`}
+        roleScope={`${assignedClassLabel} Tutor`}
+        breadcrumbs={[
+          { label: 'My Section', to: '/' },
+          { label: `${assignedClassLabel} Desk` },
+        ]}
         actions={
           <div style={{ display: 'flex', gap: '10px' }}>
             <button

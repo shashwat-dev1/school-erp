@@ -141,7 +141,7 @@ export const AttendanceCorrections: React.FC = () => {
     return <LoadingState message="Loading dual-custody attendance correction authorizations..." />;
   }
 
-  const role = currentUser?.role || 'principal';
+  const role = currentUser?.role;
   const canApprove = role === 'principal' || role === 'office_admin';
 
   const pending = corrections.filter(c => c.status === 'pending_principal');
@@ -151,7 +151,7 @@ export const AttendanceCorrections: React.FC = () => {
     <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
       <PageHeader
         title="Late Attendance Corrections"
-        subtitle="HanuJai High School, Jaipur • Dual-custody authorization queue enforcing statutory CBSE compliance."
+        subtitle="HanuJai High School, Jaipur • Dual-custody authorization queue enforcing institutional audit policy."
         breadcrumbs={[
           { label: 'Campus' },
           { label: 'Attendance', to: '/attendance' },

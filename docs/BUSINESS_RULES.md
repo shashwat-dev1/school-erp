@@ -8,7 +8,7 @@ This document defines the core operational business rules, authorization boundar
 
 - **Campus Scope**: Single institutional instance for **HanuJai High School**, Jaipur, Rajasthan, India.
 - **Academic Structure**: Classes 1 through 10, each organized into Sections A and B (Total: 20 class sections).
-- **Enrolment Planning Scale**: Nominal capacity of 40 students per section (~760 to 800 students total).
+- **Enrolment Planning Scale**: Standard capacity of 50 students per section (Total: 1,000 enrolled students across 20 sections).
 - **Academic Session**: Active session `2025–2026` (April 1, 2025 to March 31, 2026).
 - **Demonstration Settings**: Board affiliation identifiers, attendance marking windows, and grading thresholds are editable demonstration defaults for pilot evaluation, clearly labeled to distinguish them from confirmed statutory mandates.
 

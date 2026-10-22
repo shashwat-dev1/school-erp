@@ -57,7 +57,7 @@ export const PrincipalDashboard: React.FC = () => {
       setIsLoading(true);
       setError(null);
       try {
-        const today = '2026-10-21';
+        const today = new Intl.DateTimeFormat('en-CA', { timeZone: 'Asia/Kolkata' }).format(new Date());
         const [clsRes, stuRes, attRes, corrRes, watchRes, auditRes] = await Promise.all([
           provider.getClasses(),
           provider.getStudents({ limit: 1000 }),
@@ -116,6 +116,10 @@ export const PrincipalDashboard: React.FC = () => {
     ? Math.round((totalPresent / totalExpectedAttendance) * 1000) / 10 
     : 0;
 
+  const cohortAcademicMean = allStudents.length > 0
+    ? Math.round((allStudents.reduce((acc, s) => acc + (s.academicAverage || 0), 0) / allStudents.length) * 10) / 10
+    : 0;
+
   const completedSessionsCount = attendanceSessions.filter(s => s.status === 'submitted').length;
   const pendingCorrectionsCount = corrections.filter(c => c.status === 'pending_principal').length;
 
@@ -125,6 +129,8 @@ export const PrincipalDashboard: React.FC = () => {
       <PageHeader
         title="Institutional Executive Desk (Operations Hub)"
         subtitle={`Academic Session 2025–2026 • Whole-School Governance Overview • ${currentUser?.name}`}
+        roleScope="Principal Desk"
+        breadcrumbs={[{ label: 'Principal Desk' }]}
         actions={
           <div style={{ display: 'flex', gap: '10px' }}>
             {pendingCorrectionsCount > 0 && (
@@ -165,11 +171,11 @@ export const PrincipalDashboard: React.FC = () => {
           trend={{ value: `${completedSessionsCount}/20 Marked`, isPositive: completedSessionsCount >= 16 }}
         />
         <MetricCard
-          label="Academic Health (UT-1)"
-          value="81.4%"
-          subtext="Cohort Mean Score across Core Subjects"
+          label="Academic Health (Cohort Mean)"
+          value={`${cohortAcademicMean}%`}
+          subtext="Cohort Mean Score across Active Sections"
           icon={<GraduationCap size={20} />}
-          trend={{ value: 'Target: 75%+', isPositive: true }}
+          trend={{ value: 'Target: 75%+', isPositive: cohortAcademicMean >= 75 }}
         />
         <MetricCard
           label="Care Watchlist"

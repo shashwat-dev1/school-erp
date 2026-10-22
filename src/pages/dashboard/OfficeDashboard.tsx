@@ -47,7 +47,7 @@ export const OfficeDashboard: React.FC = () => {
       setIsLoading(true);
       setError(null);
       try {
-        const today = '2026-10-21';
+        const today = new Intl.DateTimeFormat('en-CA', { timeZone: 'Asia/Kolkata' }).format(new Date());
         const [clsRes, stuRes, attRes] = await Promise.all([
           provider.getClasses(),
           provider.getStudents({ limit: 1000 }),
@@ -81,7 +81,7 @@ export const OfficeDashboard: React.FC = () => {
   }
 
   const totalEnrolment = allStudents.length;
-  const totalCapacity = classes.length * 40; // 20 * 40 = 800 nominal
+  const totalCapacity = classes.reduce((sum, c) => sum + (c.maxCapacity || 50), 0) || 1000;
   const capacityUtilization = totalCapacity > 0 ? Math.round((totalEnrolment / totalCapacity) * 100) : 0;
 
   // Filter students for quick visitor inquiry
@@ -100,7 +100,9 @@ export const OfficeDashboard: React.FC = () => {
       {/* Header */}
       <PageHeader
         title="Office Registrar & Operations Desk"
-        subtitle={`Academic Session 2025–2026 • Student Records & Admissions Administration • ${currentUser?.name}`}
+        subtitle={`Student Records & Admissions Administration • ${currentUser?.name}`}
+        roleScope="Office Registrar"
+        breadcrumbs={[{ label: 'Office Desk' }]}
         actions={
           <div style={{ display: 'flex', gap: '10px' }}>
             <button
@@ -128,7 +130,7 @@ export const OfficeDashboard: React.FC = () => {
         <MetricCard
           label="Total Active Enrolment"
           value={totalEnrolment.toString()}
-          subtext={`${capacityUtilization}% of Nominal Campus Capacity (${totalCapacity})`}
+          subtext={`${capacityUtilization}% of Campus Capacity (${totalCapacity})`}
           icon={<Users size={20} />}
           trend={{ value: 'Full Roster Verified', isPositive: true }}
         />
@@ -146,9 +148,9 @@ export const OfficeDashboard: React.FC = () => {
           trend={{ value: unsubmittedSections.length === 0 ? 'Complete' : 'Pending Call', isPositive: unsubmittedSections.length === 0 }}
         />
         <MetricCard
-          label="Statutory CBSE Compliance"
-          value="Node 1730198"
-          subtext="Jaipur Central Administrative Registry"
+          label="Institutional Registry"
+          value="20 Sections"
+          subtext="Jaipur Central Administrative Roster"
           icon={<FileText size={20} />}
         />
       </div>

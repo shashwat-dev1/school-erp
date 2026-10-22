@@ -3,7 +3,7 @@
  * Campus: HanuJai High School, Jaipur, Rajasthan, India
  * 
  * Strict single-school planning scale: Classes 1 to 10 (Sections A & B = 20 sections).
- * Exactly ~760 total enrolled students (38 students/section).
+ * Exactly 1,000 total enrolled students (20 sections × 50 students/section).
  * Deterministic generation ensures 100% internal mathematical consistency.
  */
 
@@ -24,7 +24,7 @@ import type {
   DailyAttendanceRecord,
   StudentMarkEntry,
 } from '../../domain/types';
-import { INSTITUTIONAL_CONFIG, calculateGrade } from '../../domain/policy';
+import { INSTITUTIONAL_CONFIG, calculateGrade, getSchoolLocalDate } from '../../domain/policy';
 
 // ============================================================================
 // 1. School Settings & Identity (Configurable Demo Defaults)
@@ -169,26 +169,26 @@ export const initialStaff: StaffUser[] = [
 // 4. Academic Structure: Classes 1 to 10 (Sections A & B = 20 Sections)
 // ============================================================================
 export const initialClasses: ClassSection[] = [
-  { id: 'class-10-a', grade: 10, section: 'A', label: 'Class 10-A', academicYearId: 'year-2025-2026', classTeacherId: 'staff-003', classTeacherName: 'Shri Rajeshwar Choudhary', roomNumber: 'Room 301', studentCount: 38, maxCapacity: 40 },
-  { id: 'class-10-b', grade: 10, section: 'B', label: 'Class 10-B', academicYearId: 'year-2025-2026', classTeacherId: 'staff-005', classTeacherName: 'Smt. Sunita Verma', roomNumber: 'Room 302', studentCount: 38, maxCapacity: 40 },
-  { id: 'class-09-a', grade: 9,  section: 'A', label: 'Class 09-A', academicYearId: 'year-2025-2026', classTeacherId: 'staff-006', classTeacherName: 'Shri Dinesh Rathore', roomNumber: 'Room 201', studentCount: 38, maxCapacity: 40 },
-  { id: 'class-09-b', grade: 9,  section: 'B', label: 'Class 09-B', academicYearId: 'year-2025-2026', classTeacherId: 'staff-007', classTeacherName: 'Smt. Kavita Shekhawat', roomNumber: 'Room 202', studentCount: 38, maxCapacity: 40 },
-  { id: 'class-08-a', grade: 8,  section: 'A', label: 'Class 08-A', academicYearId: 'year-2025-2026', classTeacherId: 'staff-008', classTeacherName: 'Shri Mahesh Tiwari', roomNumber: 'Room 101', studentCount: 38, maxCapacity: 40 },
-  { id: 'class-08-b', grade: 8,  section: 'B', label: 'Class 08-B', academicYearId: 'year-2025-2026', classTeacherId: 'staff-009', classTeacherName: 'Smt. Pooja Khandelwal', roomNumber: 'Room 102', studentCount: 38, maxCapacity: 40 },
-  { id: 'class-07-a', grade: 7,  section: 'A', label: 'Class 07-A', academicYearId: 'year-2025-2026', classTeacherId: 'staff-010', classTeacherName: 'Shri Rameshwar Dayal', roomNumber: 'Room 103', studentCount: 38, maxCapacity: 40 },
-  { id: 'class-07-b', grade: 7,  section: 'B', label: 'Class 07-B', academicYearId: 'year-2025-2026', classTeacherId: 'staff-011', classTeacherName: 'Smt. Anju Bhargava', roomNumber: 'Room 104', studentCount: 38, maxCapacity: 40 },
-  { id: 'class-06-a', grade: 6,  section: 'A', label: 'Class 06-A', academicYearId: 'year-2025-2026', classTeacherId: 'staff-012', classTeacherName: 'Shri Gopal Soni', roomNumber: 'Room 105', studentCount: 38, maxCapacity: 40 },
-  { id: 'class-06-b', grade: 6,  section: 'B', label: 'Class 06-B', academicYearId: 'year-2025-2026', classTeacherId: 'staff-013', classTeacherName: 'Smt. Seema Rawat', roomNumber: 'Room 106', studentCount: 38, maxCapacity: 40 },
-  { id: 'class-05-a', grade: 5,  section: 'A', label: 'Class 05-A', academicYearId: 'year-2025-2026', classTeacherId: 'staff-014', classTeacherName: 'Shri Naresh Agarwal', roomNumber: 'Room 001', studentCount: 38, maxCapacity: 40 },
-  { id: 'class-05-b', grade: 5,  section: 'B', label: 'Class 05-B', academicYearId: 'year-2025-2026', classTeacherId: 'staff-015', classTeacherName: 'Smt. Rekha Jain', roomNumber: 'Room 002', studentCount: 38, maxCapacity: 40 },
-  { id: 'class-04-a', grade: 4,  section: 'A', label: 'Class 04-A', academicYearId: 'year-2025-2026', classTeacherId: 'staff-016', classTeacherName: 'Shri Vinod Mathur', roomNumber: 'Room P01', studentCount: 38, maxCapacity: 40 },
-  { id: 'class-04-b', grade: 4,  section: 'B', label: 'Class 04-B', academicYearId: 'year-2025-2026', classTeacherId: 'staff-017', classTeacherName: 'Smt. Deepa Goyal', roomNumber: 'Room P02', studentCount: 38, maxCapacity: 40 },
-  { id: 'class-03-a', grade: 3,  section: 'A', label: 'Class 03-A', academicYearId: 'year-2025-2026', classTeacherId: 'staff-018', classTeacherName: 'Shri Ashok Tanwar', roomNumber: 'Room P03', studentCount: 38, maxCapacity: 40 },
-  { id: 'class-03-b', grade: 3,  section: 'B', label: 'Class 03-B', academicYearId: 'year-2025-2026', classTeacherId: 'staff-019', classTeacherName: 'Smt. Vandana Shrimali', roomNumber: 'Room P04', studentCount: 38, maxCapacity: 40 },
-  { id: 'class-02-a', grade: 2,  section: 'A', label: 'Class 02-A', academicYearId: 'year-2025-2026', classTeacherId: 'staff-020', classTeacherName: 'Shri Hemant Kulshreshtha', roomNumber: 'Room P05', studentCount: 38, maxCapacity: 40 },
-  { id: 'class-02-b', grade: 2,  section: 'B', label: 'Class 02-B', academicYearId: 'year-2025-2026', classTeacherId: 'staff-021', classTeacherName: 'Smt. Neetu Meena', roomNumber: 'Room P06', studentCount: 38, maxCapacity: 40 },
-  { id: 'class-01-a', grade: 1,  section: 'A', label: 'Class 01-A', academicYearId: 'year-2025-2026', classTeacherId: 'staff-022', classTeacherName: 'Smt. Suman Lata', roomNumber: 'Room P07', studentCount: 38, maxCapacity: 40 },
-  { id: 'class-01-b', grade: 1,  section: 'B', label: 'Class 01-B', academicYearId: 'year-2025-2026', classTeacherId: 'staff-023', classTeacherName: 'Smt. Bhavna Pareek', roomNumber: 'Room P08', studentCount: 38, maxCapacity: 40 },
+  { id: 'class-10-a', grade: 10, section: 'A', label: 'Class 10-A', academicYearId: 'year-2025-2026', classTeacherId: 'staff-003', classTeacherName: 'Shri Rajeshwar Choudhary', roomNumber: 'Room 301', studentCount: 50, maxCapacity: 50 },
+  { id: 'class-10-b', grade: 10, section: 'B', label: 'Class 10-B', academicYearId: 'year-2025-2026', classTeacherId: 'staff-005', classTeacherName: 'Smt. Sunita Verma', roomNumber: 'Room 302', studentCount: 50, maxCapacity: 50 },
+  { id: 'class-09-a', grade: 9,  section: 'A', label: 'Class 09-A', academicYearId: 'year-2025-2026', classTeacherId: 'staff-006', classTeacherName: 'Shri Dinesh Rathore', roomNumber: 'Room 201', studentCount: 50, maxCapacity: 50 },
+  { id: 'class-09-b', grade: 9,  section: 'B', label: 'Class 09-B', academicYearId: 'year-2025-2026', classTeacherId: 'staff-007', classTeacherName: 'Smt. Kavita Shekhawat', roomNumber: 'Room 202', studentCount: 50, maxCapacity: 50 },
+  { id: 'class-08-a', grade: 8,  section: 'A', label: 'Class 08-A', academicYearId: 'year-2025-2026', classTeacherId: 'staff-008', classTeacherName: 'Shri Mahesh Tiwari', roomNumber: 'Room 101', studentCount: 50, maxCapacity: 50 },
+  { id: 'class-08-b', grade: 8,  section: 'B', label: 'Class 08-B', academicYearId: 'year-2025-2026', classTeacherId: 'staff-009', classTeacherName: 'Smt. Pooja Khandelwal', roomNumber: 'Room 102', studentCount: 50, maxCapacity: 50 },
+  { id: 'class-07-a', grade: 7,  section: 'A', label: 'Class 07-A', academicYearId: 'year-2025-2026', classTeacherId: 'staff-010', classTeacherName: 'Shri Rameshwar Dayal', roomNumber: 'Room 103', studentCount: 50, maxCapacity: 50 },
+  { id: 'class-07-b', grade: 7,  section: 'B', label: 'Class 07-B', academicYearId: 'year-2025-2026', classTeacherId: 'staff-011', classTeacherName: 'Smt. Anju Bhargava', roomNumber: 'Room 104', studentCount: 50, maxCapacity: 50 },
+  { id: 'class-06-a', grade: 6,  section: 'A', label: 'Class 06-A', academicYearId: 'year-2025-2026', classTeacherId: 'staff-012', classTeacherName: 'Shri Gopal Soni', roomNumber: 'Room 105', studentCount: 50, maxCapacity: 50 },
+  { id: 'class-06-b', grade: 6,  section: 'B', label: 'Class 06-B', academicYearId: 'year-2025-2026', classTeacherId: 'staff-013', classTeacherName: 'Smt. Seema Rawat', roomNumber: 'Room 106', studentCount: 50, maxCapacity: 50 },
+  { id: 'class-05-a', grade: 5,  section: 'A', label: 'Class 05-A', academicYearId: 'year-2025-2026', classTeacherId: 'staff-014', classTeacherName: 'Shri Naresh Agarwal', roomNumber: 'Room 001', studentCount: 50, maxCapacity: 50 },
+  { id: 'class-05-b', grade: 5,  section: 'B', label: 'Class 05-B', academicYearId: 'year-2025-2026', classTeacherId: 'staff-015', classTeacherName: 'Smt. Rekha Jain', roomNumber: 'Room 002', studentCount: 50, maxCapacity: 50 },
+  { id: 'class-04-a', grade: 4,  section: 'A', label: 'Class 04-A', academicYearId: 'year-2025-2026', classTeacherId: 'staff-016', classTeacherName: 'Shri Vinod Mathur', roomNumber: 'Room P01', studentCount: 50, maxCapacity: 50 },
+  { id: 'class-04-b', grade: 4,  section: 'B', label: 'Class 04-B', academicYearId: 'year-2025-2026', classTeacherId: 'staff-017', classTeacherName: 'Smt. Deepa Goyal', roomNumber: 'Room P02', studentCount: 50, maxCapacity: 50 },
+  { id: 'class-03-a', grade: 3,  section: 'A', label: 'Class 03-A', academicYearId: 'year-2025-2026', classTeacherId: 'staff-018', classTeacherName: 'Shri Ashok Tanwar', roomNumber: 'Room P03', studentCount: 50, maxCapacity: 50 },
+  { id: 'class-03-b', grade: 3,  section: 'B', label: 'Class 03-B', academicYearId: 'year-2025-2026', classTeacherId: 'staff-019', classTeacherName: 'Smt. Vandana Shrimali', roomNumber: 'Room P04', studentCount: 50, maxCapacity: 50 },
+  { id: 'class-02-a', grade: 2,  section: 'A', label: 'Class 02-A', academicYearId: 'year-2025-2026', classTeacherId: 'staff-020', classTeacherName: 'Shri Hemant Kulshreshtha', roomNumber: 'Room P05', studentCount: 50, maxCapacity: 50 },
+  { id: 'class-02-b', grade: 2,  section: 'B', label: 'Class 02-B', academicYearId: 'year-2025-2026', classTeacherId: 'staff-021', classTeacherName: 'Smt. Neetu Meena', roomNumber: 'Room P06', studentCount: 50, maxCapacity: 50 },
+  { id: 'class-01-a', grade: 1,  section: 'A', label: 'Class 01-A', academicYearId: 'year-2025-2026', classTeacherId: 'staff-022', classTeacherName: 'Smt. Suman Lata', roomNumber: 'Room P07', studentCount: 50, maxCapacity: 50 },
+  { id: 'class-01-b', grade: 1,  section: 'B', label: 'Class 01-B', academicYearId: 'year-2025-2026', classTeacherId: 'staff-023', classTeacherName: 'Smt. Bhavna Pareek', roomNumber: 'Room P08', studentCount: 50, maxCapacity: 50 },
 ];
 
 // ============================================================================
@@ -257,13 +257,13 @@ function generateSyntheticStudents(): StudentRecord[] {
     { id: 'STU-10B-02', rollNumber: 2, firstName: 'Sneha', lastName: 'Agarwal', gender: 'F', attendancePercentage: 95.0, academicAverage: 89.0, guardianName: 'Sunil Agarwal', primaryPhone: '+91 98292 66002', activeFlags: [] },
   ];
 
-  // Populate all 20 sections with 38 students each (Total: 760 students)
+  // Populate all 20 sections with 50 students each (Total: 1,000 students)
   initialClasses.forEach((cls) => {
     const gradeNum = cls.grade;
     const sec = cls.section;
     const prefix = `STU-${gradeNum.toString().padStart(2, '0')}${sec}`;
 
-    for (let roll = 1; roll <= 38; roll++) {
+    for (let roll = 1; roll <= 50; roll++) {
       const studentId = `${prefix}-${roll.toString().padStart(2, '0')}`;
       
       // Check if baseline override exists
@@ -527,7 +527,7 @@ export const initialMarksRegisters: MarksRegister[] = [
 // 9. Daily Attendance Sessions (Today: 2026-10-21 for all 20 Sections)
 // ============================================================================
 function generateTodayAttendanceSessions(): AttendanceSession[] {
-  const today = '2026-10-21';
+  const today = getSchoolLocalDate();
   return initialClasses.map((cls, idx) => {
     const classStudents = initialStudents.filter(s => s.classId === cls.id);
     const isSubmitted = idx < 16; // 16 sections marked complete, 4 in progress/draft

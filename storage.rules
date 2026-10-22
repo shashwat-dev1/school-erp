@@ -10,10 +10,25 @@ service firebase.storage {
       return request.auth != null;
     }
 
+    function getUserData() {
+      return firestore.get(/databases/(default)/documents/staff/$(request.auth.uid)).data;
+    }
+
+    function isStaffAuthorized() {
+      return isAuthenticated() && (
+        getUserData().role == 'principal' ||
+        getUserData().role == 'admin' ||
+        getUserData().role == 'office_admin' ||
+        getUserData().role == 'office_staff' ||
+        getUserData().role == 'class_teacher'
+      );
+    }
+
     // Student identity scans and medical records (Max 5MB, PDF/JPEG/PNG only)
+    // Restricted to administrative staff and homeroom tutors only
     match /students/{studentId}/{documentName} {
-      allow read: if isAuthenticated();
-      allow write: if isAuthenticated() && (
+      allow read: if isStaffAuthorized();
+      allow write: if isStaffAuthorized() && (
         request.resource.size < 5 * 1024 * 1024 &&
         request.resource.contentType.matches('image/(jpeg|png)|application/pdf')
       );

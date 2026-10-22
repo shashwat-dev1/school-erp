@@ -26,10 +26,10 @@ interface SidebarProps {
 
 export const Sidebar: React.FC<SidebarProps> = ({ isMobileOpen = false, onClose }) => {
   const { currentUser } = useAuth();
-  const role = currentUser?.role || 'principal';
-  const assignedClassId = currentUser?.assignedClassId || 'class-10-a';
-  const assignedClassLabel = currentUser?.assignedClassLabel || 'Class 10-A';
-  const primaryClass = currentUser?.assignedClasses?.[0] || 'class-10-a';
+  const role = currentUser?.role;
+  const assignedClassId = currentUser?.assignedClassId;
+  const assignedClassLabel = currentUser?.assignedClassLabel || (assignedClassId ? `Class ${assignedClassId.toUpperCase()}` : '');
+  const primaryClass = currentUser?.assignedClasses?.[0];
 
   return (
     <>
@@ -38,38 +38,31 @@ export const Sidebar: React.FC<SidebarProps> = ({ isMobileOpen = false, onClose 
         {/* Institutional Brand Header */}
         <div
           style={{
-            padding: '16px',
+            padding: '12px 16px',
             borderBottom: '1px solid var(--hhs-border)',
             display: 'flex',
             alignItems: 'center',
-            gap: '10px',
+            justifyContent: 'space-between',
+            gap: '8px',
+            minHeight: '56px',
           }}
         >
           <img
             src={logoSvg}
-            alt="HanuJai High School Crest"
-            style={{ height: '40px', width: 'auto', display: 'block' }}
+            alt="HanuJai High School"
+            style={{ height: '36px', maxWidth: '160px', objectFit: 'contain', display: 'block' }}
           />
-          <div style={{ display: 'flex', flexDirection: 'column' }}>
-            <span style={{ fontWeight: 800, fontSize: '0.95rem', color: 'var(--hhs-primary)', letterSpacing: '-0.02em', lineHeight: 1.1 }}>
-              HanuJai ERP
-            </span>
-            <span style={{ fontSize: '0.68rem', color: 'var(--hhs-text-secondary)', textTransform: 'uppercase', letterSpacing: '0.04em' }}>
-              Jaipur Central
-            </span>
-          </div>
           {onClose && (
             <button
               onClick={onClose}
-              className="hhs-btn hhs-btn-secondary"
+              className="hhs-btn hhs-btn-secondary hhs-sidebar-close-btn"
               style={{
-                marginLeft: 'auto',
-                display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center',
                 padding: '4px',
                 width: '28px',
                 height: '28px',
+                flexShrink: 0,
               }}
               aria-label="Close navigation"
             >
@@ -98,11 +91,13 @@ export const Sidebar: React.FC<SidebarProps> = ({ isMobileOpen = false, onClose 
         <span style={{ color: 'var(--hhs-primary)' }}>
           {role === 'principal'
             ? 'Principal Desk'
-            : role === 'office_admin'
+            : role === 'office_admin' || role === 'office_staff'
             ? 'Office Registrar'
             : role === 'class_teacher'
-            ? `${assignedClassLabel} Tutor`
-            : 'Subject Faculty'}
+            ? (assignedClassLabel ? `${assignedClassLabel} Tutor` : 'Class Tutor')
+            : role === 'subject_teacher'
+            ? 'Subject Faculty'
+            : 'Staff Portal'}
         </span>
       </div>
 
@@ -118,11 +113,13 @@ export const Sidebar: React.FC<SidebarProps> = ({ isMobileOpen = false, onClose 
               label={
                 role === 'principal'
                   ? 'Operations Hub'
-                  : role === 'office_admin'
+                  : role === 'office_admin' || role === 'office_staff'
                   ? 'Office Desk'
                   : role === 'class_teacher'
-                  ? `${assignedClassLabel} Desk`
-                  : 'Teaching Desk'
+                  ? (assignedClassLabel ? `${assignedClassLabel} Desk` : 'Classroom Desk')
+                  : role === 'subject_teacher'
+                  ? 'Teaching Desk'
+                  : 'Staff Workspace'
               }
               end
             />
@@ -193,7 +190,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ isMobileOpen = false, onClose 
           )}
 
           {/* 2. OFFICE ADMINISTRATOR WORKSPACE */}
-          {role === 'office_admin' && (
+          {(role === 'office_admin' || role === 'office_staff') && (
             <>
               <li>
                 <SidebarItem to="/students" icon={<GraduationCap size={16} />} label="Student Directory &amp; Admissions" />
@@ -241,33 +238,41 @@ export const Sidebar: React.FC<SidebarProps> = ({ isMobileOpen = false, onClose 
           {/* 3. CLASS TEACHER WORKSPACE */}
           {role === 'class_teacher' && (
             <>
-              <li>
-                <SidebarItem
-                  to={`/attendance/register/${assignedClassId}`}
-                  icon={<CalendarCheck size={16} />}
-                  label={`Mark ${assignedClassLabel} Roll`}
-                />
-              </li>
-              <li>
-                <SidebarItem
-                  to={`/classes/${assignedClassId}/students`}
-                  icon={<Users size={16} />}
-                  label={`${assignedClassLabel} Roll Roster`}
-                />
-              </li>
-              <li>
-                <SidebarItem
-                  to={`/classes/${assignedClassId}/performance`}
-                  icon={<FileCheck2 size={16} />}
-                  label={`${assignedClassLabel} Performance`}
-                />
-              </li>
-              <li>
-                <SidebarItem to="/attendance/corrections" icon={<UserCheck size={16} />} label="Late Corrections" />
-              </li>
-              <li>
-                <SidebarItem to="/risk-watchlist" icon={<AlertTriangle size={16} />} label={`${assignedClassLabel} Watchlist`} />
-              </li>
+              {assignedClassId ? (
+                <>
+                  <li>
+                    <SidebarItem
+                      to={`/attendance/register/${assignedClassId}`}
+                      icon={<CalendarCheck size={16} />}
+                      label={`Mark ${assignedClassLabel} Roll`}
+                    />
+                  </li>
+                  <li>
+                    <SidebarItem
+                      to={`/classes/${assignedClassId}/students`}
+                      icon={<Users size={16} />}
+                      label={`${assignedClassLabel} Roll Roster`}
+                    />
+                  </li>
+                  <li>
+                    <SidebarItem
+                      to={`/classes/${assignedClassId}/performance`}
+                      icon={<FileCheck2 size={16} />}
+                      label={`${assignedClassLabel} Performance`}
+                    />
+                  </li>
+                  <li>
+                    <SidebarItem to="/attendance/corrections" icon={<UserCheck size={16} />} label="Late Corrections" />
+                  </li>
+                  <li>
+                    <SidebarItem to="/risk-watchlist" icon={<AlertTriangle size={16} />} label={`${assignedClassLabel} Watchlist`} />
+                  </li>
+                </>
+              ) : (
+                <li style={{ padding: '8px 12px', fontSize: '0.74rem', color: 'var(--hhs-text-muted)', fontStyle: 'italic' }}>
+                  No classroom section assigned.
+                </li>
+              )}
               <li>
                 <SidebarItem to="/behaviour" icon={<AlertOctagon size={16} />} label="Pastoral Care Log" />
               </li>
@@ -286,13 +291,15 @@ export const Sidebar: React.FC<SidebarProps> = ({ isMobileOpen = false, onClose 
               <li>
                 <SidebarItem to="/assessments" icon={<FileCheck2 size={16} />} label="Marks Entry Registers" />
               </li>
-              <li>
-                <SidebarItem
-                  to={`/classes/${primaryClass}/performance`}
-                  icon={<Layers size={16} />}
-                  label="Subject Performance"
-                />
-              </li>
+              {primaryClass && (
+                <li>
+                  <SidebarItem
+                    to={`/classes/${primaryClass}/performance`}
+                    icon={<Layers size={16} />}
+                    label="Subject Performance"
+                  />
+                </li>
+              )}
               <li>
                 <SidebarItem to="/students" icon={<GraduationCap size={16} />} label="Enrolled Students" />
               </li>

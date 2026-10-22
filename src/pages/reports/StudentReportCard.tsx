@@ -1,35 +1,54 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
+import { useAuth } from '../../context/AuthContext';
 import { useData } from '../../context/DataContext';
 import { PageHeader } from '../../components/layout/PageHeader';
 import { LoadingState } from '../../components/feedback/LoadingState';
 import { ErrorBanner } from '../../components/feedback/ErrorBanner';
+import { AccessDenied } from '../error/AccessDenied';
+import { Permissions } from '../../domain/permissions';
 import type { StudentRecord } from '../../domain/types';
 import logoSvg from '../../assets/logo.svg';
 import { Printer } from 'lucide-react';
 
 export const StudentReportCard: React.FC = () => {
-  const { studentId = 'stu-10a-01' } = useParams<{ studentId?: string }>();
+  const { studentId } = useParams<{ studentId?: string }>();
   const navigate = useNavigate();
+  const { currentUser } = useAuth();
   const { provider } = useData();
 
   const [student, setStudent] = useState<StudentRecord | null>(null);
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
+  const [isDenied, setIsDenied] = useState<boolean>(false);
 
   useEffect(() => {
     let isMounted = true;
     async function loadReport() {
+      if (!studentId) {
+        setError('Student ID parameter is required.');
+        setIsLoading(false);
+        return;
+      }
+
       setIsLoading(true);
       setError(null);
+      setIsDenied(false);
       try {
         const stud = await provider.getStudentById(studentId);
 
         if (!isMounted) return;
         if (!stud) {
-          setError('Student record not found.');
+          setError('Student record not found in active academic session.');
           return;
         }
+
+        if (!Permissions.canViewStudentReportCard(currentUser, stud)) {
+          setIsDenied(true);
+          setError(`Desk Authorization Boundary: Your role (${currentUser?.role}) is not authorized to access cumulative 5-subject report cards for students outside your assigned section.`);
+          return;
+        }
+
         setStudent(stud);
       } catch (err: unknown) {
         if (!isMounted) return;
@@ -43,10 +62,19 @@ export const StudentReportCard: React.FC = () => {
     return () => {
       isMounted = false;
     };
-  }, [provider, studentId]);
+  }, [provider, studentId, currentUser]);
 
   if (isLoading) {
     return <LoadingState message="Generating formal institutional report card..." />;
+  }
+
+  if (isDenied) {
+    return (
+      <AccessDenied
+        title="Report Authorization Boundary"
+        message={error || "You are not authorized to view the cumulative report card for this student."}
+      />
+    );
   }
 
   if (!student) {

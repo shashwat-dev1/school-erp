@@ -84,7 +84,7 @@ export const SubjectFacultyAssignments: React.FC = () => {
           subjectId: selectedSubjectId,
           teacherId: teacher.id,
           teacherName: teacher.displayName,
-          academicYearId: 'ay-2025-26',
+          academicYearId: 'year-2025-2026',
         },
         currentUser
       );

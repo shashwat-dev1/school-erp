@@ -62,16 +62,35 @@ export const StudentDirectory: React.FC = () => {
       setError(null);
       try {
         const isClassTeacher = currentUser?.role === 'class_teacher';
-        const defaultClass = isClassTeacher ? (currentUser.assignedClassId || 'class-10-a') : 'all';
+        const isSubjectTeacher = currentUser?.role === 'subject_teacher';
+        const defaultClass = isClassTeacher
+          ? (currentUser.assignedClassId || '')
+          : isSubjectTeacher
+          ? (currentUser.assignedClasses?.[0] || 'all')
+          : 'all';
         setSelectedClass(defaultClass);
 
+        // Pre-query authorization scoping
+        const queryFilter = isClassTeacher && currentUser.assignedClassId
+          ? { classId: currentUser.assignedClassId, limit: 100 }
+          : { limit: 1000 };
+
         const [studentRes, classRes] = await Promise.all([
-          provider.getStudents({ limit: 1000 }),
+          provider.getStudents(queryFilter),
           provider.getClasses(),
         ]);
         if (!isMounted) return;
+
+        // Scope classes dropdown to authorized sections
+        let availableClasses = classRes;
+        if (isClassTeacher && currentUser.assignedClassId) {
+          availableClasses = classRes.filter(c => c.id === currentUser.assignedClassId);
+        } else if (isSubjectTeacher && currentUser.assignedClasses) {
+          availableClasses = classRes.filter(c => currentUser.assignedClasses!.includes(c.id));
+        }
+
         setStudents(studentRes.items);
-        setClasses(classRes);
+        setClasses(availableClasses);
       } catch (err: unknown) {
         if (!isMounted) return;
         const msg = err instanceof Error ? err.message : 'Failed to retrieve students.';
@@ -85,7 +104,41 @@ export const StudentDirectory: React.FC = () => {
     return () => {
       isMounted = false;
     };
-  }, [provider]);
+  }, [provider, currentUser]);
+
+  const handleExportCSV = () => {
+    const headers = [
+      'Admission #',
+      'Roll #',
+      'Student Name',
+      'Class Section',
+      'Gender',
+      'Attendance %',
+      'Academic %',
+      'Status',
+    ];
+
+    const rows = filteredStudents.map(s => [
+      s.admissionNumber,
+      s.rollNumber,
+      `"${s.firstName} ${s.lastName}"`,
+      `"${s.classLabel}"`,
+      s.gender,
+      s.attendancePercentage + '%',
+      (s.academicAverage || 0) + '%',
+      s.status,
+    ]);
+
+    const csvContent =
+      'data:text/csv;charset=utf-8,' +
+      encodeURIComponent([headers.join(','), ...rows.map(r => r.join(','))].join('\n'));
+    const link = document.createElement('a');
+    link.setAttribute('href', csvContent);
+    link.setAttribute('download', `HanuJai_Student_Roster_${new Date().toISOString().split('T')[0]}.csv`);
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  };
 
   // Client-side filtering for fast interactive ledger experience
   const filteredStudents = useMemo(() => {
@@ -267,9 +320,7 @@ export const StudentDirectory: React.FC = () => {
         actions={
           <div style={{ display: 'flex', gap: '10px' }}>
             <button
-              onClick={() => {
-                alert('Exporting student cohort in CBSE Pariksha Sangam compatible CSV format...');
-              }}
+              onClick={handleExportCSV}
               className="hhs-btn hhs-btn-secondary"
               style={{ display: 'flex', alignItems: 'center', gap: '6px' }}
             >
@@ -454,28 +505,36 @@ export const StudentDirectory: React.FC = () => {
               </div>
             </div>
 
-            {/* Guardian & Emergency Contact */}
-            <div className="hhs-card" style={{ padding: '16px' }}>
-              <h4 className="hhs-headline-sm" style={{ fontSize: '0.86rem', marginBottom: '12px' }}>
-                Guardian & Residence
-              </h4>
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', fontSize: '0.82rem' }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                  <Users size={15} color="var(--hhs-text-secondary)" />
-                  <span>
-                    <strong>{activeStudent.guardianName}</strong> ({activeStudent.guardianRelation})
-                  </span>
-                </div>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                  <Phone size={15} color="var(--hhs-text-secondary)" />
-                  <span className="tnum">{activeStudent.primaryPhone}</span>
-                </div>
-                <div style={{ display: 'flex', alignItems: 'flex-start', gap: '8px' }}>
-                  <Home size={15} color="var(--hhs-text-secondary)" style={{ marginTop: '2px' }} />
-                  <span>{activeStudent.residentialAddress}</span>
+            {/* Guardian & Emergency Contact (Restricted Access) */}
+            {(currentUser?.role === 'principal' || currentUser?.role === 'office_admin' || (currentUser?.role === 'class_teacher' && currentUser.assignedClassId === activeStudent.classId)) ? (
+              <div className="hhs-card" style={{ padding: '16px' }}>
+                <h4 className="hhs-headline-sm" style={{ fontSize: '0.86rem', marginBottom: '12px' }}>
+                  Guardian & Residence
+                </h4>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', fontSize: '0.82rem' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                    <Users size={15} color="var(--hhs-text-secondary)" />
+                    <span>
+                      <strong>{activeStudent.guardianName}</strong> ({activeStudent.guardianRelation})
+                    </span>
+                  </div>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                    <Phone size={15} color="var(--hhs-text-secondary)" />
+                    <span className="tnum">{activeStudent.primaryPhone}</span>
+                  </div>
+                  <div style={{ display: 'flex', alignItems: 'flex-start', gap: '8px' }}>
+                    <Home size={15} color="var(--hhs-text-secondary)" style={{ marginTop: '2px' }} />
+                    <span>{activeStudent.residentialAddress}</span>
+                  </div>
                 </div>
               </div>
-            </div>
+            ) : (
+              <div className="hhs-card" style={{ padding: '14px', backgroundColor: 'var(--hhs-surface-muted)' }}>
+                <div style={{ fontSize: '0.78rem', color: 'var(--hhs-text-muted)', fontStyle: 'italic' }}>
+                  Guardian contact and residential address are restricted to the Office Registrar and Assigned Class Tutor.
+                </div>
+              </div>
+            )}
 
             {/* Explainable Care Rules */}
             <div className="hhs-card" style={{ padding: '16px' }}>

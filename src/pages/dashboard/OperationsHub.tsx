@@ -72,7 +72,7 @@ export const OperationsHub: React.FC = () => {
     return <LoadingState message="Compiling morning campus metrics & class registers..." />;
   }
 
-  const role = currentUser?.role || 'principal';
+  const role = currentUser?.role;
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>

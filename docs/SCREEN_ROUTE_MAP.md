@@ -18,11 +18,12 @@ This document establishes the definitive mapping between every exported Google S
 
 | Design Reference Directory | Production Route | React Component / View | Role Scope | Key Functional Interactions |
 | :--- | :--- | :--- | :--- | :--- |
-| `Designs/principal_administration_dashboard/` | `/` | `src/pages/dashboard/OperationsHub.tsx` | Principal / Office | Live KPIs (Enrollment, Daily Attendance, Roll-call progress, Care Flags), Quick Actions. |
-| `Designs/principal_dashboard_standard_overview/` | `/?tab=overview` | `src/pages/dashboard/OperationsHub.tsx` | Principal | Section attendance comparison table, upcoming examination milestones, department progress. |
-| `Designs/principal_dashboard_alert_selected_cbse_compliance/` | `/?alert=cbse` | `src/pages/dashboard/OperationsHub.tsx` | Principal | CBSE 75% attendance rule threshold banner with direct link to flagged students. |
-| `Designs/individual_risk_explanation_evidence_panel/` | Drawer on `/students/:id` or `/risk-watchlist` | `src/features/risk/RiskEvidenceDrawer.tsx` | Principal / Tutors | Transparent rule breakdown (#ATT-01, #ACAD-04, #ATT-03), audit timeline, follow-up scheduling. |
-| `Designs/school_wide_student_follow_up_watchlist/` | `/risk-watchlist` | `src/pages/risk/RiskWatchlist.tsx` | Principal / Office | Multi-filter watchlist (Chronic Absenteeism, Academic Drop, Conduct), mentor assignment, CSV export. |
+| `Designs/principal_administration_dashboard/` | `/` (Principal) | `src/pages/dashboard/PrincipalDashboard.tsx` | Principal | School-wide live KPIs (1,000 Enrolment, Turnout, Cohort Mean, Attendance Sessions, Care Flags), Quick Actions. |
+| `Designs/school_reports_directory/` | `/` (Office Admin) | `src/pages/dashboard/OfficeDashboard.tsx` | Office Admin / Office Staff | Master Registry lookup, Capacity utilization (1,000 across 20 sections), Student admissions, Operational reports. |
+| `Designs/attendance_daily_attendance_register_class_10_a/` | `/` (Class Teacher) | `src/pages/dashboard/ClassTeacherDashboard.tsx` | Class Teacher (Assigned Section Only) | Assigned section roll call status, absent students list, consolidated class performance shortcut. |
+| `Designs/subject_wise_marks_entry_register/` | `/` (Subject Teacher) | `src/pages/dashboard/SubjectTeacherDashboard.tsx` | Subject Teacher (Assigned Subjects Only) | Assigned subject/section evaluation cards, continuous assessment entry progress, cohort mean calculation. |
+| `Designs/individual_risk_explanation_evidence_panel/` | Drawer on `/students/:id` or `/risk-watchlist` | `src/features/risk/RiskEvidenceDrawer.tsx` | Principal / Assigned Tutors | Transparent rule breakdown (#ATT-01, #ACAD-04, #ATT-03), audit timeline, follow-up scheduling. |
+| `Designs/school_wide_student_follow_up_watchlist/` | `/risk-watchlist` | `src/pages/risk/RiskWatchlist.tsx` | Principal / Office / Assigned Class Teacher | Multi-filter watchlist (Chronic Absenteeism, Academic Drop, Conduct), mentor assignment, pre-scoped query & clean CSV export. |
 
 ---
 
@@ -63,7 +64,7 @@ This document establishes the definitive mapping between every exported Google S
 | `Designs/assessment_configuration/` | Modal on `/academics/assessments` | `src/pages/academics/AssessmentConfigModal.tsx` | Principal / Office | Max marks configuration, passing threshold, term association, weightage allocation. |
 | `Designs/assessment_list_selection/` | `/academics/assessments` | `src/pages/academics/AssessmentList.tsx` | Teachers / Principal | Filterable list of assessment cycles, subject selectors, class assignment status. |
 | `Designs/subject_wise_marks_entry_register/` | `/academics/marks/:assessmentId` | `src/pages/academics/MarksEntryRegister.tsx` | Subject Teacher / Admin | Spreadsheet-like mark sheet, roll number, max marks validation, absent toggle, draft save, finalize. |
-| `Designs/student_academic_performance_report_aarav_singhania_class_10_a/` | `/reports/report-card/:studentId` | `src/pages/reports/StudentReportCard.tsx` | All Staff | Formal institutional CBSE report card formatted for A4 printing (`@media print`). |
+| `Designs/student_academic_performance_report_aarav_singhania_class_10_a/` | `/reports/report-card/:studentId` | `src/pages/reports/StudentReportCard.tsx` | Principal / Office / Assigned Class Teacher | Formal institutional report card formatted for A4 printing (`@media print`). Access strictly denied to unauthorized teachers. |
 | `Designs/print_ready_academic_performance_summary_ptm_aarav_singhania/` | `/reports/ptm-slip/:studentId` | `src/pages/reports/PTMSlip.tsx` | Class Tutors / Parents | Compact A4 Parent-Teacher Meeting progress slip with signatures and school crest. |
 | `Designs/student_by_student_subject_comparison_class_10_a/` | `/performance/classes/:classId` | `src/pages/performance/ClassPerformanceLedger.tsx` | Class Tutors / Principal | Consolidated multi-subject grade matrix for Class 10-A, section average, student drill-down. |
 | `Designs/academic_performance_comparison_report/` | `/reports/academic-comparison` | `src/pages/reports/AcademicComparisonReport.tsx` | Principal | Cross-section performance comparison (10-A vs 10-B), subject-wise failure rate indicators. |

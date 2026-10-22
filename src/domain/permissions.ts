@@ -136,15 +136,31 @@ export const Permissions = {
    * Risk Watchlist Access:
    * - Principal: Whole-school overview.
    * - Office Admin: Operational summary.
-   * - Class Teacher: Scoped strictly to their assigned class.
+   * - Class Teacher: Scoped strictly to their assigned class. classId parameter is REQUIRED.
    * - Subject Teacher: No school-wide or cross-subject risk watchlist.
    */
   canViewRiskWatchlist(user: StaffUser | null, classId?: string): boolean {
     if (!user) return false;
     if (user.role === 'principal' || user.role === 'office_admin') return true;
     if (user.role === 'class_teacher') {
-      if (!classId) return true; // Can view their own class's watchlist
+      // Must have an assigned class, and global (unscoped) risk watchlist is strictly forbidden
+      if (!user.assignedClassId || !classId) return false;
       return user.assignedClassId === classId;
+    }
+    return false;
+  },
+
+  /**
+   * Formal Cumulative Student Report Card Access:
+   * - Principal & Office Admin: Broad institutional oversight.
+   * - Class Teacher: ONLY for students in their assigned section.
+   * - Subject Teacher: Denied full multi-subject cumulative report cards (must use subject-specific reports).
+   */
+  canViewStudentReportCard(user: StaffUser | null, student: StudentRecord): boolean {
+    if (!user) return false;
+    if (user.role === 'principal' || user.role === 'office_admin') return true;
+    if (user.role === 'class_teacher') {
+      return Boolean(user.assignedClassId && user.assignedClassId === student.classId);
     }
     return false;
   },

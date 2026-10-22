@@ -6,6 +6,7 @@ import { PageHeader } from '../../components/layout/PageHeader';
 import { LoadingState } from '../../components/feedback/LoadingState';
 import { ErrorBanner } from '../../components/feedback/ErrorBanner';
 import type { ClassSection, AttendanceSession, AttendanceCorrection } from '../../domain/types';
+import { getSchoolLocalDate } from '../../domain/policy';
 import {
   CalendarCheck,
   CheckCircle2,
@@ -22,9 +23,7 @@ export const AttendanceDashboard: React.FC = () => {
   const [classes, setClasses] = useState<ClassSection[]>([]);
   const [sessions, setSessions] = useState<AttendanceSession[]>([]);
   const [corrections, setCorrections] = useState<AttendanceCorrection[]>([]);
-  const [selectedDate, setSelectedDate] = useState<string>(
-    new Date().toISOString().split('T')[0]
-  );
+  const [selectedDate, setSelectedDate] = useState<string>(getSchoolLocalDate());
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -62,7 +61,7 @@ export const AttendanceDashboard: React.FC = () => {
     return <LoadingState message="Reconciling campus morning roll call status & registers..." />;
   }
 
-  const role = currentUser?.role || 'principal';
+  const role = currentUser?.role;
   const pendingCorrectionsCount = corrections.filter(c => c.status === 'pending_principal').length;
 
   return (
@@ -89,14 +88,14 @@ export const AttendanceDashboard: React.FC = () => {
                 </span>
               )}
             </button>
-            {role === 'class_teacher' && (
+            {role === 'class_teacher' && currentUser?.assignedClassId && (
               <button
-                onClick={() => navigate('/attendance/register/class-10-a')}
+                onClick={() => navigate(`/attendance/register/${currentUser.assignedClassId}`)}
                 className="hhs-btn hhs-btn-primary"
                 style={{ display: 'flex', alignItems: 'center', gap: '6px' }}
               >
                 <CalendarCheck size={15} />
-                <span>Mark 10-A Attendance</span>
+                <span>Mark My Section Attendance</span>
               </button>
             )}
           </div>

@@ -95,11 +95,24 @@ export const StudentDetail: React.FC = () => {
         setIncidents(incRes);
         setAuditHistory(auditRes);
 
-        // Fetch marks for each assessment cycle concurrently
+        // Fetch marks for authorized subjects concurrently
         const subjects = await provider.getSubjects();
+        const isFullMarksAuthorized =
+          currentUser?.role === 'principal' ||
+          currentUser?.role === 'office_admin' ||
+          (currentUser?.role === 'class_teacher' && currentUser.assignedClassId === studentDoc.classId);
+
+        const allowedSubjects = isFullMarksAuthorized
+          ? subjects
+          : subjects.filter(
+              s =>
+                currentUser?.assignedSubjects?.includes(s.id) ||
+                currentUser?.assignedSubjectIds?.includes(s.id)
+            );
+
         const regPromises: Promise<MarksRegister | null>[] = [];
         for (const assess of assessRes) {
-          for (const sub of subjects) {
+          for (const sub of allowedSubjects) {
             regPromises.push(provider.getMarksRegister(assess.id, studentDoc.classId, sub.id));
           }
         }
@@ -125,7 +138,7 @@ export const StudentDetail: React.FC = () => {
     return () => {
       isMounted = false;
     };
-  }, [id, provider]);
+  }, [id, provider, currentUser]);
 
   const handleEditSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -184,8 +197,12 @@ export const StudentDetail: React.FC = () => {
     );
   }
 
-  const role = currentUser?.role || 'principal';
+  const role = currentUser?.role;
   const canEdit = role === 'principal' || role === 'office_admin';
+  const isGuardianContactAuthorized =
+    role === 'principal' ||
+    role === 'office_admin' ||
+    (role === 'class_teacher' && currentUser?.assignedClassId === student.classId);
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
@@ -193,9 +210,10 @@ export const StudentDetail: React.FC = () => {
       <PageHeader
         title={`${student.firstName} ${student.lastName}`}
         subtitle={`HanuJai High School, Jaipur • ${student.classLabel} • Admission #${student.admissionNumber} • Roll #${student.rollNumber}`}
+        roleScope={role === 'class_teacher' ? `${student.classLabel} Student Dossier` : 'Student Master Dossier'}
         breadcrumbs={[
-          { label: 'Campus' },
-          { label: 'Student Ledger', to: '/students' },
+          { label: role === 'class_teacher' ? 'My Section' : role === 'subject_teacher' ? 'My Teaching' : 'Operations Hub', to: '/' },
+          { label: 'Student Directory', to: '/students' },
           { label: `${student.firstName} ${student.lastName}` },
         ]}
         actions={
@@ -343,20 +361,28 @@ export const StudentDetail: React.FC = () => {
                   <span className="hhs-label">Gender</span>
                   <div style={{ fontWeight: 600 }}>{student.gender === 'M' ? 'Male' : student.gender === 'F' ? 'Female' : 'Other'}</div>
                 </div>
-                <div>
-                  <span className="hhs-label">Primary Guardian</span>
-                  <div style={{ fontWeight: 600 }}>{student.guardianName} ({student.guardianRelation})</div>
-                </div>
-                <div>
-                  <span className="hhs-label">Emergency Phone</span>
-                  <div className="tnum" style={{ fontWeight: 600 }}>{student.primaryPhone}</div>
-                </div>
-                <div style={{ gridColumn: 'span 2' }}>
-                  <span className="hhs-label">Residential Address</span>
-                  <div style={{ color: 'var(--hhs-text-secondary)', lineHeight: 1.5 }}>
-                    {student.residentialAddress}, {student.city}, {student.state} {student.pincode}
+                {isGuardianContactAuthorized ? (
+                  <>
+                    <div>
+                      <span className="hhs-label">Primary Guardian</span>
+                      <div style={{ fontWeight: 600 }}>{student.guardianName} ({student.guardianRelation})</div>
+                    </div>
+                    <div>
+                      <span className="hhs-label">Emergency Phone</span>
+                      <div className="tnum" style={{ fontWeight: 600 }}>{student.primaryPhone}</div>
+                    </div>
+                    <div style={{ gridColumn: 'span 2' }}>
+                      <span className="hhs-label">Residential Address</span>
+                      <div style={{ color: 'var(--hhs-text-secondary)', lineHeight: 1.5 }}>
+                        {student.residentialAddress}, {student.city}, {student.state} {student.pincode}
+                      </div>
+                    </div>
+                  </>
+                ) : (
+                  <div style={{ gridColumn: 'span 2', padding: '12px', backgroundColor: 'var(--hhs-surface-muted)', borderRadius: 'var(--hhs-radius-sm)', fontStyle: 'italic', color: 'var(--hhs-text-muted)' }}>
+                    Guardian contact and residential address are restricted to the Office Registrar and Assigned Class Tutor.
                   </div>
-                </div>
+                )}
               </div>
             </div>
 
@@ -368,19 +394,19 @@ export const StudentDetail: React.FC = () => {
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px', fontSize: '0.84rem' }}>
                 <div>
                   <span className="hhs-label">Academic Session</span>
-                  <div style={{ fontWeight: 600 }}>2025–2026 (Active)</div>
+                  <div style={{ fontWeight: 600 }}>{student.academicYearId || '2025–2026'}</div>
                 </div>
                 <div>
-                  <span className="hhs-label">Class Teacher</span>
-                  <div style={{ fontWeight: 600 }}>Shri Rajeshwar Choudhary</div>
+                  <span className="hhs-label">Class Section</span>
+                  <div style={{ fontWeight: 600 }}>{student.classLabel}</div>
                 </div>
                 <div>
-                  <span className="hhs-label">Assigned Room</span>
-                  <div>Room 301, Senior Block</div>
+                  <span className="hhs-label">Admission Number</span>
+                  <div className="tnum" style={{ fontWeight: 600 }}>{student.admissionNumber}</div>
                 </div>
                 <div>
-                  <span className="hhs-label">Board Registration Node</span>
-                  <div className="tnum">CBSE Node 1730198/SEC-10A</div>
+                  <span className="hhs-label">Roll Number</span>
+                  <div className="tnum" style={{ fontWeight: 600 }}>{student.rollNumber}</div>
                 </div>
               </div>
             </div>

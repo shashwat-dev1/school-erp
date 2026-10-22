@@ -1,9 +1,11 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
+import { useAuth } from '../../context/AuthContext';
 import { useData } from '../../context/DataContext';
 import { PageHeader } from '../../components/layout/PageHeader';
 import { LoadingState } from '../../components/feedback/LoadingState';
 import { ErrorBanner } from '../../components/feedback/ErrorBanner';
+import { AccessDenied } from '../error/AccessDenied';
 import { RiskEvidenceDrawer } from '../../features/risk/RiskEvidenceDrawer';
 import type {
   ClassSection,
@@ -20,9 +22,12 @@ import {
 } from 'lucide-react';
 
 export const ClassPerformanceLedger: React.FC = () => {
-  const { classId = 'class-10-a' } = useParams<{ classId?: string }>();
+  const { classId } = useParams<{ classId?: string }>();
   const navigate = useNavigate();
+  const { currentUser } = useAuth();
   const { provider } = useData();
+
+  const activeClassId = classId || currentUser?.assignedClassId || currentUser?.assignedClasses?.[0];
 
   const [activeTab, setActiveTab] = useState<'matrix' | 'watchlist'>('matrix');
   const [selectedCycleId, setSelectedCycleId] = useState<string>('assess-ut1-2025');
@@ -43,10 +48,11 @@ export const ClassPerformanceLedger: React.FC = () => {
   useEffect(() => {
     let isMounted = true;
     async function loadMeta() {
+      if (!activeClassId) return;
       try {
         const [cList, cls] = await Promise.all([
           provider.getAssessmentCycles(),
-          provider.getClassById(classId),
+          provider.getClassById(activeClassId),
         ]);
         if (!isMounted) return;
         setCycles(cList);
@@ -59,16 +65,17 @@ export const ClassPerformanceLedger: React.FC = () => {
     return () => {
       isMounted = false;
     };
-  }, [provider, classId]);
+  }, [provider, activeClassId]);
 
   // Fetch consolidated matrix for active class and cycle
   useEffect(() => {
+    if (!activeClassId) return;
     let isMounted = true;
     async function loadConsolidated() {
       setIsLoading(true);
       setError(null);
       try {
-        const res = await provider.getConsolidatedClassMarks(classId, selectedCycleId);
+        const res = await provider.getConsolidatedClassMarks(activeClassId!, selectedCycleId);
         if (!isMounted) return;
         setSubjects(res.subjects);
         setStudents(res.students);
@@ -86,11 +93,23 @@ export const ClassPerformanceLedger: React.FC = () => {
     return () => {
       isMounted = false;
     };
-  }, [provider, classId, selectedCycleId]);
+  }, [provider, activeClassId, selectedCycleId]);
 
   const activeCycle = cycles.find(c => c.id === selectedCycleId) || cycles[0];
   const maxMarks = activeCycle?.maxMarks || 25;
   const passMarks = Math.round(maxMarks * 0.33);
+
+  // Clearance calculation: Subject teachers can ONLY see their assigned subjects
+  const isFullMatrixAuthorized =
+    currentUser?.role === 'principal' ||
+    currentUser?.role === 'office_admin' ||
+    (currentUser?.role === 'class_teacher' && currentUser.assignedClassId === activeClassId);
+
+  const visibleSubjects = useMemo(() => {
+    if (isFullMatrixAuthorized) return subjects;
+    const teacherSubIds = currentUser?.assignedSubjects || currentUser?.assignedSubjectIds || [];
+    return subjects.filter(s => teacherSubIds.includes(s.id));
+  }, [subjects, isFullMatrixAuthorized, currentUser]);
 
   // Summary computations
   const summaryStats = useMemo(() => {
@@ -102,7 +121,7 @@ export const ClassPerformanceLedger: React.FC = () => {
     students.forEach(s => {
       let studentScore = 0;
       let count = 0;
-      subjects.forEach(sub => {
+      visibleSubjects.forEach(sub => {
         const entry = matrixData[s.id]?.[sub.id];
         if (entry && !entry.isAbsent && entry.marksObtained !== null) {
           studentScore += entry.marksObtained;
@@ -127,7 +146,7 @@ export const ClassPerformanceLedger: React.FC = () => {
       distinctionCount,
       totalStudents: students.length,
     };
-  }, [students, subjects, matrixData, maxMarks]);
+  }, [students, visibleSubjects, matrixData, maxMarks]);
 
   // Export CSV
   const handleExportCSV = () => {
@@ -136,7 +155,7 @@ export const ClassPerformanceLedger: React.FC = () => {
       'Roll #',
       'Admission #',
       'Student Name',
-      ...subjects.map(s => `"${s.name} (${maxMarks})"`),
+      ...visibleSubjects.map(s => `"${s.name} (${maxMarks})"`),
       'Total Marks',
       'Max Total',
       'Percentage',
@@ -147,7 +166,7 @@ export const ClassPerformanceLedger: React.FC = () => {
     const rows = students.map(s => {
       let tot = 0;
       let cnt = 0;
-      const subjVals = subjects.map(sub => {
+      const subjVals = visibleSubjects.map(sub => {
         const e = matrixData[s.id]?.[sub.id];
         if (e?.isAbsent) return 'ABS';
         if (e && e.marksObtained !== null) {
@@ -158,7 +177,7 @@ export const ClassPerformanceLedger: React.FC = () => {
         return '—';
       });
 
-      const maxTot = subjects.length * maxMarks;
+      const maxTot = visibleSubjects.length * maxMarks;
       const pct = cnt > 0 ? ((tot / (cnt * maxMarks)) * 100).toFixed(1) + '%' : '—';
       const flags = s.careFlags?.map(f => f.code).join(' ') || (s.activeFlags ? s.activeFlags.map(f => f.code).join(' ') : 'None');
 
@@ -179,11 +198,29 @@ export const ClassPerformanceLedger: React.FC = () => {
     const encodedUri = encodeURI(csvContent);
     const link = document.createElement('a');
     link.setAttribute('href', encodedUri);
-    link.setAttribute('download', `Class_10A_Performance_${activeCycle?.title || activeCycle?.name || 'Cycle'}.csv`);
+    link.setAttribute('download', `${(activeClass.label || 'Class').replace(/\s+/g, '_')}_Performance_${activeCycle?.title || activeCycle?.name || 'Cycle'}.csv`);
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
   };
+
+  if (currentUser?.role === 'subject_teacher' && !currentUser.assignedClasses?.includes(activeClassId || '')) {
+    return (
+      <AccessDenied
+        title="Section Performance Authorization"
+        message="You do not have instructional duties assigned to this section."
+      />
+    );
+  }
+
+  if (currentUser?.role === 'subject_teacher' && visibleSubjects.length === 0) {
+    return (
+      <AccessDenied
+        title="Subject Performance Authorization"
+        message="You do not teach any subjects in this class section."
+      />
+    );
+  }
 
   if (isLoading) {
     return <LoadingState message="Loading class performance matrix..." />;
@@ -192,13 +229,12 @@ export const ClassPerformanceLedger: React.FC = () => {
   return (
     <div className="hhs-page-container">
       <PageHeader
-        title={`${activeClass?.label || 'Class 10-A'} — Consolidated Subject Performance Matrix`}
+        title={`${activeClass?.label || 'Class Section'} — ${isFullMatrixAuthorized ? 'Consolidated Subject Performance Matrix' : 'Subject Faculty Performance'}`}
         subtitle="Cross-subject grade verification, deficiency identification, and parent conference inspection."
-        roleScope="Class Tutor & Faculty View"
+        roleScope={isFullMatrixAuthorized ? 'Consolidated Scholastic Ledger' : 'Subject Faculty Performance'}
         breadcrumbs={[
-          { label: 'Operations Hub', to: '/' },
-          { label: 'Classes', to: '/classes' },
-          { label: 'Performance Ledger', to: `/classes/${classId}/performance` },
+          { label: currentUser?.role === 'class_teacher' ? 'My Section' : currentUser?.role === 'subject_teacher' ? 'My Teaching' : 'Operations Hub', to: '/' },
+          { label: activeClass?.label || 'Class Performance' },
         ]}
         actions={
           <div style={{ display: 'flex', gap: '8px' }}>
@@ -365,7 +401,7 @@ export const ClassPerformanceLedger: React.FC = () => {
                 Max per subject: {maxMarks} marks • Passing threshold: {passMarks} (33%)
               </div>
             </div>
-            <span className="hhs-badge hhs-badge-primary">12 Candidates Enrolled</span>
+            <span className="hhs-badge hhs-badge-primary">{students.length} Candidates Enrolled</span>
           </div>
 
           <div style={{ overflowX: 'auto' }}>
@@ -374,7 +410,7 @@ export const ClassPerformanceLedger: React.FC = () => {
                 <tr>
                   <th style={{ width: '45px' }} className="numeric">Roll</th>
                   <th style={{ minWidth: '150px' }}>Student Candidate</th>
-                  {subjects.map(s => (
+                  {visibleSubjects.map(s => (
                     <th key={s.id} className="numeric" style={{ minWidth: '95px' }}>
                       {s.name}
                       <div style={{ fontSize: '0.68rem', fontWeight: 'normal', color: 'var(--hhs-text-muted)' }}>
@@ -419,7 +455,7 @@ export const ClassPerformanceLedger: React.FC = () => {
                         </div>
                       </td>
 
-                      {subjects.map(sub => {
+                      {visibleSubjects.map(sub => {
                         const entry = matrixData[s.id]?.[sub.id];
                         const isAbsent = entry?.isAbsent;
                         const score = entry?.marksObtained;
@@ -544,7 +580,7 @@ export const ClassPerformanceLedger: React.FC = () => {
                   <td colSpan={2} style={{ textAlign: 'right', paddingRight: '16px' }}>
                     Subject Aggregate Average:
                   </td>
-                  {subjects.map(sub => {
+                  {visibleSubjects.map(sub => {
                     const avg = subjectAverages[sub.id] || 0;
                     return (
                       <td key={sub.id} className="numeric" style={{ color: 'var(--hhs-primary)' }}>

@@ -11,6 +11,8 @@ import type {
   MarksSubmissionInput,
   NewStudentInput,
   NewIncidentInput,
+  RiskWatchlistItem,
+  ConsolidatedClassMarks,
 } from '../provider';
 import type {
   SchoolSettings,
@@ -31,7 +33,9 @@ import type {
   IncidentFilter,
   AuditEvent,
   AuditFilter,
+  StudentMarkEntry,
 } from '../../domain/types';
+import { getSchoolLocalDate } from '../../domain/policy';
 
 import { db, isFirebaseConfigured } from '../../config/firebase';
 import {
@@ -156,6 +160,10 @@ export class FirestoreRepository implements DataProvider {
 
   public async createStudent(input: NewStudentInput, actor: StaffUser): Promise<StudentRecord> {
     ensureFirebaseReady();
+    const [cls, activeYear] = await Promise.all([
+      this.getClassById(input.classId),
+      this.getActiveAcademicYear().catch(() => null),
+    ]);
     const studentId = `STU-${Date.now()}`;
     const newRecord: StudentRecord = {
       id: studentId,
@@ -168,8 +176,8 @@ export class FirestoreRepository implements DataProvider {
       dateOfBirth: input.dateOfBirth,
       enrollmentDate: input.enrollmentDate,
       classId: input.classId,
-      classLabel: input.classId,
-      academicYearId: 'year-2025-2026',
+      classLabel: cls ? cls.label : input.classId,
+      academicYearId: activeYear ? activeYear.id : 'year-2025-2026',
       status: 'enrolled',
       guardianName: input.guardianName,
       guardianRelation: input.guardianRelation,
@@ -240,19 +248,27 @@ export class FirestoreRepository implements DataProvider {
     actor: StaffUser
   ): Promise<AttendanceSession> {
     ensureFirebaseReady();
+    const [cls, students] = await Promise.all([
+      this.getClassById(input.classId),
+      this.getClassStudents(input.classId),
+    ]);
+    const studentMap = new Map(students.map(s => [s.id, s]));
     const sessionId = `att-${input.classId}-${input.date}`;
-    const records = input.records.map(r => ({
-      studentId: r.studentId,
-      studentName: r.studentId,
-      rollNumber: 0,
-      state: r.state,
-      remarks: r.remarks,
-    }));
+    const records = input.records.map(r => {
+      const stud = studentMap.get(r.studentId);
+      return {
+        studentId: r.studentId,
+        studentName: stud ? stud.fullName : r.studentId,
+        rollNumber: stud ? stud.rollNumber : 0,
+        state: r.state,
+        remarks: r.remarks,
+      };
+    });
 
     const session: AttendanceSession = {
       id: sessionId,
       classId: input.classId,
-      classLabel: input.classId,
+      classLabel: cls ? cls.label : input.classId,
       date: input.date,
       academicYearId: input.academicYearId,
       takenByStaffId: actor.id,
@@ -287,15 +303,27 @@ export class FirestoreRepository implements DataProvider {
     actor: StaffUser
   ): Promise<AttendanceCorrection> {
     ensureFirebaseReady();
+    const [studDoc, sessDoc] = await Promise.all([
+      getDoc(doc(db!, 'students', input.studentId)),
+      getDoc(doc(db!, 'attendanceSessions', input.sessionId)),
+    ]);
+    const stud = studDoc.exists() ? (studDoc.data() as StudentRecord) : null;
+    const sess = sessDoc.exists() ? (sessDoc.data() as AttendanceSession) : null;
+
+    const classId = sess?.classId || stud?.classId || 'class-10-a';
+    const classLabel = sess?.classLabel || stud?.classLabel || classId;
+    const date = sess?.date || getSchoolLocalDate();
+    const studentName = stud?.fullName || input.studentId;
+
     const corrId = `corr-${Date.now()}`;
     const corr: AttendanceCorrection = {
       id: corrId,
       sessionId: input.sessionId,
-      classId: 'class-10-a',
-      classLabel: 'Class 10-A',
-      date: new Date().toISOString().split('T')[0],
+      classId,
+      classLabel,
+      date,
       studentId: input.studentId,
-      studentName: input.studentId,
+      studentName,
       previousState: input.previousState,
       requestedState: input.requestedState,
       mandatoryReason: input.mandatoryReason,
@@ -349,29 +377,43 @@ export class FirestoreRepository implements DataProvider {
     actor: StaffUser
   ): Promise<MarksRegister> {
     ensureFirebaseReady();
+    const [assessment, targetClass, allSubjects, students] = await Promise.all([
+      this.getAssessmentCycleById(input.assessmentId),
+      this.getClassById(input.classId),
+      this.getSubjects(),
+      this.getClassStudents(input.classId),
+    ]);
+    const subject = allSubjects.find(s => s.id === input.subjectId);
+    const studentMap = new Map(students.map(s => [s.id, s]));
     const regId = `reg-${input.assessmentId}-${input.classId}-${input.subjectId}`;
+    const maxMarks = assessment ? assessment.maxMarks : 100;
+    const passingMarks = assessment ? assessment.passingMarks : 33;
+
     const register: MarksRegister = {
       id: regId,
       assessmentId: input.assessmentId,
-      assessmentTitle: input.assessmentId,
+      assessmentTitle: assessment ? assessment.title : input.assessmentId,
       classId: input.classId,
-      classLabel: input.classId,
+      classLabel: targetClass ? targetClass.label : input.classId,
       subjectId: input.subjectId,
-      subjectName: input.subjectId,
-      maxMarks: 100,
-      passingMarks: 33,
+      subjectName: subject ? subject.name : input.subjectId,
+      maxMarks,
+      passingMarks,
       teacherId: actor.id,
       teacherName: actor.name,
       status: input.isDraft ? 'draft' : 'submitted',
       lastSavedAt: new Date().toISOString(),
-      entries: input.entries.map(e => ({
-        studentId: e.studentId,
-        studentName: e.studentId,
-        rollNumber: 0,
-        marksObtained: e.marksObtained,
-        isAbsent: e.isAbsent,
-        remarks: e.remarks,
-      })),
+      entries: input.entries.map(e => {
+        const stud = studentMap.get(e.studentId);
+        return {
+          studentId: e.studentId,
+          studentName: stud ? stud.fullName : e.studentId,
+          rollNumber: stud ? stud.rollNumber : 0,
+          marksObtained: e.marksObtained,
+          isAbsent: e.isAbsent,
+          remarks: e.remarks,
+        };
+      }),
     };
     await setDoc(doc(db!, 'marksRegisters', regId), register);
     return register;
@@ -389,14 +431,16 @@ export class FirestoreRepository implements DataProvider {
 
   public async createIncident(input: NewIncidentInput, actor: StaffUser): Promise<IncidentRecord> {
     ensureFirebaseReady();
+    const studDoc = await getDoc(doc(db!, 'students', input.studentId));
+    const stud = studDoc.exists() ? (studDoc.data() as StudentRecord) : null;
     const incidentId = `inc-${Date.now()}`;
     const inc: IncidentRecord = {
       id: incidentId,
       studentId: input.studentId,
-      studentName: input.studentId,
-      classId: 'class-10-a',
-      classLabel: 'Class 10-A',
-      date: new Date().toISOString().split('T')[0],
+      studentName: stud ? stud.fullName : input.studentId,
+      classId: stud ? stud.classId : 'class-10-a',
+      classLabel: stud ? stud.classLabel : 'Class 10-A',
+      date: getSchoolLocalDate(),
       category: input.category,
       severity: input.severity,
       title: input.title,
@@ -434,9 +478,11 @@ export class FirestoreRepository implements DataProvider {
   public async updateAttendancePolicy(policy: Partial<AttendancePolicy>, _actor: StaffUser): Promise<AttendancePolicy> {
     ensureFirebaseReady();
     const ref = doc(db!, 'schoolSettings', 'hhs-settings-jaipur');
-    await updateDoc(ref, { attendancePolicy: policy });
-    const snap = await getDoc(ref);
-    return (snap.data() as SchoolSettings).attendancePolicy;
+    const snapBefore = await getDoc(ref);
+    const existingPolicy = snapBefore.exists() ? (snapBefore.data() as SchoolSettings).attendancePolicy : {};
+    const mergedPolicy = { ...existingPolicy, ...policy };
+    await updateDoc(ref, { attendancePolicy: mergedPolicy });
+    return mergedPolicy as AttendancePolicy;
   }
 
   public async getAcademicYears(): Promise<AcademicYear[]> {
@@ -540,19 +586,64 @@ export class FirestoreRepository implements DataProvider {
     return snap.data() as AssessmentCycle;
   }
 
-  public async getConsolidatedClassMarks(classId: string, assessmentId: string = 'assess-ut1-2025'): Promise<any> {
+  public async getConsolidatedClassMarks(classId: string, assessmentId: string = 'assess-ut1-2025'): Promise<ConsolidatedClassMarks> {
     ensureFirebaseReady();
     const cls = await this.getClassById(classId);
+    if (!cls) throw new Error(`Class ${classId} not found.`);
     const students = await this.getClassStudents(classId);
-    const subjects = await this.getSubjects();
+    const allSubjects = await this.getSubjects();
+    const subjects = allSubjects.filter(s => s.gradeLevel === cls.grade);
     const assessment = await this.getAssessmentCycleById(assessmentId);
+    if (!assessment) throw new Error(`Assessment ${assessmentId} not found.`);
+
+    // Fetch marks registers for this class & assessment
+    const q = query(
+      collection(db!, 'marksRegisters'),
+      where('classId', '==', classId),
+      where('assessmentId', '==', assessmentId)
+    );
+    const snap = await getDocs(q);
+    const registers = snap.docs.map(d => d.data() as MarksRegister);
+
+    const matrix: Record<string, Record<string, StudentMarkEntry | null>> = {};
+    const subjectSums: Record<string, { total: number; count: number }> = {};
+
+    subjects.forEach(sub => {
+      subjectSums[sub.id] = { total: 0, count: 0 };
+    });
+
+    students.forEach(st => {
+      matrix[st.id] = {};
+    });
+
+    subjects.forEach(sub => {
+      const reg = registers.find(r => r.subjectId === sub.id);
+      if (reg) {
+        reg.entries.forEach(entry => {
+          if (matrix[entry.studentId]) {
+            matrix[entry.studentId][sub.id] = entry;
+            if (entry.marksObtained !== null && !entry.isAbsent) {
+              subjectSums[sub.id].total += entry.marksObtained;
+              subjectSums[sub.id].count += 1;
+            }
+          }
+        });
+      }
+    });
+
+    const subjectAverages: Record<string, number> = {};
+    subjects.forEach(sub => {
+      const info = subjectSums[sub.id];
+      subjectAverages[sub.id] = info.count > 0 ? Math.round((info.total / info.count) * 10) / 10 : 0;
+    });
+
     return {
-      classSection: cls!,
-      assessmentCycle: assessment!,
+      classSection: cls,
+      assessmentCycle: assessment,
       subjects,
       students,
-      matrix: {},
-      subjectAverages: {},
+      matrix,
+      subjectAverages,
     };
   }
 
@@ -564,20 +655,30 @@ export class FirestoreRepository implements DataProvider {
     return snap.data() as IncidentRecord;
   }
 
-  public async getRiskWatchlist(classId?: string): Promise<any[]> {
+  public async getRiskWatchlist(classId?: string): Promise<RiskWatchlistItem[]> {
     ensureFirebaseReady();
     const res = await this.getStudents(classId ? { classId } : undefined);
-    return res.items
-      .filter(s => s.activeFlags && s.activeFlags.length > 0)
-      .map(s => ({
+    const students = res.items.filter(s => s.activeFlags && s.activeFlags.length > 0);
+
+    return students.map(s => {
+      const flag0 = s.activeFlags[0];
+      const primaryTrigger = flag0 ? flag0.title : 'Care Alert';
+      let consecutiveAbsences = 0;
+      let academicDropPercent = 0;
+      if (flag0?.code === 'ATT-01') consecutiveAbsences = 3;
+      if (flag0?.code === 'ACAD-04') academicDropPercent = 28;
+
+      return {
         student: s,
-        primaryTrigger: s.activeFlags[0]?.title || 'Care Alert',
-        consecutiveAbsences: 0,
+        primaryTrigger,
+        consecutiveAbsences,
         attendanceRate: s.attendancePercentage,
-        academicDropPercent: 0,
+        academicDropPercent,
         flagCount: s.activeFlags.length,
-        followUpStatus: 'pending',
-      }));
+        mentorAssigned: s.classLabel ? `Tutor (${s.classLabel})` : 'Assigned Class Tutor',
+        followUpStatus: flag0?.code === 'ATT-01' ? 'pending' : 'in_progress',
+      };
+    });
   }
 }
 

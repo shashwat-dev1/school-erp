@@ -1,11 +1,14 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import { useData } from '../../context/DataContext';
 import { PageHeader } from '../../components/layout/PageHeader';
 import { LoadingState } from '../../components/feedback/LoadingState';
 import { ErrorBanner } from '../../components/feedback/ErrorBanner';
+import { AccessDenied } from '../error/AccessDenied';
 import { Modal } from '../../components/ui/Modal';
+import { Permissions } from '../../domain/permissions';
+import { getSchoolLocalDate } from '../../domain/policy';
 import type { ClassSection, AttendanceState } from '../../domain/types';
 import {
   CheckCircle2,
@@ -30,12 +33,10 @@ export const DailyAttendanceRegister: React.FC = () => {
   const { provider } = useData();
 
   const [classes, setClasses] = useState<ClassSection[]>([]);
-  const [selectedClassId, setSelectedClassId] = useState<string>(
-    paramClassId || currentUser?.assignedClassId || 'class-10-a'
-  );
-  const [selectedDate, setSelectedDate] = useState<string>(
-    new Date().toISOString().split('T')[0]
-  );
+  // Fail-closed initial class selection: if class_teacher, only their assignedClassId; if principal, param or first class
+  const initialClassId = paramClassId || currentUser?.assignedClassId || (currentUser?.role === 'principal' ? 'class-10-a' : '');
+  const [selectedClassId, setSelectedClassId] = useState<string>(initialClassId);
+  const [selectedDate, setSelectedDate] = useState<string>(getSchoolLocalDate());
   const [activeClass, setActiveClass] = useState<ClassSection | null>(null);
   const [attendanceRows, setAttendanceRows] = useState<AttendanceDraftRow[]>([]);
   const [isLoading, setIsLoading] = useState<boolean>(true);
@@ -179,6 +180,35 @@ export const DailyAttendanceRegister: React.FC = () => {
     }
   };
 
+  // Section clearance check
+  const isAuthorized = selectedClassId
+    ? Permissions.canMarkAttendance(currentUser, selectedClassId)
+    : false;
+
+  const availableClasses = useMemo(() => {
+    if (!currentUser) return [];
+    if (currentUser.role === 'principal' || currentUser.role === 'admin') {
+      return classes;
+    }
+    if (currentUser.role === 'class_teacher' && currentUser.assignedClassId) {
+      return classes.filter(c => c.id === currentUser.assignedClassId);
+    }
+    return [];
+  }, [classes, currentUser]);
+
+  if (!currentUser || !selectedClassId || !isAuthorized) {
+    return (
+      <AccessDenied
+        title="Attendance Roll-Call Unauthorized"
+        message={
+          currentUser?.role === 'class_teacher'
+            ? `Your assigned homeroom is ${currentUser.assignedClassId || 'unassigned'}. You do not have authorization to mark attendance for ${selectedClassId || 'another section'}.`
+            : "Only assigned class teachers and the school principal have authorization to mark homeroom daily attendance registers."
+        }
+      />
+    );
+  }
+
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
       <PageHeader
@@ -264,8 +294,9 @@ export const DailyAttendanceRegister: React.FC = () => {
               }}
               className="hhs-select"
               style={{ width: '180px' }}
+              disabled={currentUser.role === 'class_teacher'}
             >
-              {classes.map(c => (
+              {availableClasses.map(c => (
                 <option key={c.id} value={c.id}>
                   {c.label} ({c.studentCount} students)
                 </option>

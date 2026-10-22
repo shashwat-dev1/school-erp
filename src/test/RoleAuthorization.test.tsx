@@ -22,7 +22,7 @@ describe('Role Authorization & Security Boundary Suite', () => {
     localStorage.setItem('hanujai_demo_user_id', staffUser.id);
   };
 
-  it('Principal Dashboard renders whole-school oversight (760 enrollment, all-class attendance)', async () => {
+  it('Principal Dashboard renders whole-school oversight (1,000 enrollment, all-class attendance)', async () => {
     const principal = initialStaff.find(s => s.role === 'principal')!;
     setupUserSession(principal);
 
@@ -42,8 +42,8 @@ describe('Role Authorization & Security Boundary Suite', () => {
       expect(screen.getByText(/Class-Wise Roll-Call Completion/i)).toBeInTheDocument();
     });
 
-    // Check that active enrollment derivation is ~760
-    expect(screen.getByText(/760/i)).toBeInTheDocument();
+    // Check that active enrollment derivation is 1,000 (20 sections × 50 students)
+    expect(screen.getByText(/1000/i)).toBeInTheDocument();
   });
 
   it('Office Staff Dashboard renders operational directory lookup without teacher-specific marks registers', async () => {
@@ -226,5 +226,87 @@ describe('Role Authorization & Security Boundary Suite', () => {
     expect(isMorningRollCallWindowOpen('08:00')).toBe(true);
     expect(isMorningRollCallWindowOpen('07:44')).toBe(false);
     expect(isMorningRollCallWindowOpen('09:16')).toBe(false);
+  });
+
+  it('Permissions: canViewRiskWatchlist fails closed without explicit classId for Class Teacher', () => {
+    const classTeacher = initialStaff.find(s => s.role === 'class_teacher')!;
+    const subjectTeacher = initialStaff.find(s => s.role === 'subject_teacher')!;
+    const principal = initialStaff.find(s => s.role === 'principal')!;
+
+    // Principal can view without or with classId
+    expect(Permissions.canViewRiskWatchlist(principal)).toBe(true);
+    expect(Permissions.canViewRiskWatchlist(principal, 'class-10-a')).toBe(true);
+
+    // Class Teacher can ONLY view when explicit matching classId is supplied
+    expect(Permissions.canViewRiskWatchlist(classTeacher, classTeacher.assignedClassId)).toBe(true);
+    expect(Permissions.canViewRiskWatchlist(classTeacher, 'class-01-a')).toBe(false);
+    // Crucial P0 test: Missing classId MUST fail closed to prevent whole-school risk leakage
+    expect(Permissions.canViewRiskWatchlist(classTeacher)).toBe(false);
+
+    // Subject Teacher cannot view risk watchlist
+    expect(Permissions.canViewRiskWatchlist(subjectTeacher)).toBe(false);
+    expect(Permissions.canViewRiskWatchlist(subjectTeacher, 'class-10-a')).toBe(false);
+  });
+
+  it('Permissions: canViewStudentReportCard restricts cumulative report cards to Principal, Office, and assigned Class Teacher', () => {
+    const principal = initialStaff.find(s => s.role === 'principal')!;
+    const officeAdmin = initialStaff.find(s => s.role === 'office_admin')!;
+    const classTeacher10A = initialStaff.find(s => s.role === 'class_teacher' && s.assignedClassId === 'class-10-a')!;
+    const subjectTeacher = initialStaff.find(s => s.role === 'subject_teacher')!; // Alok Saxena (Math 10-A, 10-B, 09-A)
+
+    const student10A = { classId: 'class-10-a' } as any;
+    const student01A = { classId: 'class-01-a' } as any;
+
+    // Principal and Office have school-wide clearance
+    expect(Permissions.canViewStudentReportCard(principal, student10A)).toBe(true);
+    expect(Permissions.canViewStudentReportCard(officeAdmin, student01A)).toBe(true);
+
+    // Class Teacher has clearance for their section only
+    expect(Permissions.canViewStudentReportCard(classTeacher10A, student10A)).toBe(true);
+    expect(Permissions.canViewStudentReportCard(classTeacher10A, student01A)).toBe(false);
+
+    // Subject Teacher does NOT have clearance for cumulative 5-subject report cards (even for classes they teach)
+    expect(Permissions.canViewStudentReportCard(subjectTeacher, student10A)).toBe(false);
+  });
+
+  it('Security Boundary: Direct URL to unauthorized student report card renders AccessDenied', async () => {
+    const classTeacher10A = initialStaff.find(s => s.role === 'class_teacher' && s.assignedClassId === 'class-10-a')!;
+    setupUserSession(classTeacher10A);
+
+    // Student from Class 01-A
+    render(
+      <MemoryRouter initialEntries={['/reports/report-card/STU-01A-01']}>
+        <AuthProvider>
+          <DataContextProvider>
+            <App />
+          </DataContextProvider>
+        </AuthProvider>
+      </MemoryRouter>
+    );
+
+    await waitFor(() => {
+      expect(screen.getByText(/Report Authorization Boundary/i)).toBeInTheDocument();
+      expect(screen.getByText(/not authorized to access cumulative 5-subject report cards/i)).toBeInTheDocument();
+    });
+  });
+
+  it('Security Boundary: Direct URL to unassigned class attendance register renders AccessDenied', async () => {
+    const classTeacher10A = initialStaff.find(s => s.role === 'class_teacher' && s.assignedClassId === 'class-10-a')!;
+    setupUserSession(classTeacher10A);
+
+    render(
+      <MemoryRouter initialEntries={['/attendance/register/class-01-a']}>
+        <AuthProvider>
+          <DataContextProvider>
+            <App />
+          </DataContextProvider>
+        </AuthProvider>
+      </MemoryRouter>
+    );
+
+    await waitFor(() => {
+      expect(screen.getByText(/Attendance Roll-Call Unauthorized/i)).toBeInTheDocument();
+      expect(screen.getByText(/You are not authorized to mark attendance for section/i)).toBeInTheDocument();
+    });
   });
 });

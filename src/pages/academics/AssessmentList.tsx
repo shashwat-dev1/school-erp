@@ -105,7 +105,7 @@ export const AssessmentList: React.FC = () => {
           {
             name: formName,
             term: formTerm,
-            academicYearId: 'ay-2025-26',
+            academicYearId: 'year-2025-2026',
             maxMarks: Number(formMaxMarks),
             passingMarks: Math.round(Number(formMaxMarks) * 0.33),
             weightagePercent: Number(formWeightage),
@@ -129,7 +129,7 @@ export const AssessmentList: React.FC = () => {
     return <LoadingState message="Loading assessment cycles..." />;
   }
 
-  const role = currentUser?.role || 'principal';
+  const role = currentUser?.role;
   const isSubjectTeacher = role === 'subject_teacher';
 
   return (
@@ -139,7 +139,7 @@ export const AssessmentList: React.FC = () => {
         subtitle="Manage term examination milestones, maximum marks rules, and subject-wise score registration."
         roleScope="Academic Operations"
         breadcrumbs={[
-          { label: 'Operations Hub', to: '/' },
+          { label: currentUser?.role === 'principal' ? 'Academic Oversight' : 'My Teaching', to: '/' },
           { label: 'Assessments', to: '/assessments' },
         ]}
         actions={

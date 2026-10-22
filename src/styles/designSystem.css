@@ -464,7 +464,13 @@ table td.numeric,
   top: 0;
   bottom: 0;
   z-index: 40;
-  transition: transform 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+  transition: transform 0.25s cubic-bezier(0.16, 1, 0.3, 1), visibility 0.25s ease;
+  overflow: hidden;
+}
+
+.hhs-mobile-nav-toggle,
+.hhs-sidebar-close-btn {
+  display: none !important;
 }
 
 .hhs-main-layout {
@@ -511,9 +517,13 @@ table td.numeric,
   .hhs-sidebar {
     transform: translateX(-100%);
     box-shadow: 0 10px 25px -5px rgba(32, 43, 42, 0.25);
+    visibility: hidden;
+    pointer-events: none;
   }
   .hhs-sidebar.mobile-open {
     transform: translateX(0);
+    visibility: visible;
+    pointer-events: auto;
   }
   .hhs-main-layout {
     margin-left: 0;
@@ -531,6 +541,12 @@ table td.numeric,
   .hhs-metrics-grid {
     grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
     gap: 10px;
+  }
+  .hhs-mobile-nav-toggle {
+    display: flex !important;
+  }
+  .hhs-sidebar-close-btn {
+    display: flex !important;
   }
 }
 

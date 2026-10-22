@@ -50,6 +50,7 @@ import {
   initialIncidents,
   initialAuditEvents,
 } from './seedData';
+import { getSchoolLocalDate } from '../../domain/policy';
 
 const STORAGE_KEY = 'hanujai_erp_demo_store_v1';
 
@@ -395,15 +396,22 @@ class DemoRepository implements DataProvider {
     actor: StaffUser
   ): Promise<SubjectAssignment> {
     const store = this.loadStore();
+    if (!assignment.subjectId || !assignment.classId || !assignment.teacherId) {
+      throw new Error('Subject assignment requires subjectId, classId, and teacherId.');
+    }
+    const subj = store.subjects.find(s => s.id === assignment.subjectId);
+    const cls = store.classes.find(c => c.id === assignment.classId);
+    const teacher = store.staff.find(s => s.id === assignment.teacherId);
+
     const newAssign: SubjectAssignment = {
       id: `assign-${Date.now()}`,
-      subjectId: assignment.subjectId || 'sub-math-10',
-      subjectName: assignment.subjectName || 'Mathematics',
-      classId: assignment.classId || 'class-10-a',
-      classLabel: assignment.classLabel || 'Class 10-A',
-      teacherId: assignment.teacherId || 'staff-004',
-      teacherName: assignment.teacherName || 'Shri Alok Saxena',
-      academicYearId: 'year-2025-2026',
+      subjectId: assignment.subjectId,
+      subjectName: assignment.subjectName || subj?.name || assignment.subjectId,
+      classId: assignment.classId,
+      classLabel: assignment.classLabel || cls?.label || assignment.classId,
+      teacherId: assignment.teacherId,
+      teacherName: assignment.teacherName || teacher?.name || assignment.teacherId,
+      academicYearId: assignment.academicYearId || 'year-2025-2026',
     };
 
     // Remove any collision for this subject + class
@@ -592,8 +600,12 @@ class DemoRepository implements DataProvider {
   // Attendance Registers & Policy
   public async getAttendanceSessions(date?: string): Promise<AttendanceSession[]> {
     const store = this.loadStore();
-    const targetDate = date || new Date().toISOString().split('T')[0];
-    return store.attendanceSessions.filter(s => s.date === targetDate);
+    const targetDate = date || getSchoolLocalDate();
+    const matches = store.attendanceSessions.filter(s => s.date === targetDate);
+    if (matches.length === 0 && !date && store.attendanceSessions.length > 0) {
+      return store.attendanceSessions;
+    }
+    return matches;
   }
 
   public async getAttendanceSession(classId: string, date: string): Promise<AttendanceSession | null> {
@@ -1117,7 +1129,7 @@ class DemoRepository implements DataProvider {
       if (classId && s.classId !== classId) return;
       if (s.activeFlags && s.activeFlags.length > 0) {
         const flag0 = s.activeFlags[0];
-        let primaryTrigger = flag0.title;
+        const primaryTrigger = flag0.title;
         let consecutiveAbsences = 0;
         let academicDropPercent = 0;
 

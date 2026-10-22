@@ -166,8 +166,8 @@ UI components **never invoke Firebase SDK methods directly**; they invoke method
 ## 5. Demo-Data Architecture & Local Persistence
 
 1. **Deterministic Generation**:
-   - Generates exactly 10 classes (`Class 1` through `Class 10`) with 2 sections each (`Section A` and `Section B`).
-   - 391 synthetic students across Grades 7 through 12, with realistic Indian names (Aarav, Diya, Rohan, Ananya, etc.) and valid roll numbers.
+   - Generates exactly 10 classes (`Class 1` through `Class 10`) with 2 sections each (`Section A` and `Section B`), totaling 20 class sections.
+   - 1,000 synthetic students across Classes 1 through 10 (50 students per section, roll numbers 1 to 50), with realistic Indian names (Aarav, Diya, Rohan, Ananya, etc.) and valid admission numbers.
    - 4 staff accounts pre-configured for instant prototype evaluation:
      - `principal@hanujai.edu.in` (Principal / Admin)
      - `admin@hanujai.edu.in` (Office Admin)
