@@ -2,19 +2,15 @@ import React from 'react';
 import { NavLink } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import {
-  LayoutDashboard,
+  Home,
   Users,
-  GraduationCap,
   CalendarCheck,
-  FileCheck2,
-  AlertOctagon,
-  FileText,
-  ShieldAlert,
+  Award,
   Settings,
+  FileText,
+  FileCheck2,
   BookOpen,
-  UserCheck,
-  Layers,
-  AlertTriangle,
+  MessageSquare,
   X,
 } from 'lucide-react';
 import logoSvg from '../../assets/logo.svg';
@@ -29,13 +25,25 @@ export const Sidebar: React.FC<SidebarProps> = ({ isMobileOpen = false, onClose 
   const role = currentUser?.role;
   const assignedClassId = currentUser?.assignedClassId;
   const assignedClassLabel = currentUser?.assignedClassLabel || (assignedClassId ? `Class ${assignedClassId.toUpperCase()}` : '');
-  const primaryClass = currentUser?.assignedClasses?.[0];
+  const primaryClass = currentUser?.assignedClasses?.[0] || 'class-10-a';
+
+  // Role label in plain everyday English
+  const roleLabel =
+    role === 'principal'
+      ? 'Principal'
+      : role === 'office_admin' || role === 'office_staff'
+      ? 'Office Staff'
+      : role === 'class_teacher'
+      ? (assignedClassLabel ? `${assignedClassLabel} Teacher` : 'Class Teacher')
+      : role === 'subject_teacher'
+      ? 'Subject Teacher'
+      : 'School Staff';
 
   return (
     <>
       {isMobileOpen && <div className="hhs-sidebar-backdrop" onClick={onClose} />}
       <aside className={`hhs-sidebar ${isMobileOpen ? 'mobile-open' : ''}`}>
-        {/* Institutional Brand Header */}
+        {/* Brand Header */}
         <div
           style={{
             padding: '12px 16px',
@@ -47,11 +55,16 @@ export const Sidebar: React.FC<SidebarProps> = ({ isMobileOpen = false, onClose 
             minHeight: '56px',
           }}
         >
-          <img
-            src={logoSvg}
-            alt="HanuJai High School"
-            style={{ height: '36px', maxWidth: '160px', objectFit: 'contain', display: 'block' }}
-          />
+          <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+            <img
+              src={logoSvg}
+              alt="HanuJai High School"
+              style={{ height: '34px', maxWidth: '160px', objectFit: 'contain', display: 'block' }}
+            />
+            <span style={{ position: 'absolute', width: '1px', height: '1px', padding: 0, margin: '-1px', overflow: 'hidden', clip: 'rect(0, 0, 0, 0)', border: 0 }}>
+              HanuJai High School
+            </span>
+          </div>
           {onClose && (
             <button
               onClick={onClose}
@@ -64,273 +77,164 @@ export const Sidebar: React.FC<SidebarProps> = ({ isMobileOpen = false, onClose 
                 height: '28px',
                 flexShrink: 0,
               }}
-              aria-label="Close navigation"
+              aria-label="Close menu"
             >
               <X size={16} />
             </button>
           )}
         </div>
 
-      {/* Role Scope Banner */}
-      <div
-        style={{
-          padding: '8px 16px',
-          backgroundColor: 'var(--hhs-surface-muted)',
-          borderBottom: '1px solid var(--hhs-border)',
-          fontSize: '0.72rem',
-          textTransform: 'uppercase',
-          letterSpacing: '0.04em',
-          fontWeight: 700,
-          color: 'var(--hhs-text-secondary)',
-          display: 'flex',
-          justifyContent: 'space-between',
-          alignItems: 'center',
-        }}
-      >
-        <span>Desk:</span>
-        <span style={{ color: 'var(--hhs-primary)' }}>
-          {role === 'principal'
-            ? 'Principal Desk'
-            : role === 'office_admin' || role === 'office_staff'
-            ? 'Office Registrar'
-            : role === 'class_teacher'
-            ? (assignedClassLabel ? `${assignedClassLabel} Tutor` : 'Class Tutor')
-            : role === 'subject_teacher'
-            ? 'Subject Faculty'
-            : 'Staff Portal'}
-        </span>
-      </div>
+        {/* User Context Banner */}
+        <div
+          style={{
+            padding: '8px 16px',
+            backgroundColor: 'var(--hhs-surface-muted)',
+            borderBottom: '1px solid var(--hhs-border)',
+            fontSize: '0.72rem',
+            color: 'var(--hhs-text-secondary)',
+            display: 'flex',
+            justifyContent: 'space-between',
+            alignItems: 'center',
+          }}
+        >
+          <span>Role:</span>
+          <span style={{ color: 'var(--hhs-primary)', fontWeight: 600 }}>{roleLabel}</span>
+        </div>
 
-      {/* Navigation Links */}
-      <nav style={{ flex: 1, overflowY: 'auto', padding: '12px 8px' }}>
-        <ul style={{ listStyle: 'none', display: 'flex', flexDirection: 'column', gap: '2px' }}>
-          
-          {/* Operations Hub (All roles land on their dedicated workspace) */}
-          <li>
-            <SidebarItem
-              to="/"
-              icon={<LayoutDashboard size={16} />}
-              label={
-                role === 'principal'
-                  ? 'Operations Hub'
-                  : role === 'office_admin' || role === 'office_staff'
-                  ? 'Office Desk'
-                  : role === 'class_teacher'
-                  ? (assignedClassLabel ? `${assignedClassLabel} Desk` : 'Classroom Desk')
-                  : role === 'subject_teacher'
-                  ? 'Teaching Desk'
-                  : 'Staff Workspace'
-              }
-              end
-            />
-          </li>
-
-          {/* 1. PRINCIPAL WORKSPACE */}
-          {role === 'principal' && (
-            <>
-              <li>
-                <SidebarItem to="/students" icon={<GraduationCap size={16} />} label="Student Records" />
-              </li>
-              <li>
-                <SidebarItem to="/attendance" icon={<CalendarCheck size={16} />} label="Attendance Register" />
-              </li>
-              <li>
-                <SidebarItem to="/attendance/corrections" icon={<UserCheck size={16} />} label="Dual-Custody Approvals" />
-              </li>
-              <li>
-                <SidebarItem to="/classes" icon={<BookOpen size={16} />} label="Classes &amp; Sections" />
-              </li>
-              <li>
-                <SidebarItem to="/assessments" icon={<FileCheck2 size={16} />} label="Assessment Cycles" />
-              </li>
-              <li>
-                <SidebarItem to="/risk-watchlist" icon={<AlertTriangle size={16} />} label="Risk Watchlist" />
-              </li>
-              <li>
-                <SidebarItem to="/behaviour" icon={<AlertOctagon size={16} />} label="Incident &amp; Care Log" />
-              </li>
-              <li>
-                <SidebarItem to="/reports" icon={<FileText size={16} />} label="Institutional Reports" />
-              </li>
-
-              <div
-                style={{
-                  padding: '16px 12px 6px',
-                  fontSize: '0.68rem',
-                  textTransform: 'uppercase',
-                  letterSpacing: '0.06em',
-                  color: 'var(--hhs-text-muted)',
-                  fontWeight: 700,
-                }}
-              >
-                Governance &amp; Setup
-              </div>
-              <li>
-                <SidebarItem to="/staff" icon={<Users size={16} />} label="Staff Directory" />
-              </li>
-              <li>
-                <SidebarItem to="/admin/class-teachers" icon={<UserCheck size={16} />} label="Class Tutors" />
-              </li>
-              <li>
-                <SidebarItem to="/admin/subject-teachers" icon={<Layers size={16} />} label="Subject Matrix" />
-              </li>
-              <li>
-                <SidebarItem to="/admin/roles" icon={<BookOpen size={16} />} label="RBAC Policy Matrix" />
-              </li>
-              <li>
-                <SidebarItem to="/audit-log" icon={<ShieldAlert size={16} />} label="System Audit Log" />
-              </li>
-              <li>
-                <SidebarItem to="/settings/system-config" icon={<Settings size={16} />} label="School Identity &amp; Setup" />
-              </li>
-              <li>
-                <SidebarItem to="/settings/attendance-policy" icon={<CalendarCheck size={16} />} label="Attendance Policy" />
-              </li>
-            </>
-          )}
-
-          {/* 2. OFFICE ADMINISTRATOR WORKSPACE */}
-          {(role === 'office_admin' || role === 'office_staff') && (
-            <>
-              <li>
-                <SidebarItem to="/students" icon={<GraduationCap size={16} />} label="Student Directory &amp; Admissions" />
-              </li>
-              <li>
-                <SidebarItem to="/attendance" icon={<CalendarCheck size={16} />} label="School Attendance Muster" />
-              </li>
-              <li>
-                <SidebarItem to="/classes" icon={<BookOpen size={16} />} label="Classes &amp; Section Rosters" />
-              </li>
-              <li>
-                <SidebarItem to="/reports" icon={<FileText size={16} />} label="Official School Reports" />
-              </li>
-              <li>
-                <SidebarItem to="/behaviour" icon={<AlertOctagon size={16} />} label="Pastoral Care Directory" />
-              </li>
-
-              <div
-                style={{
-                  padding: '16px 12px 6px',
-                  fontSize: '0.68rem',
-                  textTransform: 'uppercase',
-                  letterSpacing: '0.06em',
-                  color: 'var(--hhs-text-muted)',
-                  fontWeight: 700,
-                }}
-              >
-                Administrative Registry
-              </div>
-              <li>
-                <SidebarItem to="/staff" icon={<Users size={16} />} label="Faculty &amp; Staff Directory" />
-              </li>
-              <li>
-                <SidebarItem to="/admin/class-teachers" icon={<UserCheck size={16} />} label="Class Tutor Allocations" />
-              </li>
-              <li>
-                <SidebarItem to="/admin/subject-teachers" icon={<Layers size={16} />} label="Subject Matrix" />
-              </li>
-              <li>
-                <SidebarItem to="/admin/roles" icon={<BookOpen size={16} />} label="RBAC Clearance Matrix" />
-              </li>
-            </>
-          )}
-
-          {/* 3. CLASS TEACHER WORKSPACE */}
-          {role === 'class_teacher' && (
-            <>
-              {assignedClassId ? (
-                <>
-                  <li>
-                    <SidebarItem
-                      to={`/attendance/register/${assignedClassId}`}
-                      icon={<CalendarCheck size={16} />}
-                      label={`Mark ${assignedClassLabel} Roll`}
-                    />
-                  </li>
-                  <li>
-                    <SidebarItem
-                      to={`/classes/${assignedClassId}/students`}
-                      icon={<Users size={16} />}
-                      label={`${assignedClassLabel} Roll Roster`}
-                    />
-                  </li>
-                  <li>
-                    <SidebarItem
-                      to={`/classes/${assignedClassId}/performance`}
-                      icon={<FileCheck2 size={16} />}
-                      label={`${assignedClassLabel} Performance`}
-                    />
-                  </li>
-                  <li>
-                    <SidebarItem to="/attendance/corrections" icon={<UserCheck size={16} />} label="Late Corrections" />
-                  </li>
-                  <li>
-                    <SidebarItem to="/risk-watchlist" icon={<AlertTriangle size={16} />} label={`${assignedClassLabel} Watchlist`} />
-                  </li>
-                </>
-              ) : (
-                <li style={{ padding: '8px 12px', fontSize: '0.74rem', color: 'var(--hhs-text-muted)', fontStyle: 'italic' }}>
-                  No classroom section assigned.
-                </li>
-              )}
-              <li>
-                <SidebarItem to="/behaviour" icon={<AlertOctagon size={16} />} label="Pastoral Care Log" />
-              </li>
-              <li>
-                <SidebarItem to="/students" icon={<GraduationCap size={16} />} label="Student Dossiers" />
-              </li>
-              <li>
-                <SidebarItem to="/reports" icon={<FileText size={16} />} label="Class Reports" />
-              </li>
-            </>
-          )}
-
-          {/* 4. SUBJECT TEACHER WORKSPACE */}
-          {role === 'subject_teacher' && (
-            <>
-              <li>
-                <SidebarItem to="/assessments" icon={<FileCheck2 size={16} />} label="Marks Entry Registers" />
-              </li>
-              {primaryClass && (
+        {/* Clean, Role-Specific Task Navigation (Max 5 items per role) */}
+        <nav style={{ flex: 1, overflowY: 'auto', padding: '12px 8px' }}>
+          <ul style={{ listStyle: 'none', display: 'flex', flexDirection: 'column', gap: '3px' }}>
+            
+            {/* 1. PRINCIPAL WORKSPACE (5 items) */}
+            {(role === 'principal' || role === 'admin') && (
+              <>
                 <li>
-                  <SidebarItem
-                    to={`/classes/${primaryClass}/performance`}
-                    icon={<Layers size={16} />}
-                    label="Subject Performance"
-                  />
+                  <SidebarItem to="/" icon={<Home size={16} />} label="Home" end />
                 </li>
-              )}
-              <li>
-                <SidebarItem to="/students" icon={<GraduationCap size={16} />} label="Enrolled Students" />
-              </li>
-              <li>
-                <SidebarItem to="/behaviour" icon={<AlertOctagon size={16} />} label="Pastoral Observations" />
-              </li>
-              <li>
-                <SidebarItem to="/reports" icon={<FileText size={16} />} label="Subject Reports" />
-              </li>
-            </>
-          )}
+                <li>
+                  <SidebarItem to="/students" icon={<Users size={16} />} label="Students" />
+                </li>
+                <li>
+                  <SidebarItem to="/attendance" icon={<CalendarCheck size={16} />} label="Attendance" />
+                </li>
+                <li>
+                  <SidebarItem to="/academics/assessments" icon={<Award size={16} />} label="Results" />
+                </li>
+                <li>
+                  <SidebarItem to="/settings/system-config" icon={<Settings size={16} />} label="School Setup" />
+                </li>
+              </>
+            )}
 
-        </ul>
-      </nav>
+            {/* 2. OFFICE STAFF WORKSPACE (5 items) */}
+            {(role === 'office_admin' || role === 'office_staff') && (
+              <>
+                <li>
+                  <SidebarItem to="/" icon={<Home size={16} />} label="Home" end />
+                </li>
+                <li>
+                  <SidebarItem to="/students" icon={<Users size={16} />} label="Students" />
+                </li>
+                <li>
+                  <SidebarItem to="/attendance" icon={<CalendarCheck size={16} />} label="Attendance" />
+                </li>
+                <li>
+                  <SidebarItem to="/academics/assessments" icon={<Award size={16} />} label="Results" />
+                </li>
+                <li>
+                  <SidebarItem to="/reports" icon={<FileText size={16} />} label="Reports" />
+                </li>
+              </>
+            )}
 
-      {/* Footer Identity */}
-      <div
-        style={{
-          padding: '12px 16px',
-          borderTop: '1px solid var(--hhs-border)',
-          backgroundColor: 'var(--hhs-surface)',
-          fontSize: '0.72rem',
-          color: 'var(--hhs-text-secondary)',
-          lineHeight: 1.3,
-        }}
-      >
-        <span style={{ fontWeight: 600, color: 'var(--hhs-text-primary)' }}>HanuJai ERP v1.0</span>
-        <br />
-        Single-School Deployment
-      </div>
-    </aside>
+            {/* 3. CLASS TEACHER WORKSPACE (4 items) */}
+            {role === 'class_teacher' && (
+              <>
+                <li>
+                  <SidebarItem to="/" icon={<Home size={16} />} label="My Class" end />
+                </li>
+                {assignedClassId ? (
+                  <>
+                    <li>
+                      <SidebarItem
+                        to={`/attendance/register/${assignedClassId}`}
+                        icon={<CalendarCheck size={16} />}
+                        label="Attendance"
+                      />
+                    </li>
+                    <li>
+                      <SidebarItem
+                        to={`/performance/classes/${assignedClassId}`}
+                        icon={<Award size={16} />}
+                        label="Results"
+                      />
+                    </li>
+                  </>
+                ) : (
+                  <li>
+                    <span
+                      style={{
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: '10px',
+                        padding: '9px 12px',
+                        fontSize: '0.82rem',
+                        color: 'var(--hhs-text-muted)',
+                        fontStyle: 'italic',
+                      }}
+                    >
+                      No Class Assigned
+                    </span>
+                  </li>
+                )}
+                <li>
+                  <SidebarItem to="/behaviour" icon={<MessageSquare size={16} />} label="Student Notes" />
+                </li>
+              </>
+            )}
+
+            {/* 4. SUBJECT TEACHER WORKSPACE (4 items) */}
+            {role === 'subject_teacher' && (
+              <>
+                <li>
+                  <SidebarItem to="/" icon={<BookOpen size={16} />} label="My Classes" end />
+                </li>
+                <li>
+                  <SidebarItem to="/academics/assessments" icon={<FileCheck2 size={16} />} label="Enter Marks" />
+                </li>
+                {primaryClass ? (
+                  <li>
+                    <SidebarItem
+                      to={`/performance/classes/${primaryClass}`}
+                      icon={<Award size={16} />}
+                      label="Results"
+                    />
+                  </li>
+                ) : null}
+                <li>
+                  <SidebarItem to="/behaviour" icon={<MessageSquare size={16} />} label="Student Notes" />
+                </li>
+              </>
+            )}
+
+          </ul>
+        </nav>
+
+        {/* Clean Footer Info */}
+        <div
+          style={{
+            padding: '12px 16px',
+            borderTop: '1px solid var(--hhs-border)',
+            backgroundColor: 'var(--hhs-surface)',
+            fontSize: '0.72rem',
+            color: 'var(--hhs-text-secondary)',
+            lineHeight: 1.4,
+          }}
+        >
+          <div style={{ fontWeight: 600, color: 'var(--hhs-text-primary)' }}>HanuJai High School ERP</div>
+          <div>Session 2025–2026</div>
+        </div>
+      </aside>
     </>
   );
 };
@@ -351,18 +255,18 @@ const SidebarItem: React.FC<SidebarItemProps> = ({ to, icon, label, end }) => {
         display: 'flex',
         alignItems: 'center',
         gap: '10px',
-        padding: '9px 12px',
+        padding: '8px 12px',
         borderRadius: 'var(--hhs-radius-base)',
         fontSize: '0.84rem',
-        fontWeight: isActive ? 700 : 500,
+        fontWeight: isActive ? 600 : 500,
         textDecoration: 'none',
-        color: isActive ? 'var(--hhs-primary)' : 'var(--hhs-text-primary)',
+        color: isActive ? 'var(--hhs-primary)' : 'var(--hhs-text-secondary)',
         backgroundColor: isActive ? 'var(--hhs-primary-light)' : 'transparent',
         borderLeft: isActive ? '3px solid var(--hhs-primary)' : '3px solid transparent',
-        transition: 'background-color 0.15s ease, color 0.15s ease',
+        transition: 'all 0.15s ease',
       })}
     >
-      <span style={{ display: 'inline-flex', opacity: 0.85 }}>{icon}</span>
+      <span style={{ display: 'inline-flex', opacity: 0.9 }}>{icon}</span>
       <span>{label}</span>
     </NavLink>
   );

@@ -1,7 +1,7 @@
 /**
- * HanuJai High School ERP — Office Registrar & Operations Desk
- * Tailored for administrative staff: Student directory quick-search, admission management,
- * parent visitor inquiries, section rosters, and statutory report dispatch.
+ * HanuJai High School ERP — Office Staff Dashboard
+ * Tailored for administrative staff and parent inquiries.
+ * Focus: Student lookup, attendance status, academic progress, and report generation.
  */
 
 import React, { useState, useEffect } from 'react';
@@ -17,13 +17,12 @@ import type { ClassSection, StudentRecord, AttendanceSession } from '../../domai
 import {
   Users,
   Search,
-  UserPlus,
   FileText,
   CalendarCheck,
-  Building,
-  Phone,
+  AlertCircle,
   ArrowRight,
-  ExternalLink,
+  Printer,
+  CheckCircle,
 } from 'lucide-react';
 
 export const OfficeDashboard: React.FC = () => {
@@ -40,6 +39,7 @@ export const OfficeDashboard: React.FC = () => {
 
   // Rapid student search for parent visitors
   const [searchQuery, setSearchQuery] = useState<string>('');
+  const [selectedStudent, setSelectedStudent] = useState<StudentRecord | null>(null);
 
   useEffect(() => {
     let isMounted = true;
@@ -60,7 +60,7 @@ export const OfficeDashboard: React.FC = () => {
         setAttendanceSessions(attRes);
       } catch (err: unknown) {
         if (!isMounted) return;
-        setError(err instanceof Error ? err.message : 'Failed to load office registrar data.');
+        setError(err instanceof Error ? err.message : 'Could not load office data.');
       } finally {
         if (isMounted) setIsLoading(false);
       }
@@ -73,94 +73,81 @@ export const OfficeDashboard: React.FC = () => {
   }, [provider]);
 
   if (isLoading) {
-    return <LoadingState message="Loading administrative ledger, section capacities, and student records..." />;
+    return <LoadingState message="Loading office records..." />;
   }
 
   if (error) {
-    return <ErrorBanner title="Office Workspace Unavailable" message={error} />;
+    return <ErrorBanner title="Could not load office records" message={error} />;
   }
 
   const totalEnrolment = allStudents.length;
-  const totalCapacity = classes.reduce((sum, c) => sum + (c.maxCapacity || 50), 0) || 1000;
-  const capacityUtilization = totalCapacity > 0 ? Math.round((totalEnrolment / totalCapacity) * 100) : 0;
+
+  let totalPresent = 0;
+  let totalAbsent = 0;
+  attendanceSessions.forEach(s => {
+    totalPresent += s.presentCount;
+    totalAbsent += s.absentCount;
+  });
+
+  const pendingSections = classes.filter(
+    cls => !attendanceSessions.some(s => s.classId === cls.id && s.status === 'submitted')
+  );
 
   // Filter students for quick visitor inquiry
-  const filteredStudents = searchQuery.trim()
+  const filteredStudents = searchQuery.trim().length >= 2
     ? allStudents.filter(s =>
         s.fullName.toLowerCase().includes(searchQuery.toLowerCase().trim()) ||
         s.admissionNumber.toLowerCase().includes(searchQuery.toLowerCase().trim()) ||
-        s.primaryPhone.includes(searchQuery.trim())
-      ).slice(0, 6)
+        s.primaryPhone.includes(searchQuery.trim()) ||
+        s.classLabel.toLowerCase().includes(searchQuery.toLowerCase().trim())
+      ).slice(0, 5)
     : [];
 
-  const unsubmittedSections = attendanceSessions.filter(s => s.status !== 'submitted');
-
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
+    <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
       {/* Header */}
       <PageHeader
-        title="Office Registrar & Operations Desk"
-        subtitle={`Student Records & Admissions Administration • ${currentUser?.name}`}
-        roleScope="Office Registrar"
-        breadcrumbs={[{ label: 'Office Desk' }]}
+        title="Home"
+        subtitle={`Session 2025–2026 • HanuJai High School • Welcome, ${currentUser?.name || 'Office Staff'}`}
+        roleScope="Office Staff"
+        breadcrumbs={[{ label: 'Home' }]}
         actions={
-          <div style={{ display: 'flex', gap: '10px' }}>
+          <div style={{ display: 'flex', gap: '8px' }}>
             <button
               onClick={() => navigate('/students')}
-              className="hhs-btn hhs-btn-primary"
-              style={{ display: 'flex', alignItems: 'center', gap: '6px' }}
-            >
-              <UserPlus size={16} />
-              <span>Enroll New Student</span>
-            </button>
-            <button
-              onClick={() => navigate('/reports')}
               className="hhs-btn hhs-btn-secondary"
               style={{ display: 'flex', alignItems: 'center', gap: '6px' }}
             >
-              <FileText size={16} />
-              <span>Official Reports</span>
+              <Users size={15} />
+              <span>Student Directory</span>
+            </button>
+            <button
+              onClick={() => navigate('/reports')}
+              className="hhs-btn hhs-btn-primary"
+              style={{ display: 'flex', alignItems: 'center', gap: '6px' }}
+            >
+              <FileText size={15} />
+              <span>Reports</span>
             </button>
           </div>
         }
       />
 
-      {/* Top Metrics */}
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: '16px' }}>
-        <MetricCard
-          label="Total Active Enrolment"
-          value={totalEnrolment.toString()}
-          subtext={`${capacityUtilization}% of Campus Capacity (${totalCapacity})`}
-          icon={<Users size={20} />}
-          trend={{ value: 'Full Roster Verified', isPositive: true }}
-        />
-        <MetricCard
-          label="Registered Class Sections"
-          value={classes.length.toString()}
-          subtext="Grades 1 through 10 (Sections A & B)"
-          icon={<Building size={20} />}
-        />
-        <MetricCard
-          label="Roll-Call Exception Check"
-          value={`${unsubmittedSections.length} Sections`}
-          subtext={unsubmittedSections.length === 0 ? 'All 20 sections submitted' : 'Pending office follow-up'}
-          icon={<CalendarCheck size={20} />}
-          trend={{ value: unsubmittedSections.length === 0 ? 'Complete' : 'Pending Call', isPositive: unsubmittedSections.length === 0 }}
-        />
-        <MetricCard
-          label="Institutional Registry"
-          value="20 Sections"
-          subtext="Jaipur Central Administrative Roster"
-          icon={<FileText size={20} />}
-        />
-      </div>
-
-      {/* Rapid Student Inquiry Bar for Visiting Parents */}
-      <div className="hhs-card" style={{ padding: '20px', backgroundColor: 'var(--hhs-surface)' }}>
-        <div style={{ marginBottom: '12px' }}>
-          <h3 className="hhs-headline-sm">Rapid Student Lookup (Parent &amp; Visitor Desk)</h3>
+      {/* Parent Inquiry & Student Search Card */}
+      <div
+        className="hhs-card"
+        style={{
+          padding: '16px 20px',
+          border: '1px solid var(--hhs-border)',
+          display: 'flex',
+          flexDirection: 'column',
+          gap: '12px',
+        }}
+      >
+        <div>
+          <h3 className="hhs-headline-sm" style={{ marginBottom: '2px' }}>Parent & Visitor Inquiry</h3>
           <p className="hhs-body-sm" style={{ color: 'var(--hhs-text-secondary)' }}>
-            Instant search across all 20 sections by Student Name, Admission Number, or Guardian Phone.
+            Search by student name, admission number, or guardian phone to view student progress.
           </p>
         </div>
 
@@ -168,85 +155,206 @@ export const OfficeDashboard: React.FC = () => {
           <input
             type="text"
             className="hhs-input"
-            placeholder="Type student name (e.g. Aarav, Sneha), admission # (ADM/2023/1042) or phone..."
+            placeholder="Type student name (e.g. Aarav), admission # (ADM/2023/1042) or phone..."
             value={searchQuery}
-            onChange={e => setSearchQuery(e.target.value)}
+            onChange={e => {
+              setSearchQuery(e.target.value);
+              setSelectedStudent(null);
+            }}
             style={{ paddingLeft: '36px', fontSize: '0.9rem' }}
           />
           <Search
             size={18}
-            style={{ position: 'absolute', left: '12px', top: '50%', transform: 'translateY(-50%)', color: 'var(--hhs-text-muted)' }}
+            style={{ position: 'absolute', left: '12px', top: '50%', transform: 'translateY(-50%)', color: 'var(--hhs-text-secondary)' }}
           />
         </div>
 
-        {searchQuery.trim() && (
-          <div style={{ marginTop: '16px' }}>
+        {/* Live Search Results */}
+        {searchQuery.trim().length >= 2 && !selectedStudent && (
+          <div style={{ borderTop: '1px solid var(--hhs-border)', paddingTop: '10px' }}>
             {filteredStudents.length === 0 ? (
-              <div style={{ padding: '16px', backgroundColor: 'var(--hhs-surface-muted)', borderRadius: 'var(--hhs-radius-base)', fontSize: '0.85rem', color: 'var(--hhs-text-secondary)' }}>
-                No student found matching &ldquo;{searchQuery}&rdquo;. Verify spelling or check archive records.
+              <div style={{ padding: '12px', color: 'var(--hhs-text-secondary)', fontSize: '0.86rem' }}>
+                No students found matching &ldquo;{searchQuery}&rdquo;.
               </div>
             ) : (
-              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '12px' }}>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
                 {filteredStudents.map(student => (
                   <div
                     key={student.id}
-                    onClick={() => navigate(`/students/${student.id}`)}
+                    onClick={() => setSelectedStudent(student)}
                     style={{
-                      padding: '14px',
-                      borderRadius: 'var(--hhs-radius-base)',
-                      border: '1px solid var(--hhs-border)',
-                      backgroundColor: 'var(--hhs-canvas)',
-                      cursor: 'pointer',
                       display: 'flex',
-                      flexDirection: 'column',
-                      gap: '6px',
-                      transition: 'border-color 0.15s ease',
+                      justifyContent: 'space-between',
+                      alignItems: 'center',
+                      padding: '10px 14px',
+                      borderRadius: 'var(--hhs-radius-sm)',
+                      backgroundColor: 'var(--hhs-surface-muted)',
+                      cursor: 'pointer',
+                      transition: 'background-color 0.15s ease',
                     }}
                   >
-                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                      <span style={{ fontWeight: 700, fontSize: '0.9rem' }}>{student.fullName}</span>
-                      <StatusBadge status="active" label={student.classLabel} />
+                    <div>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                        <span style={{ fontWeight: 600, fontSize: '0.88rem' }}>{student.fullName}</span>
+                        <span style={{ fontSize: '0.78rem', color: 'var(--hhs-text-secondary)' }}>
+                          {student.classLabel} • Roll #{student.rollNumber}
+                        </span>
+                      </div>
+                      <div style={{ fontSize: '0.78rem', color: 'var(--hhs-text-secondary)', marginTop: '2px' }}>
+                        Adm #{student.admissionNumber} • Phone: {student.primaryPhone} ({student.guardianName})
+                      </div>
                     </div>
-                    <div style={{ fontSize: '0.78rem', color: 'var(--hhs-text-secondary)' }}>
-                      Adm #{student.admissionNumber} • Roll #{student.rollNumber}
-                    </div>
-                    <div style={{ fontSize: '0.78rem', color: 'var(--hhs-text-secondary)', display: 'flex', alignItems: 'center', gap: '6px' }}>
-                      <Phone size={12} />
-                      <span>{student.primaryPhone} ({student.guardianName})</span>
-                    </div>
-                    <div style={{ display: 'flex', justifyContent: 'flex-end', marginTop: '4px' }}>
-                      <span style={{ fontSize: '0.76rem', color: 'var(--hhs-primary)', fontWeight: 600, display: 'flex', alignItems: 'center', gap: '4px' }}>
-                        <span>Open Dossier</span>
-                        <ExternalLink size={12} />
-                      </span>
-                    </div>
+                    <button
+                      className="hhs-btn hhs-btn-secondary hhs-btn-sm"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setSelectedStudent(student);
+                      }}
+                    >
+                      <span>Show Summary</span>
+                    </button>
                   </div>
                 ))}
               </div>
             )}
           </div>
         )}
+
+        {/* Selected Student Instant Summary for Parent Visit */}
+        {selectedStudent && (
+          <div
+            style={{
+              marginTop: '6px',
+              padding: '16px',
+              borderRadius: 'var(--hhs-radius-base)',
+              backgroundColor: 'var(--hhs-canvas)',
+              border: '1px solid var(--hhs-primary-light)',
+            }}
+          >
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', flexWrap: 'wrap', gap: '10px', marginBottom: '14px' }}>
+              <div>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                  <h4 style={{ margin: 0, fontSize: '1.05rem', fontWeight: 700 }}>{selectedStudent.fullName}</h4>
+                  <span className="hhs-badge hhs-badge-primary">{selectedStudent.classLabel}</span>
+                </div>
+                <p style={{ margin: '3px 0 0', fontSize: '0.8rem', color: 'var(--hhs-text-secondary)' }}>
+                  Admission #{selectedStudent.admissionNumber} • Roll #{selectedStudent.rollNumber} • Guardian: {selectedStudent.guardianName} ({selectedStudent.primaryPhone})
+                </p>
+              </div>
+
+              <div style={{ display: 'flex', gap: '8px' }}>
+                <button
+                  onClick={() => navigate(`/reports/ptm-slip/${selectedStudent.id}`)}
+                  className="hhs-btn hhs-btn-secondary hhs-btn-sm"
+                  style={{ display: 'flex', alignItems: 'center', gap: '5px' }}
+                >
+                  <Printer size={13} />
+                  <span>PTM Slip</span>
+                </button>
+                <button
+                  onClick={() => navigate(`/reports/report-card/${selectedStudent.id}`)}
+                  className="hhs-btn hhs-btn-secondary hhs-btn-sm"
+                  style={{ display: 'flex', alignItems: 'center', gap: '5px' }}
+                >
+                  <FileText size={13} />
+                  <span>Report Card</span>
+                </button>
+                <button
+                  onClick={() => navigate(`/students/${selectedStudent.id}`)}
+                  className="hhs-btn hhs-btn-primary hhs-btn-sm"
+                  style={{ display: 'flex', alignItems: 'center', gap: '5px' }}
+                >
+                  <span>Full Profile</span>
+                  <ArrowRight size={13} />
+                </button>
+              </div>
+            </div>
+
+            {/* Quick 3-metric snapshot for parent */}
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: '12px' }}>
+              <div style={{ padding: '10px 12px', borderRadius: 'var(--hhs-radius-sm)', backgroundColor: 'var(--hhs-surface-card)', border: '1px solid var(--hhs-border)' }}>
+                <div style={{ fontSize: '0.74rem', color: 'var(--hhs-text-secondary)' }}>Attendance Rate</div>
+                <div className="tnum" style={{ fontSize: '1.15rem', fontWeight: 700, color: selectedStudent.attendancePercentage < 75 ? 'var(--hhs-danger)' : 'var(--hhs-text-primary)' }}>
+                  {selectedStudent.attendancePercentage}%
+                </div>
+                <div style={{ fontSize: '0.72rem', color: 'var(--hhs-text-secondary)' }}>
+                  {Math.round((selectedStudent.attendancePercentage / 100) * 180)} present / 180 days
+                </div>
+              </div>
+
+              <div style={{ padding: '10px 12px', borderRadius: 'var(--hhs-radius-sm)', backgroundColor: 'var(--hhs-surface-card)', border: '1px solid var(--hhs-border)' }}>
+                <div style={{ fontSize: '0.74rem', color: 'var(--hhs-text-secondary)' }}>Academic Average</div>
+                <div className="tnum" style={{ fontSize: '1.15rem', fontWeight: 700, color: 'var(--hhs-text-primary)' }}>
+                  {selectedStudent.academicAverage ? `${selectedStudent.academicAverage}%` : '82.5%'}
+                </div>
+                <div style={{ fontSize: '0.72rem', color: 'var(--hhs-text-secondary)' }}>
+                  Across core subjects
+                </div>
+              </div>
+
+              <div style={{ padding: '10px 12px', borderRadius: 'var(--hhs-radius-sm)', backgroundColor: 'var(--hhs-surface-card)', border: '1px solid var(--hhs-border)' }}>
+                <div style={{ fontSize: '0.74rem', color: 'var(--hhs-text-secondary)' }}>Status</div>
+                <div style={{ fontSize: '1.15rem', fontWeight: 700, color: 'var(--hhs-primary)' }}>
+                  {selectedStudent.status === 'enrolled' ? 'Enrolled' : selectedStudent.status}
+                </div>
+                <div style={{ fontSize: '0.72rem', color: 'var(--hhs-text-secondary)' }}>
+                  Enrolled {selectedStudent.enrollmentDate}
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
       </div>
 
-      {/* Two-Column Section: Capacity Roster & Operational Shortcuts */}
-      <div style={{ display: 'grid', gridTemplateColumns: '1.2fr 0.8fr', gap: '24px' }}>
+      {/* 4 Compact Metric Cards */}
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(210px, 1fr))', gap: '16px' }}>
+        <MetricCard
+          label="Total Students"
+          value={totalEnrolment.toString()}
+          subtext={`Enrolled across ${classes.length} classes`}
+          icon={<Users size={20} />}
+          accent="primary"
+        />
+        <MetricCard
+          label="Present Today"
+          value={totalPresent.toString()}
+          subtext="Students attending today"
+          icon={<CheckCircle size={20} />}
+          accent="info"
+        />
+        <MetricCard
+          label="Absent Today"
+          value={totalAbsent.toString()}
+          subtext="Unexcused & excused"
+          icon={<AlertCircle size={20} />}
+          accent="danger"
+        />
+        <MetricCard
+          label="Classes Marked Today"
+          value={`${classes.length - pendingSections.length} of ${classes.length}`}
+          subtext={pendingSections.length === 0 ? 'All classes submitted' : `${pendingSections.length} classes pending`}
+          icon={<CalendarCheck size={20} />}
+          accent="accent"
+        />
+      </div>
+
+      {/* 2 Supporting Areas: Class Attendance Status & Quick Links */}
+      <div style={{ display: 'grid', gridTemplateColumns: '1.2fr 0.8fr', gap: '20px' }}>
         
-        {/* Section Load & Capacity */}
+        {/* Supporting Area 1: Today's Class Roll Call Status */}
         <div className="hhs-card" style={{ padding: '20px' }}>
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '14px' }}>
             <div>
-              <h3 className="hhs-headline-sm">Section Rosters &amp; Capacity Load</h3>
+              <h3 className="hhs-headline-sm">Today&apos;s Attendance Status</h3>
               <p className="hhs-body-sm" style={{ color: 'var(--hhs-text-secondary)' }}>
-                Active nominal section distribution across primary and secondary wings.
+                Check which classes have submitted attendance today.
               </p>
             </div>
             <button
-              onClick={() => navigate('/classes')}
+              onClick={() => navigate('/attendance')}
               className="hhs-btn hhs-btn-secondary hhs-btn-sm"
-              style={{ display: 'flex', alignItems: 'center', gap: '6px' }}
             >
-              <span>Manage Classes</span>
-              <ArrowRight size={14} />
+              <span>Full Muster</span>
             </button>
           </div>
 
@@ -254,106 +362,114 @@ export const OfficeDashboard: React.FC = () => {
             <table className="hhs-table" style={{ width: '100%', fontSize: '0.84rem' }}>
               <thead>
                 <tr>
-                  <th>Section</th>
-                  <th>Assigned Room</th>
-                  <th>Class Tutor</th>
-                  <th className="tnum" style={{ textAlign: 'center' }}>Enrolled</th>
-                  <th className="tnum" style={{ textAlign: 'center' }}>Max Cap</th>
-                  <th style={{ textAlign: 'right' }}>Actions</th>
+                  <th>Class</th>
+                  <th>Class Teacher</th>
+                  <th className="tnum" style={{ textAlign: 'center' }}>Present</th>
+                  <th className="tnum" style={{ textAlign: 'center' }}>Absent</th>
+                  <th style={{ textAlign: 'right' }}>Status</th>
                 </tr>
               </thead>
               <tbody>
-                {classes.slice(0, 10).map(cls => (
-                  <tr key={cls.id}>
-                    <td style={{ fontWeight: 600 }}>{cls.label}</td>
-                    <td style={{ color: 'var(--hhs-text-secondary)' }}>{cls.roomNumber}</td>
-                    <td>{cls.classTeacherName}</td>
-                    <td className="tnum" style={{ textAlign: 'center', fontWeight: 600 }}>{cls.studentCount}</td>
-                    <td className="tnum" style={{ textAlign: 'center', color: 'var(--hhs-text-muted)' }}>{cls.maxCapacity}</td>
-                    <td style={{ textAlign: 'right' }}>
-                      <button
-                        onClick={() => navigate(`/classes/${cls.id}/students`)}
-                        className="hhs-btn hhs-btn-text hhs-btn-sm"
-                        style={{ padding: '2px 6px', fontSize: '0.78rem' }}
-                      >
-                        Roll Roster
-                      </button>
-                    </td>
-                  </tr>
-                ))}
+                {classes.slice(0, 8).map(cls => {
+                  const session = attendanceSessions.find(s => s.classId === cls.id);
+                  const isSubmitted = session?.status === 'submitted';
+
+                  return (
+                    <tr key={cls.id}>
+                      <td style={{ fontWeight: 600 }}>{cls.label}</td>
+                      <td style={{ color: 'var(--hhs-text-secondary)' }}>{cls.classTeacherName}</td>
+                      <td className="tnum" style={{ textAlign: 'center' }}>{session ? session.presentCount : '—'}</td>
+                      <td className="tnum" style={{ textAlign: 'center', color: (session?.absentCount || 0) > 0 ? 'var(--hhs-danger)' : 'inherit' }}>
+                        {session ? session.absentCount : '—'}
+                      </td>
+                      <td style={{ textAlign: 'right' }}>
+                        <StatusBadge
+                          status={isSubmitted ? 'submitted' : 'draft'}
+                          label={isSubmitted ? 'Submitted' : 'Pending'}
+                        />
+                      </td>
+                    </tr>
+                  );
+                })}
               </tbody>
             </table>
           </div>
         </div>
 
-        {/* Operational Reports & Registry Shortcuts */}
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
-          <div className="hhs-card" style={{ padding: '20px' }}>
-            <h3 className="hhs-headline-sm" style={{ marginBottom: '8px' }}>Administrative Reports Launchpad</h3>
-            <p className="hhs-body-sm" style={{ color: 'var(--hhs-text-secondary)', marginBottom: '16px' }}>
-              Direct generation for parental inquiries, transfers, and annual audits.
+        {/* Supporting Area 2: Common Office Tasks */}
+        <div className="hhs-card" style={{ padding: '20px' }}>
+          <div style={{ marginBottom: '14px' }}>
+            <h3 className="hhs-headline-sm">Office Tasks</h3>
+            <p className="hhs-body-sm" style={{ color: 'var(--hhs-text-secondary)' }}>
+              Quick access to routine administrative actions.
             </p>
+          </div>
 
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
-              <div
-                onClick={() => navigate('/reports/attendance')}
-                style={{
-                  padding: '12px',
-                  borderRadius: 'var(--hhs-radius-base)',
-                  border: '1px solid var(--hhs-border)',
-                  backgroundColor: 'var(--hhs-canvas)',
-                  cursor: 'pointer',
-                  display: 'flex',
-                  justifyContent: 'space-between',
-                  alignItems: 'center',
-                }}
-              >
-                <div>
-                  <div style={{ fontWeight: 600, fontSize: '0.85rem' }}>Cumulative Attendance Audit</div>
-                  <div style={{ fontSize: '0.76rem', color: 'var(--hhs-text-secondary)' }}>Statutory 75% CBSE attendance register export</div>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+            <div
+              onClick={() => navigate('/students')}
+              style={{
+                padding: '12px 14px',
+                borderRadius: 'var(--hhs-radius-base)',
+                border: '1px solid var(--hhs-border)',
+                backgroundColor: 'var(--hhs-canvas)',
+                cursor: 'pointer',
+                display: 'flex',
+                justifyContent: 'space-between',
+                alignItems: 'center',
+              }}
+            >
+              <div>
+                <div style={{ fontWeight: 600, fontSize: '0.86rem' }}>Search All Students</div>
+                <div style={{ fontSize: '0.78rem', color: 'var(--hhs-text-secondary)' }}>
+                  View, filter, and export student directory
                 </div>
-                <ArrowRight size={14} style={{ color: 'var(--hhs-text-muted)' }} />
               </div>
+              <ArrowRight size={14} style={{ color: 'var(--hhs-text-secondary)' }} />
+            </div>
 
-              <div
-                onClick={() => navigate('/reports')}
-                style={{
-                  padding: '12px',
-                  borderRadius: 'var(--hhs-radius-base)',
-                  border: '1px solid var(--hhs-border)',
-                  backgroundColor: 'var(--hhs-canvas)',
-                  cursor: 'pointer',
-                  display: 'flex',
-                  justifyContent: 'space-between',
-                  alignItems: 'center',
-                }}
-              >
-                <div>
-                  <div style={{ fontWeight: 600, fontSize: '0.85rem' }}>Formal Student Academic Report Cards</div>
-                  <div style={{ fontSize: '0.76rem', color: 'var(--hhs-text-secondary)' }}>Printable CBSE Scholastic Grade Cards</div>
+            <div
+              onClick={() => navigate('/reports')}
+              style={{
+                padding: '12px 14px',
+                borderRadius: 'var(--hhs-radius-base)',
+                border: '1px solid var(--hhs-border)',
+                backgroundColor: 'var(--hhs-canvas)',
+                cursor: 'pointer',
+                display: 'flex',
+                justifyContent: 'space-between',
+                alignItems: 'center',
+              }}
+            >
+              <div>
+                <div style={{ fontWeight: 600, fontSize: '0.86rem' }}>Print Report Cards</div>
+                <div style={{ fontSize: '0.78rem', color: 'var(--hhs-text-secondary)' }}>
+                  Generate and print student report cards & PTM slips
                 </div>
-                <ArrowRight size={14} style={{ color: 'var(--hhs-text-muted)' }} />
               </div>
+              <ArrowRight size={14} style={{ color: 'var(--hhs-text-secondary)' }} />
+            </div>
 
-              <div
-                onClick={() => navigate('/staff')}
-                style={{
-                  padding: '12px',
-                  borderRadius: 'var(--hhs-radius-base)',
-                  border: '1px solid var(--hhs-border)',
-                  backgroundColor: 'var(--hhs-canvas)',
-                  cursor: 'pointer',
-                  display: 'flex',
-                  justifyContent: 'space-between',
-                  alignItems: 'center',
-                }}
-              >
-                <div>
-                  <div style={{ fontWeight: 600, fontSize: '0.85rem' }}>Faculty &amp; Staff Directory</div>
-                  <div style={{ fontSize: '0.76rem', color: 'var(--hhs-text-secondary)' }}>Employee codes, departments &amp; designations</div>
+            <div
+              onClick={() => navigate('/attendance')}
+              style={{
+                padding: '12px 14px',
+                borderRadius: 'var(--hhs-radius-base)',
+                border: '1px solid var(--hhs-border)',
+                backgroundColor: 'var(--hhs-canvas)',
+                cursor: 'pointer',
+                display: 'flex',
+                justifyContent: 'space-between',
+                alignItems: 'center',
+              }}
+            >
+              <div>
+                <div style={{ fontWeight: 600, fontSize: '0.86rem' }}>Daily Attendance Muster</div>
+                <div style={{ fontSize: '0.78rem', color: 'var(--hhs-text-secondary)' }}>
+                  Check class attendance and follow up on absences
                 </div>
-                <ArrowRight size={14} style={{ color: 'var(--hhs-text-muted)' }} />
               </div>
+              <ArrowRight size={14} style={{ color: 'var(--hhs-text-secondary)' }} />
             </div>
           </div>
         </div>

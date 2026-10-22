@@ -1,7 +1,7 @@
 /**
- * HanuJai High School ERP — Principal & Executive Dashboard
- * Comprehensive institutional oversight across all 20 sections, attendance muster,
- * academic assessment completion, school-wide care watchlist, and audit ledger.
+ * HanuJai High School ERP — Principal Dashboard
+ * Minimal, crisp, scannable institutional overview.
+ * Answers: Where am I? What do I need to know? What should I do next?
  */
 
 import React, { useState, useEffect } from 'react';
@@ -13,24 +13,21 @@ import { MetricCard } from '../../components/ui/MetricCard';
 import { StatusBadge } from '../../components/ui/StatusBadge';
 import { LoadingState } from '../../components/feedback/LoadingState';
 import { ErrorBanner } from '../../components/feedback/ErrorBanner';
-import { RiskEvidenceDrawer } from '../../features/risk/RiskEvidenceDrawer';
 import type {
   ClassSection,
   StudentRecord,
   AttendanceSession,
-  AuditEvent,
-  AttendanceCorrection,
 } from '../../domain/types';
 import type { RiskWatchlistItem } from '../../data/provider';
 import {
   Users,
-  CalendarCheck,
-  GraduationCap,
+  CheckCircle,
+  AlertCircle,
   AlertTriangle,
+  Search,
   ArrowRight,
-  ShieldCheck,
-  FileText,
-  Eye,
+  User,
+  Calendar,
 } from 'lucide-react';
 
 export const PrincipalDashboard: React.FC = () => {
@@ -44,12 +41,10 @@ export const PrincipalDashboard: React.FC = () => {
   const [classes, setClasses] = useState<ClassSection[]>([]);
   const [allStudents, setAllStudents] = useState<StudentRecord[]>([]);
   const [attendanceSessions, setAttendanceSessions] = useState<AttendanceSession[]>([]);
-  const [corrections, setCorrections] = useState<AttendanceCorrection[]>([]);
   const [watchlist, setWatchlist] = useState<RiskWatchlistItem[]>([]);
-  const [auditEvents, setAuditEvents] = useState<AuditEvent[]>([]);
 
-  // Selected student for risk evidence drawer
-  const [selectedRiskStudent, setSelectedRiskStudent] = useState<StudentRecord | null>(null);
+  // Fast Student Search state
+  const [searchQuery, setSearchQuery] = useState<string>('');
 
   useEffect(() => {
     let isMounted = true;
@@ -58,25 +53,21 @@ export const PrincipalDashboard: React.FC = () => {
       setError(null);
       try {
         const today = new Intl.DateTimeFormat('en-CA', { timeZone: 'Asia/Kolkata' }).format(new Date());
-        const [clsRes, stuRes, attRes, corrRes, watchRes, auditRes] = await Promise.all([
+        const [clsRes, stuRes, attRes, watchRes] = await Promise.all([
           provider.getClasses(),
           provider.getStudents({ limit: 1000 }),
           provider.getAttendanceSessions(today),
-          provider.getAttendanceCorrections(),
           provider.getRiskWatchlist(),
-          provider.getAuditEvents({ limit: 6 }),
         ]);
 
         if (!isMounted) return;
         setClasses(clsRes);
         setAllStudents(stuRes.items);
         setAttendanceSessions(attRes);
-        setCorrections(corrRes);
         setWatchlist(watchRes);
-        setAuditEvents(auditRes);
       } catch (err: unknown) {
         if (!isMounted) return;
-        setError(err instanceof Error ? err.message : 'Failed to load executive dashboard data.');
+        setError(err instanceof Error ? err.message : 'Could not load school dashboard data.');
       } finally {
         if (isMounted) setIsLoading(false);
       }
@@ -89,17 +80,16 @@ export const PrincipalDashboard: React.FC = () => {
   }, [provider]);
 
   if (isLoading) {
-    return <LoadingState message="Aggregating school-wide enrollment, attendance muster, and academic telemetry..." />;
+    return <LoadingState message="Loading school overview..." />;
   }
 
   if (error) {
-    return <ErrorBanner title="Executive Telemetry Unavailable" message={error} />;
+    return <ErrorBanner title="Could not load dashboard" message={error} />;
   }
 
   // Calculated Real KPIs
   const totalEnrolment = allStudents.length;
-  
-  // Real Attendance metrics from today's sessions
+
   let totalExpectedAttendance = 0;
   let totalPresent = 0;
   let totalAbsent = 0;
@@ -112,321 +102,328 @@ export const PrincipalDashboard: React.FC = () => {
     totalLate += s.lateCount;
   });
 
-  const attendanceTurnoutPct = totalExpectedAttendance > 0 
-    ? Math.round((totalPresent / totalExpectedAttendance) * 1000) / 10 
+  const attendanceTurnoutPct = totalExpectedAttendance > 0
+    ? Math.round((totalPresent / totalExpectedAttendance) * 1000) / 10
     : 0;
 
-  const cohortAcademicMean = allStudents.length > 0
-    ? Math.round((allStudents.reduce((acc, s) => acc + (s.academicAverage || 0), 0) / allStudents.length) * 10) / 10
-    : 0;
+  // Filter students for fast search
+  const matchingStudents = searchQuery.trim().length >= 2
+    ? allStudents.filter(s =>
+        s.fullName.toLowerCase().includes(searchQuery.toLowerCase().trim()) ||
+        s.admissionNumber.toLowerCase().includes(searchQuery.toLowerCase().trim()) ||
+        s.classLabel.toLowerCase().includes(searchQuery.toLowerCase().trim())
+      ).slice(0, 5)
+    : [];
 
-  const completedSessionsCount = attendanceSessions.filter(s => s.status === 'submitted').length;
-  const pendingCorrectionsCount = corrections.filter(c => c.status === 'pending_principal').length;
+  // Plain-language trigger translation
+  const translateTrigger = (trigger: string): string => {
+    if (trigger.includes('ATT-01') || trigger.toLowerCase().includes('consecutive')) {
+      return '3 consecutive absences';
+    }
+    if (trigger.includes('ATT-03') || trigger.includes('<75') || trigger.toLowerCase().includes('turnout')) {
+      return 'Attendance below 75%';
+    }
+    if (trigger.includes('ACAD-04') || trigger.toLowerCase().includes('drop')) {
+      return 'Subject marks dropped >20%';
+    }
+    if (trigger.includes('DISC') || trigger.toLowerCase().includes('incident')) {
+      return 'Teacher observation flagged';
+    }
+    return trigger.replace(/#[A-Z]+-[0-9]+/g, '').trim() || 'Needs academic follow-up';
+  };
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
+    <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
       {/* Header */}
       <PageHeader
-        title="Institutional Executive Desk (Operations Hub)"
-        subtitle={`Academic Session 2025–2026 • Whole-School Governance Overview • ${currentUser?.name}`}
-        roleScope="Principal Desk"
-        breadcrumbs={[{ label: 'Principal Desk' }]}
+        title="Home"
+        subtitle={`Session 2025–2026 • HanuJai High School • Welcome, ${currentUser?.name || 'Principal'}`}
+        roleScope="Principal"
+        breadcrumbs={[{ label: 'Home' }]}
         actions={
-          <div style={{ display: 'flex', gap: '10px' }}>
-            {pendingCorrectionsCount > 0 && (
-              <button
-                onClick={() => navigate('/attendance/corrections')}
-                className="hhs-btn hhs-btn-danger"
-                style={{ display: 'flex', alignItems: 'center', gap: '6px' }}
-              >
-                <ShieldCheck size={16} />
-                <span>Dual-Custody Approvals ({pendingCorrectionsCount})</span>
-              </button>
-            )}
+          <div style={{ display: 'flex', gap: '8px' }}>
             <button
-              onClick={() => navigate('/reports')}
+              onClick={() => navigate('/attendance')}
               className="hhs-btn hhs-btn-secondary"
               style={{ display: 'flex', alignItems: 'center', gap: '6px' }}
             >
-              <FileText size={16} />
-              <span>Statutory Reports</span>
+              <Calendar size={15} />
+              <span>Attendance Muster</span>
+            </button>
+            <button
+              onClick={() => navigate('/students')}
+              className="hhs-btn hhs-btn-primary"
+              style={{ display: 'flex', alignItems: 'center', gap: '6px' }}
+            >
+              <Users size={15} />
+              <span>All Students</span>
             </button>
           </div>
         }
       />
 
-      {/* Top Metric Cards */}
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: '16px' }}>
+      {/* School-wide Fast Student Search */}
+      <div
+        className="hhs-card"
+        style={{
+          padding: '12px 16px',
+          display: 'flex',
+          flexDirection: 'column',
+          gap: '8px',
+          border: '1px solid var(--hhs-border)',
+        }}
+      >
+        <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+          <Search size={18} style={{ color: 'var(--hhs-text-secondary)', flexShrink: 0 }} />
+          <input
+            type="text"
+            className="hhs-input"
+            value={searchQuery}
+            onChange={e => setSearchQuery(e.target.value)}
+            placeholder="Search any student by name, admission number, or class..."
+            style={{
+              border: 'none',
+              padding: '6px 0',
+              fontSize: '0.9rem',
+              backgroundColor: 'transparent',
+              boxShadow: 'none',
+              flex: 1,
+            }}
+          />
+          {searchQuery && (
+            <button
+              onClick={() => setSearchQuery('')}
+              className="hhs-btn hhs-btn-text hhs-btn-sm"
+              style={{ padding: '4px 8px', fontSize: '0.8rem', color: 'var(--hhs-text-secondary)' }}
+            >
+              Clear
+            </button>
+          )}
+        </div>
+
+        {/* Search Results Dropdown */}
+        {matchingStudents.length > 0 && (
+          <div
+            style={{
+              borderTop: '1px solid var(--hhs-border)',
+              paddingTop: '8px',
+              display: 'flex',
+              flexDirection: 'column',
+              gap: '6px',
+            }}
+          >
+            {matchingStudents.map(student => (
+              <div
+                key={student.id}
+                onClick={() => navigate(`/students/${student.id}`)}
+                style={{
+                  display: 'flex',
+                  justifyContent: 'space-between',
+                  alignItems: 'center',
+                  padding: '8px 12px',
+                  borderRadius: 'var(--hhs-radius-sm)',
+                  cursor: 'pointer',
+                  backgroundColor: 'var(--hhs-surface-muted)',
+                  transition: 'background-color 0.15s ease',
+                }}
+              >
+                <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                  <User size={16} style={{ color: 'var(--hhs-primary)' }} />
+                  <div>
+                    <span style={{ fontWeight: 600, fontSize: '0.86rem' }}>{student.fullName}</span>
+                    <span style={{ fontSize: '0.78rem', color: 'var(--hhs-text-secondary)', marginLeft: '8px' }}>
+                      {student.classLabel} • Roll #{student.rollNumber} • Adm #{student.admissionNumber}
+                    </span>
+                  </div>
+                </div>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '0.8rem', color: 'var(--hhs-primary)' }}>
+                  <span>View Summary</span>
+                  <ArrowRight size={14} />
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
+
+      {/* Exactly 4 Compact Scannable Metric Cards */}
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(210px, 1fr))', gap: '16px' }}>
         <MetricCard
-          label="Total Student Enrollment"
+          label="Total Students"
           value={totalEnrolment.toString()}
-          subtext={`Across 20 Sections (${classes.length} Nominal Classes)`}
+          subtext={`Enrolled across ${classes.length} classes`}
           icon={<Users size={20} />}
+          accent="primary"
         />
         <MetricCard
-          label="Today's Attendance Turnout"
-          value={`${attendanceTurnoutPct}%`}
-          subtext={`${totalPresent} Present • ${totalAbsent} Absent • ${totalLate} Late`}
-          icon={<CalendarCheck size={20} />}
-          trend={{ value: `${completedSessionsCount}/20 Marked`, isPositive: completedSessionsCount >= 16 }}
+          label="Present Today"
+          value={totalPresent.toString()}
+          subtext={`${attendanceTurnoutPct}% turnout today`}
+          icon={<CheckCircle size={20} />}
+          accent="info"
         />
         <MetricCard
-          label="Academic Health (Cohort Mean)"
-          value={`${cohortAcademicMean}%`}
-          subtext="Cohort Mean Score across Active Sections"
-          icon={<GraduationCap size={20} />}
-          trend={{ value: 'Target: 75%+', isPositive: cohortAcademicMean >= 75 }}
+          label="Absent Today"
+          value={totalAbsent.toString()}
+          subtext={`${totalLate} marked late`}
+          icon={<AlertCircle size={20} />}
+          accent="danger"
         />
         <MetricCard
-          label="Care Watchlist"
+          label="Students Needing Attention"
           value={watchlist.length.toString()}
-          subtext="Students flagged by #ATT-01, #ATT-03 or #ACAD-04"
+          subtext="Attendance or academic follow-up"
           icon={<AlertTriangle size={20} />}
-          trend={{ value: `${watchlist.length} Pending Actions`, isPositive: false }}
+          accent="accent"
         />
       </div>
 
-      {/* Two-Column Primary Layout */}
-      <div style={{ display: 'grid', gridTemplateColumns: '1.2fr 0.8fr', gap: '24px' }}>
+      {/* Exactly 2 Supporting Areas: Attendance by Class & Students Needing Attention */}
+      <div style={{ display: 'grid', gridTemplateColumns: '1.2fr 0.8fr', gap: '20px' }}>
         
-        {/* Left Column: Attendance Muster & Section Completion */}
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
-          
-          <div className="hhs-card" style={{ padding: '20px' }}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
-              <div>
-                <h3 className="hhs-headline-sm">Class-Wise Roll-Call Completion (Today)</h3>
-                <p className="hhs-body-sm" style={{ color: 'var(--hhs-text-secondary)' }}>
-                  Morning muster tracking for 07:45–09:15 window across all 20 sections.
-                </p>
-              </div>
-              <button
-                onClick={() => navigate('/attendance')}
-                className="hhs-btn hhs-btn-secondary hhs-btn-sm"
-                style={{ display: 'flex', alignItems: 'center', gap: '6px' }}
+        {/* Supporting Area 1: Attendance by Class */}
+        <div className="hhs-card" style={{ padding: '20px' }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '14px' }}>
+            <div>
+              <h3 className="hhs-headline-sm">Attendance by Class (Today)</h3>
+              <p className="hhs-body-sm" style={{ color: 'var(--hhs-text-secondary)' }}>
+                Click any class to open its attendance register.
+              </p>
+            </div>
+            <button
+              onClick={() => navigate('/attendance')}
+              className="hhs-btn hhs-btn-secondary hhs-btn-sm"
+              style={{ display: 'flex', alignItems: 'center', gap: '6px' }}
+            >
+              <span>View All</span>
+              <ArrowRight size={14} />
+            </button>
+          </div>
+
+          <div style={{ overflowX: 'auto' }}>
+            <table className="hhs-table" style={{ width: '100%', fontSize: '0.84rem' }}>
+              <thead>
+                <tr>
+                  <th>Class</th>
+                  <th>Class Teacher</th>
+                  <th className="tnum" style={{ textAlign: 'center' }}>Present</th>
+                  <th className="tnum" style={{ textAlign: 'center' }}>Absent</th>
+                  <th className="tnum" style={{ textAlign: 'center' }}>Turnout</th>
+                  <th style={{ textAlign: 'right' }}>Status</th>
+                </tr>
+              </thead>
+              <tbody>
+                {classes.slice(0, 10).map(cls => {
+                  const session = attendanceSessions.find(s => s.classId === cls.id);
+                  const present = session ? session.presentCount : 0;
+                  const absent = session ? session.absentCount : 0;
+                  const total = session ? session.totalStudents : cls.studentCount;
+                  const turnout = total > 0 ? Math.round((present / total) * 100) : 0;
+                  const isSubmitted = session?.status === 'submitted';
+
+                  return (
+                    <tr
+                      key={cls.id}
+                      onClick={() => navigate(`/attendance/register/${cls.id}`)}
+                      style={{ cursor: 'pointer' }}
+                      title={`Open register for ${cls.label}`}
+                    >
+                      <td style={{ fontWeight: 600, color: 'var(--hhs-primary)' }}>{cls.label}</td>
+                      <td style={{ color: 'var(--hhs-text-secondary)' }}>{cls.classTeacherName}</td>
+                      <td className="tnum" style={{ textAlign: 'center' }}>{present}</td>
+                      <td
+                        className="tnum"
+                        style={{
+                          textAlign: 'center',
+                          color: absent > 0 ? 'var(--hhs-danger)' : 'inherit',
+                          fontWeight: absent > 0 ? 600 : 'normal',
+                        }}
+                      >
+                        {absent}
+                      </td>
+                      <td className="tnum" style={{ textAlign: 'center', fontWeight: 600 }}>
+                        {turnout}%
+                      </td>
+                      <td style={{ textAlign: 'right' }}>
+                        <StatusBadge
+                          status={isSubmitted ? 'submitted' : 'draft'}
+                          label={isSubmitted ? 'Marked' : 'Pending'}
+                        />
+                      </td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        {/* Supporting Area 2: Students Needing Attention */}
+        <div className="hhs-card" style={{ padding: '20px' }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '14px' }}>
+            <div>
+              <h3 className="hhs-headline-sm">Students Needing Attention</h3>
+              <p className="hhs-body-sm" style={{ color: 'var(--hhs-text-secondary)' }}>
+                Based on attendance and academic records.
+              </p>
+            </div>
+            <button
+              onClick={() => navigate('/risk-watchlist')}
+              className="hhs-btn hhs-btn-secondary hhs-btn-sm"
+            >
+              <span>View All ({watchlist.length})</span>
+            </button>
+          </div>
+
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+            {watchlist.slice(0, 5).map(item => (
+              <div
+                key={item.student.id}
+                style={{
+                  padding: '12px 14px',
+                  borderRadius: 'var(--hhs-radius-base)',
+                  border: '1px solid var(--hhs-border)',
+                  backgroundColor: 'var(--hhs-canvas)',
+                  display: 'flex',
+                  justifyContent: 'space-between',
+                  alignItems: 'center',
+                  gap: '12px',
+                }}
               >
-                <span>View Full Register</span>
-                <ArrowRight size={14} />
-              </button>
-            </div>
+                <div>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                    <span style={{ fontWeight: 600, fontSize: '0.86rem' }}>{item.student.fullName}</span>
+                    <span style={{ fontSize: '0.74rem', color: 'var(--hhs-text-secondary)' }}>
+                      {item.student.classLabel}
+                    </span>
+                  </div>
+                  <div style={{ fontSize: '0.78rem', color: 'var(--hhs-accent)', marginTop: '2px', fontWeight: 500 }}>
+                    {translateTrigger(item.primaryTrigger)}
+                  </div>
+                  <div style={{ fontSize: '0.74rem', color: 'var(--hhs-text-secondary)', marginTop: '2px' }}>
+                    Attendance: <strong className="tnum">{item.attendanceRate}%</strong>
+                  </div>
+                </div>
 
-            <div style={{ overflowX: 'auto' }}>
-              <table className="hhs-table" style={{ width: '100%', fontSize: '0.84rem' }}>
-                <thead>
-                  <tr>
-                    <th>Class Section</th>
-                    <th>Class Tutor</th>
-                    <th className="tnum" style={{ textAlign: 'center' }}>Present</th>
-                    <th className="tnum" style={{ textAlign: 'center' }}>Absent</th>
-                    <th className="tnum" style={{ textAlign: 'center' }}>Turnout</th>
-                    <th style={{ textAlign: 'right' }}>Status</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {classes.slice(0, 8).map(cls => {
-                    const session = attendanceSessions.find(s => s.classId === cls.id);
-                    const present = session ? session.presentCount : 0;
-                    const absent = session ? session.absentCount : 0;
-                    const total = session ? session.totalStudents : cls.studentCount;
-                    const turnout = total > 0 ? Math.round((present / total) * 100) : 0;
-                    const isSubmitted = session?.status === 'submitted';
-
-                    return (
-                      <tr key={cls.id}>
-                        <td style={{ fontWeight: 600 }}>{cls.label}</td>
-                        <td style={{ color: 'var(--hhs-text-secondary)' }}>{cls.classTeacherName}</td>
-                        <td className="tnum" style={{ textAlign: 'center' }}>{present}</td>
-                        <td className="tnum" style={{ textAlign: 'center', color: absent > 0 ? 'var(--hhs-accent)' : 'inherit' }}>
-                          {absent}
-                        </td>
-                        <td className="tnum" style={{ textAlign: 'center', fontWeight: 600 }}>
-                          {turnout}%
-                        </td>
-                        <td style={{ textAlign: 'right' }}>
-                          <StatusBadge
-                            status={isSubmitted ? 'submitted' : 'draft'}
-                            label={isSubmitted ? 'Marked' : 'Pending'}
-                          />
-                        </td>
-                      </tr>
-                    );
-                  })}
-                </tbody>
-              </table>
-            </div>
-
-            {classes.length > 8 && (
-              <div style={{ marginTop: '12px', textAlign: 'center' }}>
                 <button
-                  onClick={() => navigate('/attendance')}
-                  className="hhs-btn hhs-btn-text hhs-btn-sm"
+                  onClick={() => navigate(`/students/${item.student.id}`)}
+                  className="hhs-btn hhs-btn-secondary hhs-btn-sm"
+                  style={{ flexShrink: 0, padding: '4px 10px', fontSize: '0.78rem' }}
                 >
-                  View all 20 sections in Attendance Muster &rarr;
+                  <span>View Student</span>
                 </button>
+              </div>
+            ))}
+
+            {watchlist.length === 0 && (
+              <div style={{ padding: '24px 12px', textAlign: 'center', color: 'var(--hhs-text-secondary)', fontSize: '0.86rem' }}>
+                No students currently flagged for follow-up.
               </div>
             )}
           </div>
-
-          {/* Academic Assessment Progress */}
-          <div className="hhs-card" style={{ padding: '20px' }}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
-              <div>
-                <h3 className="hhs-headline-sm">Active Academic Cycles</h3>
-                <p className="hhs-body-sm" style={{ color: 'var(--hhs-text-secondary)' }}>
-                  Continuous scholastic assessments and marks compilation status.
-                </p>
-              </div>
-              <button
-                onClick={() => navigate('/assessments')}
-                className="hhs-btn hhs-btn-secondary hhs-btn-sm"
-                style={{ display: 'flex', alignItems: 'center', gap: '6px' }}
-              >
-                <span>Assessment Cycles</span>
-                <ArrowRight size={14} />
-              </button>
-            </div>
-
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '12px' }}>
-              <div style={{ padding: '14px', borderRadius: 'var(--hhs-radius-base)', border: '1px solid var(--hhs-border)', backgroundColor: 'var(--hhs-canvas)' }}>
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                  <span style={{ fontWeight: 700, fontSize: '0.88rem' }}>Unit Test 1</span>
-                  <StatusBadge status="locked" label="Finalized" />
-                </div>
-                <div style={{ fontSize: '0.78rem', color: 'var(--hhs-text-secondary)', marginTop: '6px' }}>
-                  Max Marks: 25 • Weight: 10%
-                </div>
-                <div style={{ fontWeight: 600, fontSize: '0.84rem', marginTop: '8px', color: 'var(--hhs-primary)' }}>
-                  100% Registers Published
-                </div>
-              </div>
-
-              <div style={{ padding: '14px', borderRadius: 'var(--hhs-radius-base)', border: '1px solid var(--hhs-accent)', backgroundColor: 'var(--hhs-canvas)' }}>
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                  <span style={{ fontWeight: 700, fontSize: '0.88rem' }}>Unit Test 2</span>
-                  <StatusBadge status="pending" label="Active Marking" />
-                </div>
-                <div style={{ fontSize: '0.78rem', color: 'var(--hhs-text-secondary)', marginTop: '6px' }}>
-                  Max Marks: 25 • Weight: 10%
-                </div>
-                <div style={{ fontWeight: 600, fontSize: '0.84rem', marginTop: '8px', color: 'var(--hhs-accent)' }}>
-                  Marks Registers in Progress
-                </div>
-              </div>
-            </div>
-          </div>
         </div>
 
-        {/* Right Column: Care Watchlist & System Audit Stream */}
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
-          
-          {/* Care Watchlist */}
-          <div className="hhs-card" style={{ padding: '20px' }}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
-              <div>
-                <h3 className="hhs-headline-sm">Explainable Student Care Flags</h3>
-                <p className="hhs-body-sm" style={{ color: 'var(--hhs-text-secondary)' }}>
-                  Quantitative rule-based triggers requiring pastoral follow-up.
-                </p>
-              </div>
-              <button
-                onClick={() => navigate('/risk-watchlist')}
-                className="hhs-btn hhs-btn-secondary hhs-btn-sm"
-              >
-                <span>All Flags</span>
-              </button>
-            </div>
-
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
-              {watchlist.slice(0, 4).map(item => (
-                <div
-                  key={item.student.id}
-                  style={{
-                    padding: '12px',
-                    borderRadius: 'var(--hhs-radius-base)',
-                    border: '1px solid var(--hhs-border)',
-                    backgroundColor: 'var(--hhs-canvas)',
-                    display: 'flex',
-                    flexDirection: 'column',
-                    gap: '4px',
-                  }}
-                >
-                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                    <span style={{ fontWeight: 600, fontSize: '0.86rem' }}>{item.student.fullName}</span>
-                    <span style={{ fontSize: '0.74rem', color: 'var(--hhs-text-secondary)' }}>{item.student.classLabel}</span>
-                  </div>
-                  <div style={{ fontSize: '0.78rem', color: 'var(--hhs-text-secondary)' }}>
-                    Trigger: <span style={{ fontWeight: 600, color: 'var(--hhs-text-primary)' }}>{item.primaryTrigger}</span>
-                  </div>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '4px' }}>
-                    <span className="tnum" style={{ fontSize: '0.76rem', color: 'var(--hhs-text-muted)' }}>
-                      Turnout: {item.attendanceRate}%
-                    </span>
-                    <button
-                      onClick={() => setSelectedRiskStudent(item.student)}
-                      className="hhs-btn hhs-btn-text hhs-btn-sm"
-                      style={{ padding: '2px 6px', fontSize: '0.76rem', display: 'flex', alignItems: 'center', gap: '4px' }}
-                    >
-                      <Eye size={12} />
-                      <span>Inspect Evidence</span>
-                    </button>
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>
-
-          {/* Immutable Audit Ledger Feed */}
-          <div className="hhs-card" style={{ padding: '20px' }}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
-              <div>
-                <h3 className="hhs-headline-sm">Recent Audit Stream</h3>
-                <p className="hhs-body-sm" style={{ color: 'var(--hhs-text-secondary)' }}>
-                  Non-repudiable operational change log.
-                </p>
-              </div>
-              <button
-                onClick={() => navigate('/audit-log')}
-                className="hhs-btn hhs-btn-secondary hhs-btn-sm"
-              >
-                <span>Full Audit</span>
-              </button>
-            </div>
-
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
-              {auditEvents.slice(0, 5).map(event => (
-                <div
-                  key={event.id}
-                  style={{
-                    padding: '10px 12px',
-                    borderRadius: 'var(--hhs-radius-base)',
-                    backgroundColor: 'var(--hhs-surface-muted)',
-                    fontSize: '0.8rem',
-                    borderLeft: '3px solid var(--hhs-primary)',
-                  }}
-                >
-                  <div style={{ display: 'flex', justifyContent: 'space-between', color: 'var(--hhs-text-muted)', fontSize: '0.72rem' }}>
-                    <span style={{ fontWeight: 600, color: 'var(--hhs-text-primary)' }}>{event.actorName}</span>
-                    <span className="tnum">{new Date(event.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>
-                  </div>
-                  <div style={{ color: 'var(--hhs-text-secondary)', marginTop: '4px', lineHeight: 1.4 }}>
-                    {event.summary}
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>
-
-        </div>
       </div>
-
-      {/* Evidence Drawer Modal */}
-      {selectedRiskStudent && (
-        <RiskEvidenceDrawer
-          isOpen={Boolean(selectedRiskStudent)}
-          student={selectedRiskStudent}
-          onClose={() => setSelectedRiskStudent(null)}
-        />
-      )}
     </div>
   );
 };

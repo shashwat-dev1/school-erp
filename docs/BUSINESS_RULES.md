@@ -1,124 +1,142 @@
-# HanuJai High School ERP — Operational Business Rules & Domain Rationale
+# HanuJai High School ERP — Operational Business Rules & Domain Policy
 
-This document defines the core operational business rules, authorization boundaries, and demonstration defaults governing the HanuJai High School ERP system.
+This document defines the central, consistent policy model, role-based boundaries, and demonstration rules governing the HanuJai High School ERP system.
 
 ---
 
 ## 1. School Operational Model
 
-- **Campus Scope**: Single institutional instance for **HanuJai High School**, Jaipur, Rajasthan, India.
+- **Campus Scope**: Single private institutional pilot for **HanuJai High School**, Jaipur, Rajasthan, India.
 - **Academic Structure**: Classes 1 through 10, each organized into Sections A and B (Total: 20 class sections).
-- **Enrolment Planning Scale**: Standard capacity of 50 students per section (Total: 1,000 enrolled students across 20 sections).
-- **Academic Session**: Active session `2025–2026` (April 1, 2025 to March 31, 2026).
-- **Demonstration Settings**: Board affiliation identifiers, attendance marking windows, and grading thresholds are editable demonstration defaults for pilot evaluation, clearly labeled to distinguish them from confirmed statutory mandates.
+- **Enrolment Scale**: Configurable demonstration dataset initialized with 1,000 enrolled students (50 students per section across 20 sections).
+- **Academic Session**: Active demonstration session `2025–2026` (April 1, 2025 – March 31, 2026).
+- **Demonstration Settings**: Affiliation identifiers, marking windows, and grading thresholds are clearly labeled demonstration defaults rather than rigid statutory claims.
 
 ---
 
-## 2. Role-Based & Assignment-Based Access Control (RBAC & ABAC)
+## 2. Centralized Permission & Role Policy Model
 
-The system enforces strict operational separation across four primary staff roles:
+The system enforces strict operational separation across four primary school roles. Navigation, direct routes, and data queries all derive from this single model:
 
 ### A. Principal (`principal`)
-- **Executive Mandate**: Holistic institutional oversight and governance.
+- **Mandate**: Overall institutional governance and high-level school operations.
+- **Work Area**: Compact Executive Overview (Home, Students, Attendance, Results, School Setup). Maximum 5 navigation items.
 - **Capabilities**:
-  - Full school-wide access across all 20 sections and student master ledgers.
-  - View aggregate daily attendance muster, class turnout comparisons, and session completion rates.
-  - Final sign-off on dual-custody attendance correction requests.
-  - Marks finalization and academic audit oversight.
-  - Full access to the non-repudiable system audit log.
-  - Management of institutional policies, academic calendar, and faculty allocations.
-- **Constraint**: Cannot counter-approve an attendance correction requested by themselves (Rule SEC-201).
+  - School-wide metrics: Total students, present today, absent today, students needing attention.
+  - Drill-down access into any class, section, student summary, or attendance register.
+  - Review and authorize attendance correction requests (Dual-custody approval).
+  - Review finalized marks and school-wide performance summaries.
+  - Configure demonstration settings (session, marking windows, passing marks).
+- **Constraints**:
+  - Cannot approve an attendance correction request initiated by themselves (Rule SEC-201).
+  - Does not see low-level developer logs, raw database identifiers, or technical error stacks.
 
-### B. Office Administrator (`office_admin`)
-- **Operational Mandate**: Student admissions, directory lookup, record compliance, parent communication, and official reports.
+### B. Office Staff (`office_admin`)
+- **Mandate**: Parent and visitor inquiries, student admissions, attendance tracking, and official school documentation.
+- **Work Area**: Administrative Inquiry Desk (Home, Students, Attendance, Results, Reports). Maximum 5 navigation items.
 - **Capabilities**:
-  - Searchable student directory across all classes for enrollment and parent inquiries.
-  - View school-wide operational attendance snapshots and section rosters.
-  - Access approved statutory and operational reports (e.g., student report cards, attendance audits).
-  - Staff directory management.
+  - Instant student lookup for parents visiting the office (displays attendance percentage, enrolled class, recent examination grades, and general teacher notes).
+  - Print parent-teacher meeting (PTM) slips and official student report cards.
+  - View school-wide attendance completion status by class.
 - **Boundaries**:
-  - Cannot enter or modify subject assessment marks.
+  - Cannot enter or edit subject assessment marks.
   - Cannot approve attendance corrections.
-  - Cannot alter institutional security policies or access confidential disciplinary notes.
+  - Restricted medical records and sensitive disciplinary details are withheld from ordinary student summaries.
 
 ### C. Class Teacher (`class_teacher`)
-- **Classroom Mandate**: Pastoral care, daily roll-call, and holistic academic progress for their **assigned section** (e.g., Class 10-A).
+- **Mandate**: Daily classroom roll-call, pastoral care, and academic welfare for their **strictly assigned class section** (e.g., Class 10-A).
+- **Work Area**: Class Workspace (My Class, Attendance, Results, Student Notes). Maximum 4 navigation items.
 - **Capabilities**:
-  - Mark daily attendance register for their assigned section during the morning window (07:45–09:15).
-  - Submit late attendance correction requests with mandatory reason and parent note.
-  - Inspect nominal roll roster and parent emergency contacts for their assigned section.
-  - View consolidated subject marks matrix for their assigned students.
-  - Review student care flags and log pastoral observations for their assigned section.
+  - Mark daily morning attendance for assigned students.
+  - Submit late attendance correction requests with mandatory reason notes.
+  - Access parent phone numbers for absent students to enable immediate home outreach.
+  - Review class performance summaries and log pastoral notes for assigned students.
 - **Boundaries**:
-  - **Zero access to other class sections** (e.g., a Class 10-A tutor cannot mark or view Class 09-B roll).
-  - Cannot view whole-school operations hub or global audit ledger.
-  - Cannot approve their own correction requests (Dual Custody).
+  - **Zero access to unassigned classes** (a Class 10-A tutor cannot view or mark Class 9-B).
+  - Cannot view school-wide administrative dashboards, system settings, or global staff audit ledgers.
+  - Cannot approve their own attendance correction requests (Dual Custody).
 
 ### D. Subject Teacher (`subject_teacher`)
-- **Pedagogical Mandate**: Teaching and scholastic evaluation for assigned subjects and classes (e.g., Mathematics for Classes 10-A, 10-B, and 09-A).
+- **Mandate**: Subject-specific teaching, marks register entry, and subject evaluation for **strictly assigned subject and class combinations** (e.g., Mathematics for Classes 10-A, 10-B, and 9-A).
+- **Work Area**: Teaching Register (My Classes, Enter Marks, Results, Student Notes). Maximum 4 navigation items.
 - **Capabilities**:
-  - Enter and draft assessment marks for their assigned subject and class combinations.
-  - Calculate CBSE continuous evaluation grades and view subject cohort distributions.
-  - View students enrolled in classes they teach (academic context).
+  - Enter and save marks for assigned subjects and classes.
+  - Track pending marks registers and submission status.
+  - View class-level subject performance distributions.
 - **Boundaries**:
-  - **Zero access to marks for unassigned subjects** (e.g., a Math teacher cannot read or alter Hindi or Science marks).
-  - No access to classroom daily roll-call registers.
-  - No access to school-wide risk watchlists or global audit stream.
+  - **Zero access to marks for unassigned subjects** (a Mathematics teacher cannot view or edit Science or Hindi marks).
+  - Cannot access morning daily attendance registers.
+  - Cannot access school-wide administration settings or risk ledgers.
 
 ---
 
-## 3. Operational Attendance Rules
+## 3. Student Record Access & Plain-Language Dossier Standard
 
-1. **Morning Roll-Call Window**: Configured from `07:45` to `09:15` IST with a 15-minute grace period. Outside this window, session registers transition to locked state.
+### Parent Visit Simplicity Test
+When a parent visits the school office or meets a teacher:
+1. Staff searches for the student by name or admission number.
+2. The summary displays immediately:
+   - Student full name, admission number, roll number, class and section.
+   - Attendance summary: Total days present, days absent, and attendance rate (%).
+   - Academic results: Latest exam marks by subject with passing indicators.
+   - Relevant teacher notes: Constructive remarks on participation and progress.
+3. Detailed historical ledgers, full term archives, and pastoral case histories remain organized under secondary tabs rather than cluttering the initial screen.
+4. Confidential medical details and sensitive administrative flags are withheld from routine inquiry views.
+
+---
+
+## 4. Attendance Rules & Dual-Custody Approval
+
+1. **Daily Roll-Call**: Morning attendance is marked once per day by the assigned Class Teacher.
 2. **Attendance States**:
-   - `Present`: Student is physically present in the classroom.
-   - `Absent`: Student is not present.
-   - `Late`: Student arrived during the grace period.
-   - `Excused`: Prior verified medical or official school leave.
-3. **Session Completion**: A session is marked complete only upon explicit submission by the assigned class teacher. Unmarked students are distinguished from absent students.
-4. **Dual-Custody Correction Protocol (Rule SEC-201)**:
-   - Any modification to an already submitted attendance session requires a formal correction request.
-   - The Class Tutor submits previous state, proposed state, and mandatory justification.
-   - The Principal reviews and provides digital counter-authorization.
-   - Self-approval is strictly rejected by the permission engine.
+   - `Present`: Student is present in class.
+   - `Absent`: Student is absent.
+   - `Late`: Student arrived after the scheduled morning bell.
+   - `Excused`: Leave approved in advance with parent/guardian note.
+3. **Dual-Custody Correction Protocol (SEC-201)**:
+   - Once marked and submitted, an attendance register cannot be silently overwritten.
+   - A correction request must be submitted with previous state, requested state, and reason.
+   - The Principal or authorized administrator reviews and confirms the change.
+   - Self-approval is blocked by permission logic.
 
 ---
 
-## 4. Academic Evaluation & Grading Rules
+## 5. Marks Entry & Academic Evaluation Rules
 
-1. **CBSE 9-Point Grading Scale**:
-   - `A1`: 91% – 100% (Grade Point: 10.0)
-   - `A2`: 81% – 90.99% (Grade Point: 9.0)
-   - `B1`: 71% – 80.99% (Grade Point: 8.0)
-   - `B2`: 61% – 70.99% (Grade Point: 7.0)
-   - `C1`: 51% – 60.99% (Grade Point: 6.0)
-   - `C2`: 41% – 50.99% (Grade Point: 5.0)
-   - `D`: 33% – 40.99% (Grade Point: 4.0) — Passing Boundary
-   - `E1`: 21% – 32.99% — Remedial Support Required
-   - `E2`: Below 21% — Critical Shortfall
-2. **Marks Integrity**:
-   - Marks obtained must never exceed configured maximum marks.
-   - Absenteeism is explicitly recorded as `ABS` (`isAbsent: true`, `marksObtained: null`) and is never silently transformed into zero.
-3. **Continuous Assessment Cycles**:
-   - Unit Test 1 (Max 25, Pass 9, Weight 10%)
-   - Unit Test 2 (Max 25, Pass 9, Weight 10%)
-   - Half-Yearly Examination (Max 80, Pass 27, Weight 30%)
-   - Annual Examination (Max 80, Pass 27, Weight 50%)
+1. **Marks Bounds**:
+   - Score obtained must be between `0` and the configured maximum marks for the assessment.
+   - Values exceeding maximum marks are rejected with a clear plain-English warning.
+2. **Absence Treatment**:
+   - Absent students are recorded as `Absent` (`isAbsent: true`, `score: null`).
+   - Absent students are never silently converted into a score of zero.
+3. **Assessment Cycles**:
+   - Periodic Test 1 (Max 25)
+   - Periodic Test 2 (Max 25)
+   - Half-Yearly Exam (Max 80)
+   - Annual Exam (Max 80)
 
 ---
 
-## 5. Transparent Rule-Based Care Indicators
+## 6. Plain-Language Vocabulary Standards
 
-Flags are explainable, empirical triggers grounded in quantitative evidence:
-- **`#ATT-01` (3 Consecutive Absences)**: Absent on 3 consecutive school days without parent communication. Recommended action: Tutor phone outreach.
-- **`#ATT-03` (Statutory Shortfall)**: Cumulative attendance below statutory 75.0% minimum. Recommended action: PTM conference and formal shortfall notice.
-- **`#ACAD-04` (Performance Drop >20%)**: Drop exceeding 20% between comparable cycles in core subjects. Recommended action: Remedial tutorial support.
+All user-facing screens use everyday school terminology instead of software engineering or data warehouse jargon:
 
-No speculative AI or stigmatizing labels are utilized.
+| Technical / Old Term | Plain-Language Standard |
+| :--- | :--- |
+| Operational Hub / Master Matrix | **Home** |
+| Risk Indicators / Risk Watchlist | **Students Who May Need Attention** |
+| Assessment Matrix / Gradebook Schema | **Marks / Enter Marks** |
+| Provisioning / Role Entitlements | **Staff Account Setup** |
+| Data synchronization failed | **We couldn't save your changes. Please try again.** |
+| Unauthorized resource access | **You do not have permission to view this page.** |
+| No records returned | **No students found.** |
+| Persistence failed | **We couldn't save this change.** |
+| Configuration validation | **Check these settings.** |
+| Pastoral intervention protocol | **Teacher Notes & Follow-up** |
 
 ---
 
-## 6. Faculty Assignment Integrity (Rule SEC-108)
+## 7. Faculty Assignment Integrity Rules
 
-- **Single Class Teacher Constraint**: A faculty member may serve as the Class Teacher for at most **one** section to guarantee dedicated pastoral oversight.
-- **Subject-Class Allocation**: Faculty may teach multiple subjects across multiple classes within an institutional workload limit of 24 periods per week.
+- **Single Class Teacher Constraint (SEC-108)**: A faculty member may serve as the designated Class Teacher for at most one class section.
+- **Subject-Class Allocation**: A faculty member may teach multiple subjects across different class sections, and can only access marks registers matching their active assignments.

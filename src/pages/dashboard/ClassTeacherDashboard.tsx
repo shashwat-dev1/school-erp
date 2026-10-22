@@ -1,8 +1,7 @@
 /**
- * HanuJai High School ERP — Class Teacher Desk
- * Scoped EXCLUSIVELY to the assigned class section (e.g. Class 10-A).
- * Prioritizes daily roll-call, absent follow-up with parent phones,
- * dual-custody attendance corrections, and consolidated class subject progress.
+ * HanuJai High School ERP — Class Teacher Workspace
+ * Clean, focused view for the assigned class (e.g. Class 10-A).
+ * Prioritizes daily roll call, absent follow-up, and class performance.
  */
 
 import React, { useState, useEffect } from 'react';
@@ -17,19 +16,17 @@ import type {
   ClassSection,
   StudentRecord,
   AttendanceSession,
-  AttendanceCorrection,
 } from '../../domain/types';
-import type { RiskWatchlistItem, ConsolidatedClassMarks } from '../../data/provider';
+import type { RiskWatchlistItem } from '../../data/provider';
 import {
   CalendarCheck,
   Users,
   AlertTriangle,
   Phone,
-  FileCheck2,
-  Clock,
   ArrowRight,
-  ShieldAlert,
-  UserCheck,
+  CheckCircle,
+  AlertCircle,
+  GraduationCap,
 } from 'lucide-react';
 
 export const ClassTeacherDashboard: React.FC = () => {
@@ -38,7 +35,7 @@ export const ClassTeacherDashboard: React.FC = () => {
   const { provider } = useData();
 
   const assignedClassId = currentUser?.assignedClassId;
-  const assignedClassLabel = currentUser?.assignedClassLabel || (assignedClassId ? `Class ${assignedClassId.toUpperCase()}` : 'Assigned Section');
+  const assignedClassLabel = currentUser?.assignedClassLabel || (assignedClassId ? `Class ${assignedClassId.toUpperCase()}` : 'Assigned Class');
 
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
@@ -46,9 +43,7 @@ export const ClassTeacherDashboard: React.FC = () => {
   const [classSection, setClassSection] = useState<ClassSection | null>(null);
   const [students, setStudents] = useState<StudentRecord[]>([]);
   const [todaySession, setTodaySession] = useState<AttendanceSession | null>(null);
-  const [corrections, setCorrections] = useState<AttendanceCorrection[]>([]);
   const [classWatchlist, setClassWatchlist] = useState<RiskWatchlistItem[]>([]);
-  const [consolidatedMarks, setConsolidatedMarks] = useState<ConsolidatedClassMarks | null>(null);
 
   useEffect(() => {
     if (!assignedClassId) {
@@ -62,28 +57,21 @@ export const ClassTeacherDashboard: React.FC = () => {
       setError(null);
       try {
         const today = new Intl.DateTimeFormat('en-CA', { timeZone: 'Asia/Kolkata' }).format(new Date());
-        const cycles = await provider.getAssessmentCycles();
-        const targetCycleId = cycles.find(c => c.status === 'active_marking' || c.status === 'locked')?.id || cycles[0]?.id || 'assess-ut1-2025';
-
-        const [cls, stuList, session, corrList, watchlist, marks] = await Promise.all([
+        const [cls, stuList, session, watchlist] = await Promise.all([
           provider.getClassById(assignedClassId!),
           provider.getClassStudents(assignedClassId!),
           provider.getAttendanceSession(assignedClassId!, today),
-          provider.getAttendanceCorrections(assignedClassId!),
           provider.getRiskWatchlist(assignedClassId!),
-          provider.getConsolidatedClassMarks(assignedClassId!, targetCycleId),
         ]);
 
         if (!isMounted) return;
         setClassSection(cls);
         setStudents(stuList);
         setTodaySession(session);
-        setCorrections(corrList);
         setClassWatchlist(watchlist);
-        setConsolidatedMarks(marks);
       } catch (err: unknown) {
         if (!isMounted) return;
-        setError(err instanceof Error ? err.message : 'Failed to load assigned section data.');
+        setError(err instanceof Error ? err.message : 'Could not load class records.');
       } finally {
         if (isMounted) setIsLoading(false);
       }
@@ -97,21 +85,25 @@ export const ClassTeacherDashboard: React.FC = () => {
 
   if (!assignedClassId) {
     return (
-      <div className="hhs-page-container">
+      <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
+        <PageHeader
+          title="My Class"
+          subtitle="Class Teacher Workspace"
+        />
         <ErrorBanner
-          title="Classroom Section Allocation Required"
-          message="Your account is designated as a Class Teacher, but has not yet been assigned to a classroom section. Please contact the Principal's desk to allocate a section."
+          title="No Class Assigned"
+          message="Your account is not assigned to a class section yet. Please ask the Principal or office staff to assign your class."
         />
       </div>
     );
   }
 
   if (isLoading) {
-    return <LoadingState message={`Retrieving ${assignedClassLabel} classroom records, roll muster, and pastoral care ledger...`} />;
+    return <LoadingState message={`Loading ${assignedClassLabel} records...`} />;
   }
 
   if (error || !classSection) {
-    return <ErrorBanner title="Classroom Workspace Unavailable" message={error || 'Assigned class not found.'} />;
+    return <ErrorBanner title="Could not load class" message={error || 'Class not found.'} />;
   }
 
   const totalStudents = students.length;
@@ -127,276 +119,244 @@ export const ClassTeacherDashboard: React.FC = () => {
     return { record: r, student: stu };
   });
 
-  const pendingCorrections = corrections.filter(c => c.status === 'pending_principal');
+  const isAttendanceSubmitted = todaySession?.status === 'submitted';
+
+  // Plain-language trigger translation
+  const translateTrigger = (trigger: string): string => {
+    if (trigger.includes('ATT-01') || trigger.toLowerCase().includes('consecutive')) {
+      return '3 consecutive absences';
+    }
+    if (trigger.includes('ATT-03') || trigger.includes('<75') || trigger.toLowerCase().includes('turnout')) {
+      return 'Attendance below 75%';
+    }
+    if (trigger.includes('ACAD-04') || trigger.toLowerCase().includes('drop')) {
+      return 'Subject marks dropped >20%';
+    }
+    return trigger.replace(/#[A-Z]+-[0-9]+/g, '').trim() || 'Needs academic follow-up';
+  };
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
+    <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
       {/* Header */}
       <PageHeader
-        title={`${assignedClassLabel} Classroom Desk`}
-        subtitle={`Class Tutor: ${currentUser?.name} • Room: ${classSection.roomNumber}`}
-        roleScope={`${assignedClassLabel} Tutor`}
-        breadcrumbs={[
-          { label: 'My Section', to: '/' },
-          { label: `${assignedClassLabel} Desk` },
-        ]}
+        title={`My Class (${assignedClassLabel})`}
+        subtitle={`Class Teacher: ${currentUser?.name} • Room ${classSection.roomNumber} • Session 2025–2026`}
+        roleScope={assignedClassLabel}
+        breadcrumbs={[{ label: 'My Class' }]}
         actions={
-          <div style={{ display: 'flex', gap: '10px' }}>
+          <div style={{ display: 'flex', gap: '8px' }}>
             <button
               onClick={() => navigate(`/attendance/register/${assignedClassId}`)}
               className="hhs-btn hhs-btn-primary"
               style={{ display: 'flex', alignItems: 'center', gap: '6px' }}
             >
-              <CalendarCheck size={16} />
-              <span>{todaySession?.status === 'submitted' ? 'Review Today’s Roll' : 'Mark Daily Attendance'}</span>
+              <CalendarCheck size={15} />
+              <span>{isAttendanceSubmitted ? 'Review Attendance' : 'Mark Today’s Attendance'}</span>
             </button>
             <button
-              onClick={() => navigate(`/classes/${assignedClassId}/performance`)}
+              onClick={() => navigate(`/performance/classes/${assignedClassId}`)}
               className="hhs-btn hhs-btn-secondary"
               style={{ display: 'flex', alignItems: 'center', gap: '6px' }}
             >
-              <FileCheck2 size={16} />
-              <span>Performance Matrix</span>
+              <GraduationCap size={15} />
+              <span>Class Results</span>
             </button>
           </div>
         }
       />
 
-      {/* Scoped Class Metrics */}
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: '16px' }}>
+      {/* Prominent Call to Action if Attendance not yet marked */}
+      {!isAttendanceSubmitted && (
+        <div
+          style={{
+            padding: '14px 18px',
+            borderRadius: 'var(--hhs-radius-base)',
+            backgroundColor: 'var(--hhs-accent-light)',
+            border: '1px solid var(--hhs-accent)',
+            display: 'flex',
+            justifyContent: 'space-between',
+            alignItems: 'center',
+            flexWrap: 'wrap',
+            gap: '10px',
+          }}
+        >
+          <div>
+            <div style={{ fontWeight: 600, color: 'var(--hhs-accent-text)', fontSize: '0.9rem' }}>
+              Today&apos;s Attendance is Pending
+            </div>
+            <div style={{ fontSize: '0.8rem', color: 'var(--hhs-text-secondary)', marginTop: '2px' }}>
+              Please take roll call for {assignedClassLabel} and submit the register.
+            </div>
+          </div>
+          <button
+            onClick={() => navigate(`/attendance/register/${assignedClassId}`)}
+            className="hhs-btn hhs-btn-primary hhs-btn-sm"
+          >
+            Take Attendance Now
+          </button>
+        </div>
+      )}
+
+      {/* 4 Focused Scoped Metrics */}
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(210px, 1fr))', gap: '16px' }}>
         <MetricCard
-          label={`${assignedClassLabel} Enrolment`}
-          value={`${totalStudents} Students`}
-          subtext={`Room: ${classSection.roomNumber} • Max Capacity: ${classSection.maxCapacity}`}
+          label="Total Students"
+          value={totalStudents.toString()}
+          subtext={`Room ${classSection.roomNumber}`}
           icon={<Users size={20} />}
+          accent="primary"
         />
         <MetricCard
-          label="Today's Roll Turnout"
-          value={`${attendanceRate}%`}
-          subtext={`${presentCount} Present • ${absentCount} Absent • ${lateCount} Late`}
-          icon={<CalendarCheck size={20} />}
-          trend={{ value: todaySession?.status === 'submitted' ? 'Session Submitted' : 'Pending Submission', isPositive: todaySession?.status === 'submitted' }}
+          label="Present Today"
+          value={presentCount.toString()}
+          subtext={`${attendanceRate}% turnout today`}
+          icon={<CheckCircle size={20} />}
+          accent="info"
         />
         <MetricCard
-          label="Pending Late Corrections"
-          value={pendingCorrections.length.toString()}
-          subtext="Awaiting Principal counter-authorization"
-          icon={<UserCheck size={20} />}
-          trend={{ value: pendingCorrections.length > 0 ? 'Dual-Custody Queue' : 'Queue Clear', isPositive: pendingCorrections.length === 0 }}
+          label="Absent Today"
+          value={absentCount.toString()}
+          subtext={`${lateCount} marked late`}
+          icon={<AlertCircle size={20} />}
+          accent="danger"
         />
         <MetricCard
-          label={`${assignedClassLabel} Care Watchlist`}
+          label="Students Needing Attention"
           value={classWatchlist.length.toString()}
-          subtext="Students flagged in your section"
+          subtext="In your class"
           icon={<AlertTriangle size={20} />}
-          trend={{ value: `${classWatchlist.length} Students`, isPositive: classWatchlist.length === 0 }}
+          accent="accent"
         />
       </div>
 
-      {/* Two Column Layout: Daily Roll / Absent Follow-up vs Performance & Care */}
-      <div style={{ display: 'grid', gridTemplateColumns: '1.2fr 0.8fr', gap: '24px' }}>
+      {/* 2 Supporting Areas: Absent Students Follow-up & Class Performance Summary */}
+      <div style={{ display: 'grid', gridTemplateColumns: '1.2fr 0.8fr', gap: '20px' }}>
         
-        {/* Left Column: Today's Roll & Absent Follow-up */}
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
-          
-          {/* Absent Students Outreach Panel */}
-          <div className="hhs-card" style={{ padding: '20px' }}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
-              <div>
-                <h3 className="hhs-headline-sm">Today&rsquo;s Absent Follow-Up ({absentStudents.length})</h3>
-                <p className="hhs-body-sm" style={{ color: 'var(--hhs-text-secondary)' }}>
-                  Unmarked or absent students in {assignedClassLabel} requiring tutor outreach or parent check.
-                </p>
-              </div>
-              <button
-                onClick={() => navigate(`/attendance/register/${assignedClassId}`)}
-                className="hhs-btn hhs-btn-secondary hhs-btn-sm"
-              >
-                <span>Open Register</span>
-              </button>
+        {/* Supporting Area 1: Absent Students & Parent Contacts */}
+        <div className="hhs-card" style={{ padding: '20px' }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '14px' }}>
+            <div>
+              <h3 className="hhs-headline-sm">Absent Students Today ({absentStudents.length})</h3>
+              <p className="hhs-body-sm" style={{ color: 'var(--hhs-text-secondary)' }}>
+                Guardian contact numbers for parent check.
+              </p>
             </div>
-
-            {absentStudents.length === 0 ? (
-              <div style={{ padding: '24px', textAlign: 'center', color: 'var(--hhs-text-secondary)', backgroundColor: 'var(--hhs-canvas)', borderRadius: 'var(--hhs-radius-base)' }}>
-                Excellent! All {totalStudents} students in {assignedClassLabel} are marked present or excused today.
-              </div>
-            ) : (
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
-                {absentStudents.map(({ record, student }) => (
-                  <div
-                    key={record.studentId}
-                    style={{
-                      padding: '12px 16px',
-                      borderRadius: 'var(--hhs-radius-base)',
-                      border: '1px solid var(--hhs-border)',
-                      backgroundColor: 'var(--hhs-canvas)',
-                      display: 'flex',
-                      justifyContent: 'space-between',
-                      alignItems: 'center',
-                    }}
-                  >
-                    <div>
-                      <div style={{ fontWeight: 600, fontSize: '0.88rem' }}>
-                        Roll #{record.rollNumber} — {record.studentName}
-                      </div>
-                      <div style={{ fontSize: '0.78rem', color: 'var(--hhs-text-secondary)', marginTop: '2px', display: 'flex', alignItems: 'center', gap: '8px' }}>
-                        <Phone size={12} />
-                        <span>Guardian: {student?.guardianName || 'Parent'} ({student?.primaryPhone || 'No Phone'})</span>
-                      </div>
-                    </div>
-                    <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
-                      <button
-                        onClick={() => navigate('/attendance/corrections')}
-                        className="hhs-btn hhs-btn-secondary hhs-btn-sm"
-                        style={{ fontSize: '0.76rem', padding: '4px 8px' }}
-                      >
-                        Request Late Correction
-                      </button>
-                      <button
-                        onClick={() => navigate(`/students/${record.studentId}`)}
-                        className="hhs-btn hhs-btn-text hhs-btn-sm"
-                        style={{ fontSize: '0.76rem' }}
-                      >
-                        Dossier
-                      </button>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            )}
+            <button
+              onClick={() => navigate(`/attendance/register/${assignedClassId}`)}
+              className="hhs-btn hhs-btn-secondary hhs-btn-sm"
+            >
+              <span>Attendance Register</span>
+            </button>
           </div>
 
-          {/* Consolidated Subject Performance for 10-A */}
-          <div className="hhs-card" style={{ padding: '20px' }}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
-              <div>
-                <h3 className="hhs-headline-sm">{assignedClassLabel} Subject Performance Snapshot</h3>
-                <p className="hhs-body-sm" style={{ color: 'var(--hhs-text-secondary)' }}>
-                  Unit Test 1 cohort averages across curriculum subjects for your class.
-                </p>
-              </div>
-              <button
-                onClick={() => navigate(`/classes/${assignedClassId}/performance`)}
-                className="hhs-btn hhs-btn-secondary hhs-btn-sm"
-                style={{ display: 'flex', alignItems: 'center', gap: '6px' }}
-              >
-                <span>Full Ledger</span>
-                <ArrowRight size={14} />
-              </button>
+          {absentStudents.length === 0 ? (
+            <div style={{ padding: '28px 16px', textAlign: 'center', color: 'var(--hhs-text-secondary)', backgroundColor: 'var(--hhs-canvas)', borderRadius: 'var(--hhs-radius-base)' }}>
+              {isAttendanceSubmitted
+                ? `All ${totalStudents} students in ${assignedClassLabel} are present today.`
+                : 'Attendance has not been taken yet today.'}
             </div>
-
-            {consolidatedMarks && (
-              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(130px, 1fr))', gap: '10px' }}>
-                {consolidatedMarks.subjects.map(sub => {
-                  const avg = consolidatedMarks.subjectAverages[sub.id] || 0;
-                  return (
-                    <div
-                      key={sub.id}
-                      style={{
-                        padding: '12px',
-                        borderRadius: 'var(--hhs-radius-base)',
-                        backgroundColor: 'var(--hhs-surface-muted)',
-                        border: '1px solid var(--hhs-border)',
-                      }}
-                    >
-                      <div style={{ fontSize: '0.74rem', color: 'var(--hhs-text-secondary)', textTransform: 'uppercase', fontWeight: 600 }}>
-                        {sub.code}
-                      </div>
-                      <div className="tnum" style={{ fontSize: '1.25rem', fontWeight: 800, color: 'var(--hhs-primary)', marginTop: '4px' }}>
-                        {avg}/25
-                      </div>
-                      <div style={{ fontSize: '0.72rem', color: 'var(--hhs-text-muted)' }}>
-                        {sub.name}
-                      </div>
-                    </div>
-                  );
-                })}
-              </div>
-            )}
-          </div>
-
-        </div>
-
-        {/* Right Column: Class Care Watchlist & Quick Actions */}
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
-          
-          {/* Class Care Watchlist */}
-          <div className="hhs-card" style={{ padding: '20px' }}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '14px' }}>
-              <div>
-                <h3 className="hhs-headline-sm">{assignedClassLabel} Pastoral Watchlist</h3>
-                <p className="hhs-body-sm" style={{ color: 'var(--hhs-text-secondary)' }}>
-                  Students requiring attention in your assigned section.
-                </p>
-              </div>
-            </div>
-
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
-              {classWatchlist.map(item => (
+          ) : (
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+              {absentStudents.map(({ record, student }) => (
                 <div
-                  key={item.student.id}
+                  key={record.studentId}
                   style={{
-                    padding: '12px',
+                    padding: '12px 14px',
                     borderRadius: 'var(--hhs-radius-base)',
                     border: '1px solid var(--hhs-border)',
                     backgroundColor: 'var(--hhs-canvas)',
+                    display: 'flex',
+                    justifyContent: 'space-between',
+                    alignItems: 'center',
+                    gap: '10px',
                   }}
                 >
-                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                    <span style={{ fontWeight: 600, fontSize: '0.86rem' }}>
-                      Roll #{item.student.rollNumber} — {item.student.fullName}
-                    </span>
+                  <div>
+                    <div style={{ fontWeight: 600, fontSize: '0.88rem' }}>
+                      Roll #{record.rollNumber} — {record.studentName}
+                    </div>
+                    <div style={{ fontSize: '0.78rem', color: 'var(--hhs-text-secondary)', marginTop: '2px', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                      <Phone size={12} />
+                      <span>Guardian: {student?.guardianName || 'Parent'} ({student?.primaryPhone || 'No Phone'})</span>
+                    </div>
+                  </div>
+
+                  {student && (
                     <button
-                      onClick={() => navigate(`/students/${item.student.id}`)}
-                      className="hhs-btn hhs-btn-text hhs-btn-sm"
-                      style={{ fontSize: '0.74rem', padding: '0 4px' }}
+                      onClick={() => navigate(`/students/${student.id}`)}
+                      className="hhs-btn hhs-btn-secondary hhs-btn-sm"
+                      style={{ flexShrink: 0, padding: '4px 8px', fontSize: '0.76rem' }}
                     >
-                      Profile
+                      <span>View</span>
                     </button>
-                  </div>
-                  <div style={{ fontSize: '0.78rem', color: 'var(--hhs-accent)', fontWeight: 600, marginTop: '4px' }}>
-                    {item.primaryTrigger}
-                  </div>
-                  <div className="tnum" style={{ fontSize: '0.74rem', color: 'var(--hhs-text-secondary)', marginTop: '2px' }}>
-                    Attendance: {item.attendanceRate}% • Academic Avg: {item.student.academicAverage}%
-                  </div>
+                  )}
                 </div>
               ))}
             </div>
-          </div>
-
-          {/* Class Tutor Operational Shortcuts */}
-          <div className="hhs-card" style={{ padding: '20px' }}>
-            <h3 className="hhs-headline-sm" style={{ marginBottom: '12px' }}>Classroom Actions</h3>
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-              <button
-                onClick={() => navigate(`/classes/${assignedClassId}/students`)}
-                className="hhs-btn hhs-btn-secondary hhs-btn-sm"
-                style={{ justifyContent: 'flex-start', display: 'flex', alignItems: 'center', gap: '8px' }}
-              >
-                <Users size={14} />
-                <span>View {assignedClassLabel} Nominal Roll</span>
-              </button>
-              <button
-                onClick={() => navigate('/behaviour')}
-                className="hhs-btn hhs-btn-secondary hhs-btn-sm"
-                style={{ justifyContent: 'flex-start', display: 'flex', alignItems: 'center', gap: '8px' }}
-              >
-                <ShieldAlert size={14} />
-                <span>Log Pastoral Care Observation</span>
-              </button>
-              <button
-                onClick={() => navigate('/attendance/corrections')}
-                className="hhs-btn hhs-btn-secondary hhs-btn-sm"
-                style={{ justifyContent: 'flex-start', display: 'flex', alignItems: 'center', gap: '8px' }}
-              >
-                <Clock size={14} />
-                <span>Attendance Correction History</span>
-              </button>
-            </div>
-          </div>
-
+          )}
         </div>
+
+        {/* Supporting Area 2: Class Performance & Attention List */}
+        <div className="hhs-card" style={{ padding: '20px' }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '14px' }}>
+            <div>
+              <h3 className="hhs-headline-sm">Students Needing Follow-up</h3>
+              <p className="hhs-body-sm" style={{ color: 'var(--hhs-text-secondary)' }}>
+                Academic or attendance flags.
+              </p>
+            </div>
+            <button
+              onClick={() => navigate('/behaviour')}
+              className="hhs-btn hhs-btn-secondary hhs-btn-sm"
+            >
+              <span>Student Notes</span>
+            </button>
+          </div>
+
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+            {classWatchlist.slice(0, 4).map(item => (
+              <div
+                key={item.student.id}
+                style={{
+                  padding: '10px 12px',
+                  borderRadius: 'var(--hhs-radius-base)',
+                  border: '1px solid var(--hhs-border)',
+                  backgroundColor: 'var(--hhs-canvas)',
+                  display: 'flex',
+                  justifyContent: 'space-between',
+                  alignItems: 'center',
+                }}
+              >
+                <div>
+                  <div style={{ fontWeight: 600, fontSize: '0.86rem' }}>
+                    Roll #{item.student.rollNumber} — {item.student.fullName}
+                  </div>
+                  <div style={{ fontSize: '0.78rem', color: 'var(--hhs-accent)', marginTop: '2px' }}>
+                    {translateTrigger(item.primaryTrigger)}
+                  </div>
+                  <div style={{ fontSize: '0.74rem', color: 'var(--hhs-text-secondary)', marginTop: '2px' }}>
+                    Attendance: <strong className="tnum">{item.attendanceRate}%</strong>
+                  </div>
+                </div>
+
+                <button
+                  onClick={() => navigate(`/students/${item.student.id}`)}
+                  className="hhs-btn hhs-btn-text hhs-btn-sm"
+                  style={{ color: 'var(--hhs-primary)', padding: '2px 6px' }}
+                >
+                  <ArrowRight size={14} />
+                </button>
+              </div>
+            ))}
+
+            {classWatchlist.length === 0 && (
+              <div style={{ padding: '24px 12px', textAlign: 'center', color: 'var(--hhs-text-secondary)', fontSize: '0.84rem' }}>
+                No students currently flagged in your class.
+              </div>
+            )}
+          </div>
+        </div>
+
       </div>
     </div>
   );

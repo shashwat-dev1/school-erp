@@ -17,7 +17,7 @@ export const RoleDashboardRouter: React.FC = () => {
   const { currentUser, isLoading } = useAuth();
 
   if (isLoading) {
-    return <LoadingState message="Routing to authorized institutional desk..." />;
+    return <LoadingState message="Loading your workspace..." />;
   }
 
   if (!currentUser) {
@@ -38,10 +38,9 @@ export const RoleDashboardRouter: React.FC = () => {
     default:
       return (
         <AccessDenied
-          title="Desk Authorization Required"
-          message={`Staff account (${currentUser.name}) with role "${currentUser.role}" has no authorized operational workspace configured.`}
+          title="Access Restricted"
+          message={`Your account (${currentUser.name}) has no assigned role. Please contact the school administrator.`}
         />
       );
   }
 };
-

@@ -95,7 +95,10 @@ class DemoRepository implements DataProvider {
     try {
       const raw = localStorage.getItem(STORAGE_KEY);
       if (raw) {
-        return JSON.parse(raw);
+        const parsed = JSON.parse(raw);
+        if (parsed.students && parsed.students.length >= 500) {
+          return parsed;
+        }
       }
     } catch (e) {
       console.warn('[DemoRepository] Could not parse localStorage, re-initializing seed store.', e);

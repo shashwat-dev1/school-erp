@@ -37,9 +37,9 @@ describe('Role Authorization & Security Boundary Suite', () => {
     );
 
     await waitFor(() => {
-      expect(screen.getByText(/Institutional Executive Desk/i)).toBeInTheDocument();
-      expect(screen.getByText(/Today's Attendance Turnout/i)).toBeInTheDocument();
-      expect(screen.getByText(/Class-Wise Roll-Call Completion/i)).toBeInTheDocument();
+      expect(screen.getAllByText(/Home/i)[0]).toBeInTheDocument();
+      expect(screen.getByText(/Present Today/i)).toBeInTheDocument();
+      expect(screen.getByText(/Attendance by Class/i)).toBeInTheDocument();
     });
 
     // Check that active enrollment derivation is 1,000 (20 sections × 50 students)
@@ -61,9 +61,9 @@ describe('Role Authorization & Security Boundary Suite', () => {
     );
 
     await waitFor(() => {
-      expect(screen.getByText(/Office Registrar & Operations Desk/i)).toBeInTheDocument();
-      expect(screen.getByText(/Rapid Student Lookup/i)).toBeInTheDocument();
-      expect(screen.getByText(/Total Active Enrolment/i)).toBeInTheDocument();
+      expect(screen.getAllByText(/Home/i)[0]).toBeInTheDocument();
+      expect(screen.getByText(/Parent & Visitor Inquiry/i)).toBeInTheDocument();
+      expect(screen.getByText(/Total Students/i)).toBeInTheDocument();
     });
   });
 
@@ -82,13 +82,13 @@ describe('Role Authorization & Security Boundary Suite', () => {
     );
 
     await waitFor(() => {
-      expect(screen.getByText(/Class 10-A Classroom Desk/i)).toBeInTheDocument();
-      expect(screen.getByText(/Today's Roll Turnout/i)).toBeInTheDocument();
-      expect(screen.getByText(/Pending Late Corrections/i)).toBeInTheDocument();
+      expect(screen.getByText(/My Class \(Class 10-A\)/i)).toBeInTheDocument();
+      expect(screen.getByText(/Present Today/i)).toBeInTheDocument();
+      expect(screen.getByText(/Absent Students Today/i)).toBeInTheDocument();
     });
 
     // Class teacher must NOT see whole-school metrics
-    expect(screen.queryByText(/Class-Wise Roll-Call Completion/i)).not.toBeInTheDocument();
+    expect(screen.queryByText(/Attendance by Class \(Today\)/i)).not.toBeInTheDocument();
     expect(screen.queryByText(/Institutional Executive Desk/i)).not.toBeInTheDocument();
   });
 
@@ -107,14 +107,14 @@ describe('Role Authorization & Security Boundary Suite', () => {
     );
 
     await waitFor(() => {
-      expect(screen.getByText(/Mathematics Pedagogical Desk/i)).toBeInTheDocument();
-      expect(screen.getByText(/Active Marks Registers/i)).toBeInTheDocument();
-      expect(screen.getByText(/Assigned Classes & Load/i)).toBeInTheDocument();
+      expect(screen.getAllByText(/My Classes/i)[0]).toBeInTheDocument();
+      expect(screen.getAllByText(/Marks Registers/i)[0]).toBeInTheDocument();
+      expect(screen.getAllByText(/Assigned Classes/i)[0]).toBeInTheDocument();
     });
 
     // Subject teacher must not see whole-school attendance or unassigned classes
-    expect(screen.queryByText(/Class-Wise Roll-Call Completion/i)).not.toBeInTheDocument();
-    expect(screen.queryByText(/Today's Attendance Turnout/i)).not.toBeInTheDocument();
+    expect(screen.queryByText(/Attendance by Class \(Today\)/i)).not.toBeInTheDocument();
+    expect(screen.queryByText(/Present Today/i)).not.toBeInTheDocument();
   });
 
   it('SectionGuard denies class teacher from accessing an unassigned class attendance register', async () => {

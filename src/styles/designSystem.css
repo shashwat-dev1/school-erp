@@ -1,64 +1,72 @@
 /**
  * HanuJai High School ERP — Design System & Tokens
- * Based directly on: Designs/institutional_rigor/DESIGN.md
- * Philosophy: Restrained Utilitarian Modernism
+ * Minimal, Crisp, Premium, Quiet & Confident Institutional Aesthetics
+ * Palette: Midnight Navy (#19243A), Clean White (#FFFFFF), Warm Paper (#F7F6F2), Primary Blue (#3458D4)
  */
 
 :root {
   /* Surface Architecture */
-  --hhs-canvas: #f7f7f4;           /* Warm paper ground */
-  --hhs-surface: #ffffff;          /* Card & panel surface */
-  --hhs-surface-muted: #e9ece8;    /* Table headers, read-only containers */
-  --hhs-surface-hover: #f1f3f0;
+  --hhs-canvas: #F7F6F2;           /* Warm paper ground */
+  --hhs-surface: #FFFFFF;          /* Card & panel surface */
+  --hhs-surface-muted: #F0F2F5;    /* Table headers, read-only containers */
+  --hhs-surface-hover: #F4F6F9;    /* Hover state */
   
   /* Typographic Hierarchy & Contrast */
-  --hhs-text-primary: #202b2a;     /* Deep graphite green-charcoal */
-  --hhs-text-secondary: #5d6b68;   /* Balanced neutral green-slate */
-  --hhs-text-muted: #83918e;       /* Disabled or placeholder */
+  --hhs-text-primary: #19243A;     /* Midnight navy */
+  --hhs-text-secondary: #657083;   /* Secondary slate text */
+  --hhs-text-muted: #95A0B2;       /* Disabled, placeholder */
   
   /* Borders & Dividers */
-  --hhs-border: #dfe3df;           /* 1px structural boundary */
-  --hhs-border-strong: #c0c8c4;
-  --hhs-border-focus: #31594e;
+  --hhs-border: #E2E5EB;           /* Subtle 1px structural hairline */
+  --hhs-border-strong: #CBD2DE;
+  --hhs-border-focus: #3458D4;     /* Primary blue focus ring */
   
-  /* Brand & Semantics */
-  --hhs-primary: #31594e;          /* Pine green */
-  --hhs-primary-hover: #284a41;
-  --hhs-primary-active: #203b34;
-  --hhs-primary-light: #eaf0ee;
-  --hhs-primary-text: #1b3830;
+  /* Brand & Actions */
+  --hhs-brand-navy: #19243A;       /* Midnight navy for structure */
+  --hhs-primary: #3458D4;          /* Primary blue */
+  --hhs-primary-hover: #2A48B8;
+  --hhs-primary-active: #1F3899;
+  --hhs-primary-light: #E9EDF5;     /* Soft blue-grey */
+  --hhs-primary-text: #203B9E;
   
-  --hhs-accent: #d7a46a;           /* Desert ochre (caution / pending) */
-  --hhs-accent-text: #9e6e36;
-  --hhs-accent-light: #fbf5ee;
+  /* Semantic Indicators */
+  --hhs-accent: #D99A37;           /* Muted amber for attention / pending */
+  --hhs-accent-hover: #C5882B;
+  --hhs-accent-text: #8C5D14;
+  --hhs-accent-light: #FDF6E9;
   
-  --hhs-danger: #c85a54;           /* Terracotta red (critical / unexcused) */
-  --hhs-danger-hover: #b04b46;
-  --hhs-danger-text: #a83d38;
-  --hhs-danger-light: #faeceb;
+  --hhs-danger: #B94141;           /* Muted red for errors / absent */
+  --hhs-danger-hover: #9E3232;
+  --hhs-danger-text: #8A2626;
+  --hhs-danger-light: #FBEFEF;
   
-  --hhs-info: #3b7188;             /* Slate blue info */
-  --hhs-info-light: #edf5f9;
+  --hhs-success: #2E7D5A;          /* Present / complete */
+  --hhs-success-hover: #256A4C;
+  --hhs-success-text: #1B5E3F;
+  --hhs-success-light: #EEF7F2;
+
+  --hhs-info: #3458D4;             /* Blue */
+  --hhs-info-light: #E9EDF5;
   
   /* Layout Metrics */
-  --hhs-sidebar-width: 240px;
-  --hhs-sidebar-collapsed: 68px;
-  --hhs-topbar-height: 60px;
+  --hhs-sidebar-width: 236px;
+  --hhs-sidebar-collapsed: 64px;
+  --hhs-topbar-height: 56px;
   --hhs-control-height: 36px;
   --hhs-control-height-lg: 40px;
-  --hhs-control-height-sm: 32px;
+  --hhs-control-height-sm: 30px;
   
-  /* Radius Metrics */
-  --hhs-radius-sm: 2px;
-  --hhs-radius-base: 4px;          /* Inputs, buttons, tags */
+  /* Radius Metrics (restrained, non-excessive) */
+  --hhs-radius-sm: 3px;
+  --hhs-radius-base: 5px;          /* Inputs, buttons, tags */
   --hhs-radius-container: 6px;     /* Tables, cards */
   --hhs-radius-modal: 8px;         /* Modals & dialogs */
   --hhs-radius-pill: 9999px;
   
-  /* Architectural Shadows */
+  /* Restrained Shadows */
   --hhs-shadow-level-1: none;
-  --hhs-shadow-level-2: 0 2px 4px rgba(32, 43, 42, 0.06), 0 1px 2px rgba(32, 43, 42, 0.04);
-  --hhs-shadow-level-3: 0 8px 16px -2px rgba(32, 43, 42, 0.08);
+  --hhs-shadow-level-2: 0 1px 3px rgba(25, 36, 58, 0.05);
+  --hhs-shadow-level-3: 0 4px 16px rgba(25, 36, 58, 0.08);
 }
 
 /* Global Reset & Base Typography */
@@ -84,7 +92,7 @@ html, body {
   flex-direction: column;
 }
 
-/* Numeric alignment utility prescribed in DESIGN.md */
+/* Numeric alignment utility for tables and metrics */
 .tnum,
 table td.numeric,
 .metric-value {
@@ -92,37 +100,35 @@ table td.numeric,
   font-variant-numeric: tabular-nums;
 }
 
-/* ============================================================================
-   TYPOGRAPHY HIERARCHY
-   ============================================================================ */
+/* Typography Hierarchy */
 .hhs-headline-xl {
-  font-size: 1.75rem; /* 28px */
+  font-size: 1.65rem; /* ~26px */
   font-weight: 700;
-  line-height: 2.25rem;
+  line-height: 2.1rem;
   letter-spacing: -0.02em;
   color: var(--hhs-text-primary);
 }
 
 .hhs-headline-lg {
-  font-size: 1.35rem; /* ~22px */
+  font-size: 1.3rem; /* ~21px */
   font-weight: 700;
-  line-height: 1.85rem;
+  line-height: 1.75rem;
   letter-spacing: -0.015em;
   color: var(--hhs-text-primary);
 }
 
 .hhs-headline-md {
-  font-size: 1.15rem; /* ~18px */
+  font-size: 1.1rem; /* ~17.5px */
   font-weight: 600;
-  line-height: 1.6rem;
+  line-height: 1.5rem;
   letter-spacing: -0.01em;
   color: var(--hhs-text-primary);
 }
 
 .hhs-headline-sm {
-  font-size: 1rem; /* 16px */
+  font-size: 0.95rem; /* ~15px */
   font-weight: 600;
-  line-height: 1.45rem;
+  line-height: 1.4rem;
   color: var(--hhs-text-primary);
 }
 
@@ -134,9 +140,9 @@ table td.numeric,
 }
 
 .hhs-body-sm {
-  font-size: 0.78rem; /* ~12.5px */
+  font-size: 0.8rem; /* ~12.8px */
   font-weight: 400;
-  line-height: 1.15rem;
+  line-height: 1.2rem;
   color: var(--hhs-text-secondary);
 }
 
@@ -148,11 +154,7 @@ table td.numeric,
   color: var(--hhs-text-secondary);
 }
 
-/* ============================================================================
-   SHARED REUSABLE COMPONENT STYLES
-   ============================================================================ */
-
-/* Primary Institutional Buttons */
+/* Buttons */
 .hhs-btn {
   display: inline-flex;
   align-items: center;
@@ -161,23 +163,23 @@ table td.numeric,
   height: var(--hhs-control-height);
   padding: 0 14px;
   border-radius: var(--hhs-radius-base);
-  font-size: 0.85rem;
+  font-size: 0.84rem;
   font-weight: 600;
   text-decoration: none;
   cursor: pointer;
   border: 1px solid transparent;
-  transition: background-color 0.15s ease, border-color 0.15s ease, color 0.15s ease;
+  transition: background-color 0.15s ease, border-color 0.15s ease, color 0.15s ease, box-shadow 0.15s ease;
   white-space: nowrap;
 }
 
 .hhs-btn:disabled {
-  opacity: 0.5;
+  opacity: 0.45;
   cursor: not-allowed;
 }
 
 .hhs-btn-primary {
   background-color: var(--hhs-primary);
-  color: #ffffff;
+  color: #FFFFFF;
 }
 
 .hhs-btn-primary:hover:not(:disabled) {
@@ -195,7 +197,7 @@ table td.numeric,
 }
 
 .hhs-btn-secondary:hover:not(:disabled) {
-  background-color: var(--hhs-canvas);
+  background-color: var(--hhs-surface-hover);
   border-color: var(--hhs-border-strong);
 }
 
@@ -207,7 +209,7 @@ table td.numeric,
 
 .hhs-btn-danger:hover:not(:disabled) {
   background-color: var(--hhs-danger);
-  color: #ffffff;
+  color: #FFFFFF;
 }
 
 .hhs-btn-sm {
@@ -222,16 +224,16 @@ table td.numeric,
   font-size: 0.92rem;
 }
 
-/* Institutional Form Controls */
+/* Form Controls */
 .hhs-form-group {
   display: flex;
   flex-direction: column;
-  gap: 6px;
-  margin-bottom: 16px;
+  gap: 5px;
+  margin-bottom: 14px;
 }
 
 .hhs-label {
-  font-size: 0.75rem;
+  font-size: 0.74rem;
   font-weight: 600;
   text-transform: uppercase;
   letter-spacing: 0.04em;
@@ -248,18 +250,19 @@ table td.numeric,
   color: var(--hhs-text-primary);
   font-size: 0.875rem;
   font-family: inherit;
-  transition: border-color 0.15s ease;
+  transition: border-color 0.15s ease, box-shadow 0.15s ease;
 }
 
 .hhs-textarea {
   height: auto;
-  min-height: 80px;
-  padding: 10px 12px;
+  min-height: 76px;
+  padding: 8px 12px;
 }
 
 .hhs-input:focus, .hhs-select:focus, .hhs-textarea:focus {
   outline: none;
   border-color: var(--hhs-border-focus);
+  box-shadow: 0 0 0 2px rgba(52, 88, 212, 0.15);
 }
 
 .hhs-input.error, .hhs-select.error {
@@ -267,12 +270,12 @@ table td.numeric,
 }
 
 .hhs-field-error {
-  font-size: 0.75rem;
+  font-size: 0.74rem;
   color: var(--hhs-danger);
   margin-top: 2px;
 }
 
-/* Institutional Card Surfaces */
+/* Card Surfaces */
 .hhs-card {
   background-color: var(--hhs-surface);
   border: 1px solid var(--hhs-border);
@@ -281,7 +284,7 @@ table td.numeric,
 }
 
 .hhs-card-header {
-  padding: 14px 18px;
+  padding: 12px 16px;
   border-bottom: 1px solid var(--hhs-border);
   background-color: var(--hhs-surface);
   display: flex;
@@ -290,19 +293,24 @@ table td.numeric,
 }
 
 .hhs-card-body {
-  padding: 18px;
+  padding: 16px;
 }
 
-/* Metric KPI Blocks */
+/* Compact Metric KPI Blocks */
 .hhs-metric-card {
   background-color: var(--hhs-surface);
   border: 1px solid var(--hhs-border);
   border-radius: var(--hhs-radius-container);
-  padding: 18px;
+  padding: 16px;
   position: relative;
   display: flex;
   flex-direction: column;
   justify-content: space-between;
+  transition: border-color 0.15s ease;
+}
+
+.hhs-metric-card:hover {
+  border-color: var(--hhs-border-strong);
 }
 
 .hhs-metric-card::before {
@@ -310,17 +318,20 @@ table td.numeric,
   position: absolute;
   top: 0;
   left: 0;
-  width: 4px;
+  width: 3px;
   height: 100%;
+  border-top-left-radius: var(--hhs-radius-container);
+  border-bottom-left-radius: var(--hhs-radius-container);
 }
 
 .hhs-metric-card.primary::before { background-color: var(--hhs-primary); }
 .hhs-metric-card.accent::before { background-color: var(--hhs-accent); }
 .hhs-metric-card.danger::before { background-color: var(--hhs-danger); }
-.hhs-metric-card.info::before { background-color: var(--hhs-info); }
+.hhs-metric-card.success::before { background-color: var(--hhs-success); }
+.hhs-metric-card.info::before { background-color: var(--hhs-text-secondary); }
 
 .hhs-metric-value {
-  font-size: 2.15rem;
+  font-size: 2rem;
   font-weight: 700;
   color: var(--hhs-text-primary);
   line-height: 1.1;
@@ -329,14 +340,14 @@ table td.numeric,
 }
 
 .hhs-metric-label {
-  font-size: 0.74rem;
+  font-size: 0.72rem;
   font-weight: 600;
   text-transform: uppercase;
   letter-spacing: 0.05em;
   color: var(--hhs-text-secondary);
 }
 
-/* Institutional Tables */
+/* Clean Tables */
 .hhs-table-container {
   width: 100%;
   overflow-x: auto;
@@ -357,7 +368,7 @@ table td.numeric,
   font-size: 0.72rem;
   font-weight: 600;
   text-transform: uppercase;
-  letter-spacing: 0.05em;
+  letter-spacing: 0.04em;
   padding: 10px 14px;
   border-bottom: 1px solid var(--hhs-border);
   white-space: nowrap;
@@ -385,8 +396,8 @@ table td.numeric,
   gap: 4px;
   height: 22px;
   padding: 0 8px;
-  border-radius: 3px;
-  font-size: 0.74rem;
+  border-radius: var(--hhs-radius-sm);
+  font-size: 0.72rem;
   font-weight: 600;
   white-space: nowrap;
   letter-spacing: 0.02em;
@@ -395,19 +406,25 @@ table td.numeric,
 .hhs-badge-primary {
   background-color: var(--hhs-primary-light);
   color: var(--hhs-primary-text);
-  border: 1px solid rgba(49, 89, 78, 0.25);
+  border: 1px solid rgba(52, 88, 212, 0.2);
 }
 
 .hhs-badge-accent {
   background-color: var(--hhs-accent-light);
   color: var(--hhs-accent-text);
-  border: 1px solid rgba(215, 164, 106, 0.35);
+  border: 1px solid rgba(217, 154, 55, 0.3);
 }
 
 .hhs-badge-danger {
   background-color: var(--hhs-danger-light);
   color: var(--hhs-danger-text);
-  border: 1px solid rgba(200, 90, 84, 0.3);
+  border: 1px solid rgba(185, 65, 65, 0.25);
+}
+
+.hhs-badge-success {
+  background-color: var(--hhs-success-light);
+  color: var(--hhs-success-text);
+  border: 1px solid rgba(46, 125, 90, 0.25);
 }
 
 .hhs-badge-neutral {
@@ -416,29 +433,17 @@ table td.numeric,
   border: 1px solid var(--hhs-border);
 }
 
-/* Demo Mode Banner */
-.hhs-demo-banner {
-  background-color: #fef3c7;
-  border-bottom: 1px solid #fde68a;
-  color: #92400e;
-  padding: 6px 16px;
-  font-size: 0.78rem;
-  font-weight: 600;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-}
-
 /* Modal Dialogs */
 .hhs-modal-backdrop {
   position: fixed;
   inset: 0;
-  background-color: rgba(32, 43, 42, 0.4);
+  background-color: rgba(25, 36, 58, 0.45);
   display: flex;
   align-items: center;
   justify-content: center;
   z-index: 100;
   padding: 16px;
+  backdrop-filter: blur(1px);
 }
 
 .hhs-modal-sheet {
@@ -447,7 +452,7 @@ table td.numeric,
   border-radius: var(--hhs-radius-modal);
   box-shadow: var(--hhs-shadow-level-3);
   width: 100%;
-  max-width: 540px;
+  max-width: 520px;
   overflow: hidden;
 }
 
@@ -486,7 +491,7 @@ table td.numeric,
 .hhs-main-canvas {
   flex: 1;
   padding: 24px 32px;
-  max-width: 1280px;
+  max-width: 1200px;
   width: 100%;
   margin: 0 auto;
   box-sizing: border-box;
@@ -501,7 +506,7 @@ table td.numeric,
 
 .hhs-metrics-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
   gap: 14px;
   margin-bottom: 20px;
 }
@@ -516,7 +521,7 @@ table td.numeric,
 @media (max-width: 768px) {
   .hhs-sidebar {
     transform: translateX(-100%);
-    box-shadow: 0 10px 25px -5px rgba(32, 43, 42, 0.25);
+    box-shadow: 0 10px 25px -5px rgba(25, 36, 58, 0.2);
     visibility: hidden;
     pointer-events: none;
   }
@@ -534,7 +539,7 @@ table td.numeric,
   .hhs-sidebar-backdrop {
     position: fixed;
     inset: 0;
-    background-color: rgba(32, 43, 42, 0.45);
+    background-color: rgba(25, 36, 58, 0.4);
     z-index: 35;
     backdrop-filter: blur(2px);
   }
@@ -563,7 +568,7 @@ table td.numeric,
 /* Print Media Styles */
 @media print {
   body {
-    background-color: #ffffff !important;
+    background-color: #FFFFFF !important;
   }
   .no-print, nav, header, aside, .hhs-demo-banner {
     display: none !important;

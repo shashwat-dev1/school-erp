@@ -14,7 +14,7 @@ describe('HanuJai ERP Foundation — Core Workflows', () => {
     }
   });
 
-  it('renders the application shell and Operations Hub in Demo Mode', async () => {
+  it('renders the application shell and Home in Demo Mode', async () => {
     render(
       <MemoryRouter initialEntries={['/']}>
         <AuthProvider>
@@ -27,14 +27,14 @@ describe('HanuJai ERP Foundation — Core Workflows', () => {
 
     // Verify institutional brand and demo indicator
     await waitFor(() => {
-      expect(screen.getByText(/HanuJai High School/i)).toBeInTheDocument();
-      expect(screen.getByText(/Demo Mode — Sample Data/i)).toBeInTheDocument();
-      expect(screen.getByText(/Operations Hub/i)).toBeInTheDocument();
+      expect(screen.getAllByText(/HanuJai High School/i)[0]).toBeInTheDocument();
+      expect(screen.getAllByText(/Sample Data/i)[0]).toBeInTheDocument();
+      expect(screen.getAllByText(/Home/i)[0]).toBeInTheDocument();
     });
 
     // Verify presence of morning roll call metrics
-    expect(screen.getByText(/Total Student Enrollment/i)).toBeInTheDocument();
-    expect(screen.getByText(/Explainable Student Care Flags/i)).toBeInTheDocument();
+    expect(screen.getAllByText(/Total Students/i)[0]).toBeInTheDocument();
+    expect(screen.getAllByText(/Students Needing Attention/i)[0]).toBeInTheDocument();
   });
 
   it('renders the Student Ledger with seed student records', async () => {

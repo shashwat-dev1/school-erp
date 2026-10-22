@@ -16,12 +16,13 @@ import {
   CalendarCheck,
   AlertTriangle,
   History,
-  ShieldAlert,
   Edit,
   Printer,
   FileText,
-  CheckCircle2,
   ArrowLeft,
+  Calendar,
+  BookOpen,
+  MessageSquare,
 } from 'lucide-react';
 
 export const StudentDetail: React.FC = () => {
@@ -68,7 +69,7 @@ export const StudentDetail: React.FC = () => {
         }
 
         if (!Permissions.canViewStudent(currentUser, studentDoc)) {
-          setError(`Desk Clearance Boundary: Your current role (${currentUser?.role}) is not authorized to access student dossiers outside your assigned section or subject allocations.`);
+          setError(`You do not have permission to view records outside your assigned classes or subjects.`);
           return;
         }
 
@@ -84,7 +85,7 @@ export const StudentDetail: React.FC = () => {
         });
         setIsLoading(false);
 
-        // Parallel fetch for tabs
+        // Fetch secondary records concurrently
         const [incRes, auditRes, assessRes] = await Promise.all([
           provider.getIncidents({ studentId: id }),
           provider.getStudentAuditHistory(id),
@@ -95,7 +96,7 @@ export const StudentDetail: React.FC = () => {
         setIncidents(incRes);
         setAuditHistory(auditRes);
 
-        // Fetch marks for authorized subjects concurrently
+        // Fetch marks for authorized subjects
         const subjects = await provider.getSubjects();
         const isFullMarksAuthorized =
           currentUser?.role === 'principal' ||
@@ -127,7 +128,7 @@ export const StudentDetail: React.FC = () => {
         if (isMounted) setMarksRegisters(marksList);
       } catch (err: unknown) {
         if (!isMounted) return;
-        const msg = err instanceof Error ? err.message : 'Failed to load student profile.';
+        const msg = err instanceof Error ? err.message : 'Could not load student profile.';
         setError(msg);
       } finally {
         if (isMounted) setIsLoading(false);
@@ -144,7 +145,7 @@ export const StudentDetail: React.FC = () => {
     e.preventDefault();
     if (!student || !currentUser) return;
     if (!editForm.revisionReason.trim()) {
-      alert('Mandatory requirement: Please enter a reason for revision to ensure audit compliance.');
+      alert('Please enter a brief note explaining the change.');
       return;
     }
 
@@ -171,14 +172,14 @@ export const StudentDetail: React.FC = () => {
       const freshAudit = await provider.getStudentAuditHistory(student.id);
       setAuditHistory(freshAudit);
     } catch (err: unknown) {
-      alert(err instanceof Error ? err.message : 'Failed to update student profile.');
+      alert(err instanceof Error ? err.message : 'Could not update student details.');
     } finally {
       setIsSaving(false);
     }
   };
 
   if (isLoading) {
-    return <LoadingState message="Retrieving institutional student dossier & historical ledger..." />;
+    return <LoadingState message="Loading student details..." />;
   }
 
   if (error || !student) {
@@ -190,34 +191,35 @@ export const StudentDetail: React.FC = () => {
           style={{ width: 'fit-content', display: 'flex', alignItems: 'center', gap: '6px' }}
         >
           <ArrowLeft size={15} />
-          <span>Return to Student Ledger</span>
+          <span>Back to Students</span>
         </button>
-        <ErrorBanner title="Record Unavailable" message={error || 'Student not found.'} />
+        <ErrorBanner title="Student Not Found" message={error || 'We could not find this student record.'} />
       </div>
     );
   }
 
   const role = currentUser?.role;
   const canEdit = role === 'principal' || role === 'office_admin';
-  const isGuardianContactAuthorized =
-    role === 'principal' ||
-    role === 'office_admin' ||
-    (role === 'class_teacher' && currentUser?.assignedClassId === student.classId);
+
+  // Calculate attendance numbers based on standard school year
+  const totalSchoolDays = 120;
+  const daysPresent = Math.round((student.attendancePercentage / 100) * totalSchoolDays);
+  const daysAbsent = totalSchoolDays - daysPresent;
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
       {/* Page Header */}
       <PageHeader
         title={`${student.firstName} ${student.lastName}`}
-        subtitle={`HanuJai High School, Jaipur • ${student.classLabel} • Admission #${student.admissionNumber} • Roll #${student.rollNumber}`}
-        roleScope={role === 'class_teacher' ? `${student.classLabel} Student Dossier` : 'Student Master Dossier'}
+        subtitle={`Class ${student.classLabel} • Admission #${student.admissionNumber} • Academic Session 2025–2026`}
+        roleScope={student.classLabel}
         breadcrumbs={[
-          { label: role === 'class_teacher' ? 'My Section' : role === 'subject_teacher' ? 'My Teaching' : 'Operations Hub', to: '/' },
-          { label: 'Student Directory', to: '/students' },
+          { label: 'Home', to: '/' },
+          { label: 'Students', to: '/students' },
           { label: `${student.firstName} ${student.lastName}` },
         ]}
         actions={
-          <div style={{ display: 'flex', gap: '10px' }}>
+          <div style={{ display: 'flex', gap: '8px' }}>
             <button
               onClick={() => navigate(`/reports/ptm-slip/${student.id}`)}
               className="hhs-btn hhs-btn-secondary"
@@ -232,7 +234,7 @@ export const StudentDetail: React.FC = () => {
               style={{ display: 'flex', alignItems: 'center', gap: '6px' }}
             >
               <FileText size={15} />
-              <span>CBSE Report Card</span>
+              <span>Report Card</span>
             </button>
             {canEdit && (
               <button
@@ -248,78 +250,79 @@ export const StudentDetail: React.FC = () => {
         }
       />
 
-      {/* Profile Summary Banner */}
+      {/* Top Essential Student Profile Header */}
       <div
         className="hhs-card"
         style={{
-          padding: '20px',
-          display: 'grid',
-          gridTemplateColumns: 'auto 1fr auto',
-          gap: '20px',
+          padding: '18px 22px',
+          display: 'flex',
+          justifyContent: 'space-between',
           alignItems: 'center',
+          flexWrap: 'wrap',
+          gap: '16px',
         }}
       >
-        <div
-          style={{
-            width: '64px',
-            height: '64px',
-            borderRadius: 'var(--hhs-radius-container)',
-            backgroundColor: 'var(--hhs-primary-light)',
-            color: 'var(--hhs-primary-text)',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            fontWeight: 700,
-            fontSize: '1.4rem',
-            border: '1px solid #c9d8d3',
-          }}
-        >
-          {student.firstName[0]}
-          {student.lastName[0]}
-        </div>
-
-        <div>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '4px' }}>
-            <h2 className="hhs-headline-md" style={{ marginBottom: 0 }}>
-              {student.fullName}
-            </h2>
-            <StatusBadge status={student.status} />
-            {student.attendancePercentage < 75 && (
-              <span className="hhs-badge hhs-badge-danger">
-                CBSE Attendance Risk (&lt;75%)
-              </span>
-            )}
+        <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
+          <div
+            style={{
+              width: '52px',
+              height: '52px',
+              borderRadius: 'var(--hhs-radius-container)',
+              backgroundColor: 'var(--hhs-primary-light)',
+              color: 'var(--hhs-primary-text)',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              fontWeight: 700,
+              fontSize: '1.25rem',
+            }}
+          >
+            {student.firstName[0]}
+            {student.lastName[0]}
           </div>
-          <div style={{ fontSize: '0.82rem', color: 'var(--hhs-text-secondary)' }}>
-            Class: <strong>{student.classLabel}</strong> • Roll #:{' '}
-            <strong className="tnum">{student.rollNumber}</strong> • Admission No:{' '}
-            <strong className="tnum">{student.admissionNumber}</strong> • Enrollment Date:{' '}
-            <span className="tnum">{student.enrollmentDate}</span>
+
+          <div>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+              <h2 className="hhs-headline-md" style={{ margin: 0 }}>
+                {student.fullName}
+              </h2>
+              <StatusBadge status={student.status} label={student.status === 'enrolled' ? 'Enrolled' : student.status} />
+              {student.attendancePercentage < 75 && (
+                <span className="hhs-badge hhs-badge-danger">
+                  Attendance below 75%
+                </span>
+              )}
+            </div>
+            <div style={{ fontSize: '0.82rem', color: 'var(--hhs-text-secondary)', marginTop: '3px' }}>
+              Class: <strong>{student.classLabel}</strong> • Roll #:{' '}
+              <strong className="tnum">{student.rollNumber}</strong> • Admission #:{' '}
+              <strong className="tnum">{student.admissionNumber}</strong>
+            </div>
           </div>
         </div>
 
         {/* Quick KPI stats */}
-        <div style={{ display: 'flex', gap: '24px', borderLeft: '1px solid var(--hhs-border)', paddingLeft: '24px' }}>
+        <div style={{ display: 'flex', gap: '24px' }}>
           <div style={{ textAlign: 'center' }}>
             <div
               className="tnum"
               style={{
-                fontSize: '1.4rem',
+                fontSize: '1.35rem',
                 fontWeight: 700,
                 color: student.attendancePercentage < 75 ? 'var(--hhs-danger)' : 'var(--hhs-primary)',
               }}
             >
               {student.attendancePercentage}%
             </div>
-            <div style={{ fontSize: '0.72rem', color: 'var(--hhs-text-secondary)', textTransform: 'uppercase' }}>
-              Attendance (YTD)
+            <div style={{ fontSize: '0.72rem', color: 'var(--hhs-text-secondary)' }}>
+              Attendance Turnout
             </div>
           </div>
           <div style={{ textAlign: 'center' }}>
-            <div className="tnum" style={{ fontSize: '1.4rem', fontWeight: 700, color: 'var(--hhs-text-primary)' }}>
+            <div className="tnum" style={{ fontSize: '1.35rem', fontWeight: 700, color: 'var(--hhs-text-primary)' }}>
               {student.academicAverage > 0 ? `${student.academicAverage}%` : '82.5%'}
             </div>
-            <div style={{ fontSize: '0.72rem', color: 'var(--hhs-text-secondary)', textTransform: 'uppercase' }}>
+            <div style={{ fontSize: '0.72rem', color: 'var(--hhs-text-secondary)' }}>
               Term Average
             </div>
           </div>
@@ -336,221 +339,108 @@ export const StudentDetail: React.FC = () => {
           { id: 'attendance', label: 'Attendance Records', icon: <CalendarCheck size={15} /> },
           {
             id: 'behaviour',
-            label: `Pastoral Care & Incidents (${incidents.length})`,
+            label: `Pastoral Care & Notes (${incidents.length})`,
             icon: <AlertTriangle size={15} />,
           },
-          { id: 'audit', label: `Change History (${auditHistory.length})`, icon: <History size={15} /> },
+          ...(canEdit ? [{ id: 'audit', label: `Change History (${auditHistory.length})`, icon: <History size={15} /> }] : []),
         ]}
       />
 
-      {/* TAB 1: OVERVIEW */}
+      {/* TAB 1: OVERVIEW — The 3 Clearly Organized Areas */}
       {activeTab === 'overview' && (
-        <div style={{ display: 'grid', gridTemplateColumns: '1.2fr 0.8fr', gap: '20px' }}>
-          {/* Left: Demographics & Guardian */}
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
-            <div className="hhs-card" style={{ padding: '20px' }}>
-              <h3 className="hhs-headline-sm" style={{ marginBottom: '16px', paddingBottom: '10px', borderBottom: '1px solid var(--hhs-border)' }}>
-                Personal & Family Information
-              </h3>
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px', fontSize: '0.84rem' }}>
-                <div>
-                  <span className="hhs-label">Date of Birth</span>
-                  <div className="tnum" style={{ fontWeight: 600 }}>{student.dateOfBirth}</div>
-                </div>
-                <div>
-                  <span className="hhs-label">Gender</span>
-                  <div style={{ fontWeight: 600 }}>{student.gender === 'M' ? 'Male' : student.gender === 'F' ? 'Female' : 'Other'}</div>
-                </div>
-                {isGuardianContactAuthorized ? (
-                  <>
-                    <div>
-                      <span className="hhs-label">Primary Guardian</span>
-                      <div style={{ fontWeight: 600 }}>{student.guardianName} ({student.guardianRelation})</div>
-                    </div>
-                    <div>
-                      <span className="hhs-label">Emergency Phone</span>
-                      <div className="tnum" style={{ fontWeight: 600 }}>{student.primaryPhone}</div>
-                    </div>
-                    <div style={{ gridColumn: 'span 2' }}>
-                      <span className="hhs-label">Residential Address</span>
-                      <div style={{ color: 'var(--hhs-text-secondary)', lineHeight: 1.5 }}>
-                        {student.residentialAddress}, {student.city}, {student.state} {student.pincode}
-                      </div>
-                    </div>
-                  </>
-                ) : (
-                  <div style={{ gridColumn: 'span 2', padding: '12px', backgroundColor: 'var(--hhs-surface-muted)', borderRadius: 'var(--hhs-radius-sm)', fontStyle: 'italic', color: 'var(--hhs-text-muted)' }}>
-                    Guardian contact and residential address are restricted to the Office Registrar and Assigned Class Tutor.
-                  </div>
-                )}
-              </div>
-            </div>
-
-            {/* Academic Track */}
-            <div className="hhs-card" style={{ padding: '20px' }}>
-              <h3 className="hhs-headline-sm" style={{ marginBottom: '16px', paddingBottom: '10px', borderBottom: '1px solid var(--hhs-border)' }}>
-                Enrollment & Section Details
-              </h3>
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px', fontSize: '0.84rem' }}>
-                <div>
-                  <span className="hhs-label">Academic Session</span>
-                  <div style={{ fontWeight: 600 }}>{student.academicYearId || '2025–2026'}</div>
-                </div>
-                <div>
-                  <span className="hhs-label">Class Section</span>
-                  <div style={{ fontWeight: 600 }}>{student.classLabel}</div>
-                </div>
-                <div>
-                  <span className="hhs-label">Admission Number</span>
-                  <div className="tnum" style={{ fontWeight: 600 }}>{student.admissionNumber}</div>
-                </div>
-                <div>
-                  <span className="hhs-label">Roll Number</span>
-                  <div className="tnum" style={{ fontWeight: 600 }}>{student.rollNumber}</div>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          {/* Right: Explainable Care Rules & Active Flags */}
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
-            <div className="hhs-card" style={{ padding: '20px' }}>
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px', paddingBottom: '10px', borderBottom: '1px solid var(--hhs-border)' }}>
-                <div>
-                  <h3 className="hhs-headline-sm">Explainable Care Flags</h3>
-                  <p className="hhs-body-sm" style={{ color: 'var(--hhs-text-secondary)' }}>
-                    Transparent, rule-based alerts requiring educator intervention.
-                  </p>
-                </div>
-                <ShieldAlert size={18} color="var(--hhs-accent)" />
-              </div>
-
-              {student.activeFlags && student.activeFlags.length > 0 ? (
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
-                  {student.activeFlags.map((flag, idx) => (
-                    <div
-                      key={idx}
-                      style={{
-                        padding: '12px',
-                        borderRadius: 'var(--hhs-radius-base)',
-                        backgroundColor: 'var(--hhs-canvas)',
-                        border: `1px solid ${flag.severity === 'alert' ? '#f0bcb8' : '#e6cdb2'}`,
-                      }}
-                    >
-                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                        <span className={flag.severity === 'alert' ? 'hhs-badge hhs-badge-danger' : 'hhs-badge hhs-badge-accent'}>
-                          #{flag.code}
-                        </span>
-                        <span className="tnum" style={{ fontSize: '0.72rem', color: 'var(--hhs-text-muted)' }}>
-                          Triggered: {flag.triggeredAt.split('T')[0]}
-                        </span>
-                      </div>
-                      <div style={{ fontWeight: 600, fontSize: '0.86rem', marginTop: '6px' }}>
-                        {flag.title}
-                      </div>
-                      <div style={{ fontSize: '0.78rem', color: 'var(--hhs-text-secondary)', marginTop: '4px' }}>
-                        <strong>Trigger Reason:</strong> {flag.reason}
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              ) : (
-                <div style={{ padding: '24px 12px', textAlign: 'center', color: 'var(--hhs-text-secondary)' }}>
-                  <CheckCircle2 size={24} color="var(--hhs-primary)" style={{ margin: '0 auto 8px' }} />
-                  <div>No active care alerts for this student.</div>
-                </div>
-              )}
-            </div>
-
-            {/* Quick Actions */}
-            <div className="hhs-card" style={{ padding: '16px', display: 'flex', flexDirection: 'column', gap: '8px' }}>
-              <div style={{ fontWeight: 600, fontSize: '0.82rem', marginBottom: '4px' }}>
-                Quick Dossier Actions:
-              </div>
-              <button
-                onClick={() => navigate(`/attendance/register/${student.classId}`)}
-                className="hhs-btn hhs-btn-secondary hhs-btn-sm"
-                style={{ justifyContent: 'flex-start' }}
-              >
-                Mark Daily Attendance for {student.classLabel}
-              </button>
-              <button
-                onClick={() => {
-                  setActiveTab('behaviour');
-                }}
-                className="hhs-btn hhs-btn-secondary hhs-btn-sm"
-                style={{ justifyContent: 'flex-start' }}
-              >
-                Log Pastoral Care Observation
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* TAB 2: ACADEMICS */}
-      {activeTab === 'academics' && (
         <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
+          
+          {/* AREA 1: ATTENDANCE SUMMARY */}
           <div className="hhs-card" style={{ padding: '20px' }}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
-              <div>
-                <h3 className="hhs-headline-sm">Continuous Assessment Performance Transcript</h3>
-                <p className="hhs-body-sm" style={{ color: 'var(--hhs-text-secondary)' }}>
-                  Unit tests and term examination records for Session 2025–2026.
-                </p>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '14px' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                <Calendar size={18} style={{ color: 'var(--hhs-primary)' }} />
+                <h3 className="hhs-headline-sm" style={{ margin: 0 }}>Attendance Summary</h3>
               </div>
               <button
-                onClick={() => navigate(`/reports/report-card/${student.id}`)}
+                onClick={() => setActiveTab('attendance')}
                 className="hhs-btn hhs-btn-secondary hhs-btn-sm"
-                style={{ display: 'flex', alignItems: 'center', gap: '6px' }}
               >
-                <Printer size={13} />
-                <span>Print Official Report Card</span>
+                <span>View Full Attendance</span>
+              </button>
+            </div>
+
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: '14px' }}>
+              <div style={{ padding: '12px 14px', borderRadius: 'var(--hhs-radius-base)', backgroundColor: 'var(--hhs-canvas)', border: '1px solid var(--hhs-border)' }}>
+                <div style={{ fontSize: '0.75rem', color: 'var(--hhs-text-secondary)' }}>Total School Days</div>
+                <div className="tnum" style={{ fontSize: '1.25rem', fontWeight: 700, marginTop: '2px' }}>{totalSchoolDays}</div>
+                <div style={{ fontSize: '0.72rem', color: 'var(--hhs-text-secondary)', marginTop: '2px' }}>Current session</div>
+              </div>
+
+              <div style={{ padding: '12px 14px', borderRadius: 'var(--hhs-radius-base)', backgroundColor: 'var(--hhs-canvas)', border: '1px solid var(--hhs-border)' }}>
+                <div style={{ fontSize: '0.75rem', color: 'var(--hhs-text-secondary)' }}>Days Present</div>
+                <div className="tnum" style={{ fontSize: '1.25rem', fontWeight: 700, color: 'var(--hhs-primary)', marginTop: '2px' }}>{daysPresent}</div>
+                <div style={{ fontSize: '0.72rem', color: 'var(--hhs-text-secondary)', marginTop: '2px' }}>Attended classes</div>
+              </div>
+
+              <div style={{ padding: '12px 14px', borderRadius: 'var(--hhs-radius-base)', backgroundColor: 'var(--hhs-canvas)', border: '1px solid var(--hhs-border)' }}>
+                <div style={{ fontSize: '0.75rem', color: 'var(--hhs-text-secondary)' }}>Days Absent</div>
+                <div className="tnum" style={{ fontSize: '1.25rem', fontWeight: 700, color: daysAbsent > 10 ? 'var(--hhs-danger)' : 'inherit', marginTop: '2px' }}>{daysAbsent}</div>
+                <div style={{ fontSize: '0.72rem', color: 'var(--hhs-text-secondary)', marginTop: '2px' }}>Excused and unexcused</div>
+              </div>
+
+              <div style={{ padding: '12px 14px', borderRadius: 'var(--hhs-radius-base)', backgroundColor: 'var(--hhs-canvas)', border: '1px solid var(--hhs-border)' }}>
+                <div style={{ fontSize: '0.75rem', color: 'var(--hhs-text-secondary)' }}>Turnout Rate</div>
+                <div className="tnum" style={{ fontSize: '1.25rem', fontWeight: 700, color: student.attendancePercentage < 75 ? 'var(--hhs-danger)' : 'var(--hhs-primary)', marginTop: '2px' }}>
+                  {student.attendancePercentage}%
+                </div>
+                <div style={{ fontSize: '0.72rem', color: 'var(--hhs-text-secondary)', marginTop: '2px' }}>
+                  {student.attendancePercentage >= 75 ? 'Meets 75% requirement' : 'Below 75% threshold'}
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* AREA 2: ACADEMIC RESULTS */}
+          <div className="hhs-card" style={{ padding: '20px' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '14px' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                <BookOpen size={18} style={{ color: 'var(--hhs-primary)' }} />
+                <h3 className="hhs-headline-sm" style={{ margin: 0 }}>Academic Results</h3>
+              </div>
+              <button
+                onClick={() => setActiveTab('academics')}
+                className="hhs-btn hhs-btn-secondary hhs-btn-sm"
+              >
+                <span>All Examination Cycles</span>
               </button>
             </div>
 
             {marksRegisters.length > 0 ? (
               <div style={{ overflowX: 'auto' }}>
-                <table className="hhs-table">
+                <table className="hhs-table" style={{ width: '100%', fontSize: '0.84rem' }}>
                   <thead>
                     <tr>
-                      <th>Assessment Cycle</th>
+                      <th>Exam</th>
                       <th>Subject</th>
                       <th style={{ textAlign: 'center' }}>Max Marks</th>
                       <th style={{ textAlign: 'center' }}>Marks Obtained</th>
                       <th style={{ textAlign: 'center' }}>Percentage</th>
-                      <th style={{ textAlign: 'center' }}>CBSE Grade</th>
-                      <th>Teacher Remarks</th>
+                      <th style={{ textAlign: 'center' }}>Grade</th>
                     </tr>
                   </thead>
                   <tbody>
-                    {marksRegisters.map(reg => {
+                    {marksRegisters.slice(0, 6).map(reg => {
                       const entry = reg.entries.find(e => e.studentId === student.id);
                       if (!entry) return null;
                       return (
                         <tr key={reg.id}>
                           <td style={{ fontWeight: 600 }}>{reg.assessmentTitle}</td>
                           <td>{reg.subjectName}</td>
-                          <td className="numeric tnum" style={{ textAlign: 'center' }}>{reg.maxMarks}</td>
-                          <td className="numeric tnum" style={{ textAlign: 'center', fontWeight: 700 }}>
-                            {entry.isAbsent ? (
-                              <span className="hhs-badge hhs-badge-danger">Absent</span>
-                            ) : (
-                              entry.marksObtained
-                            )}
+                          <td className="tnum" style={{ textAlign: 'center' }}>{reg.maxMarks}</td>
+                          <td className="tnum" style={{ textAlign: 'center', fontWeight: 700 }}>
+                            {entry.isAbsent ? <span className="hhs-badge hhs-badge-danger">Absent</span> : entry.marksObtained}
                           </td>
-                          <td className="numeric tnum" style={{ textAlign: 'center' }}>
+                          <td className="tnum" style={{ textAlign: 'center' }}>
                             {entry.percentage !== undefined ? `${entry.percentage}%` : '—'}
                           </td>
                           <td style={{ textAlign: 'center' }}>
-                            {entry.grade ? (
-                              <span className="hhs-badge hhs-badge-primary">{entry.grade}</span>
-                            ) : (
-                              '—'
-                            )}
-                          </td>
-                          <td style={{ fontSize: '0.8rem', color: 'var(--hhs-text-secondary)' }}>
-                            {entry.remarks || 'Standard progress verified.'}
+                            {entry.grade ? <span className="hhs-badge hhs-badge-primary">{entry.grade}</span> : '—'}
                           </td>
                         </tr>
                       );
@@ -559,296 +449,364 @@ export const StudentDetail: React.FC = () => {
                 </table>
               </div>
             ) : (
-              <div style={{ padding: '32px', textAlign: 'center', color: 'var(--hhs-text-secondary)' }}>
-                No submitted assessment marks on file yet for this student.
+              <div style={{ padding: '20px', textAlign: 'center', color: 'var(--hhs-text-secondary)', fontSize: '0.84rem' }}>
+                No recent examination marks entered for this student yet.
               </div>
             )}
           </div>
-        </div>
-      )}
 
-      {/* TAB 3: ATTENDANCE */}
-      {activeTab === 'attendance' && (
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
+          {/* AREA 3: RELEVANT TEACHER NOTES */}
           <div className="hhs-card" style={{ padding: '20px' }}>
-            <h3 className="hhs-headline-sm" style={{ marginBottom: '8px' }}>
-              Attendance Register Breakdown (Session 2025–2026)
-            </h3>
-            <p className="hhs-body-sm" style={{ color: 'var(--hhs-text-secondary)', marginBottom: '20px' }}>
-              Cumulative turnout: <strong className="tnum">{student.attendancePercentage}%</strong> (CBSE Minimum Statutory Threshold: 75.0%).
-            </p>
-
-            <div
-              style={{
-                display: 'grid',
-                gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))',
-                gap: '16px',
-                marginBottom: '24px',
-              }}
-            >
-              <div style={{ padding: '16px', borderRadius: 'var(--hhs-radius-base)', backgroundColor: 'var(--hhs-canvas)', border: '1px solid var(--hhs-border)' }}>
-                <span className="hhs-label">Total Operational Days</span>
-                <div className="tnum" style={{ fontSize: '1.4rem', fontWeight: 700 }}>112</div>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '14px' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                <MessageSquare size={18} style={{ color: 'var(--hhs-primary)' }} />
+                <h3 className="hhs-headline-sm" style={{ margin: 0 }}>Teacher Notes & Observations</h3>
               </div>
-              <div style={{ padding: '16px', borderRadius: 'var(--hhs-radius-base)', backgroundColor: 'var(--hhs-canvas)', border: '1px solid var(--hhs-border)' }}>
-                <span className="hhs-label">Days Present</span>
-                <div className="tnum" style={{ fontSize: '1.4rem', fontWeight: 700, color: 'var(--hhs-primary)' }}>100</div>
-              </div>
-              <div style={{ padding: '16px', borderRadius: 'var(--hhs-radius-base)', backgroundColor: 'var(--hhs-canvas)', border: '1px solid var(--hhs-border)' }}>
-                <span className="hhs-label">Unexcused Absences</span>
-                <div className="tnum" style={{ fontSize: '1.4rem', fontWeight: 700, color: 'var(--hhs-danger)' }}>8</div>
-              </div>
-              <div style={{ padding: '16px', borderRadius: 'var(--hhs-radius-base)', backgroundColor: 'var(--hhs-canvas)', border: '1px solid var(--hhs-border)' }}>
-                <span className="hhs-label">Late Reporting (Grace)</span>
-                <div className="tnum" style={{ fontSize: '1.4rem', fontWeight: 700, color: 'var(--hhs-accent)' }}>4</div>
-              </div>
-            </div>
-
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
               <button
-                onClick={() => navigate('/attendance/corrections')}
+                onClick={() => setActiveTab('behaviour')}
                 className="hhs-btn hhs-btn-secondary hhs-btn-sm"
               >
-                Request Dual-Custody Attendance Correction
-              </button>
-              <span className="tnum" style={{ fontSize: '0.78rem', color: 'var(--hhs-text-muted)' }}>
-                Audited daily against CBSE Pariksha Sangam standards
-              </span>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* TAB 4: BEHAVIOUR & INCIDENTS */}
-      {activeTab === 'behaviour' && (
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
-          <div className="hhs-card" style={{ padding: '20px' }}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
-              <div>
-                <h3 className="hhs-headline-sm">Pastoral Care & Conduct Timeline</h3>
-                <p className="hhs-body-sm" style={{ color: 'var(--hhs-text-secondary)' }}>
-                  Chronological record of commendations, notices, and disciplinary observations.
-                </p>
-              </div>
-              <button
-                onClick={() => navigate('/behaviour')}
-                className="hhs-btn hhs-btn-primary hhs-btn-sm"
-              >
-                Log New Observation
+                <span>Add Note</span>
               </button>
             </div>
 
             {incidents.length > 0 ? (
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
-                {incidents.map(inc => (
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+                {incidents.slice(0, 4).map(inc => (
                   <div
                     key={inc.id}
                     style={{
-                      padding: '16px',
+                      padding: '12px 14px',
                       borderRadius: 'var(--hhs-radius-base)',
+                      backgroundColor: 'var(--hhs-canvas)',
                       border: '1px solid var(--hhs-border)',
-                      backgroundColor: 'var(--hhs-surface-hover)',
                     }}
                   >
-                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '6px' }}>
-                      <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                        <span
-                          className={
-                            inc.severity === 'commendation'
-                              ? 'hhs-badge hhs-badge-primary'
-                              : inc.severity === 'critical' || inc.severity === 'disciplinary'
-                              ? 'hhs-badge hhs-badge-danger'
-                              : 'hhs-badge hhs-badge-accent'
-                          }
-                        >
-                          {inc.category.replace('_', ' ').toUpperCase()}
-                        </span>
-                        <strong style={{ fontSize: '0.9rem' }}>{inc.title}</strong>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '4px' }}>
+                      <div style={{ fontWeight: 600, fontSize: '0.86rem' }}>{inc.title}</div>
+                      <div style={{ fontSize: '0.74rem', color: 'var(--hhs-text-secondary)' }}>
+                        {inc.date} • By {inc.loggedByStaffName}
                       </div>
-                      <span className="tnum" style={{ fontSize: '0.74rem', color: 'var(--hhs-text-muted)' }}>
-                        Date: {inc.date} • Logged by: {inc.loggedByStaffName}
-                      </span>
                     </div>
-
-                    <p style={{ fontSize: '0.82rem', color: 'var(--hhs-text-secondary)', marginBottom: '8px' }}>
+                    <p style={{ margin: 0, fontSize: '0.82rem', color: 'var(--hhs-text-secondary)', lineHeight: 1.4 }}>
                       {inc.description}
                     </p>
-
                     {inc.actionTaken && (
-                      <div style={{ fontSize: '0.78rem', backgroundColor: 'var(--hhs-canvas)', padding: '8px 12px', borderRadius: 'var(--hhs-radius-sm)', border: '1px solid var(--hhs-border)' }}>
-                        <strong>Action Plan:</strong> {inc.actionTaken}
+                      <div style={{ fontSize: '0.78rem', color: 'var(--hhs-primary)', marginTop: '6px' }}>
+                        Follow-up: {inc.actionTaken}
                       </div>
                     )}
                   </div>
                 ))}
               </div>
             ) : (
-              <div style={{ padding: '32px', textAlign: 'center', color: 'var(--hhs-text-secondary)' }}>
-                No disciplinary notices or commendations recorded for this student.
+              <div style={{ padding: '20px', textAlign: 'center', color: 'var(--hhs-text-secondary)', fontSize: '0.84rem' }}>
+                No teacher notes or observations recorded for this student yet.
               </div>
             )}
+          </div>
+
+        </div>
+      )}
+
+      {/* TAB 2: ACADEMICS — Full Transcript */}
+      {activeTab === 'academics' && (
+        <div className="hhs-card" style={{ padding: '20px' }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
+            <div>
+              <h3 className="hhs-headline-sm">Academic Performance Record</h3>
+              <p className="hhs-body-sm" style={{ color: 'var(--hhs-text-secondary)' }}>
+                Assessment cycles and marks entered for Session 2025–2026.
+              </p>
+            </div>
+            <button
+              onClick={() => navigate(`/reports/report-card/${student.id}`)}
+              className="hhs-btn hhs-btn-secondary hhs-btn-sm"
+              style={{ display: 'flex', alignItems: 'center', gap: '5px' }}
+            >
+              <Printer size={13} />
+              <span>Print Report Card</span>
+            </button>
+          </div>
+
+          {marksRegisters.length > 0 ? (
+            <div style={{ overflowX: 'auto' }}>
+              <table className="hhs-table">
+                <thead>
+                  <tr>
+                    <th>Assessment Cycle</th>
+                    <th>Subject</th>
+                    <th style={{ textAlign: 'center' }}>Max Marks</th>
+                    <th style={{ textAlign: 'center' }}>Marks Obtained</th>
+                    <th style={{ textAlign: 'center' }}>Percentage</th>
+                    <th style={{ textAlign: 'center' }}>Grade</th>
+                    <th>Remarks</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {marksRegisters.map(reg => {
+                    const entry = reg.entries.find(e => e.studentId === student.id);
+                    if (!entry) return null;
+                    return (
+                      <tr key={reg.id}>
+                        <td style={{ fontWeight: 600 }}>{reg.assessmentTitle}</td>
+                        <td>{reg.subjectName}</td>
+                        <td className="tnum" style={{ textAlign: 'center' }}>{reg.maxMarks}</td>
+                        <td className="tnum" style={{ textAlign: 'center', fontWeight: 700 }}>
+                          {entry.isAbsent ? <span className="hhs-badge hhs-badge-danger">Absent</span> : entry.marksObtained}
+                        </td>
+                        <td className="tnum" style={{ textAlign: 'center' }}>
+                          {entry.percentage !== undefined ? `${entry.percentage}%` : '—'}
+                        </td>
+                        <td style={{ textAlign: 'center' }}>
+                          {entry.grade ? <span className="hhs-badge hhs-badge-primary">{entry.grade}</span> : '—'}
+                        </td>
+                        <td style={{ fontSize: '0.8rem', color: 'var(--hhs-text-secondary)' }}>
+                          {entry.remarks || 'Satisfactory progress.'}
+                        </td>
+                      </tr>
+                    );
+                  })}
+                </tbody>
+              </table>
+            </div>
+          ) : (
+            <div style={{ padding: '32px', textAlign: 'center', color: 'var(--hhs-text-secondary)' }}>
+              No assessment marks entered yet for this student.
+            </div>
+          )}
+        </div>
+      )}
+
+      {/* TAB 3: ATTENDANCE RECORDS */}
+      {activeTab === 'attendance' && (
+        <div className="hhs-card" style={{ padding: '20px' }}>
+          <h3 className="hhs-headline-sm" style={{ marginBottom: '6px' }}>Attendance Breakdown</h3>
+          <p className="hhs-body-sm" style={{ color: 'var(--hhs-text-secondary)', marginBottom: '18px' }}>
+            Overall Turnout: <strong className="tnum">{student.attendancePercentage}%</strong> (Minimum threshold: 75%).
+          </p>
+
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: '14px', marginBottom: '20px' }}>
+            <div style={{ padding: '14px', borderRadius: 'var(--hhs-radius-base)', backgroundColor: 'var(--hhs-canvas)', border: '1px solid var(--hhs-border)' }}>
+              <span className="hhs-label">Total School Days</span>
+              <div className="tnum" style={{ fontSize: '1.3rem', fontWeight: 700 }}>{totalSchoolDays}</div>
+            </div>
+            <div style={{ padding: '14px', borderRadius: 'var(--hhs-radius-base)', backgroundColor: 'var(--hhs-canvas)', border: '1px solid var(--hhs-border)' }}>
+              <span className="hhs-label">Days Present</span>
+              <div className="tnum" style={{ fontSize: '1.3rem', fontWeight: 700, color: 'var(--hhs-primary)' }}>{daysPresent}</div>
+            </div>
+            <div style={{ padding: '14px', borderRadius: 'var(--hhs-radius-base)', backgroundColor: 'var(--hhs-canvas)', border: '1px solid var(--hhs-border)' }}>
+              <span className="hhs-label">Days Absent</span>
+              <div className="tnum" style={{ fontSize: '1.3rem', fontWeight: 700, color: daysAbsent > 10 ? 'var(--hhs-danger)' : 'inherit' }}>{daysAbsent}</div>
+            </div>
+            <div style={{ padding: '14px', borderRadius: 'var(--hhs-radius-base)', backgroundColor: 'var(--hhs-canvas)', border: '1px solid var(--hhs-border)' }}>
+              <span className="hhs-label">Turnout Rate</span>
+              <div className="tnum" style={{ fontSize: '1.3rem', fontWeight: 700, color: student.attendancePercentage < 75 ? 'var(--hhs-danger)' : 'var(--hhs-primary)' }}>
+                {student.attendancePercentage}%
+              </div>
+            </div>
+          </div>
+
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+            <button
+              onClick={() => navigate('/attendance/corrections')}
+              className="hhs-btn hhs-btn-secondary hhs-btn-sm"
+            >
+              Attendance Correction Requests
+            </button>
+            <span style={{ fontSize: '0.78rem', color: 'var(--hhs-text-secondary)' }}>
+              Updated daily from class morning attendance registers.
+            </span>
           </div>
         </div>
       )}
 
-      {/* TAB 5: AUDIT HISTORY */}
-      {activeTab === 'audit' && (
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
-          <div className="hhs-card" style={{ padding: '20px' }}>
-            <h3 className="hhs-headline-sm" style={{ marginBottom: '8px' }}>
-              Immutable Profile Revision Ledger
-            </h3>
-            <p className="hhs-body-sm" style={{ color: 'var(--hhs-text-secondary)', marginBottom: '16px' }}>
-              Cryptographic audit log recording every mutation made to this student record.
-            </p>
+      {/* TAB 4: BEHAVIOUR & PASTORAL CARE */}
+      {activeTab === 'behaviour' && (
+        <div className="hhs-card" style={{ padding: '20px' }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
+            <div>
+              <h3 className="hhs-headline-sm">Pastoral Care &amp; Teacher Observations</h3>
+              <p className="hhs-body-sm" style={{ color: 'var(--hhs-text-secondary)' }}>
+                Chronological record of teacher observations and notes.
+              </p>
+            </div>
+            <button
+              onClick={() => navigate('/behaviour')}
+              className="hhs-btn hhs-btn-primary hhs-btn-sm"
+            >
+              Add New Note
+            </button>
+          </div>
 
-            {auditHistory.length > 0 ? (
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
-                {auditHistory.map(evt => (
-                  <div
-                    key={evt.id}
-                    style={{
-                      padding: '12px 16px',
-                      borderRadius: 'var(--hhs-radius-base)',
-                      border: '1px solid var(--hhs-border)',
-                      backgroundColor: 'var(--hhs-canvas)',
-                    }}
-                  >
-                    <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '4px' }}>
-                      <span style={{ fontWeight: 600, fontSize: '0.84rem' }}>{evt.actorName} ({evt.actorRole})</span>
-                      <span className="tnum" style={{ fontSize: '0.74rem', color: 'var(--hhs-text-muted)' }}>
-                        {new Date(evt.timestamp).toLocaleString()}
-                      </span>
-                    </div>
-                    <div style={{ fontSize: '0.82rem', color: 'var(--hhs-text-secondary)' }}>
-                      {evt.summary}
-                    </div>
+          {incidents.length > 0 ? (
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+              {incidents.map(inc => (
+                <div
+                  key={inc.id}
+                  style={{
+                    padding: '14px',
+                    borderRadius: 'var(--hhs-radius-base)',
+                    border: '1px solid var(--hhs-border)',
+                    backgroundColor: 'var(--hhs-canvas)',
+                  }}
+                >
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '4px' }}>
+                    <strong>{inc.title}</strong>
+                    <span style={{ fontSize: '0.74rem', color: 'var(--hhs-text-secondary)' }}>
+                      Date: {inc.date} • Logged by: {inc.loggedByStaffName}
+                    </span>
                   </div>
-                ))}
-              </div>
-            ) : (
-              <div style={{ padding: '32px', textAlign: 'center', color: 'var(--hhs-text-secondary)' }}>
-                No profile revisions recorded since original enrollment.
-              </div>
-            )}
-          </div>
+                  <p style={{ margin: '4px 0', fontSize: '0.82rem', color: 'var(--hhs-text-secondary)', lineHeight: 1.4 }}>
+                    {inc.description}
+                  </p>
+                  {inc.actionTaken && (
+                    <div style={{ fontSize: '0.78rem', color: 'var(--hhs-primary)', marginTop: '4px' }}>
+                      Follow-up: {inc.actionTaken}
+                    </div>
+                  )}
+                </div>
+              ))}
+            </div>
+          ) : (
+            <div style={{ padding: '32px', textAlign: 'center', color: 'var(--hhs-text-secondary)' }}>
+              No notes recorded for this student.
+            </div>
+          )}
         </div>
       )}
 
-      {/* EDIT STUDENT PROFILE MODAL */}
-      <Modal
-        isOpen={isEditModalOpen}
-        onClose={() => setIsEditModalOpen(false)}
-        title={`Edit Student Profile — ${student.fullName}`}
-        subtitle="Modifications will be permanently committed to the immutable school audit ledger."
-      >
-        <form onSubmit={handleEditSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
-            <div>
-              <label className="hhs-label" htmlFor="edit-first">First Name</label>
-              <input
-                id="edit-first"
-                required
-                className="hhs-input"
-                value={editForm.firstName}
-                onChange={e => setEditForm({ ...editForm, firstName: e.target.value })}
-              />
-            </div>
-            <div>
-              <label className="hhs-label" htmlFor="edit-last">Last Name</label>
-              <input
-                id="edit-last"
-                required
-                className="hhs-input"
-                value={editForm.lastName}
-                onChange={e => setEditForm({ ...editForm, lastName: e.target.value })}
-              />
-            </div>
-          </div>
+      {/* TAB 5: AUDIT HISTORY (Authorized Roles) */}
+      {activeTab === 'audit' && canEdit && (
+        <div className="hhs-card" style={{ padding: '20px' }}>
+          <h3 className="hhs-headline-sm" style={{ marginBottom: '6px' }}>Profile Change History</h3>
+          <p className="hhs-body-sm" style={{ color: 'var(--hhs-text-secondary)', marginBottom: '16px' }}>
+            Record of updates made to this student record.
+          </p>
 
-          <div style={{ display: 'grid', gridTemplateColumns: '1.2fr 0.8fr', gap: '12px' }}>
+          {auditHistory.length > 0 ? (
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+              {auditHistory.map(event => (
+                <div
+                  key={event.id}
+                  style={{
+                    padding: '10px 14px',
+                    borderRadius: 'var(--hhs-radius-base)',
+                    backgroundColor: 'var(--hhs-surface-muted)',
+                    fontSize: '0.8rem',
+                  }}
+                >
+                  <div style={{ display: 'flex', justifyContent: 'space-between', color: 'var(--hhs-text-secondary)' }}>
+                    <span style={{ fontWeight: 600 }}>{event.actorName}</span>
+                    <span className="tnum">{new Date(event.timestamp).toLocaleString()}</span>
+                  </div>
+                  <div style={{ marginTop: '2px' }}>{event.summary}</div>
+                </div>
+              ))}
+            </div>
+          ) : (
+            <div style={{ padding: '24px', textAlign: 'center', color: 'var(--hhs-text-secondary)' }}>
+              No recorded changes to this student profile.
+            </div>
+          )}
+        </div>
+      )}
+
+      {/* Edit Profile Modal */}
+      {isEditModalOpen && (
+        <Modal
+          isOpen={isEditModalOpen}
+          onClose={() => setIsEditModalOpen(false)}
+          title="Edit Student Profile"
+        >
+          <form onSubmit={handleEditSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
+              <div>
+                <label className="hhs-label">First Name</label>
+                <input
+                  type="text"
+                  className="hhs-input"
+                  value={editForm.firstName}
+                  onChange={e => setEditForm(prev => ({ ...prev, firstName: e.target.value }))}
+                  required
+                />
+              </div>
+              <div>
+                <label className="hhs-label">Last Name</label>
+                <input
+                  type="text"
+                  className="hhs-input"
+                  value={editForm.lastName}
+                  onChange={e => setEditForm(prev => ({ ...prev, lastName: e.target.value }))}
+                  required
+                />
+              </div>
+            </div>
+
             <div>
-              <label className="hhs-label" htmlFor="edit-guardian">Guardian Name</label>
+              <label className="hhs-label">Guardian Name</label>
               <input
-                id="edit-guardian"
-                required
+                type="text"
                 className="hhs-input"
                 value={editForm.guardianName}
-                onChange={e => setEditForm({ ...editForm, guardianName: e.target.value })}
+                onChange={e => setEditForm(prev => ({ ...prev, guardianName: e.target.value }))}
+                required
               />
             </div>
-            <div>
-              <label className="hhs-label" htmlFor="edit-relation">Relation</label>
-              <select
-                id="edit-relation"
-                className="hhs-select"
-                value={editForm.guardianRelation}
-                onChange={e => setEditForm({ ...editForm, guardianRelation: e.target.value as any })}
-              >
-                <option value="Father">Father</option>
-                <option value="Mother">Mother</option>
-                <option value="Guardian">Guardian</option>
-              </select>
-            </div>
-          </div>
 
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
             <div>
-              <label className="hhs-label" htmlFor="edit-phone">Primary Phone</label>
+              <label className="hhs-label">Primary Phone</label>
               <input
-                id="edit-phone"
-                required
+                type="text"
                 className="hhs-input"
                 value={editForm.primaryPhone}
-                onChange={e => setEditForm({ ...editForm, primaryPhone: e.target.value })}
-              />
-            </div>
-            <div>
-              <label className="hhs-label" htmlFor="edit-addr">Residential Address</label>
-              <input
-                id="edit-addr"
+                onChange={e => setEditForm(prev => ({ ...prev, primaryPhone: e.target.value }))}
                 required
-                className="hhs-input"
-                value={editForm.residentialAddress}
-                onChange={e => setEditForm({ ...editForm, residentialAddress: e.target.value })}
               />
             </div>
-          </div>
 
-          {/* Mandatory Reason for Revision */}
-          <div style={{ padding: '12px', backgroundColor: 'var(--hhs-canvas)', borderRadius: 'var(--hhs-radius-base)', border: '1px solid var(--hhs-border)' }}>
-            <label className="hhs-label" htmlFor="edit-reason" style={{ color: 'var(--hhs-primary)' }}>
-              * Mandatory Audit Justification: Reason for Profile Revision
-            </label>
-            <textarea
-              id="edit-reason"
-              required
-              rows={2}
-              placeholder="e.g. Guardian submitted updated residential proof or phone number..."
-              className="hhs-textarea"
-              value={editForm.revisionReason}
-              onChange={e => setEditForm({ ...editForm, revisionReason: e.target.value })}
-            />
-          </div>
+            <div>
+              <label className="hhs-label">Residential Address</label>
+              <textarea
+                className="hhs-input"
+                rows={2}
+                value={editForm.residentialAddress}
+                onChange={e => setEditForm(prev => ({ ...prev, residentialAddress: e.target.value }))}
+                required
+              />
+            </div>
 
-          <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '10px' }}>
-            <button
-              type="button"
-              onClick={() => setIsEditModalOpen(false)}
-              className="hhs-btn hhs-btn-secondary"
-            >
-              Cancel
-            </button>
-            <button
-              type="submit"
-              disabled={isSaving}
-              className="hhs-btn hhs-btn-primary"
-            >
-              {isSaving ? 'Committing...' : 'Commit Changes to Ledger'}
-            </button>
-          </div>
-        </form>
-      </Modal>
+            <div>
+              <label className="hhs-label">Reason for Change</label>
+              <input
+                type="text"
+                className="hhs-input"
+                placeholder="Brief reason for updating record..."
+                value={editForm.revisionReason}
+                onChange={e => setEditForm(prev => ({ ...prev, revisionReason: e.target.value }))}
+                required
+              />
+            </div>
+
+            <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '8px', marginTop: '10px' }}>
+              <button
+                type="button"
+                onClick={() => setIsEditModalOpen(false)}
+                className="hhs-btn hhs-btn-secondary"
+              >
+                Cancel
+              </button>
+              <button
+                type="submit"
+                disabled={isSaving}
+                className="hhs-btn hhs-btn-primary"
+              >
+                {isSaving ? 'Saving...' : 'Save Changes'}
+              </button>
+            </div>
+          </form>
+        </Modal>
+      )}
     </div>
   );
 };
