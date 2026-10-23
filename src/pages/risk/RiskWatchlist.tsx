@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import { useData } from '../../context/DataContext';
@@ -7,12 +7,13 @@ import { StatusBadge } from '../../components/ui/StatusBadge';
 import { LoadingState } from '../../components/feedback/LoadingState';
 import { ErrorBanner } from '../../components/feedback/ErrorBanner';
 import { RiskEvidenceDrawer } from '../../features/risk/RiskEvidenceDrawer';
+import { downloadCsv } from '../../utils/exportUtils';
 import type { RiskWatchlistItem } from '../../data/provider';
 import type { StudentRecord } from '../../domain/types';
 import {
   AlertTriangle,
   Download,
-  ShieldCheck,
+  CalendarCheck,
   Search,
 } from 'lucide-react';
 
@@ -37,34 +38,29 @@ export const RiskWatchlist: React.FC = () => {
   // Selected student for Evidence Drawer
   const [activeStudent, setActiveStudent] = useState<StudentRecord | null>(null);
 
-  useEffect(() => {
-    let isMounted = true;
-    async function loadWatchlist() {
-      if (isClassTeacher && !assignedClassId) {
-        setError('Classroom section assignment required to view risk watchlist.');
-        setIsLoading(false);
-        return;
-      }
-
-      setIsLoading(true);
-      setError(null);
-      try {
-        const targetClassId = isClassTeacher ? assignedClassId : undefined;
-        const data = await provider.getRiskWatchlist(targetClassId);
-        if (!isMounted) return;
-        setWatchlist(data);
-      } catch (err: unknown) {
-        if (!isMounted) return;
-        setError(err instanceof Error ? err.message : 'Failed to load risk watchlist.');
-      } finally {
-        if (isMounted) setIsLoading(false);
-      }
+  const loadWatchlist = useCallback(async () => {
+    if (isClassTeacher && !assignedClassId) {
+      setError('Classroom section assignment required to view follow-up list.');
+      setIsLoading(false);
+      return;
     }
-    loadWatchlist();
-    return () => {
-      isMounted = false;
-    };
+
+    setIsLoading(true);
+    setError(null);
+    try {
+      const targetClassId = isClassTeacher ? assignedClassId : undefined;
+      const data = await provider.getRiskWatchlist(targetClassId);
+      setWatchlist(data);
+    } catch (err: unknown) {
+      setError(err instanceof Error ? err.message : 'Failed to load follow-up list.');
+    } finally {
+      setIsLoading(false);
+    }
   }, [provider, isClassTeacher, assignedClassId]);
+
+  useEffect(() => {
+    loadWatchlist();
+  }, [loadWatchlist]);
 
   const filteredItems = useMemo(() => {
     return watchlist.filter(item => {
@@ -97,58 +93,50 @@ export const RiskWatchlist: React.FC = () => {
     return { total, below75, academicDrops, pendingReview };
   }, [watchlist]);
 
-  // Export CSV
   const handleExportCSV = () => {
     const headers = [
-      'Admission #',
-      'Roll #',
+      'Admission Number',
+      'Roll Number',
       'Student Name',
       'Class',
-      'Primary Trigger',
-      'Attendance %',
+      'Reason for Follow-up',
+      'Attendance Percentage',
       'Consecutive Absences',
-      'Academic Drop %',
-      'Assigned Mentor',
-      'Follow-Up Status',
+      'Score Trajectory Drop',
+      'Class Teacher',
+      'Status',
     ];
 
     const rows = filteredItems.map(w => [
       w.student.admissionNumber,
       w.student.rollNumber,
-      `"${w.student.firstName} ${w.student.lastName}"`,
-      w.student.classId,
-      `"${w.primaryTrigger}"`,
+      `${w.student.firstName} ${w.student.lastName}`,
+      w.student.classId.toUpperCase(),
+      w.primaryTrigger,
       w.attendanceRate.toFixed(1) + '%',
       w.consecutiveAbsences,
       w.academicDropPercent > 0 ? `-${w.academicDropPercent}%` : 'None',
-      `"${w.mentorAssigned || 'Tutor'}"`,
+      w.mentorAssigned || 'Class Teacher',
       w.followUpStatus,
     ]);
 
-    const csvRows = [headers.join(','), ...rows.map(r => r.join(','))].join('\n');
-    const csvContent = 'data:text/csv;charset=utf-8,' + encodeURIComponent(csvRows);
-    const link = document.createElement('a');
-    link.setAttribute('href', csvContent);
-    link.setAttribute('download', `HanuJai_Risk_Watchlist_${new Date().toISOString().split('T')[0]}.csv`);
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
+    downloadCsv(`HanuJai_Student_Follow_Up_${new Date().toISOString().split('T')[0]}`, headers, rows);
   };
 
   if (isLoading) {
-    return <LoadingState message="Loading student care watchlist..." />;
+    return <LoadingState message="Loading student follow-up list..." />;
   }
 
   return (
     <div className="hhs-page-container">
       <PageHeader
-        title={isClassTeacher ? `${assignedClassLabel} Student Care Watchlist` : "Student Follow-Up & Performance Risk Watchlist"}
-        subtitle={isClassTeacher ? `Section ${assignedClassLabel} rule-based indicators and follow-up ledger.` : "Transparent, rule-based indicators exposing attendance deficits, term score drops, and tutor follow-ups."}
-        roleScope={isClassTeacher ? `${assignedClassLabel} Tutor` : "Pastoral & Academic Governance"}
+        title={isClassTeacher ? `${assignedClassLabel} Student Follow-up` : "Student Follow-up"}
+        subtitle={isClassTeacher ? `Section ${assignedClassLabel} students needing attendance or academic follow-up.` : "Identifies students needing follow-up due to attendance below 75%, score drops, or teacher notes."}
+        roleScope={isClassTeacher ? `${assignedClassLabel} Teacher` : "School-Wide Oversight"}
         breadcrumbs={
           isClassTeacher
-            ? [{ label: 'My Section', to: '/' }, { label: 'Care Watchlist' }]
-            : [{ label: 'Home', to: '/' }, { label: 'Risk Watchlist', to: '/risk-watchlist' }]
+            ? [{ label: 'My Section', to: '/' }, { label: 'Student Follow-up' }]
+            : [{ label: 'Home', to: '/' }, { label: 'Reports', to: '/reports' }, { label: 'Student Follow-up' }]
         }
         actions={
           <div style={{ display: 'flex', gap: '8px' }}>
@@ -158,15 +146,15 @@ export const RiskWatchlist: React.FC = () => {
               style={{ display: 'inline-flex', alignItems: 'center', gap: '6px' }}
             >
               <Download size={15} />
-              <span>Export Watchlist CSV</span>
+              <span>Export CSV</span>
             </button>
             <button
               onClick={() => navigate('/reports/attendance')}
               className="hhs-btn hhs-btn-primary"
               style={{ display: 'inline-flex', alignItems: 'center', gap: '6px' }}
             >
-              <ShieldCheck size={15} />
-              <span>CBSE Compliance Audit</span>
+              <CalendarCheck size={15} />
+              <span>Attendance Ledger</span>
             </button>
           </div>
         }
@@ -184,33 +172,33 @@ export const RiskWatchlist: React.FC = () => {
         }}
       >
         <div className="hhs-metric-card">
-          <div className="hhs-metric-label">Total Flagged Cohort</div>
+          <div className="hhs-metric-label">Total Follow-up Students</div>
           <div className="hhs-metric-value" style={{ color: 'var(--hhs-text-primary)' }}>
-            {stats.total} Students
+            {stats.total}
           </div>
-          <div className="hhs-metric-sub">Across Class 10-A &amp; 10-B</div>
+          <div className="hhs-metric-sub">Across active rosters</div>
         </div>
 
         <div className="hhs-metric-card">
-          <div className="hhs-metric-label">CBSE &lt;75% Attendance Deficit</div>
+          <div className="hhs-metric-label">Attendance Below 75%</div>
           <div className="hhs-metric-value" style={{ color: 'var(--hhs-danger-text)' }}>
-            {stats.below75} Students
+            {stats.below75}
           </div>
-          <div className="hhs-metric-sub">Statutory Condonation Required</div>
+          <div className="hhs-metric-sub">Strictly below 75%</div>
         </div>
 
         <div className="hhs-metric-card">
-          <div className="hhs-metric-label">&gt;15% Academic Trajectory Drop</div>
+          <div className="hhs-metric-label">Recent Score Drop (&gt;15%)</div>
           <div className="hhs-metric-value" style={{ color: 'var(--hhs-accent-text)' }}>
-            {stats.academicDrops} Students
+            {stats.academicDrops}
           </div>
-          <div className="hhs-metric-sub">UT-1 to UT-2 delta</div>
+          <div className="hhs-metric-sub">Across recent assessments</div>
         </div>
 
         <div className="hhs-metric-card">
-          <div className="hhs-metric-label">Pending Tutor Conferences</div>
+          <div className="hhs-metric-label">Pending Follow-up Actions</div>
           <div className="hhs-metric-value" style={{ color: 'var(--hhs-primary)' }}>
-            {stats.pendingReview} Pending
+            {stats.pendingReview}
           </div>
           <div className="hhs-metric-sub">Action plans required</div>
         </div>
@@ -252,15 +240,15 @@ export const RiskWatchlist: React.FC = () => {
             onChange={e => setTriggerFilter(e.target.value)}
             style={{ width: 'auto' }}
           >
-            <option value="all">All Triggers</option>
-            <option value="attendance">Statutory Attendance (#ATT)</option>
-            <option value="academic">Academic Drop (#ACAD)</option>
-            <option value="conduct">Conduct &amp; Punctuality (#DISC)</option>
+            <option value="all">All Reasons</option>
+            <option value="attendance">Attendance Issues</option>
+            <option value="academic">Academic Drop</option>
+            <option value="conduct">Conduct &amp; Notes</option>
           </select>
         </div>
 
         <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-          <label className="hhs-label" style={{ margin: 0 }}>Intervention:</label>
+          <label className="hhs-label" style={{ margin: 0 }}>Status:</label>
           <select
             className="hhs-select"
             value={statusFilter}
@@ -270,7 +258,7 @@ export const RiskWatchlist: React.FC = () => {
             <option value="all">All Statuses</option>
             <option value="pending">Pending</option>
             <option value="in_progress">In Progress</option>
-            <option value="counseled">Counseled / PTM Held</option>
+            <option value="counseled">Meeting Held</option>
             <option value="resolved">Resolved</option>
           </select>
         </div>
@@ -290,14 +278,14 @@ export const RiskWatchlist: React.FC = () => {
         >
           <div>
             <h4 style={{ margin: 0, fontSize: '0.9rem', fontWeight: 700, color: 'var(--hhs-text-primary)' }}>
-              Deterministic Empirical Risk Register
+              Follow-up Student List
             </h4>
             <div style={{ fontSize: '0.75rem', color: 'var(--hhs-text-secondary)' }}>
-              Governed by rule-based triggers • No probabilistic prediction
+              Showing real attendance and academic records requiring action
             </div>
           </div>
           <span className="hhs-badge hhs-badge-primary">
-            Showing {filteredItems.length} of {watchlist.length} Students
+            {filteredItems.length} of {watchlist.length} Students
           </span>
         </div>
 
@@ -309,137 +297,143 @@ export const RiskWatchlist: React.FC = () => {
                 <th style={{ width: '110px' }}>Admission #</th>
                 <th>Student Name</th>
                 <th>Class</th>
-                <th>Trigger Verification</th>
-                <th className="numeric" style={{ width: '110px' }}>Attendance Rate</th>
-                <th className="numeric" style={{ width: '90px' }}>Trajectory</th>
-                <th>Assigned Mentor</th>
-                <th>Intervention Status</th>
-                <th style={{ textAlign: 'right', width: '130px' }}>Evidence Action</th>
+                <th>Reason for Follow-up</th>
+                <th className="numeric" style={{ width: '120px' }}>Attendance Rate</th>
+                <th className="numeric" style={{ width: '100px' }}>Trajectory</th>
+                <th>Class Teacher</th>
+                <th>Status</th>
+                <th style={{ textAlign: 'right', width: '110px' }}>Action</th>
               </tr>
             </thead>
             <tbody>
-              {filteredItems.map(item => {
-                const s = item.student;
-                const isBelow75 = item.attendanceRate < 75.0;
-                const hasDrop = item.academicDropPercent > 0;
+              {filteredItems.length === 0 ? (
+                <tr>
+                  <td colSpan={10} style={{ textAlign: 'center', padding: '24px', color: 'var(--hhs-text-secondary)' }}>
+                    No students currently match the selected criteria.
+                  </td>
+                </tr>
+              ) : (
+                filteredItems.map(item => {
+                  const s = item.student;
+                  const isBelow75 = item.attendanceRate < 75.0;
+                  const hasDrop = item.academicDropPercent > 0;
 
-                return (
-                  <tr key={s.id}>
-                    <td className="numeric" style={{ fontWeight: 600 }}>
-                      {s.rollNumber}
-                    </td>
-                    <td>
-                      <span style={{ fontSize: '0.8rem', fontFamily: 'monospace', color: 'var(--hhs-text-secondary)' }}>
-                        {s.admissionNumber}
-                      </span>
-                    </td>
-                    <td>
-                      <button
-                        onClick={() => navigate(`/students/${s.id}`)}
-                        style={{
-                          background: 'none',
-                          border: 'none',
-                          padding: 0,
-                          textAlign: 'left',
-                          fontWeight: 600,
-                          color: 'var(--hhs-primary)',
-                          cursor: 'pointer',
-                          textDecoration: 'underline',
-                        }}
-                      >
-                        {s.firstName} {s.lastName}
-                      </button>
-                    </td>
-                    <td>
-                      <span className="hhs-badge hhs-badge-neutral">
-                        {s.classId.toUpperCase()}
-                      </span>
-                    </td>
-                    <td>
-                      <div style={{ fontWeight: 600, fontSize: '0.82rem', color: 'var(--hhs-text-primary)' }}>
-                        {item.primaryTrigger}
-                      </div>
-                      <div style={{ fontSize: '0.72rem', color: 'var(--hhs-text-secondary)' }}>
-                        {item.consecutiveAbsences > 0 ? `${item.consecutiveAbsences} unexcused days` : 'Term check'}
-                      </div>
-                    </td>
-                    <td className="numeric">
-                      <span
-                        style={{
-                          fontWeight: 700,
-                          color: isBelow75 ? 'var(--hhs-danger-text)' : 'inherit',
-                        }}
-                      >
-                        {item.attendanceRate.toFixed(1)}%
-                      </span>
-                      {isBelow75 && (
-                        <div style={{ fontSize: '0.68rem', color: 'var(--hhs-danger-text)' }}>
-                          Below 75%
-                        </div>
-                      )}
-                    </td>
-                    <td className="numeric">
-                      {hasDrop ? (
-                        <span style={{ fontWeight: 700, color: 'var(--hhs-danger-text)' }}>
-                          -{item.academicDropPercent}%
+                  return (
+                    <tr key={s.id}>
+                      <td className="numeric" style={{ fontWeight: 600 }}>
+                        {s.rollNumber}
+                      </td>
+                      <td>
+                        <span style={{ fontSize: '0.8rem', fontFamily: 'monospace', color: 'var(--hhs-text-secondary)' }}>
+                          {s.admissionNumber}
                         </span>
-                      ) : (
-                        <span style={{ color: 'var(--hhs-text-muted)' }}>—</span>
-                      )}
-                    </td>
-                    <td>
-                      <div style={{ fontSize: '0.82rem', fontWeight: 500 }}>
-                        {item.mentorAssigned || 'Mrs. Ananya Sharma'}
-                      </div>
-                      <div style={{ fontSize: '0.7rem', color: 'var(--hhs-text-secondary)' }}>
-                        Class Tutor
-                      </div>
-                    </td>
-                    <td>
-                      <StatusBadge
-                        status={
-                          item.followUpStatus === 'resolved'
-                            ? 'active'
-                            : item.followUpStatus === 'counseled'
-                            ? 'active'
-                            : item.followUpStatus === 'in_progress'
-                            ? 'pending'
-                            : 'inactive'
-                        }
-                        label={
-                          item.followUpStatus === 'pending'
-                            ? 'Pending Notice'
-                            : item.followUpStatus === 'in_progress'
-                            ? 'In Remedial'
-                            : item.followUpStatus === 'counseled'
-                            ? 'PTM Held'
-                            : 'Resolved'
-                        }
-                      />
-                    </td>
-                    <td style={{ textAlign: 'right' }}>
-                      <button
-                        onClick={() => setActiveStudent(s)}
-                        className="hhs-btn hhs-btn-secondary"
-                        style={{ fontSize: '0.75rem', padding: '4px 8px', height: '28px' }}
-                      >
-                        <AlertTriangle size={13} style={{ color: 'var(--hhs-danger-text)' }} />
-                        <span>Inspect</span>
-                      </button>
-                    </td>
-                  </tr>
-                );
-              })}
+                      </td>
+                      <td>
+                        <button
+                          onClick={() => navigate(`/students/${s.id}`)}
+                          style={{
+                            background: 'none',
+                            border: 'none',
+                            padding: 0,
+                            textAlign: 'left',
+                            fontWeight: 600,
+                            color: 'var(--hhs-primary)',
+                            cursor: 'pointer',
+                            textDecoration: 'underline',
+                          }}
+                        >
+                          {s.firstName} {s.lastName}
+                        </button>
+                      </td>
+                      <td>
+                        <span className="hhs-badge hhs-badge-neutral">
+                          {s.classId.toUpperCase()}
+                        </span>
+                      </td>
+                      <td>
+                        <div style={{ fontWeight: 600, fontSize: '0.82rem', color: 'var(--hhs-text-primary)' }}>
+                          {item.primaryTrigger}
+                        </div>
+                        <div style={{ fontSize: '0.72rem', color: 'var(--hhs-text-secondary)' }}>
+                          {item.consecutiveAbsences > 0 ? `${item.consecutiveAbsences} consecutive absences` : 'Assessment delta'}
+                        </div>
+                      </td>
+                      <td className="numeric">
+                        <span
+                          style={{
+                            fontWeight: 700,
+                            color: isBelow75 ? 'var(--hhs-danger-text)' : 'inherit',
+                          }}
+                        >
+                          {item.attendanceRate.toFixed(1)}%
+                        </span>
+                        {isBelow75 && (
+                          <div style={{ fontSize: '0.68rem', color: 'var(--hhs-danger-text)', fontWeight: 600 }}>
+                            Below 75%
+                          </div>
+                        )}
+                      </td>
+                      <td className="numeric">
+                        {hasDrop ? (
+                          <span style={{ fontWeight: 700, color: 'var(--hhs-danger-text)' }}>
+                            -{item.academicDropPercent}%
+                          </span>
+                        ) : (
+                          <span style={{ color: 'var(--hhs-text-muted)' }}>—</span>
+                        )}
+                      </td>
+                      <td>
+                        <div style={{ fontSize: '0.82rem', fontWeight: 500 }}>
+                          {item.mentorAssigned || 'Mrs. Ananya Sharma'}
+                        </div>
+                      </td>
+                      <td>
+                        <StatusBadge
+                          status={
+                            item.followUpStatus === 'resolved'
+                              ? 'active'
+                              : item.followUpStatus === 'counseled'
+                              ? 'active'
+                              : item.followUpStatus === 'in_progress'
+                              ? 'pending'
+                              : 'inactive'
+                          }
+                          label={
+                            item.followUpStatus === 'pending'
+                              ? 'Pending Notice'
+                              : item.followUpStatus === 'in_progress'
+                              ? 'In Remedial'
+                              : item.followUpStatus === 'counseled'
+                              ? 'Meeting Held'
+                              : 'Resolved'
+                          }
+                        />
+                      </td>
+                      <td style={{ textAlign: 'right' }}>
+                        <button
+                          onClick={() => setActiveStudent(s)}
+                          className="hhs-btn hhs-btn-secondary"
+                          style={{ fontSize: '0.75rem', padding: '4px 10px', height: '28px' }}
+                        >
+                          <AlertTriangle size={13} style={{ color: 'var(--hhs-accent-text)' }} />
+                          <span>Inspect</span>
+                        </button>
+                      </td>
+                    </tr>
+                  );
+                })
+              )}
             </tbody>
           </table>
         </div>
       </div>
 
-      {/* Transparent Evidence Dossier Drawer */}
+      {/* Follow-up Evidence and Action Drawer */}
       <RiskEvidenceDrawer
         isOpen={Boolean(activeStudent)}
         onClose={() => setActiveStudent(null)}
         student={activeStudent}
+        onFollowUpRecorded={loadWatchlist}
       />
     </div>
   );

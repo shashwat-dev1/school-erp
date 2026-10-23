@@ -92,7 +92,7 @@ export const PageHeader: React.FC<PageHeaderProps> = ({
         </div>
 
         {actions && (
-          <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+          <div className="hhs-page-header-actions" style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
             {actions}
           </div>
         )}

@@ -12,6 +12,8 @@ import type {
   NewIncidentInput,
   RiskWatchlistItem,
   ConsolidatedClassMarks,
+  FollowUpActionInput,
+  StudentFollowUpRecord,
 } from '../provider';
 import type {
   SchoolSettings,
@@ -25,6 +27,7 @@ import type {
   StudentFilter,
   PaginatedResult,
   AttendanceSession,
+  AttendanceAggregate,
   AttendanceCorrection,
   AssessmentCycle,
   MarksRegister,
@@ -36,23 +39,54 @@ import type {
 
 import {
   initialSettings,
-  initialAcademicYears,
-  initialAcademicYear,
   initialStaff,
-  initialClasses,
-  initialSubjects,
-  initialSubjectAssignments,
-  initialStudents,
-  initialAssessments,
-  initialMarksRegisters,
   initialAttendanceSessions,
   initialAttendanceCorrections,
-  initialIncidents,
   initialAuditEvents,
 } from './seedData';
+import {
+  historicalAcademicYears,
+  historicalAssessmentCycles,
+  historicalSubjects,
+  historicalSubjectAssignments,
+  generateAllHistoricalClasses,
+  generateAllHistoricalStudents,
+  generateAllHistoricalMarksRegisters,
+  generateAllHistoricalAttendanceSessions,
+  generateAllHistoricalTeacherNotes,
+  expandCompactSession,
+  CompactAttendanceSession,
+  StudentProgressionEntry,
+} from './historicalGenerator';
 import { getSchoolLocalDate, calculateGrade } from '../../domain/policy';
 
-const STORAGE_KEY = 'hanujai_erp_demo_store_v1';
+const STORAGE_KEY = 'hanujai_erp_demo_store_v2';
+
+// Lazy baseline singletons
+let cachedBaselineStudents: StudentRecord[] | null = null;
+let cachedBaselineMarks: MarksRegister[] | null = null;
+let cachedBaselineAttendance: CompactAttendanceSession[] | null = null;
+
+function getBaselineStudents(): StudentRecord[] {
+  if (!cachedBaselineStudents) {
+    cachedBaselineStudents = generateAllHistoricalStudents();
+  }
+  return cachedBaselineStudents;
+}
+
+function getBaselineMarks(students: StudentRecord[]): MarksRegister[] {
+  if (!cachedBaselineMarks) {
+    cachedBaselineMarks = generateAllHistoricalMarksRegisters(students);
+  }
+  return cachedBaselineMarks;
+}
+
+function getBaselineAttendance(students: StudentRecord[]): CompactAttendanceSession[] {
+  if (!cachedBaselineAttendance) {
+    cachedBaselineAttendance = generateAllHistoricalAttendanceSessions(students);
+  }
+  return cachedBaselineAttendance;
+}
 
 interface DemoStore {
   settings: SchoolSettings;
@@ -69,29 +103,45 @@ interface DemoStore {
   marksRegisters: MarksRegister[];
   incidents: IncidentRecord[];
   auditEvents: AuditEvent[];
+  followUps?: StudentFollowUpRecord[];
+  userSavedRegisterIds?: string[];
 }
 
 function getInitialStore(): DemoStore {
+  const students = getBaselineStudents();
+  const marksRegisters = [...getBaselineMarks(students)];
+  const classes = generateAllHistoricalClasses();
+  const notes = generateAllHistoricalTeacherNotes();
+
   return {
     settings: { ...initialSettings },
-    academicYears: [...initialAcademicYears],
-    academicYear: { ...initialAcademicYear },
+    academicYears: [...historicalAcademicYears],
+    academicYear: { ...(historicalAcademicYears.find(y => y.isCurrent) || historicalAcademicYears[2]) },
     staff: [...initialStaff],
-    classes: [...initialClasses],
-    subjects: [...initialSubjects],
-    subjectAssignments: [...initialSubjectAssignments],
-    students: [...initialStudents],
-    assessments: [...initialAssessments],
+    classes,
+    subjects: [...historicalSubjects],
+    subjectAssignments: [...historicalSubjectAssignments],
+    students: [...students],
+    assessments: [...historicalAssessmentCycles],
     attendanceSessions: [...initialAttendanceSessions],
     attendanceCorrections: [...initialAttendanceCorrections],
-    marksRegisters: [...initialMarksRegisters],
-    incidents: [...initialIncidents],
+    marksRegisters,
+    incidents: [...notes],
     auditEvents: [...initialAuditEvents],
+    followUps: [],
+    userSavedRegisterIds: [],
   };
 }
 
 class DemoRepository implements DataProvider {
+  private storeCache: DemoStore | null = null;
+  private userSavedRegisterIds = new Set<string>();
+
   private loadStore(): DemoStore {
+    if (this.storeCache) {
+      return this.storeCache;
+    }
+
     try {
       const raw = localStorage.getItem(STORAGE_KEY);
       if (raw) {
@@ -104,33 +154,65 @@ class DemoRepository implements DataProvider {
             !parsed.staff.some((s: StaffUser) => s.email === 'alok.saxena@hanujai.edu.in')
           ) {
             parsed.staff = [...initialStaff];
-            parsed.classes = [...initialClasses];
-            parsed.subjectAssignments = [...initialSubjectAssignments];
+          }
+
+          // Ensure all historical cycles and classes exist
+          parsed.academicYears = [...historicalAcademicYears];
+          parsed.assessments = [...historicalAssessmentCycles];
+          parsed.classes = generateAllHistoricalClasses();
+          parsed.subjects = [...historicalSubjects];
+          parsed.subjectAssignments = [...historicalSubjectAssignments];
+
+          // Restore user-saved registers into baseline marks
+          const baselineStudents = getBaselineStudents();
+          const baseMarks = getBaselineMarks(baselineStudents);
+          const fullMarksMap = new Map<string, MarksRegister>(baseMarks.map(r => [r.id, r]));
+
+          if (Array.isArray(parsed.userSavedRegisterIds)) {
+            parsed.userSavedRegisterIds.forEach((id: string) => this.userSavedRegisterIds.add(id));
           }
 
           if (Array.isArray(parsed.marksRegisters)) {
-            initialMarksRegisters.forEach(initReg => {
-              if (!parsed.marksRegisters.some((r: { id: string }) => r.id === initReg.id)) {
-                parsed.marksRegisters.push(initReg);
-              }
+            parsed.marksRegisters.forEach((userReg: MarksRegister) => {
+              fullMarksMap.set(userReg.id, userReg);
+              this.userSavedRegisterIds.add(userReg.id);
             });
-          } else {
-            parsed.marksRegisters = [...initialMarksRegisters];
           }
+          parsed.marksRegisters = Array.from(fullMarksMap.values());
+
+          if (!Array.isArray(parsed.incidents) || parsed.incidents.length === 0) {
+            parsed.incidents = generateAllHistoricalTeacherNotes();
+          }
+
+          if (!Array.isArray(parsed.attendanceSessions)) {
+            parsed.attendanceSessions = [...initialAttendanceSessions];
+          }
+
+          this.storeCache = parsed;
           return parsed;
         }
       }
     } catch (e) {
       console.warn('[DemoRepository] Could not parse localStorage, re-initializing seed store.', e);
     }
+
     const store = getInitialStore();
+    this.storeCache = store;
     this.saveStore(store);
     return store;
   }
 
   private saveStore(store: DemoStore): void {
     try {
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(store));
+      this.storeCache = store;
+      // Optimize storage size to stay well under 5MB quota:
+      // Only serialize user-modified registers and user-modified attendance sessions
+      const toSerialize: DemoStore = {
+        ...store,
+        userSavedRegisterIds: Array.from(this.userSavedRegisterIds),
+        marksRegisters: store.marksRegisters.filter(r => this.userSavedRegisterIds.has(r.id)),
+      };
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(toSerialize));
     } catch (e) {
       console.error('[DemoRepository] Failed to save store to localStorage:', e);
     }
@@ -216,7 +298,7 @@ class DemoRepository implements DataProvider {
       throw new Error('Unauthorized: Principal has strictly read-only access in this pilot.');
     }
     const store = this.loadStore();
-    if (!store.academicYears) store.academicYears = [...initialAcademicYears];
+    if (!store.academicYears) store.academicYears = [...historicalAcademicYears];
     const idx = store.academicYears.findIndex(y => y.id === yearId);
     if (idx === -1) throw new Error('Academic Year not found');
 
@@ -335,10 +417,20 @@ class DemoRepository implements DataProvider {
   // Classes & Sections
   public async getClasses(yearId?: string): Promise<ClassSection[]> {
     const store = this.loadStore();
-    if (yearId) {
-      return store.classes.filter(c => c.academicYearId === yearId);
-    }
-    return store.classes;
+    const targetYear = yearId || store.academicYear?.id || 'year-2025-2026';
+    const matches = store.classes.filter(c => c.academicYearId === targetYear);
+    return matches.length > 0 ? matches : store.classes.slice(0, 20);
+  }
+
+  private getStudentsForClassInYear(classId: string, academicYearId: string): StudentRecord[] {
+    const store = this.loadStore();
+    return store.students.filter(s => {
+      const prog = (s as any).previousEnrollments as StudentProgressionEntry[] | undefined;
+      if (prog) {
+        return prog.some(p => p.academicYearId === academicYearId && p.classId === classId);
+      }
+      return s.classId === classId;
+    });
   }
 
   public async getClassById(classId: string): Promise<ClassSection | null> {
@@ -655,16 +747,83 @@ class DemoRepository implements DataProvider {
     const store = this.loadStore();
     const targetDate = date || getSchoolLocalDate();
     const matches = store.attendanceSessions.filter(s => s.date === targetDate);
-    if (matches.length === 0 && !date && store.attendanceSessions.length > 0) {
+    if (matches.length > 0) return matches;
+
+    // Search historical baseline compact sessions
+    const compacts = getBaselineAttendance(store.students).filter(s => s.date === targetDate);
+    if (compacts.length > 0) {
+      return compacts.map(c => {
+        const classStudents = this.getStudentsForClassInYear(c.classId, c.academicYearId);
+        const enrolled = classStudents.filter(s => s.enrollmentDate <= c.date);
+        return expandCompactSession(c, enrolled);
+      });
+    }
+
+    if (!date && store.attendanceSessions.length > 0) {
       return store.attendanceSessions;
     }
-    return matches;
+    return [];
+  }
+
+  public async getAttendanceSessionsInRange(startDate: string, endDate: string, classIds?: string[]): Promise<AttendanceSession[]> {
+    const store = this.loadStore();
+    const results: AttendanceSession[] = [];
+    const handledIds = new Set<string>();
+
+    // 1. Overlay / user-modified sessions
+    for (const session of store.attendanceSessions) {
+      if (session.date >= startDate && session.date <= endDate) {
+        if (!classIds?.length || classIds.includes(session.classId)) {
+          results.push(session);
+          handledIds.add(session.id);
+        }
+      }
+    }
+
+    // 2. Historical baseline compact sessions
+    const baselineAtt = getBaselineAttendance(store.students);
+    for (const compact of baselineAtt) {
+      if (compact.date >= startDate && compact.date <= endDate) {
+        if (!classIds?.length || classIds.includes(compact.classId)) {
+          if (!handledIds.has(compact.id)) {
+            const classStudents = this.getStudentsForClassInYear(compact.classId, compact.academicYearId);
+            const enrolled = classStudents.filter(s => s.enrollmentDate <= compact.date);
+            results.push(expandCompactSession(compact, enrolled));
+            handledIds.add(compact.id);
+          }
+        }
+      }
+    }
+
+    return results.sort((a, b) => a.date.localeCompare(b.date));
   }
 
   public async getAttendanceSession(classId: string, date: string): Promise<AttendanceSession | null> {
     const store = this.loadStore();
     const found = store.attendanceSessions.find(s => s.classId === classId && s.date === date);
-    return found || null;
+    if (found) return found;
+
+    const compact = getBaselineAttendance(store.students).find(s => s.classId === classId && s.date === date);
+    if (compact) {
+      const classStudents = this.getStudentsForClassInYear(compact.classId, compact.academicYearId);
+      const enrolled = classStudents.filter(s => s.enrollmentDate <= compact.date);
+      return expandCompactSession(compact, enrolled);
+    }
+    return null;
+  }
+
+  public async getAttendanceAggregate(classId: string, date: string): Promise<AttendanceAggregate | null> {
+    const session = await this.getAttendanceSession(classId, date);
+    if (!session || session.status === 'draft') return null;
+    return {
+      classId: session.classId,
+      date: session.date,
+      totalStudents: session.totalStudents,
+      presentCount: session.presentCount,
+      absentCount: session.absentCount,
+      lateCount: session.lateCount,
+      excusedCount: session.excusedCount,
+    };
   }
 
   public async submitDailyAttendance(
@@ -1086,8 +1245,17 @@ class DemoRepository implements DataProvider {
       clientIp: '192.168.1.1',
     });
 
+    this.userSavedRegisterIds.add(register.id);
     this.saveStore(store);
     return register;
+  }
+
+  public async getStudentMarksRegisters(studentId: string): Promise<MarksRegister[]> {
+    const store = this.loadStore();
+    const cleanId = studentId.toLowerCase().trim();
+    return store.marksRegisters.filter(reg =>
+      reg.entries.some(e => e.studentId.toLowerCase().trim() === cleanId)
+    );
   }
 
   public async getConsolidatedClassMarks(
@@ -1278,6 +1446,65 @@ class DemoRepository implements DataProvider {
     return watchlist;
   }
 
+  // Student Follow-up & Interventions
+  public async getStudentFollowUps(studentId: string): Promise<StudentFollowUpRecord[]> {
+    const store = this.loadStore();
+    const list = store.followUps || [];
+    return list.filter(f => f.studentId === studentId);
+  }
+
+  public async recordStudentFollowUp(input: FollowUpActionInput, actor: StaffUser): Promise<StudentFollowUpRecord> {
+    if (actor.role === 'principal') {
+      throw new Error('Unauthorized: Principal has strictly read-only access and cannot record student follow-up actions.');
+    }
+
+    const store = this.loadStore();
+    const student = store.students.find(s => s.id === input.studentId);
+    if (!student) throw new Error('Student record not found.');
+
+    const isClassTeacher = actor.assignedClassId === student.classId ||
+      (actor.role === 'class_teacher' && actor.assignedClasses?.includes(student.classId));
+    const isSubjectTeacher = actor.role === 'subject_teacher' && actor.assignedClasses?.includes(student.classId);
+
+    if (!isClassTeacher && !isSubjectTeacher) {
+      throw new Error('Unauthorized: You are not assigned to record follow-up for this student.');
+    }
+
+    if (!store.followUps) store.followUps = [];
+
+    const record: StudentFollowUpRecord = {
+      id: `fu-${Date.now()}`,
+      studentId: input.studentId,
+      actionType: input.actionType,
+      actionLabel: input.actionLabel,
+      note: input.note,
+      followUpDate: input.followUpDate,
+      actorId: actor.id,
+      actorName: actor.name,
+      actorRole: actor.role,
+      createdAt: new Date().toISOString(),
+    };
+
+    store.followUps.unshift(record);
+
+    store.auditEvents.unshift({
+      id: `aud-${Date.now()}`,
+      timestamp: new Date().toISOString(),
+      actorId: actor.id,
+      actorName: actor.name,
+      actorRole: actor.role,
+      action: 'followup_recorded',
+      resource: 'students',
+      targetId: input.studentId,
+      summary: `Recorded follow-up for ${student.fullName}: ${input.actionLabel}${input.note ? ` — ${input.note}` : ''}`,
+      details: { input },
+      clientIp: '192.168.1.1',
+    });
+
+    this.saveStore(store);
+    return record;
+  }
+
   // Audit Events
   public async getAuditEvents(filter: AuditFilter = {}): Promise<AuditEvent[]> {
     const store = this.loadStore();
@@ -1291,9 +1518,16 @@ class DemoRepository implements DataProvider {
 
   // Reset to original deterministic seed data
   public async resetDemoData(): Promise<void> {
-    const fresh = getInitialStore();
-    this.saveStore(fresh);
+    this.userSavedRegisterIds.clear();
+    this.storeCache = null;
+    cachedBaselineStudents = null;
+    cachedBaselineMarks = null;
+    cachedBaselineAttendance = null;
+    localStorage.removeItem(STORAGE_KEY);
     localStorage.removeItem('hanujai_demo_user_id');
+    const fresh = getInitialStore();
+    this.storeCache = fresh;
+    this.saveStore(fresh);
   }
 }
 

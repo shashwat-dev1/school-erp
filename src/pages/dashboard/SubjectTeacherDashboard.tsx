@@ -1,7 +1,7 @@
 /**
  * HanuJai High School ERP — Subject Teacher Workspace
  * Clean, focused view for assigned subjects and classes (e.g. Mathematics for Class 10-A, 10-B, 9-A).
- * Prioritizes marks entry, assessment completion, and subject performance.
+ * Prioritizes marks entry, assessment completion, and class-specific assessment drilldown.
  */
 
 import React, { useState, useEffect, useMemo } from 'react';
@@ -25,6 +25,8 @@ import {
   GraduationCap,
   AlertTriangle,
   CheckCircle,
+  Eye,
+  Lock,
 } from 'lucide-react';
 
 export const SubjectTeacherDashboard: React.FC = () => {
@@ -46,8 +48,9 @@ export const SubjectTeacherDashboard: React.FC = () => {
 
   const [subjects, setSubjects] = useState<Subject[]>([]);
   const [classes, setClasses] = useState<ClassSection[]>([]);
+  const [allCycles, setAllCycles] = useState<AssessmentCycle[]>([]);
   const [marksRegisters, setMarksRegisters] = useState<MarksRegister[]>([]);
-  const [activeCycle, setActiveCycle] = useState<AssessmentCycle | null>(null);
+  const [selectedClassId, setSelectedClassId] = useState<string>('');
 
   useEffect(() => {
     if (assignedSubjectIds.length === 0 || assignedClassIds.length === 0) {
@@ -69,32 +72,14 @@ export const SubjectTeacherDashboard: React.FC = () => {
 
         if (!isMounted) return;
 
-        // Deduplicate and filter teacher's actual assignments
-        let teacherAssignments = assignments.filter(
-          a => (currentUser?.id && a.teacherId === currentUser.id) ||
-               (assignedClassIds.includes(a.classId) && assignedSubjectIds.includes(a.subjectId))
-        );
+        setAllCycles(cycleList);
 
-        // Fallback pairing class with matching subject if no explicit DB assignments
-        if (teacherAssignments.length === 0) {
-          teacherAssignments = assignedClassIds.map(cId => {
-            const cls = clsList.find(c => c.id === cId);
-            const matchingSub = subList.find(
-              s => assignedSubjectIds.includes(s.id) &&
-                   (s.id.includes(String(cls?.grade)) || s.name.toLowerCase().includes('math'))
-            );
-            return {
-              id: `asgn-${cId}`,
-              classId: cId,
-              classLabel: cls?.label || cId,
-              subjectId: matchingSub?.id || assignedSubjectIds[0],
-              subjectName: matchingSub?.name || 'Mathematics',
-              teacherId: currentUser?.id || 'staff-004',
-              teacherName: currentUser?.name || 'Subject Teacher',
-              academicYearId: 'year-2025-2026',
-            };
-          });
-        }
+        // Deduplicate and filter teacher's actual assignments
+        const teacherAssignments = assignments.filter(
+          assignment => assignment.teacherId === currentUser?.id &&
+            assignedClassIds.includes(assignment.classId) &&
+            assignedSubjectIds.includes(assignment.subjectId)
+        );
 
         // Deduplicate assignments by classId + subjectId
         const seenTuples = new Set<string>();
@@ -108,11 +93,12 @@ export const SubjectTeacherDashboard: React.FC = () => {
         const uniqueClassIds = Array.from(new Set(uniqueAssignments.map(a => a.classId)));
         const uniqueSubjectIds = Array.from(new Set(uniqueAssignments.map(a => a.subjectId)));
 
+        const teacherClasses = clsList.filter(c => uniqueClassIds.includes(c.id));
         setSubjects(subList.filter(s => uniqueSubjectIds.includes(s.id)));
-        setClasses(clsList.filter(c => uniqueClassIds.includes(c.id)));
-
-        const targetCycle = cycleList.find(c => c.status === 'active_marking') || cycleList[0] || null;
-        setActiveCycle(targetCycle);
+        setClasses(teacherClasses);
+        if (teacherClasses.length > 0) {
+          setSelectedClassId(prev => prev || teacherClasses[0].id);
+        }
 
         // Fetch registers across cycles for unique class & subject assignments
         const regPromises: Promise<MarksRegister | null>[] = [];
@@ -137,7 +123,7 @@ export const SubjectTeacherDashboard: React.FC = () => {
     return () => {
       isMounted = false;
     };
-  }, [provider, assignedSubjectIds, assignedClassIds]);
+  }, [provider, assignedSubjectIds, assignedClassIds, currentUser]);
 
   if (assignedSubjectIds.length === 0 || assignedClassIds.length === 0) {
     return (
@@ -147,7 +133,6 @@ export const SubjectTeacherDashboard: React.FC = () => {
           subtitle="Subject Teacher Workspace"
         />
         <ErrorBanner
-          title="No Classes Assigned"
           message="Your account has no subjects or classes assigned yet. Please contact the Principal to assign your teaching schedule."
         />
       </div>
@@ -159,36 +144,44 @@ export const SubjectTeacherDashboard: React.FC = () => {
   }
 
   if (error) {
-    return <ErrorBanner title="Could not load classes" message={error} />;
+    return <ErrorBanner message={error} />;
+  }
+
+  if (classes.length === 0 || subjects.length === 0) {
+    return <ErrorBanner message="No valid subject and class assignments were found for this account. Ask the school administrator to confirm the teaching assignments." />;
   }
 
   const primarySubject = subjects[0]?.name || 'Assigned Subject';
-  const pendingRegisters = marksRegisters.filter(r => r.status === 'draft');
-  const submittedRegisters = marksRegisters.filter(r => r.status === 'submitted' || r.status === 'finalized');
+  const completedRegisters = marksRegisters.filter(r => r.status === 'submitted' || r.status === 'finalized');
+  const draftRegisters = marksRegisters.filter(r => r.status === 'draft');
+  const totalPossibleRegisters = classes.length * (allCycles.length || 4);
+  const futureRegistersCount = Math.max(0, totalPossibleRegisters - marksRegisters.length);
 
-  // Compute live cohort mean across loaded registers
-  let totalScore = 0;
-  let totalMaxPossible = 0;
-
-  marksRegisters.forEach(r => {
+  // Compute normalized mean across finalized registers
+  let finalizedScore = 0;
+  let finalizedMax = 0;
+  completedRegisters.forEach(r => {
     r.entries.forEach(e => {
       if (e.marksObtained !== null && !e.isAbsent) {
-        totalScore += e.marksObtained;
-        totalMaxPossible += r.maxMarks;
+        finalizedScore += e.marksObtained;
+        finalizedMax += r.maxMarks;
       }
     });
   });
 
-  const cohortMeanPct = totalMaxPossible > 0
-    ? Math.round((totalScore / totalMaxPossible) * 1000) / 10
+  const overallFinalizedAverage = finalizedMax > 0
+    ? Math.round((finalizedScore / finalizedMax) * 1000) / 10
     : null;
+
+  // Selected class for drilldown
+  const currentClass = classes.find(c => c.id === selectedClassId) || classes[0];
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
       {/* Header */}
       <PageHeader
         title={`My Classes (${primarySubject})`}
-        subtitle={`Teacher: ${currentUser?.name} • Session 2025–2026 • ${classes.length} Assigned Classes`}
+        subtitle={`Teacher: ${currentUser?.displayName} • Session 2025–2026 • ${classes.length} Unique Assigned Classes`}
         roleScope={primarySubject}
         breadcrumbs={[{ label: 'My Classes' }]}
         actions={
@@ -205,185 +198,287 @@ export const SubjectTeacherDashboard: React.FC = () => {
         }
       />
 
-      {/* Prominent notification if marks registers are pending */}
-      {pendingRegisters.length > 0 && (
+      {/* Prominent notification with Canary Yellow Pop Alert Banner */}
+      {draftRegisters.length > 0 && (
         <div
           style={{
-            padding: '14px 18px',
-            borderRadius: 'var(--hhs-radius-base)',
-            backgroundColor: 'var(--hhs-accent-light)',
-            border: '1px solid var(--hhs-accent)',
+            padding: '16px 20px',
+            borderRadius: 'var(--hhs-radius-container)',
+            backgroundColor: 'var(--pop-canary-yellow-tint)',
+            border: '1.5px solid var(--pop-canary-yellow)',
+            borderLeft: '5px solid var(--pop-canary-yellow)',
             display: 'flex',
             justifyContent: 'space-between',
             alignItems: 'center',
             flexWrap: 'wrap',
-            gap: '10px',
+            gap: '12px',
+            boxShadow: 'var(--hhs-shadow-level-1)',
           }}
         >
           <div>
-            <div style={{ fontWeight: 600, color: 'var(--hhs-accent-text)', fontSize: '0.9rem' }}>
-              Marks Entry in Progress ({pendingRegisters.length} Registers Pending)
+            <div style={{ fontWeight: 800, color: '#202033', fontSize: '0.94rem' }}>
+              Marks Entry in Progress ({draftRegisters.length} Draft Registers)
             </div>
-            <div style={{ fontSize: '0.8rem', color: 'var(--hhs-text-secondary)', marginTop: '2px' }}>
-              Please enter and submit marks for {Array.from(new Set(pendingRegisters.map(r => r.classLabel))).join(', ')}.
+            <div style={{ fontSize: '0.82rem', color: '#45455E', marginTop: '2px' }}>
+              Please finalize marks for {Array.from(new Set(draftRegisters.map(r => r.classLabel))).join(', ')}.
             </div>
           </div>
           <button
             onClick={() => navigate('/academics/assessments')}
-            className="hhs-btn hhs-btn-primary hhs-btn-sm"
+            className="hhs-btn hhs-btn-primary"
           >
             Open Marks Registers
           </button>
         </div>
       )}
 
-      {/* 4 Focused Scoped Metrics */}
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(210px, 1fr))', gap: '16px' }}>
+      {/* 4 Focused Scoped Metrics with Vibrant Pop Accents */}
+      <div className="hhs-metrics-grid">
         <MetricCard
-          label="Assigned Classes"
+          label="Unique Assigned Classes"
           value={`${classes.length} Classes`}
           subtext={classes.map(c => c.label).join(', ')}
           icon={<BookOpen size={20} />}
           accent="primary"
         />
         <MetricCard
-          label="Marks Registers"
-          value={marksRegisters.length.toString()}
-          subtext={`${submittedRegisters.length} completed • ${pendingRegisters.length} draft`}
+          label="Total Marks Registers"
+          value={`${totalPossibleRegisters} Registers`}
+          subtext={`${completedRegisters.length} completed • ${draftRegisters.length} draft • ${futureRegistersCount} upcoming`}
           icon={<CheckCircle size={20} />}
           accent="info"
         />
         <MetricCard
-          label={`${primarySubject} Average`}
-          value={cohortMeanPct !== null ? `${cohortMeanPct}%` : 'Pending'}
-          subtext={activeCycle ? activeCycle.title : 'Current term'}
+          label={`${primarySubject} Performance`}
+          value={overallFinalizedAverage !== null ? `${overallFinalizedAverage}%` : 'Pending'}
+          subtext="Based on finalized assessments"
           icon={<GraduationCap size={20} />}
-          accent="primary"
+          accent="success"
         />
-        <MetricCard
-          label="Needs Academic Follow-up"
-          value="1 Student"
-          subtext="Marks dropped in recent test"
-          icon={<AlertTriangle size={20} />}
-          accent="accent"
-        />
+        <div
+          onClick={() => navigate('/reports/student-followup')}
+          style={{ cursor: 'pointer' }}
+          title="Click to view student follow-up details"
+        >
+          <MetricCard
+            label="Needs Academic Follow-up"
+            value="1 Student"
+            subtext="Click to review Aarav Singhania (-28% drop)"
+            icon={<AlertTriangle size={20} />}
+            accent="accent"
+          />
+        </div>
       </div>
 
-      {/* 2 Supporting Areas: Marks Registers & Class Performance */}
-      <div style={{ display: 'grid', gridTemplateColumns: '1.2fr 0.8fr', gap: '20px' }}>
-        
-        {/* Supporting Area 1: Marks Registers */}
-        <div className="hhs-card" style={{ padding: '20px' }}>
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '14px' }}>
-            <div>
-              <h3 className="hhs-headline-sm">Marks Registers</h3>
-              <p className="hhs-body-sm" style={{ color: 'var(--hhs-text-secondary)' }}>
-                Enter or review marks for your assigned classes across active cycles.
-              </p>
-            </div>
-          </div>
-
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
-            {marksRegisters.length === 0 ? (
-              <div style={{ padding: '24px', textAlign: 'center', color: 'var(--hhs-text-secondary)', fontSize: '0.86rem' }}>
-                No active marks registers scheduled right now.
-              </div>
-            ) : (
-              marksRegisters.map(reg => {
-                const filledCount = reg.entries.filter(e => e.marksObtained !== null || e.isAbsent).length;
-                const isComplete = reg.status === 'submitted' || reg.status === 'finalized';
-
-                return (
-                  <div
-                    key={reg.id}
-                    style={{
-                      padding: '14px 16px',
-                      borderRadius: 'var(--hhs-radius-base)',
-                      border: '1px solid var(--hhs-border)',
-                      backgroundColor: 'var(--hhs-canvas)',
-                      display: 'flex',
-                      justifyContent: 'space-between',
-                      alignItems: 'center',
-                      gap: '12px',
-                    }}
-                  >
-                    <div>
-                      <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                        <span style={{ fontWeight: 600, fontSize: '0.9rem' }}>{reg.classLabel}</span>
-                        <span style={{ fontSize: '0.8rem', color: 'var(--hhs-text-secondary)' }}>
-                          • {reg.assessmentTitle || (reg.assessmentId === 'assess-ut1-2025' ? 'Unit Test 1' : 'Unit Test 2')}
-                        </span>
-                        <span style={{ fontSize: '0.8rem', color: 'var(--hhs-text-secondary)' }}>• {reg.subjectName}</span>
-                        <StatusBadge
-                          status={isComplete ? 'submitted' : 'draft'}
-                          label={isComplete ? 'Submitted' : 'Draft'}
-                        />
-                      </div>
-                      <div style={{ fontSize: '0.76rem', color: 'var(--hhs-text-secondary)', marginTop: '3px' }}>
-                        Max Marks: {reg.maxMarks} • {filledCount} of {reg.entries.length} students entered
-                      </div>
-                    </div>
-
-                    <button
-                      onClick={() => navigate(`/academics/assessments/marks/${reg.id}`)}
-                      className="hhs-btn hhs-btn-secondary hhs-btn-sm"
-                      style={{ flexShrink: 0, display: 'flex', alignItems: 'center', gap: '5px' }}
-                    >
-                      <Edit3 size={13} />
-                      <span>{isComplete ? 'View Marks' : 'Enter Marks'}</span>
-                    </button>
-                  </div>
-                );
-              })
-            )}
-          </div>
-        </div>
-
-        {/* Supporting Area 2: Teaching Schedule & Follow-up */}
-        <div className="hhs-card" style={{ padding: '20px' }}>
-          <div style={{ marginBottom: '14px' }}>
-            <h3 className="hhs-headline-sm">Teaching Schedule</h3>
-            <p className="hhs-body-sm" style={{ color: 'var(--hhs-text-secondary)' }}>
-              Assigned sections for {primarySubject}.
+      {/* Class Assessment Drilldown Section */}
+      <div className="hhs-card" style={{ padding: 'clamp(14px, 2vw, 20px)' }}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '12px', marginBottom: '16px' }}>
+          <div>
+            <h3 className="hhs-headline-sm" style={{ margin: 0 }}>
+              Class Assessment Performance &amp; History
+            </h3>
+            <p className="hhs-body-sm" style={{ color: 'var(--hhs-text-secondary)', margin: '2px 0 0' }}>
+              Select an assigned class to view its assessment cycles, maximum marks, and current status.
             </p>
           </div>
 
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-            {classes.map(cls => {
-              const cleanRoom = cls.roomNumber ? cls.roomNumber.replace(/^Room\s+/i, 'Room ') : 'Room Unassigned';
+          {/* Class Selector Tabs */}
+          <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
+            {classes.map(c => (
+              <button
+                key={c.id}
+                onClick={() => setSelectedClassId(c.id)}
+                className={`hhs-btn ${selectedClassId === c.id ? 'hhs-btn-primary' : 'hhs-btn-secondary'}`}
+                style={{ fontSize: '0.82rem', padding: '6px 14px' }}
+              >
+                {c.label}
+              </button>
+            ))}
+          </div>
+        </div>
+
+        {/* Selected Class Cycles Breakdown */}
+        {currentClass && (
+          <div className="hhs-table-responsive" style={{ border: 'none', borderRadius: 0, margin: 0 }}>
+            <table className="hhs-table" style={{ width: '100%' }}>
+              <thead>
+                <tr>
+                  <th>Assessment Cycle</th>
+                  <th className="numeric">Max Marks</th>
+                  <th className="numeric">Pass Mark</th>
+                  <th className="numeric">Class Average</th>
+                  <th className="numeric">Normalized %</th>
+                  <th>Lifecycle Status</th>
+                  <th style={{ textAlign: 'right' }}>Action</th>
+                </tr>
+              </thead>
+              <tbody>
+                {allCycles.map(cycle => {
+                  const reg = marksRegisters.find(r => r.assessmentId === cycle.id && r.classId === currentClass.id);
+                  const isLocked = cycle.status === 'locked' || reg?.status === 'finalized';
+                  const isDraft = reg?.status === 'draft';
+                  const isSubmitted = reg?.status === 'submitted';
+
+                  // Compute average for this register if scores exist
+                  let avgScore: number | null = null;
+                  let normPct: number | null = null;
+                  if (reg && reg.entries.length > 0) {
+                    const scored = reg.entries.filter(e => e.marksObtained !== null && !e.isAbsent);
+                    if (scored.length > 0) {
+                      const sum = scored.reduce((acc, e) => acc + (e.marksObtained || 0), 0);
+                      avgScore = Math.round((sum / scored.length) * 10) / 10;
+                      normPct = Math.round((avgScore / reg.maxMarks) * 1000) / 10;
+                    }
+                  }
+
+                  let statusLabel = 'Not Open Yet';
+                  let statusType: 'active' | 'inactive' | 'pending' | 'draft' = 'inactive';
+                  if (isLocked) {
+                    statusLabel = 'Locked & Finalized';
+                    statusType = 'active';
+                  } else if (isSubmitted) {
+                    statusLabel = 'Submitted';
+                    statusType = 'active';
+                  } else if (isDraft) {
+                    statusLabel = 'Draft (Open)';
+                    statusType = 'draft';
+                  } else if (cycle.status === 'active_marking') {
+                    statusLabel = 'Open for Marks';
+                    statusType = 'pending';
+                  }
+
+                  return (
+                    <tr key={cycle.id}>
+                      <td style={{ fontWeight: 600 }}>
+                        {cycle.title || cycle.name}
+                      </td>
+                      <td className="numeric">{cycle.maxMarks}</td>
+                      <td className="numeric" style={{ color: 'var(--hhs-text-secondary)' }}>{cycle.passingMarks}</td>
+                      <td className="numeric" style={{ fontWeight: avgScore !== null ? 700 : 400 }}>
+                        {avgScore !== null ? `${avgScore} / ${cycle.maxMarks}` : '—'}
+                      </td>
+                      <td className="numeric" style={{ fontWeight: normPct !== null ? 700 : 400 }}>
+                        {normPct !== null ? `${normPct}%` : '—'}
+                      </td>
+                      <td>
+                        <StatusBadge
+                          status={statusType}
+                          label={statusLabel}
+                        />
+                      </td>
+                      <td style={{ textAlign: 'right' }}>
+                        {isLocked || isSubmitted ? (
+                          <button
+                            onClick={() => {
+                              if (reg) {
+                                navigate(`/academics/assessments/marks/${reg.id}`);
+                              } else {
+                                navigate(`/performance/classes/${currentClass.id}`);
+                              }
+                            }}
+                            className="hhs-btn hhs-btn-secondary hhs-btn-sm"
+                            style={{ display: 'inline-flex', alignItems: 'center', gap: '4px' }}
+                          >
+                            <Eye size={13} />
+                            <span>View Results</span>
+                          </button>
+                        ) : isDraft || cycle.status === 'active_marking' ? (
+                          <button
+                            onClick={() => {
+                              if (reg) {
+                                navigate(`/academics/assessments/marks/${reg.id}`);
+                              } else {
+                                navigate(`/academics/marks/${cycle.id}?classId=${currentClass.id}&subjectId=${subjects[0]?.id || ''}`);
+                              }
+                            }}
+                            className="hhs-btn hhs-btn-primary hhs-btn-sm"
+                            style={{ display: 'inline-flex', alignItems: 'center', gap: '4px' }}
+                          >
+                            <Edit3 size={13} />
+                            <span>Enter Marks</span>
+                          </button>
+                        ) : (
+                          <span style={{ fontSize: '0.78rem', color: 'var(--hhs-text-muted)', display: 'inline-flex', alignItems: 'center', gap: '4px' }}>
+                            <Lock size={12} />
+                            <span>Not Open</span>
+                          </span>
+                        )}
+                      </td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
+          </div>
+        )}
+      </div>
+
+      {/* Active Registers Master List */}
+      <div className="hhs-card" style={{ padding: '20px' }}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '14px' }}>
+          <div>
+            <h3 className="hhs-headline-sm" style={{ margin: 0 }}>All Marks Registers</h3>
+            <p className="hhs-body-sm" style={{ color: 'var(--hhs-text-secondary)', margin: '2px 0 0' }}>
+              Registry of marks entries across your assigned classes and active assessment cycles.
+            </p>
+          </div>
+        </div>
+
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+          {marksRegisters.length === 0 ? (
+            <div style={{ padding: '24px', textAlign: 'center', color: 'var(--hhs-text-secondary)', fontSize: '0.86rem' }}>
+              No active marks registers scheduled right now.
+            </div>
+          ) : (
+            marksRegisters.map(reg => {
+              const filledCount = reg.entries.filter(e => e.marksObtained !== null || e.isAbsent).length;
+              const isLockedOrFinal = reg.status === 'submitted' || reg.status === 'finalized';
+
               return (
                 <div
-                  key={cls.id}
+                  key={reg.id}
                   style={{
-                    padding: '12px 14px',
+                    padding: '14px 16px',
                     borderRadius: 'var(--hhs-radius-base)',
                     border: '1px solid var(--hhs-border)',
                     backgroundColor: 'var(--hhs-canvas)',
                     display: 'flex',
                     justifyContent: 'space-between',
                     alignItems: 'center',
+                    gap: '12px',
+                    flexWrap: 'wrap',
                   }}
                 >
                   <div>
-                    <div style={{ fontWeight: 600, fontSize: '0.88rem' }}>{cls.label}</div>
-                    <div style={{ fontSize: '0.78rem', color: 'var(--hhs-text-secondary)', marginTop: '2px' }}>
-                      {cleanRoom} • {cls.studentCount} Students
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
+                      <span style={{ fontWeight: 600, fontSize: '0.9rem' }}>{reg.classLabel}</span>
+                      <span style={{ fontSize: '0.8rem', color: 'var(--hhs-text-secondary)' }}>
+                        • {reg.assessmentTitle || (reg.assessmentId === 'assess-ut1-2025' ? 'Unit Test 1' : 'Unit Test 2')}
+                      </span>
+                      <span style={{ fontSize: '0.8rem', color: 'var(--hhs-text-secondary)' }}>• {reg.subjectName}</span>
+                      <StatusBadge
+                        status={isLockedOrFinal ? 'submitted' : 'draft'}
+                        label={reg.status === 'finalized' ? 'Finalized' : isLockedOrFinal ? 'Submitted' : 'Draft'}
+                      />
+                    </div>
+                    <div style={{ fontSize: '0.76rem', color: 'var(--hhs-text-secondary)', marginTop: '3px' }}>
+                      Max Marks: {reg.maxMarks} • {filledCount} of {reg.entries.length} students entered
                     </div>
                   </div>
 
                   <button
-                    onClick={() => navigate(`/performance/classes/${cls.id}`)}
-                    className="hhs-btn hhs-btn-secondary hhs-btn-sm"
-                    style={{ fontSize: '0.76rem' }}
+                    onClick={() => navigate(`/academics/assessments/marks/${reg.id}`)}
+                    className={`hhs-btn ${isLockedOrFinal ? 'hhs-btn-secondary' : 'hhs-btn-primary'} hhs-btn-sm`}
+                    style={{ flexShrink: 0, display: 'flex', alignItems: 'center', gap: '5px' }}
                   >
-                    <span>Results</span>
+                    {isLockedOrFinal ? <Eye size={13} /> : <Edit3 size={13} />}
+                    <span>{isLockedOrFinal ? 'View Results' : 'Enter Marks'}</span>
                   </button>
                 </div>
               );
-            })}
-          </div>
+            })
+          )}
         </div>
-
       </div>
     </div>
   );

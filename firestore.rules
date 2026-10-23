@@ -69,10 +69,11 @@ service cloud.firestore {
       allow write: if false;
     }
 
-    // Staff Accounts: Read by authenticated staff; write disabled in pilot
+    // Staff Accounts: Read by authenticated staff; allow authenticated user to link their own document
     match /staff/{staffId} {
       allow read: if isAuthenticated();
-      allow write: if false;
+      allow create, update: if isAuthenticated() && request.auth.uid == staffId;
+      allow delete: if false;
     }
 
     // Student Master Records: Read authorized by assigned class/section or principal oversight.
@@ -94,6 +95,17 @@ service cloud.firestore {
         isAssignedClassTeacher(resource.data.classId)
       );
       
+      allow create, update: if isAuthenticated() && isAssignedClassTeacher(request.resource.data.classId);
+      allow delete: if false;
+    }
+
+    // Aggregate-only attendance for subject teachers. This collection contains no student names or records.
+    match /attendanceAggregates/{aggregateId} {
+      allow read: if isAuthenticated() && (
+        isPrincipal() ||
+        isAssignedClassTeacher(resource.data.classId) ||
+        (getUserData().role == 'subject_teacher' && resource.data.classId in getUserData().assignedClasses)
+      );
       allow create, update: if isAuthenticated() && isAssignedClassTeacher(request.resource.data.classId);
       allow delete: if false;
     }
@@ -141,18 +153,16 @@ service cloud.firestore {
       allow delete: if false;
     }
 
-    // Behaviour & Observations:
-    // Only assigned Class Teacher or Subject Teacher can record observations for students in their assigned classes.
+    // Teacher Notes:
+    // Only assigned Class Teacher can record notes for students in their assigned section (safest baseline).
     // Principal has read-only oversight.
     match /incidents/{incidentId} {
       allow read: if isAuthenticated() && (
         isPrincipal() || 
-        isAssignedClassTeacher(resource.data.classId)
+        isAssignedClassTeacher(resource.data.classId) ||
+        (getUserData().role == 'subject_teacher' && resource.data.classId in getUserData().assignedClasses)
       );
-      allow create: if isAuthenticated() && (
-        isAssignedClassTeacher(request.resource.data.classId) ||
-        (getUserData().role == 'subject_teacher' && request.resource.data.classId in getUserData().assignedClasses)
-      );
+      allow create: if isAuthenticated() && isAssignedClassTeacher(request.resource.data.classId);
       allow update, delete: if false;
     }
 
@@ -160,6 +170,19 @@ service cloud.firestore {
     match /auditEvents/{eventId} {
       allow read: if isPrincipal();
       allow create: if isAuthenticated() && request.resource.data.actorId == request.auth.uid;
+      allow update, delete: if false;
+    }
+
+    // Student Follow-up & Pastoral Care Notes
+    match /studentFollowUps/{followUpId} {
+      allow read: if isAuthenticated() && (
+        isPrincipal() ||
+        getUserData().role == 'class_teacher' ||
+        getUserData().role == 'subject_teacher'
+      );
+      allow create: if isAuthenticated() && 
+        !isPrincipal() && 
+        request.resource.data.actorId == request.auth.uid;
       allow update, delete: if false;
     }
   }

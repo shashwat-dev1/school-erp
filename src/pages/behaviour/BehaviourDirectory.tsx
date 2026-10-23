@@ -39,7 +39,7 @@ export const BehaviourDirectory: React.FC = () => {
       return [currentUser.assignedClassId];
     }
     if (isSubjectTeacher) {
-      return currentUser?.assignedClasses || ['class-10-a', 'class-10-b', 'class-09-a'];
+      return currentUser?.assignedClasses || [];
     }
     return [];
   }, [isClassTeacher, isSubjectTeacher, currentUser]);
@@ -69,7 +69,11 @@ export const BehaviourDirectory: React.FC = () => {
       setStudents(uniqueStudents);
 
       // 2. Fetch notes / observations
-      const allIncidents = await provider.getIncidents();
+      const allIncidents = isClassTeacher && currentUser?.assignedClassId
+        ? await provider.getIncidents({ classId: currentUser.assignedClassId })
+        : isSubjectTeacher
+          ? (await Promise.all(assignedClassIds.map(classId => provider.getIncidents({ classId })))).flat()
+          : await provider.getIncidents();
 
       // Filter notes according to role permissions:
       // - Subject teacher: only notes they authored OR notes for students in their assigned classes
@@ -183,29 +187,31 @@ export const BehaviourDirectory: React.FC = () => {
   return (
     <div className="hhs-page-container">
       <PageHeader
-        title="Student Notes"
+        title="Teacher notes"
         subtitle={
           isSubjectTeacher
-            ? 'Notes and observations for students in your assigned classes.'
+            ? 'Teacher notes for students in your assigned classes (read-only).'
             : isClassTeacher
-            ? 'Pastoral notes and observations for students in your class.'
-            : 'School-wide student notes and observations.'
+            ? 'Teacher notes for students in your class.'
+            : 'School-wide teacher notes (read-only).'
         }
-        roleScope={isSubjectTeacher ? 'Teaching Notes' : isClassTeacher ? 'Class Notes' : 'Student Notes'}
+        roleScope={isSubjectTeacher ? 'Subject Teacher Notes' : isClassTeacher ? 'Class Teacher Notes' : 'Teacher Notes'}
         breadcrumbs={[
           { label: 'Home', to: '/' },
-          { label: 'Student Notes' },
+          { label: 'Teacher notes' },
         ]}
         actions={
           <div style={{ display: 'flex', gap: '8px' }}>
-            <button
-              onClick={() => setIsModalOpen(true)}
-              className="hhs-btn hhs-btn-primary"
-              style={{ display: 'inline-flex', alignItems: 'center', gap: '6px' }}
-            >
-              <Plus size={15} />
-              <span>Add Note</span>
-            </button>
+            {isClassTeacher && (
+              <button
+                onClick={() => setIsModalOpen(true)}
+                className="hhs-btn hhs-btn-primary"
+                style={{ display: 'inline-flex', alignItems: 'center', gap: '6px' }}
+              >
+                <Plus size={15} />
+                <span>Add Note</span>
+              </button>
+            )}
             <button
               onClick={handleExportCSV}
               className="hhs-btn hhs-btn-secondary"

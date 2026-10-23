@@ -10,12 +10,15 @@
 
 import { initializeApp, getApps, type FirebaseApp } from 'firebase/app';
 import { getAuth, type Auth } from 'firebase/auth';
-import { getFirestore, type Firestore } from 'firebase/firestore';
+import { getFirestore, initializeFirestore, type Firestore } from 'firebase/firestore';
 import { getStorage, type FirebaseStorage } from 'firebase/storage';
 
 export type DataMode = 'demo' | 'firebase';
 
 export function getDataMode(): DataMode {
+  if (import.meta.env.MODE === 'test') {
+    return 'demo';
+  }
   const mode = import.meta.env.VITE_DATA_MODE;
   return mode === 'firebase' ? 'firebase' : 'demo';
 }
@@ -64,7 +67,11 @@ if (getDataMode() === 'firebase') {
     try {
       app = getApps().length === 0 ? initializeApp(firebaseConfig) : getApps()[0];
       auth = getAuth(app);
-      db = getFirestore(app);
+      try {
+        db = initializeFirestore(app, { ignoreUndefinedProperties: true });
+      } catch {
+        db = getFirestore(app);
+      }
       storage = getStorage(app);
       console.info('[HanuJai ERP] Successfully connected to Cloud Firestore in Firebase mode.');
     } catch (error) {

@@ -60,7 +60,7 @@ export const StaffLogin: React.FC = () => {
         }}
       >
         <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-          <img src={logoSvg} alt="HanuJai High School Crest" style={{ height: '36px', width: 'auto' }} />
+          <img src={logoSvg} alt="HanuJai High School Crest" style={{ height: '44px', width: 'auto' }} />
           <div>
             <div style={{ fontWeight: 700, fontSize: '0.92rem', color: 'var(--hhs-text-primary)' }}>
               HanuJai High School
@@ -139,7 +139,7 @@ export const StaffLogin: React.FC = () => {
                   padding: '12px 14px',
                   borderRadius: 'var(--hhs-radius-base)',
                   backgroundColor: 'var(--hhs-danger-light)',
-                  border: '1px solid #f0bcb8',
+                  border: '1px solid rgba(255, 77, 79, 0.35)',
                   display: 'flex',
                   alignItems: 'flex-start',
                   gap: '10px',

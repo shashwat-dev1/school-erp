@@ -165,40 +165,42 @@ export const ClassTeacherDashboard: React.FC = () => {
         }
       />
 
-      {/* Prominent Call to Action if Attendance not yet marked */}
+      {/* Prominent Call to Action with Canary Yellow Alert Pop Banner */}
       {!isAttendanceSubmitted && (
         <div
           style={{
-            padding: '14px 18px',
-            borderRadius: 'var(--hhs-radius-base)',
-            backgroundColor: 'var(--hhs-accent-light)',
-            border: '1px solid var(--hhs-accent)',
+            padding: '16px 20px',
+            borderRadius: 'var(--hhs-radius-container)',
+            backgroundColor: 'var(--pop-canary-yellow-tint)',
+            border: '1.5px solid var(--pop-canary-yellow)',
+            borderLeft: '5px solid var(--pop-canary-yellow)',
             display: 'flex',
             justifyContent: 'space-between',
             alignItems: 'center',
             flexWrap: 'wrap',
-            gap: '10px',
+            gap: '12px',
+            boxShadow: 'var(--hhs-shadow-level-1)',
           }}
         >
           <div>
-            <div style={{ fontWeight: 600, color: 'var(--hhs-accent-text)', fontSize: '0.9rem' }}>
+            <div style={{ fontWeight: 800, color: '#202033', fontSize: '0.94rem' }}>
               Today&apos;s Attendance is Pending
             </div>
-            <div style={{ fontSize: '0.8rem', color: 'var(--hhs-text-secondary)', marginTop: '2px' }}>
+            <div style={{ fontSize: '0.82rem', color: '#45455E', marginTop: '2px' }}>
               Please take roll call for {assignedClassLabel} and submit the register.
             </div>
           </div>
           <button
             onClick={() => navigate(`/attendance/register/${assignedClassId}`)}
-            className="hhs-btn hhs-btn-primary hhs-btn-sm"
+            className="hhs-btn hhs-btn-primary"
           >
             Take Attendance Now
           </button>
         </div>
       )}
 
-      {/* 4 Focused Scoped Metrics */}
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(210px, 1fr))', gap: '16px' }}>
+      {/* 4 Focused Scoped Metrics with Vibrant Pop Accents */}
+      <div className="hhs-metrics-grid">
         <MetricCard
           label="Total Students"
           value={totalStudents.toString()}
@@ -211,7 +213,7 @@ export const ClassTeacherDashboard: React.FC = () => {
           value={presentCount.toString()}
           subtext={`${attendanceRate}% turnout today`}
           icon={<CheckCircle size={20} />}
-          accent="info"
+          accent="success"
         />
         <MetricCard
           label="Absent Today"
@@ -225,15 +227,15 @@ export const ClassTeacherDashboard: React.FC = () => {
           value={classWatchlist.length.toString()}
           subtext="In your class"
           icon={<AlertTriangle size={20} />}
-          accent="accent"
+          accent="warning"
         />
       </div>
 
       {/* 2 Supporting Areas: Absent Students Follow-up & Class Performance Summary */}
-      <div style={{ display: 'grid', gridTemplateColumns: '1.2fr 0.8fr', gap: '20px' }}>
+      <div className="hhs-grid-2col">
         
         {/* Supporting Area 1: Absent Students & Parent Contacts */}
-        <div className="hhs-card" style={{ padding: '20px' }}>
+        <div className="hhs-card" style={{ padding: 'clamp(14px, 2vw, 20px)' }}>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '14px' }}>
             <div>
               <h3 className="hhs-headline-sm">Absent Students Today ({absentStudents.length})</h3>
@@ -297,7 +299,7 @@ export const ClassTeacherDashboard: React.FC = () => {
         </div>
 
         {/* Supporting Area 2: Class Performance & Attention List */}
-        <div className="hhs-card" style={{ padding: '20px' }}>
+        <div className="hhs-card" style={{ padding: 'clamp(14px, 2vw, 20px)' }}>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '14px' }}>
             <div>
               <h3 className="hhs-headline-sm">Students Needing Follow-up</h3>
@@ -309,7 +311,7 @@ export const ClassTeacherDashboard: React.FC = () => {
               onClick={() => navigate('/behaviour')}
               className="hhs-btn hhs-btn-secondary hhs-btn-sm"
             >
-              <span>Student Notes</span>
+              <span>Teacher notes</span>
             </button>
           </div>
 

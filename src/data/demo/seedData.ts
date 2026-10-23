@@ -409,7 +409,7 @@ export const initialAssessments: AssessmentCycle[] = [
     maxMarks: 25,
     passingMarks: 9,
     weightagePercent: 10,
-    status: 'active_marking',
+    status: 'published',
   },
   {
     id: 'assess-hy-2025',
@@ -421,7 +421,7 @@ export const initialAssessments: AssessmentCycle[] = [
     maxMarks: 80,
     passingMarks: 27,
     weightagePercent: 30,
-    status: 'scheduled',
+    status: 'published',
   },
   {
     id: 'assess-annual-2026',
@@ -433,7 +433,7 @@ export const initialAssessments: AssessmentCycle[] = [
     maxMarks: 80,
     passingMarks: 27,
     weightagePercent: 50,
-    status: 'scheduled',
+    status: 'published',
   },
 ];
 
@@ -455,7 +455,7 @@ function generateMarksRegister(
 
   const entries: StudentMarkEntry[] = classStudents.map((s, idx) => {
     // Deterministic marks distribution
-    const isAbsent = idx === 10; // Devendra absent in UT-2
+    const isAbsent = assessmentId === 'assess-ut2-2025' && subjectId === 'sub-sci-10' && idx === 10;
     let marks: number | null = null;
     if (!isAbsent) {
       if (s.id === 'STU-10A-01' && assessmentId === 'assess-ut2-2025' && subjectId === 'sub-math-10') {
@@ -482,6 +482,8 @@ function generateMarksRegister(
     };
   });
 
+  const assignment = initialSubjectAssignments.find(item => item.classId === classId && item.subjectId === subjectId);
+  const teacher = assignment ? initialStaff.find(item => item.id === assignment.teacherId) : undefined;
   return {
     id: `reg-${assessmentId}-${classId}-${subjectId}`,
     assessmentId,
@@ -492,26 +494,22 @@ function generateMarksRegister(
     subjectName: sub.name,
     maxMarks,
     passingMarks,
-    teacherId: 'staff-003',
-    teacherName: 'Shri Alok Saxena',
+    teacherId: assignment?.teacherId || 'staff-003',
+    teacherName: teacher?.name || 'Assigned Teacher',
     status,
     lastSavedAt: '2026-10-21T09:45:00Z',
     entries,
   };
 }
 
-export const initialMarksRegisters: MarksRegister[] = [
-  generateMarksRegister('assess-ut1-2025', 'class-10-a', 'sub-math-10', 25, 9, 'finalized'),
-  generateMarksRegister('assess-ut1-2025', 'class-10-a', 'sub-hindi-10', 25, 9, 'finalized'),
-  generateMarksRegister('assess-ut1-2025', 'class-10-a', 'sub-sci-10', 25, 9, 'finalized'),
-  generateMarksRegister('assess-ut1-2025', 'class-10-a', 'sub-eng-10', 25, 9, 'finalized'),
-  generateMarksRegister('assess-ut1-2025', 'class-10-a', 'sub-sst-10', 25, 9, 'finalized'),
-  generateMarksRegister('assess-ut1-2025', 'class-10-b', 'sub-math-10', 25, 9, 'finalized'),
-  generateMarksRegister('assess-ut1-2025', 'class-09-a', 'sub-math-09', 25, 9, 'finalized'),
-  generateMarksRegister('assess-ut2-2025', 'class-10-a', 'sub-math-10', 25, 9, 'submitted'),
-  generateMarksRegister('assess-ut2-2025', 'class-10-b', 'sub-math-10', 25, 9, 'draft'),
-  generateMarksRegister('assess-ut2-2025', 'class-09-a', 'sub-math-09', 25, 9, 'draft'),
-];
+export const initialMarksRegisters: MarksRegister[] = initialSubjectAssignments.flatMap(assignment =>
+  initialAssessments.map(assessment => {
+    const isDraftEdge = assignment.classId === 'class-10-b' && assignment.subjectId === 'sub-math-10' && assessment.id === 'assess-ut2-2025';
+    const isSubmittedEdge = assignment.classId === 'class-10-a' && assignment.subjectId === 'sub-sci-10' && assessment.id === 'assess-ut2-2025';
+    const status = isDraftEdge ? 'draft' : isSubmittedEdge ? 'submitted' : 'finalized';
+    return generateMarksRegister(assessment.id, assignment.classId, assignment.subjectId, assessment.maxMarks, assessment.passingMarks, status);
+  })
+);
 
 // ============================================================================
 // 9. Daily Attendance Sessions (Today: 2026-10-21 for all 20 Sections)
@@ -520,7 +518,7 @@ function generateTodayAttendanceSessions(): AttendanceSession[] {
   const today = getSchoolLocalDate();
   return initialClasses.map((cls, idx) => {
     const classStudents = initialStudents.filter(s => s.classId === cls.id);
-    const isSubmitted = idx < 16; // 16 sections marked complete, 4 in progress/draft
+    const isSubmitted = idx < 16 || cls.id === 'class-10-a'; // Keep the dual-role teacher's section recorded; Class 10-B remains the draft edge case.
     
     const records: DailyAttendanceRecord[] = classStudents.map((s, rIdx) => {
       let state: 'present' | 'absent' | 'late' | 'excused' = 'present';
@@ -531,6 +529,8 @@ function generateTodayAttendanceSessions(): AttendanceSession[] {
           state = 'absent';
         } else if (rIdx === 6) {
           state = 'late';
+        } else if (rIdx === 7) {
+          state = 'excused';
         }
       } else {
         if (rIdx === 3 || rIdx === 15) {
@@ -540,13 +540,15 @@ function generateTodayAttendanceSessions(): AttendanceSession[] {
         }
       }
 
-      return {
+      const rec: DailyAttendanceRecord = {
         studentId: s.id,
         studentName: s.fullName,
         rollNumber: s.rollNumber,
         state,
-        remarks: state === 'absent' ? 'Parent unnotified' : state === 'late' ? 'Morning bus delay' : undefined,
       };
+      if (state === 'absent') rec.remarks = 'Parent unnotified';
+      else if (state === 'late') rec.remarks = 'Morning bus delay';
+      return rec;
     });
 
     const presentCount = records.filter(r => r.state === 'present').length;
@@ -562,7 +564,7 @@ function generateTodayAttendanceSessions(): AttendanceSession[] {
       academicYearId: 'year-2025-2026',
       takenByStaffId: cls.classTeacherId,
       takenByStaffName: cls.classTeacherName,
-      takenAt: '2026-10-21T08:35:00Z',
+      takenAt: `${today}T08:35:00.000Z`,
       windowStart: INSTITUTIONAL_CONFIG.attendance.dailyMarkingWindowStart,
       windowEnd: INSTITUTIONAL_CONFIG.attendance.dailyMarkingWindowEnd,
       isWindowOpen: true,

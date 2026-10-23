@@ -1,15 +1,18 @@
 import React, { useState, useEffect, useMemo } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import { useData } from '../../context/DataContext';
 import { PageHeader } from '../../components/layout/PageHeader';
 import { DataTable, type Column } from '../../components/tables/DataTable';
 import { StatusBadge } from '../../components/ui/StatusBadge';
+import { SegmentedControl } from '../../components/ui/SegmentedControl';
 import { Drawer } from '../../components/ui/Drawer';
 import { Modal } from '../../components/ui/Modal';
 import { LoadingState } from '../../components/feedback/LoadingState';
 import { ErrorBanner } from '../../components/feedback/ErrorBanner';
 import type { StudentRecord, ClassSection } from '../../domain/types';
 import type { NewStudentInput } from '../../data/provider';
+import { downloadCsv } from '../../utils/exportUtils';
 import {
   Users,
   Search,
@@ -20,6 +23,7 @@ import {
 } from 'lucide-react';
 
 export const StudentDirectory: React.FC = () => {
+  const navigate = useNavigate();
   const { currentUser } = useAuth();
   const { provider } = useData();
 
@@ -70,12 +74,17 @@ export const StudentDirectory: React.FC = () => {
         setSelectedClass(defaultClass);
 
         // Pre-query authorization scoping
-        const queryFilter = isClassTeacher && currentUser.assignedClassId
-          ? { classId: currentUser.assignedClassId, limit: 100 }
-          : { limit: 1000 };
+        const scopedStudentRequest = isClassTeacher && currentUser.assignedClassId
+          ? provider.getStudents({ classId: currentUser.assignedClassId, limit: 100 })
+          : isSubjectTeacher && currentUser.assignedClasses?.length
+            ? Promise.all(currentUser.assignedClasses.map(classId => provider.getStudents({ classId, limit: 100 })))
+                .then(results => ({ items: results.flatMap(result => result.items), total: results.reduce((sum, result) => sum + result.total, 0), page: 1, pageSize: 1000, totalPages: 1 }))
+            : isSubjectTeacher
+              ? Promise.resolve({ items: [], total: 0, page: 1, pageSize: 100, totalPages: 0 })
+            : provider.getStudents({ limit: 1000 });
 
         const [studentRes, classRes] = await Promise.all([
-          provider.getStudents(queryFilter),
+          scopedStudentRequest,
           provider.getClasses(),
         ]);
         if (!isMounted) return;
@@ -120,23 +129,15 @@ export const StudentDirectory: React.FC = () => {
     const rows = filteredStudents.map(s => [
       s.admissionNumber,
       s.rollNumber,
-      `"${s.firstName} ${s.lastName}"`,
-      `"${s.classLabel}"`,
+      `${s.firstName} ${s.lastName}`,
+      s.classLabel,
       s.gender,
       s.attendancePercentage + '%',
       (s.academicAverage || 0) + '%',
       s.status,
     ]);
 
-    const csvContent =
-      'data:text/csv;charset=utf-8,' +
-      encodeURIComponent([headers.join(','), ...rows.map(r => r.join(','))].join('\n'));
-    const link = document.createElement('a');
-    link.setAttribute('href', csvContent);
-    link.setAttribute('download', `HanuJai_Student_Roster_${new Date().toISOString().split('T')[0]}.csv`);
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
+    downloadCsv(`HanuJai_Student_Roster_${new Date().toISOString().split('T')[0]}`, headers, rows);
   };
 
   // Client-side filtering for fast interactive ledger experience
@@ -198,17 +199,45 @@ export const StudentDirectory: React.FC = () => {
       key: 'rollNumber',
       header: 'Roll #',
       width: '70px',
-      render: s => <span className="numeric tnum" style={{ fontWeight: 600 }}>{s.rollNumber}</span>,
+      render: s => (
+        <span
+          className="numeric tnum"
+          style={{ fontWeight: 600, color: 'var(--hhs-primary)', cursor: 'pointer' }}
+          onClick={() => navigate(`/students/${s.id}`)}
+          title="Open student dossier"
+        >
+          {s.rollNumber}
+        </span>
+      ),
     },
     {
       key: 'name',
       header: 'Student Name & Admission',
       render: s => (
         <div>
-          <div style={{ fontWeight: 600, color: 'var(--hhs-text-primary)' }}>
+          <button
+            onClick={() => navigate(`/students/${s.id}`)}
+            style={{
+              background: 'none',
+              border: 'none',
+              padding: 0,
+              textAlign: 'left',
+              fontWeight: 600,
+              color: 'var(--hhs-primary)',
+              cursor: 'pointer',
+              textDecoration: 'underline',
+              fontSize: '0.88rem',
+            }}
+            title="Open student dossier"
+          >
             {s.firstName} {s.lastName}
-          </div>
-          <div className="tnum" style={{ fontSize: '0.72rem', color: 'var(--hhs-text-muted)' }}>
+          </button>
+          <div
+            className="tnum"
+            style={{ fontSize: '0.72rem', color: 'var(--hhs-text-muted)', cursor: 'pointer' }}
+            onClick={() => navigate(`/students/${s.id}`)}
+            title="Open student dossier"
+          >
             {s.admissionNumber} • {s.gender === 'M' ? 'Boy' : s.gender === 'F' ? 'Girl' : 'Other'}
           </div>
         </div>
@@ -253,7 +282,7 @@ export const StudentDirectory: React.FC = () => {
               <span
                 className="hhs-badge hhs-badge-danger"
                 style={{ fontSize: '0.65rem', padding: '2px 4px' }}
-                title="Below CBSE mandatory 75% threshold"
+                title="Below 75% attendance threshold"
               >
                 &lt;75%
               </span>
@@ -264,7 +293,7 @@ export const StudentDirectory: React.FC = () => {
     },
     {
       key: 'flags',
-      header: 'Explainable Care Flags',
+      header: 'Care Flags',
       render: s => {
         if (!s.activeFlags || s.activeFlags.length === 0) {
           return <span style={{ color: 'var(--hhs-text-muted)', fontSize: '0.74rem' }}>None</span>;
@@ -294,15 +323,26 @@ export const StudentDirectory: React.FC = () => {
     {
       key: 'actions',
       header: 'Actions',
-      width: '80px',
+      width: '150px',
       render: s => (
-        <button
-          onClick={() => setActiveStudent(s)}
-          className="hhs-btn hhs-btn-secondary hhs-btn-sm"
-          style={{ fontSize: '0.74rem', padding: '4px 8px' }}
-        >
-          Dossier
-        </button>
+        <div style={{ display: 'flex', gap: '6px' }}>
+          <button
+            onClick={() => navigate(`/students/${s.id}`)}
+            className="hhs-btn hhs-btn-primary hhs-btn-sm"
+            style={{ fontSize: '0.74rem', padding: '4px 8px' }}
+            title="Open complete student dossier"
+          >
+            Dossier
+          </button>
+          <button
+            onClick={() => setActiveStudent(s)}
+            className="hhs-btn hhs-btn-secondary hhs-btn-sm"
+            style={{ fontSize: '0.74rem', padding: '4px 8px' }}
+            title="Open quick-view preview drawer"
+          >
+            Quick View
+          </button>
+        </div>
       ),
     },
   ];
@@ -336,7 +376,7 @@ export const StudentDirectory: React.FC = () => {
       <div
         className="hhs-card"
         style={{
-          padding: '16px',
+          padding: 'clamp(12px, 2vw, 16px)',
           display: 'flex',
           flexWrap: 'wrap',
           gap: '12px',
@@ -344,9 +384,9 @@ export const StudentDirectory: React.FC = () => {
           justifyContent: 'space-between',
         }}
       >
-        <div style={{ display: 'flex', flexWrap: 'wrap', gap: '12px', flex: 1, minWidth: '280px' }}>
+        <div style={{ display: 'flex', flexWrap: 'wrap', gap: '12px', flex: '1 1 auto', minWidth: 0, width: '100%' }}>
           {/* Search bar */}
-          <div style={{ position: 'relative', flex: '1 1 260px' }}>
+          <div style={{ position: 'relative', flex: '1 1 220px', minWidth: 0 }}>
             <Search
               size={15}
               style={{
@@ -363,51 +403,56 @@ export const StudentDirectory: React.FC = () => {
               value={searchQuery}
               onChange={e => setSearchQuery(e.target.value)}
               className="hhs-input"
-              style={{ paddingLeft: '32px' }}
+              style={{ paddingLeft: '32px', width: '100%' }}
             />
           </div>
 
           {/* Class Section Select */}
-          <select
-            value={selectedClass}
-            onChange={e => setSelectedClass(e.target.value)}
-            className="hhs-select"
-            style={{ width: '170px' }}
-          >
-            {currentUser?.role !== 'class_teacher' && (
-              <option value="all">
-                {currentUser?.role === 'subject_teacher' ? 'All Assigned Classes' : 'All 20 Classes'}
-              </option>
-            )}
-            {classes
-              .filter(c => {
-                if (!currentUser) return true;
-                if (currentUser.role === 'class_teacher') {
-                  return c.id === currentUser.assignedClassId;
-                }
-                if (currentUser.role === 'subject_teacher') {
-                  return currentUser.assignedClasses?.includes(c.id);
-                }
-                return true;
-              })
-              .map(c => (
-                <option key={c.id} value={c.id}>
-                  {c.label}
+          <div style={{ flex: '1 1 160px', minWidth: '140px' }}>
+            <select
+              value={selectedClass}
+              onChange={e => setSelectedClass(e.target.value)}
+              className="hhs-select"
+              style={{ width: '100%' }}
+            >
+              {currentUser?.role !== 'class_teacher' && (
+                <option value="all">
+                  {currentUser?.role === 'subject_teacher' ? 'All Assigned Classes' : 'All 20 Classes'}
                 </option>
-              ))}
-          </select>
+              )}
+              {classes
+                .filter(c => {
+                  if (!currentUser) return true;
+                  if (currentUser.role === 'class_teacher') {
+                    return c.id === currentUser.assignedClassId;
+                  }
+                  if (currentUser.role === 'subject_teacher') {
+                    return currentUser.assignedClasses?.includes(c.id);
+                  }
+                  return true;
+                })
+                .map(c => (
+                  <option key={c.id} value={c.id}>
+                    {c.label}
+                  </option>
+                ))}
+            </select>
+          </div>
 
-          {/* Attendance Compliance Filter */}
-          <select
-            value={attendanceFilter}
-            onChange={e => setAttendanceFilter(e.target.value as 'all' | 'flagged' | 'below75')}
-            className="hhs-select"
-            style={{ width: '190px' }}
-          >
-            <option value="all">All Attendance Levels</option>
-            <option value="flagged">Active Care Flags</option>
-            <option value="below75">Below 75% (CBSE Risk)</option>
-          </select>
+          {/* Attendance Compliance Segmented Filter */}
+          <div style={{ display: 'flex', alignItems: 'center', overflowX: 'auto', WebkitOverflowScrolling: 'touch', maxWidth: '100%' }}>
+            <SegmentedControl<'all' | 'flagged' | 'below75'>
+              value={attendanceFilter}
+              onChange={setAttendanceFilter}
+              size="sm"
+              options={[
+                { value: 'all', label: 'All Levels' },
+                { value: 'flagged', label: 'Care Flags' },
+                { value: 'below75', label: '< 75% Risk' },
+              ]}
+              ariaLabel="Attendance compliance filter"
+            />
+          </div>
         </div>
 
         <div style={{ fontSize: '0.8rem', color: 'var(--hhs-text-secondary)' }}>
@@ -425,6 +470,7 @@ export const StudentDirectory: React.FC = () => {
           data={filteredStudents}
           keyExtractor={s => s.id}
           emptyMessage="No students match the current filters or search term."
+          onRowClick={student => navigate(`/students/${student.id}`)}
         />
       )}
 

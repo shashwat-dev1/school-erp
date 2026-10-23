@@ -247,7 +247,7 @@ export const PrincipalDashboard: React.FC = () => {
       </div>
 
       {/* Exactly 4 Compact Scannable Metric Cards */}
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(210px, 1fr))', gap: '16px' }}>
+      <div className="hhs-metrics-grid">
         <MetricCard
           label="Total Students"
           value={totalEnrolment.toString()}
@@ -260,7 +260,7 @@ export const PrincipalDashboard: React.FC = () => {
           value={totalPresent.toString()}
           subtext={`${attendanceTurnoutPct}% turnout today`}
           icon={<CheckCircle size={20} />}
-          accent="info"
+          accent="success"
         />
         <MetricCard
           label="Absent Today"
@@ -279,10 +279,10 @@ export const PrincipalDashboard: React.FC = () => {
       </div>
 
       {/* Exactly 2 Supporting Areas: Attendance by Class & Students Needing Attention */}
-      <div style={{ display: 'grid', gridTemplateColumns: '1.2fr 0.8fr', gap: '20px' }}>
+      <div className="hhs-grid-2col">
         
         {/* Supporting Area 1: Attendance by Class */}
-        <div className="hhs-card" style={{ padding: '20px' }}>
+        <div className="hhs-card" style={{ padding: 'clamp(14px, 2vw, 20px)' }}>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '14px' }}>
             <div>
               <h3 className="hhs-headline-sm">Attendance by Class (Today)</h3>
@@ -300,7 +300,7 @@ export const PrincipalDashboard: React.FC = () => {
             </button>
           </div>
 
-          <div style={{ overflowX: 'auto' }}>
+          <div className="hhs-table-responsive" style={{ border: 'none', borderRadius: 0, margin: 0 }}>
             <table className="hhs-table" style={{ width: '100%', fontSize: '0.84rem' }}>
               <thead>
                 <tr>
@@ -359,7 +359,7 @@ export const PrincipalDashboard: React.FC = () => {
         </div>
 
         {/* Supporting Area 2: Students Needing Attention */}
-        <div className="hhs-card" style={{ padding: '20px' }}>
+        <div className="hhs-card" style={{ padding: 'clamp(14px, 2vw, 20px)' }}>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '14px' }}>
             <div>
               <h3 className="hhs-headline-sm">Students Needing Attention</h3>

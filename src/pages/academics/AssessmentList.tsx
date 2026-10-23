@@ -76,28 +76,30 @@ export const AssessmentList: React.FC = () => {
         }}
       >
         <div className="hhs-metric-card">
-          <div className="hhs-metric-label">Configured Cycles</div>
-          <div className="hhs-metric-value">{cycles.length}</div>
-          <div className="hhs-metric-sub">Session 2025–26 (CBSE)</div>
+          <div className="hhs-metric-label">Assessment Cycles</div>
+          <div className="hhs-metric-value">{cycles.length} Cycles</div>
+          <div className="hhs-metric-sub">Academic Session 2025–26</div>
         </div>
         <div className="hhs-metric-card">
-          <div className="hhs-metric-label">Target Cohorts</div>
-          <div className="hhs-metric-value">Class 10-A, 10-B</div>
-          <div className="hhs-metric-sub">Senior Secondary Wing</div>
-        </div>
-        <div className="hhs-metric-card">
-          <div className="hhs-metric-label">Marks Lock Policy</div>
+          <div className="hhs-metric-label">Current Entry Window</div>
           <div className="hhs-metric-value" style={{ color: 'var(--hhs-primary)' }}>
-            Dual-Custody
+            Unit Test 2
           </div>
-          <div className="hhs-metric-sub">Requires Principal Sign-off</div>
+          <div className="hhs-metric-sub">Open for marks entry</div>
         </div>
         <div className="hhs-metric-card">
-          <div className="hhs-metric-label">Current Window</div>
-          <div className="hhs-metric-value" style={{ color: 'var(--hhs-accent-text)' }}>
-            UT-2 Active
+          <div className="hhs-metric-label">Finalized Registers</div>
+          <div className="hhs-metric-value" style={{ color: 'var(--hhs-text-primary)' }}>
+            Unit Test 1
           </div>
-          <div className="hhs-metric-sub">Lock in 72 hours</div>
+          <div className="hhs-metric-sub">Locked &amp; signed off</div>
+        </div>
+        <div className="hhs-metric-card">
+          <div className="hhs-metric-label">Evaluation Standard</div>
+          <div className="hhs-metric-value" style={{ color: 'var(--hhs-text-primary)' }}>
+            33% Passing
+          </div>
+          <div className="hhs-metric-sub">Institutional standard criteria</div>
         </div>
       </div>
 
@@ -207,10 +209,13 @@ export const AssessmentList: React.FC = () => {
                         </button>
 
                         <button
-                          onClick={() => navigate('/classes/class-10-a/performance')}
+                          onClick={() => {
+                            const targetClass = currentUser?.assignedClassId || currentUser?.assignedClasses?.[0] || 'class-10-a';
+                            navigate(`/performance/classes/${targetClass}`);
+                          }}
                           className="hhs-btn hhs-btn-secondary"
                           style={{ fontSize: '0.75rem', padding: '5px 8px', height: '30px' }}
-                          title="View Consolidated Matrix"
+                          title="View Consolidated Results"
                         >
                           <BookOpen size={14} />
                         </button>

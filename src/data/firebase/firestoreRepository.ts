@@ -13,6 +13,8 @@ import type {
   NewIncidentInput,
   RiskWatchlistItem,
   ConsolidatedClassMarks,
+  FollowUpActionInput,
+  StudentFollowUpRecord,
 } from '../provider';
 import type {
   SchoolSettings,
@@ -26,6 +28,7 @@ import type {
   StudentFilter,
   PaginatedResult,
   AttendanceSession,
+  AttendanceAggregate,
   AttendanceCorrection,
   AssessmentCycle,
   MarksRegister,
@@ -37,7 +40,7 @@ import type {
 } from '../../domain/types';
 import { getSchoolLocalDate } from '../../domain/policy';
 
-import { db, isFirebaseConfigured } from '../../config/firebase';
+import { db, auth, isFirebaseConfigured } from '../../config/firebase';
 import {
   collection,
   doc,
@@ -46,6 +49,7 @@ import {
   setDoc,
   addDoc,
   updateDoc,
+  writeBatch,
   query,
   where,
   orderBy,
@@ -91,15 +95,41 @@ export class FirestoreRepository implements DataProvider {
     ensureFirebaseReady();
     const docRef = doc(db!, 'staff', userId);
     const snap = await getDoc(docRef);
-    return snap.exists() ? (snap.data() as StaffUser) : null;
+    if (snap.exists()) {
+      return snap.data() as StaffUser;
+    }
+
+    // Dynamic UID-to-staff profile linker:
+    // If the authenticated user does not have a /staff/{authUid} document yet, lookup by email
+    const userEmail = auth?.currentUser?.email?.toLowerCase().trim();
+    if (userEmail) {
+      const q = query(collection(db!, 'staff'), where('email', '==', userEmail));
+      const snapByEmail = await getDocs(q);
+      if (!snapByEmail.empty) {
+        const staffData = snapByEmail.docs[0].data() as StaffUser;
+        try {
+          // Mirror to /staff/${userId} so security rules can resolve request.auth.uid
+          await setDoc(docRef, { ...staffData, authUid: userId }, { merge: true });
+        } catch {
+          // Non-blocking if rules prevent write
+        }
+        return staffData;
+      }
+    }
+    return null;
   }
 
   public async getClasses(yearId?: string): Promise<ClassSection[]> {
     ensureFirebaseReady();
     const coll = collection(db!, 'classes');
-    const q = yearId ? query(coll, where('academicYearId', '==', yearId)) : coll;
+    const targetYear = yearId || 'year-2025-2026';
+    const q = query(coll, where('academicYearId', '==', targetYear));
     const snap = await getDocs(q);
-    return snap.docs.map(d => d.data() as ClassSection);
+    const docs = snap.docs.map(d => d.data() as ClassSection);
+    if (docs.length > 0) return docs;
+    // Fallback if classes collection is unpartitioned by academicYearId
+    const allSnap = await getDocs(coll);
+    return allSnap.docs.map(d => d.data() as ClassSection).slice(0, 20);
   }
 
   public async getClassById(classId: string): Promise<ClassSection | null> {
@@ -113,11 +143,12 @@ export class FirestoreRepository implements DataProvider {
     ensureFirebaseReady();
     const q = query(
       collection(db!, 'students'),
-      where('classId', '==', classId),
-      orderBy('rollNumber', 'asc')
+      where('classId', '==', classId)
     );
     const snap = await getDocs(q);
-    return snap.docs.map(d => d.data() as StudentRecord);
+    return snap.docs
+      .map(d => d.data() as StudentRecord)
+      .sort((a, b) => a.rollNumber - b.rollNumber);
   }
 
   public async getSubjects(): Promise<Subject[]> {
@@ -137,17 +168,41 @@ export class FirestoreRepository implements DataProvider {
   public async getStudents(filter: StudentFilter = {}): Promise<PaginatedResult<StudentRecord>> {
     ensureFirebaseReady();
     let q = query(collection(db!, 'students'), orderBy('fullName', 'asc'));
-    if (filter.classId) {
+    if (filter.classId && filter.classId !== 'all') {
       q = query(collection(db!, 'students'), where('classId', '==', filter.classId));
     }
     const snap = await getDocs(q);
-    const items = snap.docs.map(d => d.data() as StudentRecord);
+    let items = snap.docs.map(d => d.data() as StudentRecord);
+
+    if (filter.query) {
+      const qStr = filter.query.toLowerCase().trim();
+      items = items.filter(
+        s =>
+          s.firstName.toLowerCase().includes(qStr) ||
+          s.lastName.toLowerCase().includes(qStr) ||
+          s.fullName.toLowerCase().includes(qStr) ||
+          s.admissionNumber.toLowerCase().includes(qStr) ||
+          s.rollNumber.toString().includes(qStr)
+      );
+    }
+
+    if (filter.status) {
+      items = items.filter(s => s.status === filter.status);
+    }
+
+    const total = items.length;
+    const page = filter.page || 1;
+    const pageSize = filter.pageSize || filter.limit || total || 50;
+    const totalPages = Math.ceil(total / pageSize) || 1;
+    const start = (page - 1) * pageSize;
+    const paginatedItems = items.slice(start, start + pageSize);
+
     return {
-      items,
-      total: items.length,
-      page: 1,
-      pageSize: items.length,
-      totalPages: 1,
+      items: paginatedItems,
+      total,
+      page,
+      pageSize,
+      totalPages,
     };
   }
 
@@ -249,6 +304,13 @@ export class FirestoreRepository implements DataProvider {
     return snap.exists() ? (snap.data() as AttendanceSession) : null;
   }
 
+  public async getAttendanceAggregate(classId: string, date: string): Promise<AttendanceAggregate | null> {
+    ensureFirebaseReady();
+    const id = `att-aggregate-${classId}-${date}`;
+    const snap = await getDoc(doc(db!, 'attendanceAggregates', id));
+    return snap.exists() ? snap.data() as AttendanceAggregate : null;
+  }
+
   public async submitDailyAttendance(
     input: AttendanceSubmissionInput,
     actor: StaffUser
@@ -300,7 +362,18 @@ export class FirestoreRepository implements DataProvider {
       records,
     };
 
-    await setDoc(doc(db!, 'attendanceSessions', sessionId), session);
+    const batch = writeBatch(db!);
+    batch.set(doc(db!, 'attendanceSessions', sessionId), session);
+    batch.set(doc(db!, 'attendanceAggregates', `att-aggregate-${input.classId}-${input.date}`), {
+      classId: session.classId,
+      date: session.date,
+      totalStudents: session.totalStudents,
+      presentCount: session.presentCount,
+      absentCount: session.absentCount,
+      lateCount: session.lateCount,
+      excusedCount: session.excusedCount,
+    } satisfies AttendanceAggregate);
+    await batch.commit();
     return session;
   }
 
@@ -398,6 +471,15 @@ export class FirestoreRepository implements DataProvider {
     return snap.exists() ? (snap.data() as MarksRegister) : null;
   }
 
+  public async getStudentMarksRegisters(studentId: string): Promise<MarksRegister[]> {
+    ensureFirebaseReady();
+    const snap = await getDocs(collection(db!, 'marksRegisters'));
+    const cleanId = studentId.toLowerCase().trim();
+    return snap.docs
+      .map(d => d.data() as MarksRegister)
+      .filter(reg => reg.entries.some(e => e.studentId.toLowerCase().trim() === cleanId));
+  }
+
   public async saveMarksRegister(
     input: MarksSubmissionInput,
     actor: StaffUser
@@ -460,11 +542,19 @@ export class FirestoreRepository implements DataProvider {
   public async getIncidents(filter: IncidentFilter = {}): Promise<IncidentRecord[]> {
     ensureFirebaseReady();
     const coll = collection(db!, 'incidents');
+    if (filter.classId && filter.studentId) {
+      const q = query(coll, where('classId', '==', filter.classId), where('studentId', '==', filter.studentId));
+      const snap = await getDocs(q);
+      return snap.docs.map(d => d.data() as IncidentRecord);
+    }
+    if (filter.classId) {
+      const q = query(coll, where('classId', '==', filter.classId));
+      const snap = await getDocs(q);
+      return snap.docs.map(d => d.data() as IncidentRecord);
+    }
+    if (filter.studentId) return [];
     const snap = await getDocs(coll);
-    let items = snap.docs.map(d => d.data() as IncidentRecord);
-    if (filter.studentId) items = items.filter(i => i.studentId === filter.studentId);
-    if (filter.classId) items = items.filter(i => i.classId === filter.classId);
-    return items;
+    return snap.docs.map(d => d.data() as IncidentRecord);
   }
 
   public async createIncident(input: NewIncidentInput, actor: StaffUser): Promise<IncidentRecord> {
@@ -614,11 +704,12 @@ export class FirestoreRepository implements DataProvider {
     ensureFirebaseReady();
     const q = query(
       collection(db!, 'auditEvents'),
-      where('targetId', '==', studentId),
-      orderBy('timestamp', 'desc')
+      where('targetId', '==', studentId)
     );
     const snap = await getDocs(q);
-    return snap.docs.map(d => d.data() as AuditEvent);
+    return snap.docs
+      .map(d => d.data() as AuditEvent)
+      .sort((a, b) => b.timestamp.localeCompare(a.timestamp));
   }
 
   public async getAttendanceSessions(date?: string): Promise<AttendanceSession[]> {
@@ -627,6 +718,23 @@ export class FirestoreRepository implements DataProvider {
     const q = query(collection(db!, 'attendanceSessions'), where('date', '==', targetDate));
     const snap = await getDocs(q);
     return snap.docs.map(d => d.data() as AttendanceSession);
+  }
+
+  public async getAttendanceSessionsInRange(startDate: string, endDate: string, classIds?: string[]): Promise<AttendanceSession[]> {
+    ensureFirebaseReady();
+    if (startDate > endDate) throw new Error('Start date must be on or before end date.');
+    if (!classIds?.length) return [];
+    
+    // Uses standard automatic single-field index on 'date' without requiring complex composite index combinations
+    const q = query(
+      collection(db!, 'attendanceSessions'),
+      where('date', '>=', startDate),
+      where('date', '<=', endDate),
+      orderBy('date', 'asc')
+    );
+    const snap = await getDocs(q);
+    const inRange = snap.docs.map(d => d.data() as AttendanceSession);
+    return inRange.filter(s => classIds.includes(s.classId));
   }
 
   public async getAssessmentCycleById(cycleId: string): Promise<AssessmentCycle | null> {
@@ -753,6 +861,42 @@ export class FirestoreRepository implements DataProvider {
         followUpStatus: flag0?.code === 'ATT-01' ? 'pending' : 'in_progress',
       };
     });
+  }
+
+  public async getStudentFollowUps(studentId: string): Promise<StudentFollowUpRecord[]> {
+    ensureFirebaseReady();
+    const q = query(
+      collection(db!, 'studentFollowUps'),
+      where('studentId', '==', studentId)
+    );
+    const snap = await getDocs(q);
+    return snap.docs
+      .map(d => ({ id: d.id, ...(d.data() as Omit<StudentFollowUpRecord, 'id'>) }))
+      .sort((a, b) => b.createdAt.localeCompare(a.createdAt));
+  }
+
+  public async recordStudentFollowUp(input: FollowUpActionInput, actor: StaffUser): Promise<StudentFollowUpRecord> {
+    if (actor?.role === 'principal') {
+      throw new Error('Unauthorized: Principal profile is strictly read-only in this pilot.');
+    }
+    ensureFirebaseReady();
+    const followUpData: Omit<StudentFollowUpRecord, 'id'> = {
+      studentId: input.studentId,
+      actionType: input.actionType,
+      actionLabel: input.actionLabel,
+      note: input.note,
+      followUpDate: input.followUpDate,
+      actorId: actor.id,
+      actorName: actor.displayName || actor.name || 'Staff User',
+      actorRole: actor.role,
+      createdAt: new Date().toISOString(),
+    };
+
+    const docRef = await addDoc(collection(db!, 'studentFollowUps'), followUpData);
+    return {
+      id: docRef.id,
+      ...followUpData,
+    };
   }
 }
 

@@ -13,6 +13,7 @@ import type {
   StudentRecord,
   StudentMarkEntry,
 } from '../../domain/types';
+import { downloadCsv } from '../../utils/exportUtils';
 import {
   Download,
   BookOpen,
@@ -214,17 +215,18 @@ export const ClassPerformanceLedger: React.FC = () => {
       'Roll #',
       'Admission #',
       'Student Name',
-      ...exportSubjects.map(s => `"${s.name} (${maxMarks})"`),
+      'Class & Section',
+      ...exportSubjects.map(s => `${s.name} (${maxMarks})`),
       ...(isSubjectTeacher ? ['Status'] : ['Total Marks', 'Max Total', 'Percentage', 'Grade']),
     ];
 
-    const rows = students.map(s => {
+    const rows = displayedStudents.map(s => {
       let tot = 0;
       let cnt = 0;
       const subjVals = exportSubjects.map(sub => {
         const e = matrixData[s.id]?.[sub.id];
         if (e?.isAbsent) return 'Absent';
-        if (e && e.marksObtained !== null) {
+        if (e && e.marksObtained !== null && e.marksObtained !== undefined) {
           tot += e.marksObtained;
           cnt++;
           return e.marksObtained;
@@ -241,7 +243,7 @@ export const ClassPerformanceLedger: React.FC = () => {
             ? 'Pass'
             : 'Needs Review'
           : 'Pending';
-        return [s.rollNumber, s.admissionNumber, `"${s.firstName} ${s.lastName}"`, ...subjVals, status].join(',');
+        return [s.rollNumber, s.admissionNumber, `${s.firstName} ${s.lastName}`, activeClass.label, ...subjVals, status];
       }
 
       const maxTot = exportSubjects.length * maxMarks;
@@ -251,23 +253,18 @@ export const ClassPerformanceLedger: React.FC = () => {
       return [
         s.rollNumber,
         s.admissionNumber,
-        `"${s.firstName} ${s.lastName}"`,
+        `${s.firstName} ${s.lastName}`,
+        activeClass.label,
         ...subjVals,
         tot,
         maxTot,
         pct,
         grade,
-      ].join(',');
+      ];
     });
 
-    const csvContent = 'data:text/csv;charset=utf-8,' + [headers.join(','), ...rows].join('\n');
-    const encodedUri = encodeURI(csvContent);
-    const link = document.createElement('a');
-    link.setAttribute('href', encodedUri);
-    link.setAttribute('download', `${(activeClass.label || 'Class').replace(/\s+/g, '_')}_Results_${activeCycle?.name || 'Cycle'}.csv`);
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
+    const safeFilename = `${(activeClass.label || 'Class').replace(/\s+/g, '_')}_Results_${activeCycle?.name || 'Cycle'}`;
+    downloadCsv(safeFilename, headers, rows);
   };
 
   // Permission guards
@@ -573,14 +570,16 @@ export const ClassPerformanceLedger: React.FC = () => {
               <Download size={15} />
               <span>Export CSV</span>
             </button>
-            <button
-              onClick={() => navigate('/reports/academic-comparison')}
-              className="hhs-btn hhs-btn-primary"
-              style={{ display: 'inline-flex', alignItems: 'center', gap: '6px' }}
-            >
-              <BookOpen size={15} />
-              <span>Class Comparison</span>
-            </button>
+            {currentUser?.role === 'principal' && (
+              <button
+                onClick={() => navigate('/reports/academic-comparison')}
+                className="hhs-btn hhs-btn-primary"
+                style={{ display: 'inline-flex', alignItems: 'center', gap: '6px' }}
+              >
+                <BookOpen size={15} />
+                <span>Class Comparison</span>
+              </button>
+            )}
           </div>
         }
       />

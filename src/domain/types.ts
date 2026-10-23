@@ -233,6 +233,16 @@ export interface AttendanceSession {
   records: DailyAttendanceRecord[];
 }
 
+export interface AttendanceAggregate {
+  classId: string;
+  date: string;
+  totalStudents: number;
+  presentCount: number;
+  absentCount: number;
+  lateCount: number;
+  excusedCount: number;
+}
+
 export interface AttendanceCorrection {
   id: string;
   sessionId: string;
@@ -342,6 +352,7 @@ export type AuditAction =
   | 'marks_saved' 
   | 'marks_submitted'
   | 'incident_recorded'
+  | 'followup_recorded'
   | 'policy_updated';
 
 export interface AuditEvent {

@@ -44,8 +44,7 @@ export const Permissions = {
     if (!user) return false;
     if (user.role === 'principal') return true;
     if (user.role === 'class_teacher') {
-      if (!classId) return true;
-      return user.assignedClassId === classId;
+      return Boolean(classId && user.assignedClassId === classId);
     }
     return false;
   },
@@ -145,16 +144,16 @@ export const Permissions = {
   },
 
   /**
-   * Student Notes / Incident Logging:
-   * - Principal: STRICTLY FORBIDDEN from creating/editing notes (Read-only).
+   * Teacher Notes Logging:
+   * - Principal: STRICTLY FORBIDDEN from creating/editing notes (Read-only oversight).
    * - Class Teacher: Can log notes for students in their assigned section.
-   * - Subject Teacher: Can log notes for students in their assigned classes.
+   * - Subject Teacher: Forbidden by default (safest baseline assumption pending explicit confirmation).
    */
   canLogIncident(user: StaffUser | null, studentClassId: string): boolean {
     if (!user) return false;
     if (user.role === 'principal') return false;
-    if (user.assignedClassId === studentClassId) return true;
-    return user.assignedClasses?.includes(studentClassId) ?? false;
+    // Safest baseline: Class Teacher for their assigned class section only
+    return Boolean(user.role === 'class_teacher' && user.assignedClassId === studentClassId);
   },
 
   /**

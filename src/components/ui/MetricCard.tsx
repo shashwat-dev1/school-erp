@@ -8,7 +8,7 @@ export interface MetricCardProps {
   subValue?: string;
   trend?: 'up' | 'down' | 'neutral' | string | { value: string; isPositive?: boolean };
   trendLabel?: string;
-  accent?: 'primary' | 'accent' | 'danger' | 'info';
+  accent?: 'primary' | 'accent' | 'danger' | 'info' | 'success' | 'warning' | 'lime' | 'yellow';
   icon?: React.ReactNode;
   badge?: React.ReactNode;
   className?: string;

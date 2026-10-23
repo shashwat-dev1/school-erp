@@ -13,6 +13,7 @@ import { RoleDashboardRouter } from './pages/dashboard/RoleDashboardRouter';
 // Student Master Dossiers
 import { StudentDirectory } from './pages/students/StudentDirectory';
 import { StudentDetail } from './pages/students/StudentDetail';
+import { StudentAttendanceHistory } from './pages/attendance/StudentAttendanceHistory';
 
 // Attendance Registers & Dual-Custody
 import { AttendanceDashboard } from './pages/attendance/AttendanceDashboard';
@@ -36,12 +37,13 @@ import { ClassPerformanceLedger } from './pages/performance/ClassPerformanceLedg
 import { RiskWatchlist } from './pages/risk/RiskWatchlist';
 import { BehaviourDirectory } from './pages/behaviour/BehaviourDirectory';
 
-// Statutory Reports & Print Dossiers
+// Institutional Reports & Print Dossiers
 import { ReportsHub } from './pages/reports/ReportsHub';
 import { StudentReportCard } from './pages/reports/StudentReportCard';
 import { PTMSlip } from './pages/reports/PTMSlip';
 import { AttendanceReport } from './pages/reports/AttendanceReport';
 import { AcademicComparisonReport } from './pages/reports/AcademicComparisonReport';
+import { ClassAcademicSummary } from './pages/reports/ClassAcademicSummary';
 
 // Settings & Security Governance
 import { SystemSettings } from './pages/settings/SystemSettings';
@@ -75,6 +77,8 @@ export const App: React.FC = () => {
         {/* Student Master Ledger & Profiles */}
         <Route path="students" element={<StudentDirectory />} />
         <Route path="students/:id" element={<StudentDetail />} />
+        <Route path="students/:id/attendance" element={<StudentAttendanceHistory />} />
+        <Route path="students/:studentId/attendance" element={<StudentAttendanceHistory />} />
 
         {/* Whole-School Attendance (Principal only) */}
         <Route
@@ -179,6 +183,22 @@ export const App: React.FC = () => {
           element={
             <RoleGuard allowedRoles={['principal']}>
               <AcademicComparisonReport />
+            </RoleGuard>
+          }
+        />
+        <Route
+          path="reports/class-summary"
+          element={
+            <RoleGuard allowedRoles={['principal', 'class_teacher']}>
+              <ClassAcademicSummary />
+            </RoleGuard>
+          }
+        />
+        <Route
+          path="reports/student-followup"
+          element={
+            <RoleGuard allowedRoles={['principal', 'class_teacher']}>
+              <RiskWatchlist />
             </RoleGuard>
           }
         />

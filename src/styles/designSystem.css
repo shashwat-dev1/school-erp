@@ -1,73 +1,168 @@
 /**
- * HanuJai High School ERP — Design System & Tokens
- * Minimal, Crisp, Premium, Quiet & Confident Institutional Aesthetics
- * Palette: Midnight Navy (#19243A), Clean White (#FFFFFF), Warm Paper (#F7F6F2), Primary Blue (#3458D4)
+ * HanuJai High School ERP — Bold Pop Design System & Tokens
+ * Vibrant, High-Energy, Cohesive, Accessible Pop Institutional Aesthetics
+ *
+ * The 8 Signature Pop Colours:
+ * - Electric Blue:    #1F6BFF (Primary actions, active nav, selected controls, key links)
+ * - Burnt Vermilion:  #E4572E (Highlights, secondary emphasis, key accents)
+ * - Lime Green:       #B7F000 (Positive indicators, interactive highlights - dark text #202033)
+ * - Canary Yellow:    #FFE600 (Attention highlights, important labels - dark text #202033)
+ * - Tangerine Orange: #FF7A00 (Secondary actions, chart series, meaningful emphasis)
+ * - Deep Violet:      #6425D0 (Secondary branding, tabs, chart series, nav accents)
+ * - Apple Green:      #7ED957 (Positive performance, turnout, supporting elements)
+ * - Coral Red:        #FF4D4F (Warnings, errors, negative deltas, absences)
+ *
+ * Neutrals:
+ * - Canvas:          #F5F7FC (Cool near-white)
+ * - Surface:         #FFFFFF (Crisp white)
+ * - Text Primary:    #202033 (Deep charcoal)
  */
 
 :root {
-  /* Surface Architecture */
-  --hhs-canvas: #F8F6F0;           /* Warm ivory page background */
+  /* =========================================================================
+   * 1. THE EXACT 8 BOLD POP COLOURS
+   * ========================================================================= */
+  --pop-electric-blue: #1F6BFF;
+  --pop-electric-blue-hover: #1455D9;
+  --pop-electric-blue-active: #0D42B0;
+  --pop-electric-blue-tint: #EBF2FF;
+  --pop-electric-blue-glow: rgba(31, 107, 255, 0.25);
+
+  --pop-burnt-vermilion: #E4572E;
+  --pop-burnt-vermilion-hover: #D1471F;
+  --pop-burnt-vermilion-active: #B53B18;
+  --pop-burnt-vermilion-tint: #FDECE6;
+  --pop-burnt-vermilion-glow: rgba(228, 87, 46, 0.25);
+
+  /* Aliases for compatibility */
+  --pop-vermilion: var(--pop-burnt-vermilion);
+  --pop-vermilion-tint: var(--pop-burnt-vermilion-tint);
+  --pop-hot-pink: var(--pop-burnt-vermilion);
+  --pop-hot-pink-tint: var(--pop-burnt-vermilion-tint);
+
+  --pop-lime-green: #B7F000;
+  --pop-lime-green-hover: #A5D900;
+  --pop-lime-green-tint: #F5FDDE;
+  --pop-lime-green-glow: rgba(183, 240, 0, 0.35);
+
+  --pop-canary-yellow: #FFE600;
+  --pop-canary-yellow-hover: #E6CF00;
+  --pop-canary-yellow-tint: #FFFDE0;
+  --pop-canary-yellow-glow: rgba(255, 230, 0, 0.35);
+
+  --pop-tangerine-orange: #FF7A00;
+  --pop-tangerine-orange-hover: #E66E00;
+  --pop-tangerine-orange-tint: #FFF2E5;
+  --pop-tangerine-orange-glow: rgba(255, 122, 0, 0.25);
+
+  --pop-deep-violet: #6425D0;
+  --pop-deep-violet-hover: #531CB2;
+  --pop-deep-violet-active: #431393;
+  --pop-deep-violet-tint: #F0E8FF;
+  --pop-deep-violet-glow: rgba(100, 37, 208, 0.25);
+
+  --pop-apple-green: #7ED957;
+  --pop-apple-green-hover: #6BCA42;
+  --pop-apple-green-tint: #F1FBED;
+  --pop-apple-green-glow: rgba(126, 217, 87, 0.25);
+
+  --pop-coral-red: #FF4D4F;
+  --pop-coral-red-hover: #E03B3D;
+  --pop-coral-red-active: #C42729;
+  --pop-coral-red-tint: #FFECEC;
+  --pop-coral-red-glow: rgba(255, 77, 79, 0.25);
+
+  /* =========================================================================
+   * 2. SURFACE & NEUTRAL ARCHITECTURE
+   * ========================================================================= */
+  --hhs-canvas: #F5F7FC;           /* Cool near-white page background */
   --hhs-surface: #FFFFFF;          /* Crisp white surfaces */
-  --hhs-surface-muted: #F2ECE1;    /* Table headers, read-only containers */
-  --hhs-surface-hover: #EFE8DC;    /* Hover state */
+  --hhs-surface-muted: #EEF2FB;    /* Table headers, read-only containers */
+  --hhs-surface-hover: #E4EBF7;    /* Hover state */
   
   /* Typographic Hierarchy & Contrast */
-  --hhs-text-primary: #28251F;     /* Deep charcoal text */
-  --hhs-text-secondary: #6B655A;   /* Muted body text */
-  --hhs-text-muted: #9E9689;       /* Disabled, placeholder */
+  --hhs-text-primary: #202033;     /* Deep charcoal text */
+  --hhs-text-secondary: #56577A;   /* Muted body text */
+  --hhs-text-muted: #8B8DA8;       /* Disabled, placeholder */
   
   /* Borders & Dividers */
-  --hhs-border: #E5DED1;           /* Warm border */
-  --hhs-border-strong: #D1C7B7;
-  --hhs-border-focus: #795D2D;     /* Antique-gold focus ring */
+  --hhs-border: #E2E8F4;           /* Crisp cool border */
+  --hhs-border-strong: #CBD5E8;
+  --hhs-border-focus: #1F6BFF;     /* Electric Blue focus ring */
   
   /* Brand & Actions */
-  --hhs-brand-navy: #28251F;       /* Structural deep charcoal */
-  --hhs-brand-charcoal: #28251F;
-  --hhs-primary: #795D2D;          /* Antique-gold primary action */
-  --hhs-primary-hover: #654E25;
-  --hhs-primary-active: #53401E;
-  --hhs-primary-light: #F3E8D0;     /* Pale-gold highlight surface */
-  --hhs-primary-text: #4E3B1B;
+  --hhs-brand-navy: #202033;
+  --hhs-brand-charcoal: #202033;
+  --hhs-primary: #1F6BFF;          /* Electric Blue primary action */
+  --hhs-primary-hover: #1455D9;
+  --hhs-primary-active: #0D42B0;
+  --hhs-primary-light: #EBF2FF;    /* Electric Blue highlight surface */
+  --hhs-primary-text: #1F6BFF;
   
-  /* Semantic Indicators */
-  --hhs-accent: #B99452;           /* Refined gold accent */
-  --hhs-accent-hover: #A58244;
-  --hhs-accent-text: #5A4318;
-  --hhs-accent-light: #F9F2E4;
-  
-  --hhs-danger: #B7463F;           /* Muted red for genuine errors */
-  --hhs-danger-hover: #9E3731;
-  --hhs-danger-text: #7D2722;
-  --hhs-danger-light: #FAECEB;
-  
-  --hhs-success: #3F735A;          /* Restrained success colour */
-  --hhs-success-hover: #335E49;
-  --hhs-success-text: #234534;
-  --hhs-success-light: #EEF5F1;
+  /* Secondary Brand */
+  --hhs-brand-secondary: #6425D0;  /* Deep Violet */
+  --hhs-brand-secondary-light: #F0E8FF;
 
-  --hhs-info: #795D2D;
-  --hhs-info-light: #F3E8D0;
+  /* Semantic Indicators Mapped to Pop Palette */
+  --hhs-accent: #E4572E;           /* Burnt Vermilion supporting state */
+  --hhs-accent-hover: #D1471F;
+  --hhs-accent-text: #B53B18;      /* Accessible vermilion for text */
+  --hhs-accent-light: #FDECE6;
+  
+  --hhs-danger: #FF4D4F;           /* Coral Red for genuine errors & absences */
+  --hhs-danger-hover: #E03B3D;
+  --hhs-danger-text: #D92527;
+  --hhs-danger-light: #FFECEC;
+  
+  --hhs-success: #7ED957;          /* Apple Green for positive performance */
+  --hhs-success-hover: #6BCA42;
+  --hhs-success-text: #2B7A10;
+  --hhs-success-light: #F1FBED;
+
+  --hhs-warning: #FF7A00;          /* Tangerine Orange */
+  --hhs-warning-hover: #E66E00;
+  --hhs-warning-text: #D46500;
+  --hhs-warning-light: #FFF2E5;
+
+  --hhs-info: #6425D0;             /* Deep Violet */
+  --hhs-info-light: #F0E8FF;
+
+  --hhs-highlight: #FFE600;        /* Canary Yellow */
+  --hhs-highlight-text: #202033;
+  --hhs-highlight-light: #FFFDE0;
+
+  --hhs-positive-pop: #B7F000;     /* Lime Green */
+  --hhs-positive-pop-text: #202033;
+  --hhs-positive-pop-light: #F5FDDE;
   
   /* Layout Metrics */
-  --hhs-sidebar-width: 236px;
+  --hhs-sidebar-width: 240px;
   --hhs-sidebar-collapsed: 64px;
-  --hhs-topbar-height: 56px;
-  --hhs-control-height: 36px;
-  --hhs-control-height-lg: 40px;
-  --hhs-control-height-sm: 30px;
+  --hhs-topbar-height: 58px;
+  --hhs-control-height: 38px;
+  --hhs-control-height-lg: 42px;
+  --hhs-control-height-sm: 32px;
   
-  /* Radius Metrics (restrained, non-excessive) */
-  --hhs-radius-sm: 3px;
-  --hhs-radius-base: 5px;          /* Inputs, buttons, tags */
-  --hhs-radius-container: 6px;     /* Tables, cards */
-  --hhs-radius-modal: 8px;         /* Modals & dialogs */
+  /* Radius Metrics */
+  --hhs-radius-sm: 4px;
+  --hhs-radius-base: 6px;          /* Inputs, buttons, tags */
+  --hhs-radius-container: 8px;     /* Tables, cards */
+  --hhs-radius-modal: 12px;        /* Modals & dialogs */
   --hhs-radius-pill: 9999px;
   
-  /* Restrained Shadows */
-  --hhs-shadow-level-1: none;
-  --hhs-shadow-level-2: 0 1px 3px rgba(40, 37, 31, 0.05);
-  --hhs-shadow-level-3: 0 4px 16px rgba(40, 37, 31, 0.08);
+  /* Premium Shadows with Pop Influence */
+  --hhs-shadow-level-1: 0 1px 3px rgba(32, 32, 51, 0.05);
+  --hhs-shadow-level-2: 0 3px 10px rgba(32, 32, 51, 0.08);
+  --hhs-shadow-level-3: 0 10px 28px rgba(32, 32, 51, 0.12);
+  --hhs-shadow-pop-blue: 0 4px 14px rgba(31, 107, 255, 0.28);
+  --hhs-shadow-pop-vermilion: 0 4px 14px rgba(228, 87, 46, 0.28);
+  --hhs-shadow-pop-violet: 0 4px 14px rgba(100, 37, 208, 0.28);
+
+  /* Safe Area Insets for Modern Mobile Displays */
+  --safe-top: env(safe-area-inset-top, 0px);
+  --safe-bottom: env(safe-area-inset-bottom, 0px);
+  --safe-left: env(safe-area-inset-left, 0px);
+  --safe-right: env(safe-area-inset-right, 0px);
 }
 
 /* Global Reset & Base Typography */
@@ -155,77 +250,155 @@ table td.numeric,
   color: var(--hhs-text-secondary);
 }
 
-/* Buttons */
+/* =========================================================================
+ * 3. BUTTONS (VIBRANT POP COLOUR SYSTEM)
+ * ========================================================================= */
 .hhs-btn {
   display: inline-flex;
   align-items: center;
   justify-content: center;
   gap: 8px;
   height: var(--hhs-control-height);
-  padding: 0 14px;
+  padding: 0 15px;
   border-radius: var(--hhs-radius-base);
   font-size: 0.84rem;
   font-weight: 600;
   text-decoration: none;
   cursor: pointer;
   border: 1px solid transparent;
-  transition: background-color 0.15s ease, border-color 0.15s ease, color 0.15s ease, box-shadow 0.15s ease;
+  transition: all 0.16s ease;
   white-space: nowrap;
 }
 
 .hhs-btn:disabled {
   opacity: 0.45;
   cursor: not-allowed;
+  box-shadow: none !important;
 }
 
+/* Primary Button: Electric Blue (#1F6BFF) */
 .hhs-btn-primary {
-  background-color: var(--hhs-primary);
+  background-color: var(--pop-electric-blue);
   color: #FFFFFF;
+  box-shadow: 0 2px 8px rgba(31, 107, 255, 0.28);
 }
 
 .hhs-btn-primary:hover:not(:disabled) {
-  background-color: var(--hhs-primary-hover);
+  background-color: var(--pop-electric-blue-hover);
+  box-shadow: 0 4px 14px rgba(31, 107, 255, 0.38);
+  transform: translateY(-1px);
 }
 
 .hhs-btn-primary:active:not(:disabled) {
-  background-color: var(--hhs-primary-active);
+  background-color: var(--pop-electric-blue-active);
+  transform: translateY(0);
 }
 
+/* Accent Button: Burnt Vermilion (#E4572E) */
+.hhs-btn-accent, .hhs-btn-vermilion {
+  background-color: var(--pop-burnt-vermilion);
+  color: #FFFFFF;
+  font-weight: 700;
+  box-shadow: 0 2px 8px rgba(228, 87, 46, 0.28);
+}
+
+.hhs-btn-accent:hover:not(:disabled), .hhs-btn-vermilion:hover:not(:disabled) {
+  background-color: var(--pop-burnt-vermilion-hover);
+  color: #FFFFFF;
+  box-shadow: 0 4px 14px rgba(228, 87, 46, 0.38);
+  transform: translateY(-1px);
+}
+
+.hhs-btn-accent:active:not(:disabled), .hhs-btn-vermilion:active:not(:disabled) {
+  background-color: var(--pop-burnt-vermilion-active);
+  color: #FFFFFF;
+  transform: translateY(0);
+}
+
+/* Violet Button: Deep Violet (#6425D0) */
+.hhs-btn-violet {
+  background-color: var(--pop-deep-violet);
+  color: #FFFFFF;
+  box-shadow: 0 2px 8px rgba(100, 37, 208, 0.28);
+}
+
+.hhs-btn-violet:hover:not(:disabled) {
+  background-color: var(--pop-deep-violet-hover);
+  box-shadow: 0 4px 14px rgba(100, 37, 208, 0.38);
+  transform: translateY(-1px);
+}
+
+.hhs-btn-violet:active:not(:disabled) {
+  background-color: var(--pop-deep-violet-active);
+  transform: translateY(0);
+}
+
+/* Orange Button: Tangerine Orange (#FF7A00) */
+.hhs-btn-orange {
+  background-color: var(--pop-tangerine-orange);
+  color: #FFFFFF;
+  box-shadow: 0 2px 8px rgba(255, 122, 0, 0.28);
+}
+
+.hhs-btn-orange:hover:not(:disabled) {
+  background-color: var(--pop-tangerine-orange-hover);
+  box-shadow: 0 4px 14px rgba(255, 122, 0, 0.38);
+  transform: translateY(-1px);
+}
+
+/* Secondary Button: Crisp white with cool border and neutral hover */
 .hhs-btn-secondary {
   background-color: var(--hhs-surface);
-  border-color: var(--hhs-border);
+  border-color: var(--hhs-border-strong);
   color: var(--hhs-text-primary);
+  box-shadow: var(--hhs-shadow-level-1);
 }
 
 .hhs-btn-secondary:hover:not(:disabled) {
   background-color: var(--hhs-surface-hover);
   border-color: var(--hhs-border-strong);
+  color: var(--hhs-text-primary);
 }
 
+/* Danger Button: Coral Red (#FF4D4F) */
 .hhs-btn-danger {
-  background-color: var(--hhs-surface);
-  border-color: var(--hhs-danger);
-  color: var(--hhs-danger);
+  background-color: var(--pop-coral-red-tint);
+  border-color: var(--pop-coral-red);
+  color: var(--pop-coral-red);
 }
 
 .hhs-btn-danger:hover:not(:disabled) {
-  background-color: var(--hhs-danger);
+  background-color: var(--pop-coral-red);
   color: #FFFFFF;
+  box-shadow: 0 2px 8px rgba(255, 77, 79, 0.32);
 }
 
 .hhs-btn-sm {
   height: var(--hhs-control-height-sm);
-  padding: 0 10px;
+  padding: 0 11px;
   font-size: 0.78rem;
 }
 
 .hhs-btn-lg {
   height: var(--hhs-control-height-lg);
-  padding: 0 18px;
+  padding: 0 20px;
   font-size: 0.92rem;
 }
 
-/* Form Controls */
+.hhs-btn-text {
+  background: transparent;
+  border-color: transparent;
+  color: var(--hhs-text-secondary);
+}
+
+.hhs-btn-text:hover:not(:disabled) {
+  color: var(--pop-electric-blue);
+  background-color: var(--pop-electric-blue-tint);
+}
+
+/* =========================================================================
+ * 4. POLISHED CUSTOM FORM CONTROLS & DROPDOWNS
+ * ========================================================================= */
 .hhs-form-group {
   display: flex;
   flex-direction: column;
@@ -235,57 +408,173 @@ table td.numeric,
 
 .hhs-label {
   font-size: 0.74rem;
-  font-weight: 600;
+  font-weight: 700;
   text-transform: uppercase;
-  letter-spacing: 0.04em;
+  letter-spacing: 0.05em;
   color: var(--hhs-text-secondary);
 }
 
 .hhs-input, .hhs-select, .hhs-textarea {
   width: 100%;
   height: var(--hhs-control-height);
-  padding: 0 12px;
+  padding: 0 13px;
   background-color: var(--hhs-surface);
-  border: 1px solid var(--hhs-border);
+  border: 1.5px solid var(--hhs-border-strong);
   border-radius: var(--hhs-radius-base);
   color: var(--hhs-text-primary);
   font-size: 0.875rem;
+  font-weight: 500;
   font-family: inherit;
-  transition: border-color 0.15s ease, box-shadow 0.15s ease;
+  transition: border-color 0.16s ease, box-shadow 0.16s ease, background-color 0.16s ease;
+  box-shadow: var(--hhs-shadow-level-1);
 }
 
-.hhs-textarea {
-  height: auto;
-  min-height: 76px;
-  padding: 8px 12px;
+.hhs-input:hover:not(:disabled), .hhs-select:hover:not(:disabled), .hhs-textarea:hover:not(:disabled) {
+  border-color: var(--pop-electric-blue);
 }
 
 .hhs-input:focus, .hhs-select:focus, .hhs-textarea:focus {
   outline: none;
-  border-color: var(--hhs-border-focus);
-  box-shadow: 0 0 0 2px rgba(121, 93, 45, 0.2);
+  border-color: var(--pop-electric-blue);
+  box-shadow: 0 0 0 3px rgba(31, 107, 255, 0.22);
+}
+
+/* Polished custom select with vibrant Electric Blue SVG Chevron */
+.hhs-select, select {
+  appearance: none;
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%231F6BFF' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 12px center;
+  background-size: 14px;
+  padding-right: 36px;
+  cursor: pointer;
+  background-color: var(--hhs-surface);
+}
+
+.hhs-select:hover:not(:disabled), select:hover:not(:disabled) {
+  border-color: var(--pop-electric-blue);
+  background-color: #FAFBFD;
+}
+
+.hhs-select:disabled, select:disabled {
+  background-color: var(--hhs-surface-muted);
+  color: var(--hhs-text-muted);
+  cursor: not-allowed;
+  opacity: 0.7;
+}
+
+.hhs-textarea {
+  height: auto;
+  min-height: 80px;
+  padding: 10px 13px;
 }
 
 .hhs-input.error, .hhs-select.error {
-  border-color: var(--hhs-danger);
+  border-color: var(--pop-coral-red);
+}
+
+.hhs-input.error:focus, .hhs-select.error:focus {
+  box-shadow: 0 0 0 3px rgba(255, 77, 79, 0.22);
 }
 
 .hhs-field-error {
   font-size: 0.74rem;
-  color: var(--hhs-danger);
-  margin-top: 2px;
+  color: var(--pop-coral-red);
+  font-weight: 600;
+  margin-top: 3px;
 }
 
-/* Card Surfaces */
+/* =========================================================================
+ * 5. FILTER TOOLBAR & CONTROLS
+ * ========================================================================= */
+.hhs-filter-toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  gap: 12px;
+  padding: 14px 18px;
+  background-color: var(--hhs-surface);
+  border: 1px solid var(--hhs-border);
+  border-radius: var(--hhs-radius-container);
+  box-shadow: var(--hhs-shadow-level-1);
+  margin-bottom: 16px;
+}
+
+.hhs-filter-field {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+
+.hhs-filter-field label {
+  font-size: 0.72rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--hhs-text-secondary);
+}
+
+/* Segmented Control with Pop Highlighting */
+.hhs-segmented-control {
+  display: inline-flex;
+  align-items: center;
+  background-color: var(--hhs-surface-muted);
+  border: 1px solid var(--hhs-border);
+  border-radius: var(--hhs-radius-base);
+  padding: 3px;
+  gap: 3px;
+}
+
+.hhs-segmented-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 6px 14px;
+  font-size: 0.8125rem;
+  font-weight: 600;
+  color: var(--hhs-text-secondary);
+  background: transparent;
+  border: none;
+  border-radius: calc(var(--hhs-radius-base) - 2px);
+  cursor: pointer;
+  transition: all 0.16s ease;
+  white-space: nowrap;
+  font-family: inherit;
+}
+
+.hhs-segmented-btn:hover:not(.active):not(:disabled) {
+  color: var(--pop-electric-blue);
+  background-color: rgba(31, 107, 255, 0.08);
+}
+
+.hhs-segmented-btn.active {
+  background-color: var(--pop-electric-blue);
+  color: #FFFFFF;
+  font-weight: 700;
+  box-shadow: 0 2px 6px rgba(31, 107, 255, 0.35);
+}
+
+.hhs-segmented-btn:focus-visible {
+  outline: 2px solid var(--pop-electric-blue);
+  outline-offset: 1px;
+}
+
+/* =========================================================================
+ * 6. CARD SURFACES & KPI METRICS
+ * ========================================================================= */
 .hhs-card {
   background-color: var(--hhs-surface);
   border: 1px solid var(--hhs-border);
   border-radius: var(--hhs-radius-container);
   overflow: hidden;
+  box-shadow: var(--hhs-shadow-level-1);
 }
 
 .hhs-card-header {
-  padding: 12px 16px;
+  padding: 14px 18px;
   border-bottom: 1px solid var(--hhs-border);
   background-color: var(--hhs-surface);
   display: flex;
@@ -294,7 +583,7 @@ table td.numeric,
 }
 
 .hhs-card-body {
-  padding: 16px;
+  padding: 18px;
 }
 
 /* Compact Metric KPI Blocks */
@@ -302,15 +591,18 @@ table td.numeric,
   background-color: var(--hhs-surface);
   border: 1px solid var(--hhs-border);
   border-radius: var(--hhs-radius-container);
-  padding: 16px;
+  padding: 18px 20px;
   position: relative;
   display: flex;
   flex-direction: column;
   justify-content: space-between;
-  transition: border-color 0.15s ease;
+  transition: transform 0.16s ease, box-shadow 0.16s ease, border-color 0.16s ease;
+  box-shadow: var(--hhs-shadow-level-1);
 }
 
 .hhs-metric-card:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--hhs-shadow-level-2);
   border-color: var(--hhs-border-strong);
 }
 
@@ -319,36 +611,43 @@ table td.numeric,
   position: absolute;
   top: 0;
   left: 0;
-  width: 3px;
+  width: 4px;
   height: 100%;
   border-top-left-radius: var(--hhs-radius-container);
   border-bottom-left-radius: var(--hhs-radius-container);
 }
 
-.hhs-metric-card.primary::before { background-color: var(--hhs-primary); }
-.hhs-metric-card.accent::before { background-color: var(--hhs-accent); }
-.hhs-metric-card.danger::before { background-color: var(--hhs-danger); }
-.hhs-metric-card.success::before { background-color: var(--hhs-success); }
-.hhs-metric-card.info::before { background-color: var(--hhs-text-secondary); }
+/* Metric Card Accent Bars with Bold Pop Colours */
+.hhs-metric-card.primary::before { background-color: var(--pop-electric-blue); }
+.hhs-metric-card.accent::before { background-color: var(--pop-burnt-vermilion); }
+.hhs-metric-card.vermilion::before { background-color: var(--pop-burnt-vermilion); }
+.hhs-metric-card.danger::before { background-color: var(--pop-coral-red); }
+.hhs-metric-card.success::before { background-color: var(--pop-apple-green); }
+.hhs-metric-card.info::before { background-color: var(--pop-deep-violet); }
+.hhs-metric-card.warning::before { background-color: var(--pop-tangerine-orange); }
+.hhs-metric-card.lime::before { background-color: var(--pop-lime-green); }
+.hhs-metric-card.yellow::before { background-color: var(--pop-canary-yellow); }
 
 .hhs-metric-value {
-  font-size: 2rem;
-  font-weight: 700;
+  font-size: 2.1rem;
+  font-weight: 800;
   color: var(--hhs-text-primary);
   line-height: 1.1;
-  margin: 6px 0 2px 0;
+  margin: 8px 0 3px 0;
   font-feature-settings: "tnum" 1;
 }
 
 .hhs-metric-label {
-  font-size: 0.72rem;
-  font-weight: 600;
+  font-size: 0.74rem;
+  font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 0.05em;
   color: var(--hhs-text-secondary);
 }
 
-/* Clean Tables */
+/* =========================================================================
+ * 7. TABLES & HEADERS
+ * ========================================================================= */
 .hhs-table-container {
   width: 100%;
   overflow-x: auto;
@@ -365,21 +664,21 @@ table td.numeric,
 
 .hhs-table th {
   background-color: var(--hhs-surface-muted);
-  color: var(--hhs-text-secondary);
-  font-size: 0.72rem;
-  font-weight: 600;
+  color: var(--hhs-text-primary);
+  font-size: 0.74rem;
+  font-weight: 700;
   text-transform: uppercase;
-  letter-spacing: 0.04em;
-  padding: 10px 14px;
-  border-bottom: 1px solid var(--hhs-border);
+  letter-spacing: 0.05em;
+  padding: 12px 16px;
+  border-bottom: 2px solid var(--hhs-border-strong);
   white-space: nowrap;
 }
 
 .hhs-table td {
-  padding: 11px 14px;
+  padding: 12px 16px;
   border-bottom: 1px solid var(--hhs-border);
   color: var(--hhs-text-primary);
-  font-size: 0.85rem;
+  font-size: 0.86rem;
 }
 
 .hhs-table tr:last-child td {
@@ -390,61 +689,116 @@ table td.numeric,
   background-color: var(--hhs-surface-hover);
 }
 
-/* Status Badges */
+.hhs-row-clickable {
+  cursor: pointer;
+}
+
+.hhs-row-clickable:hover td {
+  background-color: var(--hhs-surface-hover) !important;
+}
+
+/* =========================================================================
+ * 8. STATUS BADGES (ALL 8 POP COLOURS DELIBERATELY MAPPED)
+ * ========================================================================= */
 .hhs-badge {
   display: inline-flex;
   align-items: center;
-  gap: 4px;
-  height: 22px;
-  padding: 0 8px;
-  border-radius: var(--hhs-radius-sm);
-  font-size: 0.72rem;
-  font-weight: 600;
+  gap: 5px;
+  height: 24px;
+  padding: 0 9px;
+  border-radius: var(--hhs-radius-pill);
+  font-size: 0.73rem;
+  font-weight: 700;
   white-space: nowrap;
   letter-spacing: 0.02em;
 }
 
-.hhs-badge-primary {
-  background-color: var(--hhs-primary-light);
-  color: var(--hhs-primary-text);
-  border: 1px solid rgba(121, 93, 45, 0.25);
+/* 1. Electric Blue: Primary actions & verified states */
+.hhs-badge-primary, .hhs-badge-blue {
+  background-color: var(--pop-electric-blue-tint);
+  color: var(--pop-electric-blue);
+  border: 1px solid rgba(31, 107, 255, 0.35);
 }
 
-.hhs-badge-accent {
-  background-color: var(--hhs-accent-light);
-  color: var(--hhs-accent-text);
-  border: 1px solid rgba(217, 154, 55, 0.3);
+/* 2. Burnt Vermilion: Highlights & secondary accents */
+.hhs-badge-accent, .hhs-badge-vermilion, .hhs-badge-pink {
+  background-color: var(--pop-burnt-vermilion-tint);
+  color: #B53B18;
+  border: 1px solid rgba(228, 87, 46, 0.45);
 }
 
-.hhs-badge-danger {
-  background-color: var(--hhs-danger-light);
-  color: var(--hhs-danger-text);
-  border: 1px solid rgba(185, 65, 65, 0.25);
+/* 3. Lime Green: Positive indicators & top marks (DARK TEXT FOR READABILITY!) */
+.hhs-badge-lime {
+  background-color: var(--pop-lime-green);
+  color: #202033;
+  border: 1px solid #9FD400;
 }
 
-.hhs-badge-success {
-  background-color: var(--hhs-success-light);
-  color: var(--hhs-success-text);
-  border: 1px solid rgba(46, 125, 90, 0.25);
+/* 4. Canary Yellow: Attention grabbing labels (DARK TEXT FOR READABILITY!) */
+.hhs-badge-yellow, .hhs-badge-canary {
+  background-color: var(--pop-canary-yellow);
+  color: #202033;
+  border: 1px solid #E6CF00;
 }
 
-.hhs-badge-neutral {
+/* 5. Tangerine Orange: Secondary actions & pending/late indicators */
+.hhs-badge-warning, .hhs-badge-orange {
+  background-color: var(--pop-tangerine-orange-tint);
+  color: var(--pop-tangerine-orange);
+  border: 1px solid rgba(255, 122, 0, 0.35);
+}
+
+/* 6. Deep Violet: Secondary branding & informational accents */
+.hhs-badge-info, .hhs-badge-violet {
+  background-color: var(--pop-deep-violet-tint);
+  color: var(--pop-deep-violet);
+  border: 1px solid rgba(100, 37, 208, 0.35);
+}
+
+/* 7. Apple Green: Positive performance & present turnout */
+.hhs-badge-success, .hhs-badge-green {
+  background-color: var(--pop-apple-green-tint);
+  color: #2B7A10;
+  border: 1px solid rgba(126, 217, 87, 0.45);
+}
+
+/* 8. Coral Red: Warnings, errors, negative deltas & absences */
+.hhs-badge-danger, .hhs-badge-coral {
+  background-color: var(--pop-coral-red-tint);
+  color: var(--pop-coral-red);
+  border: 1px solid rgba(255, 77, 79, 0.35);
+}
+
+/* Neutral Badge */
+.hhs-badge-neutral, .hhs-badge-secondary {
   background-color: var(--hhs-surface-muted);
   color: var(--hhs-text-secondary);
-  border: 1px solid var(--hhs-border);
+  border: 1px solid var(--hhs-border-strong);
 }
 
-/* Modal Dialogs */
+/* High-Contrast Solid Badges */
+.hhs-badge-solid-blue { background-color: var(--pop-electric-blue); color: #FFFFFF; }
+.hhs-badge-solid-vermilion, .hhs-badge-solid-pink { background-color: var(--pop-burnt-vermilion); color: #FFFFFF; font-weight: 700; }
+.hhs-badge-solid-lime { background-color: var(--pop-lime-green); color: #202033; }
+.hhs-badge-solid-yellow { background-color: var(--pop-canary-yellow); color: #202033; }
+.hhs-badge-solid-orange { background-color: var(--pop-tangerine-orange); color: #FFFFFF; }
+.hhs-badge-solid-violet { background-color: var(--pop-deep-violet); color: #FFFFFF; }
+.hhs-badge-solid-green { background-color: var(--pop-apple-green); color: #202033; }
+.hhs-badge-solid-coral { background-color: var(--pop-coral-red); color: #FFFFFF; }
+
+/* =========================================================================
+ * 9. MODALS & DIALOGS
+ * ========================================================================= */
 .hhs-modal-backdrop {
   position: fixed;
   inset: 0;
-  background-color: rgba(25, 36, 58, 0.45);
+  background-color: rgba(32, 32, 51, 0.55);
   display: flex;
   align-items: center;
   justify-content: center;
   z-index: 100;
   padding: 16px;
-  backdrop-filter: blur(1px);
+  backdrop-filter: blur(2px);
 }
 
 .hhs-modal-sheet {
@@ -457,7 +811,9 @@ table td.numeric,
   overflow: hidden;
 }
 
-/* Layout Architecture */
+/* =========================================================================
+ * 10. LAYOUT & SIDEBAR ARCHITECTURE (MOBILE-FIRST RESPONSIVE)
+ * ========================================================================= */
 .hhs-sidebar {
   width: var(--hhs-sidebar-width);
   height: 100vh;
@@ -472,6 +828,9 @@ table td.numeric,
   z-index: 40;
   transition: transform 0.25s cubic-bezier(0.16, 1, 0.3, 1), visibility 0.25s ease;
   overflow: hidden;
+  box-shadow: 1px 0 6px rgba(32, 32, 51, 0.04);
+  padding-top: var(--safe-top);
+  padding-bottom: var(--safe-bottom);
 }
 
 .hhs-mobile-nav-toggle,
@@ -491,38 +850,97 @@ table td.numeric,
 
 .hhs-main-canvas {
   flex: 1;
-  padding: 24px 32px;
-  max-width: 1200px;
+  padding: clamp(14px, 2.5vw, 28px) clamp(12px, 2.8vw, 32px);
+  max-width: 1280px;
   width: 100%;
   margin: 0 auto;
   box-sizing: border-box;
+  min-width: 0;
 }
 
+/* Fluid responsive table container */
+.hhs-table-container,
 .hhs-table-responsive {
   width: 100%;
   overflow-x: auto;
   -webkit-overflow-scrolling: touch;
   margin-bottom: 16px;
+  position: relative;
+  background-color: var(--hhs-surface);
+  border: 1px solid var(--hhs-border);
+  border-radius: var(--hhs-radius-container);
+}
+
+/* Sticky primary column for dense datasets */
+.hhs-table-sticky-col th:first-child,
+.hhs-table-sticky-col td:first-child {
+  position: sticky;
+  left: 0;
+  background-color: var(--hhs-surface);
+  z-index: 2;
+  box-shadow: 2px 0 4px rgba(32, 32, 51, 0.04);
+}
+
+.hhs-table-sticky-col th:first-child {
+  background-color: var(--hhs-surface-muted);
+  z-index: 3;
 }
 
 .hhs-metrics-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
-  gap: 14px;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 200px), 1fr));
+  gap: clamp(10px, 1.8vw, 16px);
   margin-bottom: 20px;
 }
 
-/* Responsive Breakpoints (1024px, 768px, 480px) */
+/* Two-column dashboard split */
+.hhs-grid-2col {
+  display: grid;
+  grid-template-columns: 1.2fr 0.8fr;
+  gap: 20px;
+}
+
+.hhs-grid-split {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 16px;
+}
+
+/* Responsive tabs row */
+.hhs-tabs-container {
+  display: flex;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: none;
+  gap: 4px;
+  padding-bottom: 2px;
+  border-bottom: 2px solid var(--hhs-border);
+}
+
+.hhs-tabs-container::-webkit-scrollbar {
+  display: none;
+}
+
+.hhs-page-header-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+/* Responsive Breakpoints */
 @media (max-width: 1024px) {
-  .hhs-main-canvas {
-    padding: 20px 24px;
+  .hhs-grid-2col {
+    grid-template-columns: 1fr;
+    gap: 18px;
   }
 }
 
 @media (max-width: 768px) {
   .hhs-sidebar {
+    width: min(290px, 86vw);
     transform: translateX(-100%);
-    box-shadow: 0 10px 25px -5px rgba(25, 36, 58, 0.2);
+    box-shadow: 0 10px 25px -5px rgba(32, 32, 51, 0.25);
     visibility: hidden;
     pointer-events: none;
   }
@@ -534,19 +952,12 @@ table td.numeric,
   .hhs-main-layout {
     margin-left: 0;
   }
-  .hhs-main-canvas {
-    padding: 16px;
-  }
   .hhs-sidebar-backdrop {
     position: fixed;
     inset: 0;
-    background-color: rgba(25, 36, 58, 0.4);
+    background-color: rgba(32, 32, 51, 0.5);
     z-index: 35;
     backdrop-filter: blur(2px);
-  }
-  .hhs-metrics-grid {
-    grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
-    gap: 10px;
   }
   .hhs-mobile-nav-toggle {
     display: flex !important;
@@ -554,15 +965,77 @@ table td.numeric,
   .hhs-sidebar-close-btn {
     display: flex !important;
   }
+  .hhs-grid-split {
+    grid-template-columns: 1fr;
+    gap: 14px;
+  }
+  .hhs-page-header-actions {
+    width: 100%;
+    margin-top: 4px;
+  }
+}
+
+@media (max-width: 640px) {
+  .hhs-filter-toolbar {
+    padding: 12px 14px;
+    gap: 10px;
+  }
+  .hhs-filter-field {
+    width: 100%;
+    min-width: 0;
+  }
+  .hhs-filter-field select,
+  .hhs-filter-field input {
+    width: 100%;
+  }
+  .hhs-table th,
+  .hhs-table td {
+    padding: 10px 12px;
+    font-size: 0.8125rem;
+  }
+  .hhs-modal-sheet {
+    width: 100%;
+    max-width: 100%;
+    border-radius: var(--hhs-radius-container);
+  }
+}
+
+@media (max-width: 580px) {
+  .hhs-topbar-user-name {
+    display: none !important;
+  }
 }
 
 @media (max-width: 480px) {
-  .hhs-main-canvas {
-    padding: 12px;
-  }
   .hhs-metrics-grid {
     grid-template-columns: 1fr;
+    gap: 10px;
+  }
+  .hhs-metric-card {
+    padding: 14px 16px;
+  }
+  .hhs-metric-value {
+    font-size: 1.8rem;
+  }
+  .hhs-card-header {
+    padding: 12px 14px;
+    flex-wrap: wrap;
     gap: 8px;
+  }
+  .hhs-card-body {
+    padding: 14px;
+  }
+  .hhs-btn {
+    font-size: 0.8125rem;
+  }
+}
+
+@media (max-width: 380px) {
+  .hhs-topbar-session {
+    font-size: 0.74rem;
+  }
+  .hhs-role-text {
+    display: none;
   }
 }
 

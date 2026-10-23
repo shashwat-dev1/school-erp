@@ -12,6 +12,12 @@ build/
 .env.local
 .env.*.local
 *.local
+serviceAccountKey.json
+*serviceAccount*.json
+*.pem
+*.key
+*.p12
+scratch/
 
 # Firebase caches & emulator state
 .firebase/

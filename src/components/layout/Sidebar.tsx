@@ -22,23 +22,35 @@ export const Sidebar: React.FC<SidebarProps> = ({ isMobileOpen = false, onClose 
   const { currentUser } = useAuth();
   const role = currentUser?.role;
   const assignedClassId = currentUser?.assignedClassId;
-  const assignedClassLabel = currentUser?.assignedClassLabel || (assignedClassId ? `Class ${assignedClassId.toUpperCase()}` : '');
   const primaryClass = currentUser?.assignedClasses?.[0] || 'class-10-a';
 
-  // Role label in plain everyday English
-  const roleLabel =
-    role === 'principal'
-      ? 'Principal'
-      : role === 'class_teacher'
-      ? (assignedClassLabel ? `${assignedClassLabel} Teacher` : 'Class Teacher')
-      : role === 'subject_teacher'
-      ? 'Subject Teacher'
-      : 'School Staff';
+  React.useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape' && isMobileOpen && onClose) {
+        onClose();
+      }
+    };
+    if (isMobileOpen) {
+      window.addEventListener('keydown', handleKeyDown);
+    }
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [isMobileOpen, onClose]);
 
   return (
     <>
-      {isMobileOpen && <div className="hhs-sidebar-backdrop" onClick={onClose} />}
-      <aside className={`hhs-sidebar ${isMobileOpen ? 'mobile-open' : ''}`}>
+      {isMobileOpen && (
+        <div
+          className="hhs-sidebar-backdrop"
+          onClick={onClose}
+          role="button"
+          tabIndex={0}
+          aria-label="Close menu backdrop"
+          onKeyDown={(e) => {
+            if (e.key === 'Enter' || e.key === ' ') onClose?.();
+          }}
+        />
+      )}
+      <aside className={`hhs-sidebar ${isMobileOpen ? 'mobile-open' : ''}`} style={{ borderTop: '3px solid var(--pop-deep-violet)' }}>
         {/* Brand Header */}
         <div
           style={{
@@ -48,14 +60,14 @@ export const Sidebar: React.FC<SidebarProps> = ({ isMobileOpen = false, onClose 
             alignItems: 'center',
             justifyContent: 'space-between',
             gap: '8px',
-            minHeight: '56px',
+            minHeight: '64px',
           }}
         >
           <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
             <img
               src={logoSvg}
               alt="HanuJai High School"
-              style={{ height: '34px', maxWidth: '160px', objectFit: 'contain', display: 'block' }}
+              style={{ height: '42px', maxWidth: '185px', objectFit: 'contain', display: 'block' }}
             />
             <span style={{ position: 'absolute', width: '1px', height: '1px', padding: 0, margin: '-1px', overflow: 'hidden', clip: 'rect(0, 0, 0, 0)', border: 0 }}>
               HanuJai High School
@@ -80,22 +92,6 @@ export const Sidebar: React.FC<SidebarProps> = ({ isMobileOpen = false, onClose 
           )}
         </div>
 
-        {/* User Context Banner */}
-        <div
-          style={{
-            padding: '8px 16px',
-            backgroundColor: 'var(--hhs-surface-muted)',
-            borderBottom: '1px solid var(--hhs-border)',
-            fontSize: '0.72rem',
-            color: 'var(--hhs-text-secondary)',
-            display: 'flex',
-            justifyContent: 'space-between',
-            alignItems: 'center',
-          }}
-        >
-          <span>Role:</span>
-          <span style={{ color: 'var(--hhs-primary)', fontWeight: 600 }}>{roleLabel}</span>
-        </div>
 
         {/* Clean, Role-Specific Task Navigation (Max 4-5 items per role) */}
         <nav style={{ flex: 1, overflowY: 'auto', padding: '12px 8px' }}>
@@ -105,16 +101,16 @@ export const Sidebar: React.FC<SidebarProps> = ({ isMobileOpen = false, onClose 
             {role === 'principal' && (
               <>
                 <li>
-                  <SidebarItem to="/" icon={<Home size={16} />} label="Home" end />
+                  <SidebarItem to="/" icon={<Home size={16} />} label="Home" end onClick={onClose} />
                 </li>
                 <li>
-                  <SidebarItem to="/students" icon={<Users size={16} />} label="Students" />
+                  <SidebarItem to="/students" icon={<Users size={16} />} label="Students" onClick={onClose} />
                 </li>
                 <li>
-                  <SidebarItem to="/attendance" icon={<CalendarCheck size={16} />} label="Attendance" />
+                  <SidebarItem to="/attendance" icon={<CalendarCheck size={16} />} label="Attendance" onClick={onClose} />
                 </li>
                 <li>
-                  <SidebarItem to="/reports" icon={<Award size={16} />} label="Results & Reports" />
+                  <SidebarItem to="/reports" icon={<Award size={16} />} label="Results & Reports" onClick={onClose} />
                 </li>
               </>
             )}
@@ -123,7 +119,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ isMobileOpen = false, onClose 
             {role === 'class_teacher' && (
               <>
                 <li>
-                  <SidebarItem to="/" icon={<Home size={16} />} label="My Class" end />
+                  <SidebarItem to="/" icon={<Home size={16} />} label="My Class" end onClick={onClose} />
                 </li>
                 {assignedClassId ? (
                   <>
@@ -132,6 +128,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ isMobileOpen = false, onClose 
                         to={`/attendance/register/${assignedClassId}`}
                         icon={<CalendarCheck size={16} />}
                         label="Attendance"
+                        onClick={onClose}
                       />
                     </li>
                     <li>
@@ -139,6 +136,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ isMobileOpen = false, onClose 
                         to={`/performance/classes/${assignedClassId}`}
                         icon={<Award size={16} />}
                         label="Results"
+                        onClick={onClose}
                       />
                     </li>
                   </>
@@ -160,7 +158,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ isMobileOpen = false, onClose 
                   </li>
                 )}
                 <li>
-                  <SidebarItem to="/behaviour" icon={<MessageSquare size={16} />} label="Student Notes" />
+                  <SidebarItem to="/behaviour" icon={<MessageSquare size={16} />} label="Teacher notes" onClick={onClose} />
                 </li>
               </>
             )}
@@ -169,10 +167,10 @@ export const Sidebar: React.FC<SidebarProps> = ({ isMobileOpen = false, onClose 
             {role === 'subject_teacher' && (
               <>
                 <li>
-                  <SidebarItem to="/" icon={<BookOpen size={16} />} label="My Classes" end />
+                  <SidebarItem to="/" icon={<BookOpen size={16} />} label="My Classes" end onClick={onClose} />
                 </li>
                 <li>
-                  <SidebarItem to="/academics/assessments" icon={<FileCheck2 size={16} />} label="Enter Marks" />
+                  <SidebarItem to="/academics/assessments" icon={<FileCheck2 size={16} />} label="Enter Marks" onClick={onClose} />
                 </li>
                 {primaryClass ? (
                   <li>
@@ -180,11 +178,12 @@ export const Sidebar: React.FC<SidebarProps> = ({ isMobileOpen = false, onClose 
                       to={`/performance/classes/${primaryClass}`}
                       icon={<Award size={16} />}
                       label="Results"
+                      onClick={onClose}
                     />
                   </li>
                 ) : null}
                 <li>
-                  <SidebarItem to="/behaviour" icon={<MessageSquare size={16} />} label="Student Notes" />
+                  <SidebarItem to="/behaviour" icon={<MessageSquare size={16} />} label="Teacher notes" onClick={onClose} />
                 </li>
               </>
             )}
@@ -192,7 +191,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ isMobileOpen = false, onClose 
           </ul>
         </nav>
 
-        {/* Clean Footer Info */}
+        {/* Clean Footer Info with Pop Accents */}
         <div
           style={{
             padding: '12px 16px',
@@ -200,11 +199,16 @@ export const Sidebar: React.FC<SidebarProps> = ({ isMobileOpen = false, onClose 
             backgroundColor: 'var(--hhs-surface)',
             fontSize: '0.72rem',
             color: 'var(--hhs-text-secondary)',
-            lineHeight: 1.4,
+            lineHeight: 1.45,
+            display: 'flex',
+            flexDirection: 'column',
+            gap: '4px',
           }}
         >
-          <div style={{ fontWeight: 600, color: 'var(--hhs-text-primary)' }}>HanuJai High School ERP</div>
-          <div>Session 2025–2026</div>
+          <div style={{ fontWeight: 700, color: 'var(--hhs-text-primary)' }}>HanuJai High School ERP</div>
+          <div style={{ color: 'var(--hhs-text-secondary)', fontSize: '0.74rem' }}>
+            Session 2025–2026
+          </div>
         </div>
       </aside>
     </>
@@ -216,29 +220,41 @@ interface SidebarItemProps {
   icon: React.ReactNode;
   label: string;
   end?: boolean;
+  onClick?: () => void;
 }
 
-const SidebarItem: React.FC<SidebarItemProps> = ({ to, icon, label, end }) => {
+const SidebarItem: React.FC<SidebarItemProps> = ({ to, icon, label, end, onClick }) => {
   return (
     <NavLink
       to={to}
       end={end}
+      onClick={onClick}
       style={({ isActive }) => ({
         display: 'flex',
         alignItems: 'center',
-        gap: '10px',
-        padding: '8px 12px',
+        gap: '12px',
+        padding: '11px 14px',
+        minHeight: '44px',
         borderRadius: 'var(--hhs-radius-base)',
-        fontSize: '0.84rem',
-        fontWeight: isActive ? 600 : 500,
+        fontSize: '0.86rem',
+        fontWeight: isActive ? 700 : 500,
         textDecoration: 'none',
-        color: isActive ? 'var(--hhs-primary)' : 'var(--hhs-text-secondary)',
-        backgroundColor: isActive ? 'var(--hhs-primary-light)' : 'transparent',
-        borderLeft: isActive ? '3px solid var(--hhs-primary)' : '3px solid transparent',
+        color: isActive ? 'var(--pop-electric-blue)' : 'var(--hhs-text-primary)',
+        backgroundColor: isActive ? 'var(--pop-electric-blue-tint)' : 'transparent',
+        borderLeft: isActive ? '4px solid var(--pop-electric-blue)' : '4px solid transparent',
+        boxShadow: isActive ? '0 1px 4px rgba(31, 107, 255, 0.16)' : 'none',
         transition: 'all 0.15s ease',
       })}
     >
-      <span style={{ display: 'inline-flex', opacity: 0.9 }}>{icon}</span>
+      <span
+        style={{
+          display: 'inline-flex',
+          color: 'inherit',
+          transition: 'color 0.15s ease',
+        }}
+      >
+        {icon}
+      </span>
       <span>{label}</span>
     </NavLink>
   );

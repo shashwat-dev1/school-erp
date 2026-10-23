@@ -23,6 +23,7 @@ export interface DataTableProps<T> {
   pageSize?: number;
   onPageChange?: (page: number) => void;
   className?: string;
+  onRowClick?: (item: T) => void;
 }
 
 export function DataTable<T>({
@@ -37,6 +38,7 @@ export function DataTable<T>({
   pageSize: _pageSize,
   onPageChange,
   className = '',
+  onRowClick,
 }: DataTableProps<T>) {
   return (
     <div className={`hhs-card ${className}`}>
@@ -76,7 +78,19 @@ export function DataTable<T>({
               </tr>
             ) : (
               data.map((item, rowIdx) => (
-                <tr key={keyExtractor(item)}>
+                <tr
+                  key={keyExtractor(item)}
+                  onClick={e => {
+                    if (!onRowClick) return;
+                    const target = e.target as HTMLElement;
+                    if (target.closest('button') || target.closest('a') || target.closest('input') || target.closest('select')) {
+                      return;
+                    }
+                    onRowClick(item);
+                  }}
+                  style={{ cursor: onRowClick ? 'pointer' : undefined }}
+                  className={onRowClick ? 'hhs-row-clickable' : ''}
+                >
                   {columns.map(col => {
                     const value = (item as Record<string, unknown>)[col.key];
                     const content = col.render ? col.render(item, rowIdx) : (value as React.ReactNode);
@@ -107,6 +121,8 @@ export function DataTable<T>({
             display: 'flex',
             justifyContent: 'space-between',
             alignItems: 'center',
+            flexWrap: 'wrap',
+            gap: '8px',
             fontSize: '0.8rem',
             color: 'var(--hhs-text-secondary)',
           }}

@@ -18,13 +18,15 @@ export const Tabs: React.FC<TabsProps> = ({ tabs, activeTab, onChange, className
   return (
     <div
       role="tablist"
-      className={className}
+      className={`hhs-tabs-container ${className}`}
       style={{
         display: 'flex',
         gap: '4px',
-        borderBottom: '1px solid var(--hhs-border)',
+        borderBottom: '2px solid var(--hhs-border)',
         backgroundColor: 'transparent',
         overflowX: 'auto',
+        WebkitOverflowScrolling: 'touch',
+        scrollbarWidth: 'none',
       }}
     >
       {tabs.map(tab => {
@@ -39,31 +41,33 @@ export const Tabs: React.FC<TabsProps> = ({ tabs, activeTab, onChange, className
               display: 'inline-flex',
               alignItems: 'center',
               gap: '6px',
-              padding: '10px 16px',
+              padding: '10px 14px',
+              minHeight: '44px',
+              flexShrink: 0,
               border: 'none',
               backgroundColor: 'transparent',
-              fontSize: '0.85rem',
+              fontSize: '0.84rem',
               fontWeight: isActive ? 700 : 500,
-              color: isActive ? 'var(--hhs-primary)' : 'var(--hhs-text-secondary)',
+              color: isActive ? 'var(--pop-deep-violet)' : 'var(--hhs-text-secondary)',
               cursor: 'pointer',
               position: 'relative',
               whiteSpace: 'nowrap',
-              borderBottom: isActive ? '2px solid var(--hhs-primary)' : '2px solid transparent',
-              marginBottom: '-1px',
-              transition: 'color 0.15s ease',
+              borderBottom: isActive ? '3px solid var(--pop-deep-violet)' : '3px solid transparent',
+              marginBottom: '-2px',
+              transition: 'all 0.16s ease',
             }}
           >
-            {tab.icon && <span style={{ display: 'inline-flex' }}>{tab.icon}</span>}
+            {tab.icon && <span style={{ display: 'inline-flex', color: isActive ? 'var(--pop-deep-violet)' : 'inherit' }}>{tab.icon}</span>}
             <span>{tab.label}</span>
             {tab.badge !== undefined && (
               <span
                 style={{
                   fontSize: '0.7rem',
-                  padding: '1px 6px',
+                  padding: '1px 7px',
                   borderRadius: '9999px',
-                  backgroundColor: isActive ? 'var(--hhs-primary-light)' : 'var(--hhs-surface-muted)',
-                  color: isActive ? 'var(--hhs-primary-text)' : 'var(--hhs-text-secondary)',
-                  fontWeight: 600,
+                  backgroundColor: isActive ? 'var(--pop-deep-violet-tint)' : 'var(--hhs-surface-muted)',
+                  color: isActive ? 'var(--pop-deep-violet)' : 'var(--hhs-text-secondary)',
+                  fontWeight: 700,
                 }}
               >
                 {tab.badge}

@@ -164,7 +164,8 @@ describe('HANUJAI ERP — Role Model, Student Dossier & Permission Test Matrix',
 
       expect(Permissions.canAccessSection(classTeacher, 'class-10-a')).toBe(true);
       expect(Permissions.canMarkAttendance(classTeacher, 'class-10-a')).toBe(true);
-      expect(Permissions.canViewIndividualAttendance(classTeacher)).toBe(true);
+      expect(Permissions.canViewIndividualAttendance(classTeacher)).toBe(false);
+      expect(Permissions.canViewIndividualAttendance(classTeacher, 'class-10-a')).toBe(true);
       expect(Permissions.canViewStudent(classTeacher, 'class-10-a')).toBe(true);
       expect(Permissions.canViewRiskWatchlist(classTeacher, 'class-10-a')).toBe(true);
     });

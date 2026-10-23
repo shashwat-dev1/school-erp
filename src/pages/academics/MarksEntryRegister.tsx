@@ -13,6 +13,7 @@ import type {
   Subject,
 } from '../../domain/types';
 import { Permissions } from '../../domain/permissions';
+import { downloadCsv } from '../../utils/exportUtils';
 import {
   Save,
   CheckCircle2,
@@ -69,6 +70,8 @@ export const MarksEntryRegister: React.FC = () => {
 
     return { cycleId: cCycle, classId: cClass, subjectId: cSub };
   }, [assessmentId, registerId, classId, subjectId]);
+
+  const isLockedContext = Boolean(registerId || (classId && subjectId));
 
   const initialClassId =
     parsedParams.classId ||
@@ -376,29 +379,38 @@ export const MarksEntryRegister: React.FC = () => {
   // Export to CSV
   const handleExportCSV = () => {
     if (!activeClass || !activeCycle || !activeSubject) return;
-    const headers = ['Roll #', 'Admission #', 'Student Name', 'Marks Obtained', 'Max Marks', 'Status', 'Grade', 'Remarks'];
+    const headers = [
+      'Roll #',
+      'Admission #',
+      'Student Name',
+      'Class & Section',
+      'Subject',
+      'Assessment Cycle',
+      'Marks Obtained',
+      'Max Marks',
+      'Attendance Status',
+      'Grade',
+      'Remarks',
+    ];
     const rows = marksRows.map(r => {
       const g = getGradeInfo(r.marksObtained, r.isAbsent);
       return [
         r.rollNumber,
         r.admissionNumber,
-        `"${r.name}"`,
+        r.name,
+        activeClass.label,
+        activeSubject.name,
+        activeCycle.name,
         r.isAbsent ? 'ABS' : r.marksObtained !== null ? r.marksObtained : '',
         maxMarks,
         r.isAbsent ? 'Absent' : r.marksObtained !== null ? 'Present' : 'Pending',
         g.grade,
-        `"${r.remarks}"`,
-      ].join(',');
+        r.remarks,
+      ];
     });
 
-    const csvContent = 'data:text/csv;charset=utf-8,' + [headers.join(','), ...rows].join('\n');
-    const encodedUri = encodeURI(csvContent);
-    const link = document.createElement('a');
-    link.setAttribute('href', encodedUri);
-    link.setAttribute('download', `Marks_${activeClass.name}_${activeSubject.name}_${activeCycle.name}.csv`);
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
+    const safeFilename = `Marks_${(activeClass.label || 'Class').replace(/\s+/g, '_')}_${(activeSubject.name || 'Subject').replace(/\s+/g, '_')}_${(activeCycle.name || 'Cycle').replace(/\s+/g, '_')}`;
+    downloadCsv(safeFilename, headers, rows);
   };
 
   if (!currentUser || (availableClasses.length === 0 && currentUser.role !== 'principal')) {
@@ -546,54 +558,72 @@ export const MarksEntryRegister: React.FC = () => {
           <label className="hhs-label" style={{ margin: 0, whiteSpace: 'nowrap' }}>
             Assessment Cycle:
           </label>
-          <select
-            className="hhs-select"
-            value={selectedCycleId}
-            onChange={e => setSelectedCycleId(e.target.value)}
-            style={{ width: 'auto', minWidth: '180px' }}
-          >
-            {cycles.map(c => (
-              <option key={c.id} value={c.id}>
-                {c.name} (Max {c.maxMarks})
-              </option>
-            ))}
-          </select>
+          {isLockedContext ? (
+            <span className="hhs-badge hhs-badge-neutral" style={{ fontSize: '0.82rem', padding: '6px 10px' }}>
+              {activeCycle?.name || selectedCycleId}
+            </span>
+          ) : (
+            <select
+              className="hhs-select"
+              value={selectedCycleId}
+              onChange={e => setSelectedCycleId(e.target.value)}
+              style={{ width: 'auto', minWidth: '180px' }}
+            >
+              {cycles.map(c => (
+                <option key={c.id} value={c.id}>
+                  {c.name} (Max {c.maxMarks})
+                </option>
+              ))}
+            </select>
+          )}
         </div>
 
         <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
           <label className="hhs-label" style={{ margin: 0, whiteSpace: 'nowrap' }}>
             Class & Section:
           </label>
-          <select
-            className="hhs-select"
-            value={selectedClassId}
-            onChange={e => setSelectedClassId(e.target.value)}
-            style={{ width: 'auto', minWidth: '140px' }}
-          >
-            {availableClasses.map(c => (
-              <option key={c.id} value={c.id}>
-                {c.label}
-              </option>
-            ))}
-          </select>
+          {isLockedContext ? (
+            <span className="hhs-badge hhs-badge-neutral" style={{ fontSize: '0.82rem', padding: '6px 10px' }}>
+              {activeClass?.label || selectedClassId}
+            </span>
+          ) : (
+            <select
+              className="hhs-select"
+              value={selectedClassId}
+              onChange={e => setSelectedClassId(e.target.value)}
+              style={{ width: 'auto', minWidth: '140px' }}
+            >
+              {availableClasses.map(c => (
+                <option key={c.id} value={c.id}>
+                  {c.label}
+                </option>
+              ))}
+            </select>
+          )}
         </div>
 
         <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
           <label className="hhs-label" style={{ margin: 0, whiteSpace: 'nowrap' }}>
             Subject:
           </label>
-          <select
-            className="hhs-select"
-            value={selectedSubjectId}
-            onChange={e => setSelectedSubjectId(e.target.value)}
-            style={{ width: 'auto', minWidth: '160px' }}
-          >
-            {availableSubjects.map(s => (
-              <option key={s.id} value={s.id}>
-                {s.name} ({s.code})
-              </option>
-            ))}
-          </select>
+          {isLockedContext ? (
+            <span className="hhs-badge hhs-badge-neutral" style={{ fontSize: '0.82rem', padding: '6px 10px' }}>
+              {activeSubject?.name || selectedSubjectId}
+            </span>
+          ) : (
+            <select
+              className="hhs-select"
+              value={selectedSubjectId}
+              onChange={e => setSelectedSubjectId(e.target.value)}
+              style={{ width: 'auto', minWidth: '160px' }}
+            >
+              {availableSubjects.map(s => (
+                <option key={s.id} value={s.id}>
+                  {s.name} ({s.code})
+                </option>
+              ))}
+            </select>
+          )}
         </div>
 
         <div style={{ marginLeft: 'auto', fontSize: '0.8rem', color: 'var(--hhs-text-secondary)' }}>
@@ -605,7 +635,7 @@ export const MarksEntryRegister: React.FC = () => {
       <div
         style={{
           display: 'grid',
-          gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))',
+          gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 180px), 1fr))',
           gap: '12px',
           marginBottom: '16px',
         }}
@@ -679,7 +709,7 @@ export const MarksEntryRegister: React.FC = () => {
           </span>
         </div>
 
-        <div style={{ overflowX: 'auto' }}>
+        <div className="hhs-table-responsive" style={{ border: 'none', borderRadius: 0, margin: 0 }}>
           <table className="hhs-table" style={{ width: '100%' }}>
             <thead>
               <tr>
@@ -689,7 +719,7 @@ export const MarksEntryRegister: React.FC = () => {
                 <th style={{ width: '140px' }} className="numeric">Marks Obtained</th>
                 <th style={{ width: '90px', textAlign: 'center' }}>Absent</th>
                 <th style={{ width: '80px' }} className="numeric">% Score</th>
-                <th style={{ width: '90px', textAlign: 'center' }}>CBSE Grade</th>
+                <th style={{ width: '90px', textAlign: 'center' }}>Grade</th>
                 <th>Tutor Remarks & Action Flag</th>
               </tr>
             </thead>

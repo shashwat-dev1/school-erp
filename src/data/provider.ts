@@ -15,6 +15,7 @@ import type {
   StudentFilter,
   PaginatedResult,
   AttendanceSession,
+  AttendanceAggregate,
   AttendanceCorrection,
   AssessmentCycle,
   MarksRegister,
@@ -82,6 +83,28 @@ export interface NewIncidentInput {
   actionTaken?: string;
 }
 
+export interface FollowUpActionInput {
+  studentId: string;
+  actionType: 'guardian_contacted' | 'parent_meeting' | 'extra_support' | 'teacher_followup' | 'other';
+  actionLabel: string;
+  note: string;
+  followUpDate?: string;
+  statusUpdate?: 'pending' | 'in_progress' | 'counseled' | 'resolved';
+}
+
+export interface StudentFollowUpRecord {
+  id: string;
+  studentId: string;
+  actionType: string;
+  actionLabel: string;
+  note: string;
+  followUpDate?: string;
+  actorId: string;
+  actorName: string;
+  actorRole: string;
+  createdAt: string;
+}
+
 export interface RiskWatchlistItem {
   student: StudentRecord;
   primaryTrigger: string;
@@ -134,7 +157,9 @@ export interface DataProvider {
 
   // Attendance Register & Policy
   getAttendanceSessions(date?: string): Promise<AttendanceSession[]>;
+  getAttendanceSessionsInRange(startDate: string, endDate: string, classIds?: string[]): Promise<AttendanceSession[]>;
   getAttendanceSession(classId: string, date: string): Promise<AttendanceSession | null>;
+  getAttendanceAggregate(classId: string, date: string): Promise<AttendanceAggregate | null>;
   submitDailyAttendance(input: AttendanceSubmissionInput, actor: StaffUser): Promise<AttendanceSession>;
   getAttendanceCorrections(classId?: string): Promise<AttendanceCorrection[]>;
   requestAttendanceCorrection(input: AttendanceCorrectionInput, actor: StaffUser): Promise<AttendanceCorrection>;
@@ -147,6 +172,7 @@ export interface DataProvider {
   createAssessmentCycle(cycle: Partial<AssessmentCycle>, actor: StaffUser): Promise<AssessmentCycle>;
   updateAssessmentCycle(cycleId: string, updates: Partial<AssessmentCycle>, actor: StaffUser): Promise<AssessmentCycle>;
   getMarksRegister(assessmentId: string, classId: string, subjectId: string): Promise<MarksRegister | null>;
+  getStudentMarksRegisters?(studentId: string): Promise<MarksRegister[]>;
   saveMarksRegister(input: MarksSubmissionInput, actor: StaffUser): Promise<MarksRegister>;
   getConsolidatedClassMarks(classId: string, assessmentId?: string): Promise<ConsolidatedClassMarks>;
 
@@ -155,8 +181,10 @@ export interface DataProvider {
   createIncident(input: NewIncidentInput, actor: StaffUser): Promise<IncidentRecord>;
   updateIncident(incidentId: string, updates: Partial<IncidentRecord>, actor: StaffUser): Promise<IncidentRecord>;
 
-  // Risk Watchlist & Explainable Rules
+  // Risk Watchlist & Student Follow-Up
   getRiskWatchlist(classId?: string): Promise<RiskWatchlistItem[]>;
+  getStudentFollowUps(studentId: string): Promise<StudentFollowUpRecord[]>;
+  recordStudentFollowUp(input: FollowUpActionInput, actor: StaffUser): Promise<StudentFollowUpRecord>;
 
   // Audit Ledger
   getAuditEvents(filter?: AuditFilter): Promise<AuditEvent[]>;

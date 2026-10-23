@@ -31,7 +31,7 @@ export const AccessDenied: React.FC<AccessDeniedProps> = ({ title, message }) =>
           height: '56px',
           borderRadius: 'var(--hhs-radius-container)',
           backgroundColor: 'var(--hhs-danger-light)',
-          border: '1px solid #f0bcb8',
+          border: '1px solid rgba(255, 77, 79, 0.35)',
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'center',
