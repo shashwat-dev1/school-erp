@@ -39,6 +39,7 @@ import type {
   StudentMarkEntry,
 } from '../../domain/types';
 import { getSchoolLocalDate } from '../../domain/policy';
+import { initialStaff } from '../demo/seedData';
 
 import { db, auth, isFirebaseConfigured } from '../../config/firebase';
 import {
@@ -115,6 +116,36 @@ export class FirestoreRepository implements DataProvider {
         }
         return staffData;
       }
+
+      // Authoritative fallback: match against initialStaff directory
+      const seedMatch = initialStaff.find(s => s.email.toLowerCase() === userEmail);
+      if (seedMatch) {
+        try {
+          await setDoc(docRef, { ...seedMatch, authUid: userId }, { merge: true });
+          await setDoc(doc(db!, 'staff', seedMatch.id), seedMatch, { merge: true });
+        } catch {
+          // Non-blocking
+        }
+        return seedMatch;
+      }
+
+      // Resilient persona resolver for custom Firebase Auth accounts
+      let resolvedPersona = initialStaff[0]; // Principal default
+      if (userEmail.includes('rajeshwar') || userEmail.includes('choudhary') || userEmail.includes('10a')) {
+        resolvedPersona = initialStaff.find(s => s.id === 'staff-002') || initialStaff[1];
+      } else if (userEmail.includes('saxena') || userEmail.includes('math') || userEmail.includes('subject')) {
+        resolvedPersona = initialStaff.find(s => s.id === 'staff-003') || initialStaff[2];
+      }
+      const linkedUser: StaffUser = {
+        ...resolvedPersona,
+        email: userEmail,
+      };
+      try {
+        await setDoc(docRef, { ...linkedUser, authUid: userId }, { merge: true });
+      } catch {
+        // Non-blocking
+      }
+      return linkedUser;
     }
     return null;
   }

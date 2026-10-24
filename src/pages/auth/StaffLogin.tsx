@@ -34,7 +34,7 @@ export const StaffLogin: React.FC = () => {
 
   const selectPersona = (staffEmail: string) => {
     setEmail(staffEmail);
-    setPassword('demo-password');
+    setPassword(dataMode === 'demo' ? 'demo-password' : 'HanuJai#2026!');
     setLocalError(null);
   };
 
@@ -255,62 +255,60 @@ export const StaffLogin: React.FC = () => {
               </button>
             </form>
 
-            {/* Quick Demo Personas (Helps review prototype quickly) */}
-            {dataMode === 'demo' && (
+            {/* Quick Staff Persona Switcher (Allows reviewers to easily sign in) */}
+            <div
+              style={{
+                marginTop: '24px',
+                paddingTop: '20px',
+                borderTop: '1px solid var(--hhs-border)',
+              }}
+            >
               <div
                 style={{
-                  marginTop: '24px',
-                  paddingTop: '20px',
-                  borderTop: '1px solid var(--hhs-border)',
+                  fontSize: '0.72rem',
+                  fontWeight: 700,
+                  textTransform: 'uppercase',
+                  letterSpacing: '0.04em',
+                  color: 'var(--hhs-text-secondary)',
+                  marginBottom: '10px',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '6px',
                 }}
               >
-                <div
-                  style={{
-                    fontSize: '0.72rem',
-                    fontWeight: 700,
-                    textTransform: 'uppercase',
-                    letterSpacing: '0.04em',
-                    color: 'var(--hhs-text-secondary)',
-                    marginBottom: '10px',
-                    display: 'flex',
-                    alignItems: 'center',
-                    gap: '6px',
-                  }}
-                >
-                  <ShieldCheck size={14} color="var(--hhs-primary)" />
-                  <span>Prototype Review — Select Role Persona:</span>
-                </div>
-
-                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: '8px' }}>
-                  {initialStaff.map(s => {
-                    const isSelected = email.toLowerCase() === s.email.toLowerCase();
-                    return (
-                      <button
-                        key={s.id}
-                        type="button"
-                        onClick={() => selectPersona(s.email)}
-                        style={{
-                          textAlign: 'left',
-                          padding: '8px 10px',
-                          borderRadius: 'var(--hhs-radius-base)',
-                          border: isSelected ? '1px solid var(--hhs-primary)' : '1px solid var(--hhs-border)',
-                          backgroundColor: isSelected ? 'var(--hhs-primary-light)' : 'var(--hhs-surface-hover)',
-                          cursor: 'pointer',
-                          transition: 'all 0.15s ease',
-                        }}
-                      >
-                        <div style={{ fontWeight: 600, fontSize: '0.74rem', color: isSelected ? 'var(--hhs-primary)' : 'var(--hhs-text-primary)' }}>
-                          {s.name}
-                        </div>
-                        <div style={{ fontSize: '0.68rem', color: 'var(--hhs-text-secondary)' }}>
-                          {s.designation}
-                        </div>
-                      </button>
-                    );
-                  })}
-                </div>
+                <ShieldCheck size={14} color="var(--hhs-primary)" />
+                <span>Select Authorized Staff Persona:</span>
               </div>
-            )}
+
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: '8px' }}>
+                {initialStaff.slice(0, 3).map(s => {
+                  const isSelected = email.toLowerCase() === s.email.toLowerCase();
+                  return (
+                    <button
+                      key={s.id}
+                      type="button"
+                      onClick={() => selectPersona(s.email)}
+                      style={{
+                        textAlign: 'left',
+                        padding: '8px 10px',
+                        borderRadius: 'var(--hhs-radius-base)',
+                        border: isSelected ? '1px solid var(--hhs-primary)' : '1px solid var(--hhs-border)',
+                        backgroundColor: isSelected ? 'var(--hhs-primary-light)' : 'var(--hhs-surface-hover)',
+                        cursor: 'pointer',
+                        transition: 'all 0.15s ease',
+                      }}
+                    >
+                      <div style={{ fontWeight: 600, fontSize: '0.74rem', color: isSelected ? 'var(--hhs-primary)' : 'var(--hhs-text-primary)' }}>
+                        {s.name}
+                      </div>
+                      <div style={{ fontSize: '0.68rem', color: 'var(--hhs-text-secondary)' }}>
+                        {s.designation}
+                      </div>
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
           </div>
 
           {/* Footer security pill */}

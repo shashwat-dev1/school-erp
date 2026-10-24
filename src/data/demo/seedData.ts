@@ -98,7 +98,24 @@ export const initialStaff: StaffUser[] = [
     status: 'active',
     createdAt: '2023-01-01T00:00:00Z',
   },
-  // 2. Class Teacher (Class 10-A) & Mathematics Faculty (Dual-Responsibility Teacher)
+  // 2. Class Teacher (Class 10-A) - Senior Hindi & Moral Education Faculty
+  {
+    id: 'staff-002',
+    email: 'rajeshwar.choudhary@hanujai.edu.in',
+    name: 'Shri Rajeshwar Choudhary',
+    role: 'class_teacher',
+    employeeCode: 'EMP-2012-045',
+    designation: 'Senior Class 10-A Tutor & Faculty',
+    department: 'Languages',
+    phone: '+91 98290 33045',
+    assignedClassId: 'class-10-a',
+    assignedClassLabel: 'Class 10-A',
+    assignedSubjects: ['sub-hin-10', 'sub-hin-09'],
+    assignedClasses: ['class-10-a', 'class-10-b'],
+    status: 'active',
+    createdAt: '2023-01-01T00:00:00Z',
+  },
+  // 3. Class Teacher (Class 10-A) & Mathematics Faculty (Dual-Responsibility Teacher)
   {
     id: 'staff-003',
     email: 'alok.saxena@hanujai.edu.in',

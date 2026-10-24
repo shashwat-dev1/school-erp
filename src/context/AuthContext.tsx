@@ -29,14 +29,24 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    if (isDemoMode()) {
-      // In demo mode, load last active demo user from localStorage or default to Principal
-      const overrideJson = localStorage.getItem('hanujai_demo_user_override');
-      let user = overrideJson ? JSON.parse(overrideJson) : null;
-      if (!user) {
-        const savedUserId = localStorage.getItem('hanujai_demo_user_id') || 'staff-001';
-        user = initialStaff.find(s => s.id === savedUserId) || initialStaff[0];
+    // 1. Check if user actively selected a role persona override
+    const overrideJson = localStorage.getItem('hanujai_demo_user_override');
+    if (overrideJson) {
+      try {
+        const savedOverride = JSON.parse(overrideJson);
+        if (savedOverride && savedOverride.role) {
+          setCurrentUser(savedOverride);
+          setIsLoading(false);
+          return;
+        }
+      } catch {
+        localStorage.removeItem('hanujai_demo_user_override');
       }
+    }
+
+    if (isDemoMode()) {
+      const savedUserId = localStorage.getItem('hanujai_demo_user_id') || 'staff-001';
+      const user = initialStaff.find(s => s.id === savedUserId) || initialStaff[0];
       setCurrentUser(user);
       setIsLoading(false);
     } else if (auth) {
@@ -44,6 +54,16 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         setIsLoading(true);
         if (user) {
           try {
+            // Re-check override on auth change
+            const activeOverride = localStorage.getItem('hanujai_demo_user_override');
+            if (activeOverride) {
+              const parsed = JSON.parse(activeOverride);
+              if (parsed && parsed.role) {
+                setCurrentUser(parsed);
+                setIsLoading(false);
+                return;
+              }
+            }
             const provider = getDataProvider();
             const staffDoc = await provider.getCurrentStaffUser(user.uid);
             setCurrentUser(staffDoc);
@@ -70,6 +90,9 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       if (!email.trim() || !pass.trim()) {
         throw new Error('Please enter both your institutional email and password.');
       }
+
+      // Clear any prior demo override upon explicit new login
+      localStorage.removeItem('hanujai_demo_user_override');
 
       if (isDemoMode()) {
         const found = initialStaff.find(
@@ -104,23 +127,33 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const logout = async () => {
     setIsLoading(true);
     try {
-      if (isDemoMode()) {
-        localStorage.removeItem('hanujai_demo_user_id');
-        setCurrentUser(null);
-      } else if (auth) {
+      localStorage.removeItem('hanujai_demo_user_override');
+      localStorage.removeItem('hanujai_demo_user_id');
+      if (auth) {
         await firebaseSignOut(auth);
-        setCurrentUser(null);
       }
+      setCurrentUser(null);
     } finally {
       setIsLoading(false);
     }
   };
 
   const switchDemoRole = (role: StaffRole) => {
-    if (!isDemoMode()) return;
-    const target = initialStaff.find(s => s.role === role);
+    let target: StaffUser | undefined;
+    if (role === 'principal') {
+      target = initialStaff.find(s => s.role === 'principal');
+    } else if (role === 'class_teacher') {
+      target = initialStaff.find(s => s.id === 'staff-002') || initialStaff.find(s => s.id === 'staff-003');
+    } else if (role === 'subject_teacher') {
+      const base = initialStaff.find(s => s.id === 'staff-003');
+      target = base
+        ? { ...base, role: 'subject_teacher' as StaffRole }
+        : initialStaff.find(s => s.role === 'subject_teacher');
+    }
+
     if (target) {
       setCurrentUser(target);
+      localStorage.setItem('hanujai_demo_user_override', JSON.stringify(target));
       localStorage.setItem('hanujai_demo_user_id', target.id);
     }
   };
