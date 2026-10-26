@@ -20,7 +20,7 @@ Both Present and Absent attendance states are communicated to parents. Message t
 
 ### Present Notification
 ```text
-(Mr./Mrs. {Parent Name}),
+Mr./Mrs. {Parent Name},
 
 This is to inform you that {Student Name} has been marked PRESENT at HanuJai High School on {Date}.
 
@@ -37,13 +37,13 @@ HanuJai High School
 
 यदि आपको लगता है कि उपस्थिति का यह रिकॉर्ड गलत है, तो कृपया विद्यालय से संपर्क करें।
 
-सादर,  
+ सादर,  
 हनुजाई हाई स्कूल
 ```
 
 ### Absent Notification
 ```text
-(Mr./Mrs. {Parent Name}),
+Mr./Mrs. {Parent Name},
 
 This is to inform you that {Student Name} has been marked ABSENT at HanuJai High School on {Date}.
 
