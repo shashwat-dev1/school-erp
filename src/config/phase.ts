@@ -35,8 +35,8 @@ export interface PhaseConfig {
     sendEnabled: boolean;
     testRecipientAllowlist: string[];
     templates: {
-      present: (studentName: string, dateStr: string) => string;
-      absent: (studentName: string, dateStr: string) => string;
+      present: (studentName: string, dateStr: string, parentName?: string) => string;
+      absent: (studentName: string, dateStr: string, parentName?: string) => string;
     };
   };
 }
@@ -70,10 +70,16 @@ export const PHASE_CONFIG: PhaseConfig = {
       .map((s: string) => s.trim())
       .filter(Boolean),
     templates: {
-      present: (studentName: string, dateStr: string) =>
-        `Dear Parent/Guardian,\n\nThis is to inform you that ${studentName} has been marked PRESENT at HanuJai High School on ${dateStr}.\n\nIf you believe this record is incorrect, please contact the school.`,
-      absent: (studentName: string, dateStr: string) =>
-        `Dear Parent/Guardian,\n\nThis is to inform you that ${studentName} has been marked ABSENT at HanuJai High School on ${dateStr}.\n\nIf this is unexpected, please contact the school.`,
+      present: (studentName: string, dateStr: string, parentName?: string) => {
+        const pName = parentName?.trim() || 'Parent/Guardian';
+        const pNameHindi = parentName?.trim() || 'अभिभावक';
+        return `(Mr./Mrs. ${pName}),\n\nThis is to inform you that ${studentName} has been marked PRESENT at HanuJai High School on ${dateStr}.\n\nIf you believe this record is incorrect, please contact the school.\n\nRegards,\nHanuJai High School\n\n---\n\nआदरणीय श्री/श्रीमती ${pNameHindi},\n\nआपको सूचित किया जाता है कि आपकी संतान ${studentName} को दिनांक ${dateStr} को हनुजाई हाई स्कूल में उपस्थित (PRESENT) दर्ज किया गया है।\n\nयदि आपको लगता है कि उपस्थिति का यह रिकॉर्ड गलत है, तो कृपया विद्यालय से संपर्क करें।\n\nसादर,\nहनुजाई हाई स्कूल`;
+      },
+      absent: (studentName: string, dateStr: string, parentName?: string) => {
+        const pName = parentName?.trim() || 'Parent/Guardian';
+        const pNameHindi = parentName?.trim() || 'अभिभावक';
+        return `(Mr./Mrs. ${pName}),\n\nThis is to inform you that ${studentName} has been marked ABSENT at HanuJai High School on ${dateStr}.\n\nIf you believe this record is incorrect, please contact the school.\n\nRegards,\nHanuJai High School\n\n---\n\nआदरणीय श्री/श्रीमती ${pNameHindi},\n\nआपको सूचित किया जाता है कि आपकी संतान ${studentName} को दिनांक ${dateStr} को हनुजाई हाई स्कूल में अनुपस्थित (ABSENT) दर्ज किया गया है।\n\nयदि आपको लगता है कि उपस्थिति का यह रिकॉर्ड गलत है, तो कृपया विद्यालय से संपर्क करें।\n\nसादर,\nहनुजाई हाई स्कूल`;
+      },
     },
   },
 };

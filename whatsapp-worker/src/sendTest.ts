@@ -57,9 +57,12 @@ async function runTestSend() {
     year: 'numeric',
   });
 
+  const parent = process.argv[5] || 'Parent/Guardian';
+  const parentHindi = process.argv[5] || 'अभिभावक';
+
   const messageText = state === 'present'
-    ? `Dear Parent/Guardian,\n\nThis is to inform you that ${student} has been marked PRESENT at HanuJai High School on ${todayStr}.\n\nIf you believe this record is incorrect, please contact the school.`
-    : `Dear Parent/Guardian,\n\nThis is to inform you that ${student} has been marked ABSENT at HanuJai High School on ${todayStr}.\n\nIf this is unexpected, please contact the school.`;
+    ? `(Mr./Mrs. ${parent}),\n\nThis is to inform you that ${student} has been marked PRESENT at HanuJai High School on ${todayStr}.\n\nIf you believe this record is incorrect, please contact the school.\n\nRegards,\nHanuJai High School\n\n---\n\nआदरणीय श्री/श्रीमती ${parentHindi},\n\nआपको सूचित किया जाता है कि आपकी संतान ${student} को दिनांक ${todayStr} को हनुजाई हाई स्कूल में उपस्थित (PRESENT) दर्ज किया गया है।\n\nयदि आपको लगता है कि उपस्थिति का यह रिकॉर्ड गलत है, तो कृपया विद्यालय से संपर्क करें।\n\n सादर,\nहनुजाई हाई स्कूल`
+    : `(Mr./Mrs. ${parent}),\n\nThis is to inform you that ${student} has been marked ABSENT at HanuJai High School on ${todayStr}.\n\nIf you believe this record is incorrect, please contact the school.\n\nRegards,\nHanuJai High School\n\n---\n\nआदरणीय श्री/श्रीमती ${parentHindi},\n\nआपको सूचित किया जाता है कि आपकी संतान ${student} को दिनांक ${todayStr} को हनुजाई हाई स्कूल में अनुपस्थित (ABSENT) दर्ज किया गया है।\n\nयदि आपको लगता है कि उपस्थिति का यह रिकॉर्ड गलत है, तो कृपया विद्यालय से संपर्क करें।\n\n सादर,\nहनुजाई हाई स्कूल`;
 
   console.log(`📍 Recipient Mobile : ${to}`);
   console.log(`📍 Status Type      : ${state.toUpperCase()}`);

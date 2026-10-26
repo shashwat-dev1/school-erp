@@ -19,10 +19,50 @@ Following leadership review with the School Principal and Director, HanuJai High
 Both Present and Absent attendance states are communicated to parents. Message text is centrally configured in `src/config/phase.ts` using the exact approved templates:
 
 ### Present Notification
-> *"Dear Parent/Guardian, [Student Name] has been marked PRESENT at HanuJai High School on [Date]. If you believe this attendance record is incorrect, please contact the school."*
+```text
+(Mr./Mrs. {Parent Name}),
+
+This is to inform you that {Student Name} has been marked PRESENT at HanuJai High School on {Date}.
+
+If you believe this record is incorrect, please contact the school.
+
+Regards,  
+HanuJai High School
+
+---
+
+आदरणीय श्री/श्रीमती {Parent Name},
+
+आपको सूचित किया जाता है कि आपकी संतान {Student Name} को दिनांक {Date} को हनुजाई हाई स्कूल में उपस्थित (PRESENT) दर्ज किया गया है।
+
+यदि आपको लगता है कि उपस्थिति का यह रिकॉर्ड गलत है, तो कृपया विद्यालय से संपर्क करें।
+
+सादर,  
+हनुजाई हाई स्कूल
+```
 
 ### Absent Notification
-> *"Dear Parent/Guardian, [Student Name] has been marked ABSENT at HanuJai High School on [Date]. If this is unexpected, please contact the school."*
+```text
+(Mr./Mrs. {Parent Name}),
+
+This is to inform you that {Student Name} has been marked ABSENT at HanuJai High School on {Date}.
+
+If you believe this record is incorrect, please contact the school.
+
+Regards,  
+HanuJai High School
+
+---
+
+आदरणीय श्री/श्रीमती {Parent Name},
+
+आपको सूचित किया जाता है कि आपकी संतान {Student Name} को दिनांक {Date} को हनुजाई हाई स्कूल में अनुपस्थित (ABSENT) दर्ज किया गया है।
+
+यदि आपको लगता है कि उपस्थिति का यह रिकॉर्ड गलत है, तो कृपया विद्यालय से संपर्क करें।
+
+सादर,  
+हनुजाई हाई स्कूल
+```
 
 *Note: Dates are formatted using the school's local timezone (Asia/Kolkata / IST).*
 

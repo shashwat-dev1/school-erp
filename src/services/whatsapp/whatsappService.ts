@@ -87,8 +87,8 @@ export class WhatsAppNotificationService {
 
       // Build respectful school notification message text
       const messageText = state === 'present'
-        ? PHASE_CONFIG.whatsapp.templates.present(studentName, formattedDate)
-        : PHASE_CONFIG.whatsapp.templates.absent(studentName, formattedDate);
+        ? PHASE_CONFIG.whatsapp.templates.present(studentName, formattedDate, guardianName)
+        : PHASE_CONFIG.whatsapp.templates.absent(studentName, formattedDate, guardianName);
 
       // Initial validation of phone
       const cleanPhone = rawPhone.trim();
