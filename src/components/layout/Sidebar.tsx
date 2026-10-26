@@ -1,6 +1,7 @@
 import React from 'react';
 import { NavLink } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
+import { PHASE_CONFIG } from '../../config/phase';
 import {
   Home,
   Users,
@@ -23,6 +24,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ isMobileOpen = false, onClose 
   const role = currentUser?.role;
   const assignedClassId = currentUser?.assignedClassId;
   const primaryClass = currentUser?.assignedClasses?.[0] || 'class-10-a';
+  const isPhase1 = PHASE_CONFIG.phase1Only;
 
   React.useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
@@ -93,11 +95,11 @@ export const Sidebar: React.FC<SidebarProps> = ({ isMobileOpen = false, onClose 
         </div>
 
 
-        {/* Clean, Role-Specific Task Navigation (Max 4-5 items per role) */}
+        {/* Clean, Role-Specific Task Navigation */}
         <nav style={{ flex: 1, overflowY: 'auto', padding: '12px 8px' }}>
           <ul style={{ listStyle: 'none', display: 'flex', flexDirection: 'column', gap: '3px' }}>
             
-            {/* 1. PRINCIPAL WORKSPACE (4 items: Home, Students, Attendance, Results & Reports) */}
+            {/* 1. PRINCIPAL WORKSPACE (Phase 1: Home, Students, Attendance) */}
             {role === 'principal' && (
               <>
                 <li>
@@ -109,13 +111,15 @@ export const Sidebar: React.FC<SidebarProps> = ({ isMobileOpen = false, onClose 
                 <li>
                   <SidebarItem to="/attendance" icon={<CalendarCheck size={16} />} label="Attendance" onClick={onClose} />
                 </li>
-                <li>
-                  <SidebarItem to="/reports" icon={<Award size={16} />} label="Results & Reports" onClick={onClose} />
-                </li>
+                {!isPhase1 && (
+                  <li>
+                    <SidebarItem to="/reports" icon={<Award size={16} />} label="Results & Reports" onClick={onClose} />
+                  </li>
+                )}
               </>
             )}
 
-            {/* 3. CLASS TEACHER WORKSPACE (4 items) */}
+            {/* 2. CLASS TEACHER WORKSPACE (Phase 1: My Class, Attendance, Students) */}
             {role === 'class_teacher' && (
               <>
                 <li>
@@ -127,18 +131,28 @@ export const Sidebar: React.FC<SidebarProps> = ({ isMobileOpen = false, onClose 
                       <SidebarItem
                         to={`/attendance/register/${assignedClassId}`}
                         icon={<CalendarCheck size={16} />}
-                        label="Attendance"
+                        label="Daily Register"
                         onClick={onClose}
                       />
                     </li>
                     <li>
                       <SidebarItem
-                        to={`/performance/classes/${assignedClassId}`}
-                        icon={<Award size={16} />}
-                        label="Results"
+                        to="/students"
+                        icon={<Users size={16} />}
+                        label="Class Roster"
                         onClick={onClose}
                       />
                     </li>
+                    {!isPhase1 && (
+                      <li>
+                        <SidebarItem
+                          to={`/performance/classes/${assignedClassId}`}
+                          icon={<Award size={16} />}
+                          label="Results"
+                          onClick={onClose}
+                        />
+                      </li>
+                    )}
                   </>
                 ) : (
                   <li>
@@ -157,41 +171,53 @@ export const Sidebar: React.FC<SidebarProps> = ({ isMobileOpen = false, onClose 
                     </span>
                   </li>
                 )}
-                <li>
-                  <SidebarItem to="/behaviour" icon={<MessageSquare size={16} />} label="Teacher notes" onClick={onClose} />
-                </li>
+                {!isPhase1 && (
+                  <li>
+                    <SidebarItem to="/behaviour" icon={<MessageSquare size={16} />} label="Teacher notes" onClick={onClose} />
+                  </li>
+                )}
               </>
             )}
 
-            {/* 4. SUBJECT TEACHER WORKSPACE (4 items) */}
+            {/* 3. SUBJECT TEACHER WORKSPACE (Phase 1: My Classes, Attendance, Students) */}
             {role === 'subject_teacher' && (
               <>
                 <li>
                   <SidebarItem to="/" icon={<BookOpen size={16} />} label="My Classes" end onClick={onClose} />
                 </li>
                 <li>
-                  <SidebarItem to="/academics/assessments" icon={<FileCheck2 size={16} />} label="Enter Marks" onClick={onClose} />
+                  <SidebarItem to="/attendance" icon={<CalendarCheck size={16} />} label="Attendance" onClick={onClose} />
                 </li>
-                {primaryClass ? (
-                  <li>
-                    <SidebarItem
-                      to={`/performance/classes/${primaryClass}`}
-                      icon={<Award size={16} />}
-                      label="Results"
-                      onClick={onClose}
-                    />
-                  </li>
-                ) : null}
                 <li>
-                  <SidebarItem to="/behaviour" icon={<MessageSquare size={16} />} label="Teacher notes" onClick={onClose} />
+                  <SidebarItem to="/students" icon={<Users size={16} />} label="Students" onClick={onClose} />
                 </li>
+                {!isPhase1 && (
+                  <>
+                    <li>
+                      <SidebarItem to="/academics/assessments" icon={<FileCheck2 size={16} />} label="Enter Marks" onClick={onClose} />
+                    </li>
+                    {primaryClass ? (
+                      <li>
+                        <SidebarItem
+                          to={`/performance/classes/${primaryClass}`}
+                          icon={<Award size={16} />}
+                          label="Results"
+                          onClick={onClose}
+                        />
+                      </li>
+                    ) : null}
+                    <li>
+                      <SidebarItem to="/behaviour" icon={<MessageSquare size={16} />} label="Teacher notes" onClick={onClose} />
+                    </li>
+                  </>
+                )}
               </>
             )}
 
           </ul>
         </nav>
 
-        {/* Clean Footer Info with Pop Accents */}
+        {/* Clean Footer Info with Phase 1 Badge */}
         <div
           style={{
             padding: '12px 16px',
@@ -202,18 +228,36 @@ export const Sidebar: React.FC<SidebarProps> = ({ isMobileOpen = false, onClose 
             lineHeight: 1.45,
             display: 'flex',
             flexDirection: 'column',
-            gap: '4px',
+            gap: '6px',
           }}
         >
-          <div style={{ fontWeight: 700, color: 'var(--hhs-text-primary)' }}>HanuJai High School ERP</div>
-          <div style={{ color: 'var(--hhs-text-secondary)', fontSize: '0.74rem' }}>
-            Session 2025–2026
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+            <div style={{ fontWeight: 700, color: 'var(--hhs-text-primary)' }}>HanuJai High School ERP</div>
+            {isPhase1 && (
+              <span
+                style={{
+                  padding: '2px 6px',
+                  borderRadius: '4px',
+                  backgroundColor: 'var(--pop-electric-blue-tint)',
+                  border: '1px solid var(--pop-electric-blue)',
+                  color: 'var(--pop-electric-blue)',
+                  fontWeight: 800,
+                  fontSize: '0.65rem',
+                }}
+              >
+                PHASE 1
+              </span>
+            )}
+          </div>
+          <div style={{ color: 'var(--hhs-text-secondary)', fontSize: '0.72rem' }}>
+            {isPhase1 ? 'Attendance & WhatsApp Parent Alerts' : 'Session 2025–2026'}
           </div>
         </div>
       </aside>
     </>
   );
 };
+
 
 interface SidebarItemProps {
   to: string;

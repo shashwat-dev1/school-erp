@@ -18,15 +18,16 @@ import type {
   AttendanceSession,
 } from '../../domain/types';
 import type { RiskWatchlistItem } from '../../data/provider';
+import { PHASE_CONFIG } from '../../config/phase';
 import {
   CalendarCheck,
   Users,
-  AlertTriangle,
   Phone,
   ArrowRight,
   CheckCircle,
   AlertCircle,
   GraduationCap,
+  MessageSquare,
 } from 'lucide-react';
 
 export const ClassTeacherDashboard: React.FC = () => {
@@ -109,7 +110,6 @@ export const ClassTeacherDashboard: React.FC = () => {
   const totalStudents = students.length;
   const presentCount = todaySession ? todaySession.presentCount : 0;
   const absentCount = todaySession ? todaySession.absentCount : 0;
-  const lateCount = todaySession ? todaySession.lateCount : 0;
   const attendanceRate = totalStudents > 0 ? Math.round((presentCount / totalStudents) * 100) : 0;
 
   // Filter absent students from today's session
@@ -153,14 +153,16 @@ export const ClassTeacherDashboard: React.FC = () => {
               <CalendarCheck size={15} />
               <span>{isAttendanceSubmitted ? 'Review Attendance' : 'Mark Today’s Attendance'}</span>
             </button>
-            <button
-              onClick={() => navigate(`/performance/classes/${assignedClassId}`)}
-              className="hhs-btn hhs-btn-secondary"
-              style={{ display: 'flex', alignItems: 'center', gap: '6px' }}
-            >
-              <GraduationCap size={15} />
-              <span>Class Results</span>
-            </button>
+            {!PHASE_CONFIG.phase1Only && (
+              <button
+                onClick={() => navigate(`/performance/classes/${assignedClassId}`)}
+                className="hhs-btn hhs-btn-secondary"
+                style={{ display: 'flex', alignItems: 'center', gap: '6px' }}
+              >
+                <GraduationCap size={15} />
+                <span>Class Results</span>
+              </button>
+            )}
           </div>
         }
       />
@@ -187,7 +189,7 @@ export const ClassTeacherDashboard: React.FC = () => {
               Today&apos;s Attendance is Pending
             </div>
             <div style={{ fontSize: '0.82rem', color: '#45455E', marginTop: '2px' }}>
-              Please take roll call for {assignedClassLabel} and submit the register.
+              Please take roll call for {assignedClassLabel} and submit the register to notify parents via WhatsApp.
             </div>
           </div>
           <button
@@ -211,22 +213,22 @@ export const ClassTeacherDashboard: React.FC = () => {
         <MetricCard
           label="Present Today"
           value={presentCount.toString()}
-          subtext={`${attendanceRate}% turnout today`}
+          subtext={isAttendanceSubmitted ? `${attendanceRate}% turnout today` : 'Roll call pending'}
           icon={<CheckCircle size={20} />}
           accent="success"
         />
         <MetricCard
           label="Absent Today"
           value={absentCount.toString()}
-          subtext={`${lateCount} marked late`}
+          subtext={isAttendanceSubmitted ? 'Alerts queued/sent' : 'Not yet submitted'}
           icon={<AlertCircle size={20} />}
           accent="danger"
         />
         <MetricCard
-          label="Students Needing Attention"
-          value={classWatchlist.length.toString()}
-          subtext="In your class"
-          icon={<AlertTriangle size={20} />}
+          label="WhatsApp Alerts"
+          value={isAttendanceSubmitted ? totalStudents.toString() : '0'}
+          subtext={PHASE_CONFIG.whatsapp.sendEnabled ? 'Live dispatch' : 'Dry-run preview'}
+          icon={<MessageSquare size={20} />}
           accent="warning"
         />
       </div>
@@ -307,12 +309,14 @@ export const ClassTeacherDashboard: React.FC = () => {
                 Academic or attendance flags.
               </p>
             </div>
-            <button
-              onClick={() => navigate('/behaviour')}
-              className="hhs-btn hhs-btn-secondary hhs-btn-sm"
-            >
-              <span>Teacher notes</span>
-            </button>
+            {!PHASE_CONFIG.phase1Only && (
+              <button
+                onClick={() => navigate('/behaviour')}
+                className="hhs-btn hhs-btn-secondary hhs-btn-sm"
+              >
+                <span>Teacher notes</span>
+              </button>
+            )}
           </div>
 
           <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>

@@ -7,6 +7,7 @@ import { LoadingState } from '../../components/feedback/LoadingState';
 import { ErrorBanner } from '../../components/feedback/ErrorBanner';
 import type { ClassSection, AttendanceSession, AttendanceCorrection } from '../../domain/types';
 import { getSchoolLocalDate } from '../../domain/policy';
+import { PHASE_CONFIG } from '../../config/phase';
 import {
   CalendarCheck,
   CheckCircle2,
@@ -75,19 +76,21 @@ export const AttendanceDashboard: React.FC = () => {
         ]}
         actions={
           <div style={{ display: 'flex', gap: '10px' }}>
-            <button
-              onClick={() => navigate('/attendance/corrections')}
-              className="hhs-btn hhs-btn-secondary"
-              style={{ display: 'flex', alignItems: 'center', gap: '6px' }}
-            >
-              <UserCheck size={15} />
-              <span>Late Corrections Queue</span>
-              {pendingCorrectionsCount > 0 && (
-                <span className="hhs-badge hhs-badge-accent" style={{ marginLeft: '4px' }}>
-                  {pendingCorrectionsCount} Pending
-                </span>
-              )}
-            </button>
+            {!PHASE_CONFIG.phase1Only && (
+              <button
+                onClick={() => navigate('/attendance/corrections')}
+                className="hhs-btn hhs-btn-secondary"
+                style={{ display: 'flex', alignItems: 'center', gap: '6px' }}
+              >
+                <UserCheck size={15} />
+                <span>Late Corrections Queue</span>
+                {pendingCorrectionsCount > 0 && (
+                  <span className="hhs-badge hhs-badge-accent" style={{ marginLeft: '4px' }}>
+                    {pendingCorrectionsCount} Pending
+                  </span>
+                )}
+              </button>
+            )}
             {role === 'class_teacher' && currentUser?.assignedClassId && (
               <button
                 onClick={() => navigate(`/attendance/register/${currentUser.assignedClassId}`)}
@@ -217,13 +220,10 @@ export const AttendanceDashboard: React.FC = () => {
                     }}
                   >
                     <div>
-                      Present: <strong className="tnum" style={{ color: 'var(--hhs-primary)' }}>{session.presentCount}</strong>
+                      Present: <strong className="tnum" style={{ color: 'var(--pop-apple-green)' }}>{session.presentCount}</strong>
                     </div>
                     <div>
-                      Absent: <strong className="tnum" style={{ color: 'var(--hhs-danger)' }}>{session.absentCount}</strong>
-                    </div>
-                    <div>
-                      Late: <strong className="tnum" style={{ color: 'var(--hhs-accent)' }}>{session.lateCount}</strong>
+                      Absent: <strong className="tnum" style={{ color: 'var(--pop-coral-red)' }}>{session.absentCount}</strong>
                     </div>
                     <div>
                       Total: <strong className="tnum">{session.totalStudents}</strong>

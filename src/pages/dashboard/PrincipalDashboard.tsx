@@ -265,7 +265,7 @@ export const PrincipalDashboard: React.FC = () => {
         <MetricCard
           label="Absent Today"
           value={totalAbsent.toString()}
-          subtext={`${totalLate} marked late`}
+          subtext={totalAbsent > 0 ? `${totalAbsent} absence notices queued/sent` : 'Full turnout recorded'}
           icon={<AlertCircle size={20} />}
           accent="danger"
         />

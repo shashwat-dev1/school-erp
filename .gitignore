@@ -51,3 +51,9 @@ test-results/
 *.config.js
 *.config.d.ts
 
+# WhatsApp & Baileys Session Credentials
+.baileys_auth/
+baileys_auth_info/
+auth_info_baileys/
+*.session.json
+*.qr.png

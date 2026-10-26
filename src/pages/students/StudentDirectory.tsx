@@ -13,6 +13,7 @@ import { ErrorBanner } from '../../components/feedback/ErrorBanner';
 import type { StudentRecord, ClassSection } from '../../domain/types';
 import type { NewStudentInput } from '../../data/provider';
 import { downloadCsv } from '../../utils/exportUtils';
+import { PHASE_CONFIG } from '../../config/phase';
 import {
   Users,
   Search,
@@ -256,7 +257,11 @@ export const StudentDirectory: React.FC = () => {
         <div style={{ fontSize: '0.8rem' }}>
           <div>{s.guardianName} ({s.guardianRelation})</div>
           <div className="tnum" style={{ color: 'var(--hhs-text-secondary)', fontSize: '0.72rem' }}>
-            {s.primaryPhone}
+            {s.primaryPhone ? (
+              <span>{s.primaryPhone.slice(0, 8)} ••••• <span style={{ fontSize: '0.68rem', color: 'var(--pop-electric-blue)', fontWeight: 600 }}>[Demo]</span></span>
+            ) : (
+              'No phone recorded'
+            )}
           </div>
         </div>
       ),
@@ -371,6 +376,43 @@ export const StudentDirectory: React.FC = () => {
       />
 
       {error && <ErrorBanner title="Error Loading Records" message={error} />}
+
+      {/* Phase 1 Controlled Demo Cohort Banner */}
+      {PHASE_CONFIG.phase1Only && (
+        <div
+          style={{
+            padding: '14px 18px',
+            borderRadius: 'var(--hhs-radius-base)',
+            backgroundColor: 'var(--pop-electric-blue-tint)',
+            border: '1.5px solid var(--pop-electric-blue)',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'space-between',
+            flexWrap: 'wrap',
+            gap: '12px',
+          }}
+        >
+          <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+            <Users size={20} color="var(--pop-electric-blue)" />
+            <div>
+              <div style={{ fontWeight: 800, color: 'var(--hhs-text-primary)', fontSize: '0.9rem' }}>
+                Phase 1 Active Demo Cohort: {PHASE_CONFIG.demoCohort.targetClassLabel}
+              </div>
+              <div style={{ fontSize: '0.78rem', color: 'var(--hhs-text-secondary)' }}>
+                Scoped cohort of 20 enrolled students for daily attendance roll-call and WhatsApp parent notifications. Underlying school records remain safely preserved.
+              </div>
+            </div>
+          </div>
+          <button
+            type="button"
+            onClick={() => setSelectedClass(PHASE_CONFIG.demoCohort.targetClassId)}
+            className="hhs-btn hhs-btn-primary hhs-btn-sm"
+            style={{ fontSize: '0.75rem', padding: '6px 12px' }}
+          >
+            Filter to {PHASE_CONFIG.demoCohort.targetClassLabel}
+          </button>
+        </div>
+      )}
 
       {/* Filter and Search Controls */}
       <div
