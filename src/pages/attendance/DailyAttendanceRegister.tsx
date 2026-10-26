@@ -347,6 +347,40 @@ export const DailyAttendanceRegister: React.FC = () => {
     }
   };
 
+  // Manual refresh for WhatsApp notification jobs
+  const handleManualRefreshWhatsApp = async () => {
+    if (!existingSession) return;
+    setIsLoadingWhatsApp(true);
+    try {
+      const { jobs, stats } = await WhatsAppNotificationService.getSessionNotifications(existingSession.id);
+      setWhatsappJobs(jobs);
+      setWhatsappStats(stats);
+    } catch (err) {
+      console.warn('Manual WhatsApp refresh failed:', err);
+    } finally {
+      setIsLoadingWhatsApp(false);
+    }
+  };
+
+  // Auto-poll WhatsApp notification status when jobs are pending/processing
+  useEffect(() => {
+    if (!existingSession || !existingSession.id) return;
+    const hasPending = whatsappJobs.some(j => j.deliveryStatus === 'pending' || j.deliveryStatus === 'processing');
+    if (!hasPending) return;
+
+    const interval = setInterval(async () => {
+      try {
+        const { jobs, stats } = await WhatsAppNotificationService.getSessionNotifications(existingSession.id);
+        setWhatsappJobs(jobs);
+        setWhatsappStats(stats);
+      } catch {
+        // silent background poll
+      }
+    }, 3000);
+
+    return () => clearInterval(interval);
+  }, [existingSession, whatsappJobs]);
+
   // Compute Date Boundaries for Range Reporting (Preserved)
   const { rangeStartDate, rangeEndDate, isValidRange } = useMemo(() => {
     const refDateStr = selectedDate || getSchoolLocalDate();
@@ -1172,9 +1206,35 @@ export const DailyAttendanceRegister: React.FC = () => {
                   </span>
                 </span>
 
+                {isSessionActuallySaved && (
+                  <button
+                    type="button"
+                    onClick={handleManualRefreshWhatsApp}
+                    disabled={isLoadingWhatsApp}
+                    title="Refresh WhatsApp Delivery Status"
+                    style={{
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '5px',
+                      padding: '4px 10px',
+                      borderRadius: 'var(--hhs-radius-sm)',
+                      border: '1px solid var(--hhs-border)',
+                      backgroundColor: 'var(--hhs-surface)',
+                      fontSize: '0.74rem',
+                      fontWeight: 600,
+                      cursor: 'pointer',
+                      color: 'var(--hhs-text-primary)',
+                    }}
+                  >
+                    <RefreshCw size={12} style={{ animation: isLoadingWhatsApp ? 'spin 1s linear infinite' : 'none' }} />
+                    <span>Refresh Status</span>
+                  </button>
+                )}
+
                 <button
                   type="button"
-                  style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--hhs-text-secondary)' }}
+                  onClick={() => setIsWhatsAppPanelOpen(!isWhatsAppPanelOpen)}
+                  style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--hhs-text-secondary)', display: 'flex', alignItems: 'center' }}
                 >
                   {isWhatsAppPanelOpen ? <ChevronUp size={20} /> : <ChevronDown size={20} />}
                 </button>
