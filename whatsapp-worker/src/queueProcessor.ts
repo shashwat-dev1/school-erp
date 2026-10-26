@@ -109,22 +109,31 @@ export class QueueProcessor {
     }
 
     // 3. Test Allowlist and Safe Mode Check
-    const isAllowlisted = this.config.testAllowlist.length === 0 || this.config.testAllowlist.some(a => {
+    const hasAllowlist = this.config.testAllowlist.length > 0;
+    const isAllowlisted = !hasAllowlist || this.config.testAllowlist.some(a => {
       return digitsOnly.endsWith(a) || a.endsWith(digitsOnly);
     });
 
+    if (hasAllowlist && !isAllowlisted) {
+      console.log(`[Queue] Safe Skip: ${job.studentName} (${rawPhone}) - Recipient not in WHATSAPP_TEST_ALLOWLIST.`);
+      await markJobSkipped(
+        this.db,
+        job.id,
+        'not_in_test_allowlist',
+        'Recipient number is not on the verified test allowlist.'
+      );
+      return;
+    }
+
     if (!this.config.sendEnabled) {
-      // In safe/dry-run mode, if not in allowlist, skip safely
-      if (!isAllowlisted) {
-        console.log(`[Queue] Safe Skip: ${job.studentName} (${rawPhone}) - Not in WHATSAPP_TEST_ALLOWLIST and live sending is disabled.`);
-        await markJobSkipped(
-          this.db,
-          job.id,
-          'not_in_test_allowlist',
-          'Live sending is disabled and recipient number is not in WHATSAPP_TEST_ALLOWLIST.'
-        );
-        return;
-      }
+      console.log(`[Queue] Safe Skip: ${job.studentName} (${rawPhone}) - Live sending disabled.`);
+      await markJobSkipped(
+        this.db,
+        job.id,
+        'unverified_session',
+        'Live message sending is disabled in worker configuration.'
+      );
+      return;
     }
 
     // 4. Mark processing
