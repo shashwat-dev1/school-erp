@@ -75,8 +75,26 @@ export function startStatusServer(
       return;
     }
 
+    if (url === '/qr') {
+      const baileysStatus = baileys.getStatus();
+      const qrData = baileys.getQrData();
+      if (baileysStatus.connected) {
+        res.writeHead(200, { 'Content-Type': 'text/html' });
+        res.end(`<!DOCTYPE html><html><body style="font-family:sans-serif;background:#0f172a;color:#10b981;text-align:center;padding:50px;"><h2>✅ WhatsApp Connected!</h2><p>Linked JID: ${baileysStatus.userJid}</p></body></html>`);
+        return;
+      }
+      if (qrData.qrSvg) {
+        res.writeHead(200, { 'Content-Type': 'text/html' });
+        res.end(`<!DOCTYPE html><html><head><meta http-equiv="refresh" content="5"></head><body style="font-family:sans-serif;background:#0f172a;color:#f8fafc;display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:100vh;margin:0;"><div style="background:#1e293b;border:1px solid #334155;border-radius:16px;padding:32px;text-align:center;"><h2 style="margin:0 0 8px;">Scan with WhatsApp</h2><p style="color:#94a3b8;font-size:14px;margin:0 0 16px;">Target Sender Phone: <strong style="color:#38bdf8;">+91 95094 89381</strong></p><div style="background:#fff;padding:16px;border-radius:12px;margin:0 auto 16px;width:260px;height:260px;">${qrData.qrSvg}</div><p style="color:#cbd5e1;font-size:12px;">Open WhatsApp on 9509489381 &gt; Linked Devices &gt; Link a Device</p></div></body></html>`);
+        return;
+      }
+      res.writeHead(200, { 'Content-Type': 'text/html' });
+      res.end(`<!DOCTYPE html><html><head><meta http-equiv="refresh" content="3"></head><body style="font-family:sans-serif;background:#0f172a;color:#f8fafc;text-align:center;padding:50px;"><h2>⏳ Generating QR Code...</h2><p>Please wait a moment...</p></body></html>`);
+      return;
+    }
+
     res.writeHead(404, { 'Content-Type': 'application/json' });
-    res.end(JSON.stringify({ error: 'Endpoint not found. Available: /health, /status' }));
+    res.end(JSON.stringify({ error: 'Endpoint not found. Available: /health, /status, /qr' }));
   });
 
   server.listen(config.workerPort, () => {

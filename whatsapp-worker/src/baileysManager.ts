@@ -17,6 +17,7 @@ import makeWASocket, {
 } from '@whiskeysockets/baileys';
 import pino from 'pino';
 import qrcode from 'qrcode-terminal';
+import QRCode from 'qrcode';
 import type { WorkerConfig } from './config.ts';
 
 export interface BaileysStatus {
@@ -35,6 +36,8 @@ export class BaileysManager {
   private isConnected = false;
   private qrAvailable = false;
   private userJid: string | null = null;
+  private currentQr: string | null = null;
+  private currentQrSvg: string | null = null;
   private reconnectAttempts = 0;
   private lastDisconnectReason: string | null = null;
   private reconnectTimeout: NodeJS.Timeout | null = null;
@@ -42,6 +45,91 @@ export class BaileysManager {
 
   constructor(config: WorkerConfig) {
     this.config = config;
+  }
+
+  public getQrData(): { qr: string | null; qrSvg: string | null } {
+    return { qr: this.currentQr, qrSvg: this.currentQrSvg };
+  }
+
+  private async updatePublicQrPage(qr: string | null, isConnected = false, userJid: string | null = null): Promise<void> {
+    try {
+      const publicDir = path.resolve(process.cwd(), 'public');
+      if (!fs.existsSync(publicDir)) {
+        fs.mkdirSync(publicDir, { recursive: true });
+      }
+      const htmlPath = path.resolve(publicDir, 'whatsapp-qr.html');
+
+      let htmlContent = '';
+      if (isConnected) {
+        htmlContent = `<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>HanuJai ERP — WhatsApp Connected</title>
+  <style>
+    body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: #0f172a; color: #f8fafc; display: flex; align-items: center; justify-content: center; min-height: 100vh; margin: 0; padding: 20px; }
+    .card { background: #1e293b; border: 1px solid #10b981; border-radius: 16px; padding: 40px; max-width: 440px; text-align: center; box-shadow: 0 10px 25px rgba(0,0,0,0.5); }
+    .icon { font-size: 48px; margin-bottom: 16px; }
+    h2 { color: #10b981; margin: 0 0 12px 0; font-size: 22px; }
+    p { color: #cbd5e1; font-size: 14px; margin: 0 0 20px 0; line-height: 1.5; }
+    .badge { background: #064e3b; color: #34d399; padding: 6px 14px; border-radius: 999px; font-size: 13px; font-weight: 600; font-family: monospace; }
+  </style>
+</head>
+<body>
+  <div class="card">
+    <div class="icon">✅</div>
+    <h2>WhatsApp Linked Successfully!</h2>
+    <p>The worker is authenticated and ready to dispatch attendance parent alerts.</p>
+    <div class="badge">JID: ${userJid || 'Connected'}</div>
+  </div>
+</body>
+</html>`;
+      } else if (qr && this.currentQrSvg) {
+        htmlContent = `<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>HanuJai ERP — WhatsApp Pairing QR</title>
+  <meta http-equiv="refresh" content="5">
+  <style>
+    body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: #0f172a; color: #f8fafc; display: flex; align-items: center; justify-content: center; min-height: 100vh; margin: 0; padding: 20px; }
+    .card { background: #1e293b; border: 1px solid #334155; border-radius: 16px; padding: 32px; max-width: 440px; text-align: center; box-shadow: 0 10px 25px rgba(0,0,0,0.5); }
+    .qr-box { background: #ffffff; padding: 16px; border-radius: 12px; margin: 20px auto; width: 260px; height: 260px; display: flex; align-items: center; justify-content: center; }
+    .qr-box svg { width: 100%; height: 100%; }
+    .badge { background: #0ea5e9; color: #ffffff; font-size: 11px; font-weight: 700; text-transform: uppercase; padding: 4px 10px; border-radius: 999px; letter-spacing: 0.05em; display: inline-block; margin-bottom: 12px; }
+    h2 { margin: 0 0 8px 0; font-size: 20px; }
+    p { color: #94a3b8; font-size: 13px; line-height: 1.5; margin: 0 0 16px 0; }
+    .phone-tag { color: #38bdf8; font-weight: 700; font-size: 15px; }
+    .steps { text-align: left; background: #0f172a; border-radius: 8px; padding: 12px 16px; font-size: 12px; color: #cbd5e1; }
+    .steps ol { margin: 0; padding-left: 20px; }
+    .steps li { margin: 4px 0; }
+  </style>
+</head>
+<body>
+  <div class="card">
+    <span class="badge">HanuJai High School ERP</span>
+    <h2>Scan with WhatsApp</h2>
+    <p>Designated Sender Phone: <span class="phone-tag">+91 95094 89381</span></p>
+    <div class="qr-box">${this.currentQrSvg}</div>
+    <div class="steps">
+      <strong>Instructions:</strong>
+      <ol>
+        <li>Open WhatsApp on phone <strong>9509489381</strong></li>
+        <li>Tap <strong>Settings</strong> (iOS) or <strong>⋮</strong> (Android) &gt; <strong>Linked Devices</strong></li>
+        <li>Tap <strong>Link a Device</strong> and point your camera here</li>
+      </ol>
+    </div>
+  </div>
+</body>
+</html>`;
+      }
+
+      if (htmlContent) {
+        fs.writeFileSync(htmlPath, htmlContent, 'utf-8');
+      }
+    } catch (err: any) {
+      console.warn('[Baileys] Error updating public/whatsapp-qr.html:', err.message);
+    }
   }
 
   public async initialize(): Promise<void> {
@@ -75,19 +163,29 @@ export class BaileysManager {
 
     this.sock.ev.on('creds.update', saveCreds);
 
-    this.sock.ev.on('connection.update', (update: Partial<ConnectionState>) => {
+    this.sock.ev.on('connection.update', async (update: Partial<ConnectionState>) => {
       const { connection, lastDisconnect, qr } = update;
 
       if (qr) {
+        this.currentQr = qr;
         this.qrAvailable = true;
+        try {
+          this.currentQrSvg = await QRCode.toString(qr, { type: 'svg', margin: 2 });
+          await this.updatePublicQrPage(qr, false);
+        } catch {
+          // ignore
+        }
+
         console.log('\n================================================================================');
         console.log('  📲 SCAN THIS QR CODE WITH AUTHORIZED HANUJAI HIGH SCHOOL WHATSAPP:');
-        console.log('  1. Open WhatsApp on the school mobile phone');
+        console.log('  Target Sender Mobile Phone: +91 95094 89381');
+        console.log('  1. Open WhatsApp on phone 9509489381');
         console.log('  2. Tap Settings (iOS) or More Options ⋮ (Android) > Linked Devices');
         console.log('  3. Tap "Link a Device" and point camera at the QR code below:');
+        console.log('  (You can also view it in browser at: http://localhost:5173/whatsapp-qr.html)');
         console.log('================================================================================\n');
         qrcode.generate(qr, { small: true });
-        console.log('\nWaiting for pairing scan...\n');
+        console.log('\nWaiting for pairing scan from phone 9509489381...\n');
       }
 
       if (connection === 'close') {
@@ -116,6 +214,7 @@ export class BaileysManager {
         this.qrAvailable = false;
         this.reconnectAttempts = 0;
         this.userJid = this.sock?.user?.id || 'Connected Device';
+        await this.updatePublicQrPage(null, true, this.userJid);
 
         console.log('================================================================================');
         console.log('  ✅ HANUJAI WHATSAPP DISPATCHER SUCCESSFULLY CONNECTED TO WHATSAPP!');

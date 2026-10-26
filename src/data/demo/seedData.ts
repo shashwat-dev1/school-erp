@@ -234,12 +234,12 @@ function generateSyntheticStudents(): StudentRecord[] {
 
   // Seed baseline explicit students for Class 10-A (Preserves existing tests and UI links)
   const baseline10A: Partial<StudentRecord>[] = [
-    { id: 'STU-10A-01', rollNumber: 1, firstName: 'Aarav', lastName: 'Singhania', gender: 'M', attendancePercentage: 88.5, academicAverage: 81.0, guardianName: 'Sanjay Singhania', primaryPhone: '+91 98291 55001', activeFlags: [
+    { id: 'STU-10A-01', rollNumber: 1, firstName: 'Aarav', lastName: 'Singhania', gender: 'M', attendancePercentage: 88.5, academicAverage: 81.0, guardianName: 'Shashwat', primaryPhone: '+91 90095 19718', activeFlags: [
       { id: 'flag-01', code: 'ATT-01', type: 'attendance', severity: 'alert', title: '3 Consecutive Absences', reason: 'Rule #ATT-01: Absent on consecutive operational days without parent medical note.', triggeredAt: '2026-10-20T09:30:00Z', resolved: false },
       { id: 'flag-02', code: 'ACAD-04', type: 'academic', severity: 'warning', title: 'Performance Decline (-28% in Math)', reason: 'Rule #ACAD-04: Drop from 22/25 (88%) in UT 1 to 15/25 (60%) in UT 2 in Mathematics.', triggeredAt: '2026-10-18T14:15:00Z', resolved: false },
     ]},
-    { id: 'STU-10A-02', rollNumber: 2, firstName: 'Ananya', lastName: 'Sharma', gender: 'F', attendancePercentage: 96.0, academicAverage: 92.5, guardianName: 'Dr. Ramesh Sharma', primaryPhone: '+91 98291 55002', activeFlags: [] },
-    { id: 'STU-10A-03', rollNumber: 3, firstName: 'Rohan', lastName: 'Mehta', gender: 'M', attendancePercentage: 91.5, academicAverage: 78.0, guardianName: 'Prakash Mehta', primaryPhone: '+91 98291 55003', activeFlags: [] },
+    { id: 'STU-10A-02', rollNumber: 2, firstName: 'Ananya', lastName: 'Sharma', gender: 'F', attendancePercentage: 96.0, academicAverage: 92.5, guardianName: 'Nitin', primaryPhone: '+91 89520 31365', activeFlags: [] },
+    { id: 'STU-10A-03', rollNumber: 3, firstName: 'Rohan', lastName: 'Mehta', gender: 'M', attendancePercentage: 91.5, academicAverage: 78.0, guardianName: 'Vijaya', primaryPhone: '+91 89479 03712', activeFlags: [] },
     { id: 'STU-10A-04', rollNumber: 4, firstName: 'Diya', lastName: 'Patel', gender: 'F', attendancePercentage: 94.0, academicAverage: 88.0, guardianName: 'Bhavesh Patel', primaryPhone: '+91 98291 55004', activeFlags: [] },
     { id: 'STU-10A-05', rollNumber: 5, firstName: 'Kabir', lastName: 'Verma', gender: 'M', attendancePercentage: 72.0, academicAverage: 65.0, guardianName: 'Ashok Verma', primaryPhone: '+91 98291 55005', activeFlags: [
       { id: 'flag-03', code: 'ATT-03', type: 'attendance', severity: 'alert', title: 'Below 75% CBSE Threshold', reason: 'Rule #ATT-03: Attendance at 72.0% is below the mandatory 75% requirement.', triggeredAt: '2026-10-20T08:00:00Z', resolved: false }
