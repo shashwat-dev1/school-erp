@@ -12,7 +12,10 @@
     "test": "vitest run",
     "test:watch": "vitest",
     "seed:firebase": "npx --yes tsx scripts/seedFirebase.ts",
-    "whatsapp:worker": "npx --yes tsx scripts/whatsappWorker.ts"
+    "whatsapp:worker": "node --experimental-strip-types scripts/whatsappWorker.ts",
+    "whatsapp:status": "node --experimental-strip-types scripts/whatsappStatus.ts",
+    "whatsapp:logout": "node --experimental-strip-types scripts/whatsappLogout.ts",
+    "whatsapp:test": "node --experimental-strip-types scripts/whatsappSendTest.ts"
   },
   "dependencies": {
     "firebase": "^11.0.2",
@@ -38,6 +41,7 @@
     "eslint-plugin-react-hooks": "^5.0.0",
     "eslint-plugin-react-refresh": "^0.4.14",
     "jsdom": "^25.0.1",
+    "pino": "^9.5.0",
     "qrcode-terminal": "^0.12.0",
     "typescript": "^5.6.3",
     "typescript-eslint": "^8.14.0",

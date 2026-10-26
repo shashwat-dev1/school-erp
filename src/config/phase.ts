@@ -71,9 +71,9 @@ export const PHASE_CONFIG: PhaseConfig = {
       .filter(Boolean),
     templates: {
       present: (studentName: string, dateStr: string) =>
-        `Dear Parent/Guardian, ${studentName} has been marked PRESENT at HanuJai High School on ${dateStr}. If you believe this attendance record is incorrect, please contact the school.`,
+        `Dear Parent/Guardian,\n\nThis is to inform you that ${studentName} has been marked PRESENT at HanuJai High School on ${dateStr}.\n\nIf you believe this record is incorrect, please contact the school.`,
       absent: (studentName: string, dateStr: string) =>
-        `Dear Parent/Guardian, ${studentName} has been marked ABSENT at HanuJai High School on ${dateStr}. If this is unexpected, please contact the school.`,
+        `Dear Parent/Guardian,\n\nThis is to inform you that ${studentName} has been marked ABSENT at HanuJai High School on ${dateStr}.\n\nIf this is unexpected, please contact the school.`,
     },
   },
 };

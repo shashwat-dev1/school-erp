@@ -1,0 +1,19 @@
+{
+  "name": "hanujai-whatsapp-worker",
+  "version": "1.0.0",
+  "description": "HanuJai High School ERP — Dedicated Server-Side WhatsApp Worker (Baileys Integration)",
+  "type": "module",
+  "scripts": {
+    "start": "node --experimental-strip-types src/index.ts",
+    "worker": "node --experimental-strip-types src/index.ts",
+    "status": "node --experimental-strip-types src/status.ts",
+    "logout": "node --experimental-strip-types src/logout.ts",
+    "test:send": "node --experimental-strip-types src/sendTest.ts"
+  },
+  "dependencies": {
+    "@whiskeysockets/baileys": "^7.0.0-rc14",
+    "firebase": "^11.0.2",
+    "pino": "^9.5.0",
+    "qrcode-terminal": "^0.12.0"
+  }
+}

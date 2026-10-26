@@ -47,9 +47,10 @@ function formatLocalSchoolDate(dateIso: string): string {
 }
 
 export class WhatsAppNotificationService {
-  private static provider: WhatsAppProvider = new DryRunWhatsAppProvider();
+  private static provider: WhatsAppProvider | null =
+    PHASE_CONFIG.whatsapp.provider === 'dry_run' ? new DryRunWhatsAppProvider() : null;
 
-  public static setProvider(p: WhatsAppProvider) {
+  public static setProvider(p: WhatsAppProvider | null) {
     this.provider = p;
   }
 
@@ -132,31 +133,34 @@ export class WhatsAppNotificationService {
       this.saveToLocalStorage(jobs);
     }
 
-    // Auto-process with current provider (e.g. Dry Run provider immediately simulates dispatch)
-    const processedJobs: WhatsAppNotificationJob[] = [];
-    for (const j of jobs) {
-      if (j.deliveryStatus === 'pending') {
-        const res = await this.provider.send(j);
-        if (res.success) {
-          j.deliveryStatus = 'sent';
-          j.externalId = res.externalId;
-          j.sentAt = new Date().toISOString();
-        } else if (res.skipReason) {
-          j.deliveryStatus = 'skipped';
-          j.skipReason = res.skipReason;
-          j.error = res.error;
-        } else {
-          j.deliveryStatus = 'failed';
-          j.error = res.error || 'Transmission failed';
+    // Auto-process simulated dispatch only when an explicit dry-run simulator provider is active
+    if (this.provider && this.provider.name === 'dry_run') {
+      const processedJobs: WhatsAppNotificationJob[] = [];
+      for (const j of jobs) {
+        if (j.deliveryStatus === 'pending') {
+          const res = await this.provider.send(j);
+          if (res.success) {
+            j.deliveryStatus = 'sent';
+            j.externalId = res.externalId;
+            j.sentAt = new Date().toISOString();
+          } else if (res.skipReason) {
+            j.deliveryStatus = 'skipped';
+            j.skipReason = res.skipReason;
+            j.error = res.error;
+          } else {
+            j.deliveryStatus = 'failed';
+            j.error = res.error || 'Transmission failed';
+          }
         }
+        processedJobs.push(j);
       }
-      processedJobs.push(j);
+      await this.updateJobsState(processedJobs);
+      return processedJobs;
     }
 
-    // Save final status update
-    await this.updateJobsState(processedJobs);
-
-    return processedJobs;
+    // When provider is 'baileys' or 'cloud_api' and running live in browser,
+    // jobs remain 'pending' in Firestore for the dedicated server-side Node.js worker.
+    return jobs;
   }
 
   /**
@@ -203,20 +207,25 @@ export class WhatsAppNotificationService {
    */
   public static async retryJob(job: WhatsAppNotificationJob): Promise<WhatsAppNotificationJob> {
     const updatedJob = { ...job, retryCount: job.retryCount + 1 };
-    const res = await this.provider.send(updatedJob);
-
-    if (res.success) {
-      updatedJob.deliveryStatus = 'sent';
-      updatedJob.externalId = res.externalId;
-      updatedJob.sentAt = new Date().toISOString();
-      updatedJob.error = undefined;
-    } else if (res.skipReason) {
-      updatedJob.deliveryStatus = 'skipped';
-      updatedJob.skipReason = res.skipReason;
-      updatedJob.error = res.error;
+    if (this.provider) {
+      const res = await this.provider.send(updatedJob);
+      if (res.success) {
+        updatedJob.deliveryStatus = 'sent';
+        updatedJob.externalId = res.externalId;
+        updatedJob.sentAt = new Date().toISOString();
+        updatedJob.error = undefined;
+      } else if (res.skipReason) {
+        updatedJob.deliveryStatus = 'skipped';
+        updatedJob.skipReason = res.skipReason;
+        updatedJob.error = res.error;
+      } else {
+        updatedJob.deliveryStatus = 'failed';
+        updatedJob.error = res.error || 'Retry transmission failed';
+      }
     } else {
-      updatedJob.deliveryStatus = 'failed';
-      updatedJob.error = res.error || 'Retry transmission failed';
+      // Re-queue as pending for the background worker
+      updatedJob.deliveryStatus = 'pending';
+      updatedJob.error = undefined;
     }
 
     await this.updateJobsState([updatedJob]);

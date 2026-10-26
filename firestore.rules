@@ -99,6 +99,21 @@ service cloud.firestore {
       allow delete: if false;
     }
 
+    // Attendance WhatsApp Notifications:
+    // Assigned Class Teacher can create/read notification jobs for their section; Principal has read oversight.
+    match /attendanceNotifications/{jobId} {
+      allow read: if isAuthenticated() && (
+        isPrincipal() || 
+        isAssignedClassTeacher(resource.data.classId)
+      );
+      allow create: if isAuthenticated() && isAssignedClassTeacher(request.resource.data.classId);
+      allow update: if isAuthenticated() && (
+        isAssignedClassTeacher(resource.data.classId) ||
+        isPrincipal()
+      );
+      allow delete: if false;
+    }
+
     // Aggregate-only attendance for subject teachers. This collection contains no student names or records.
     match /attendanceAggregates/{aggregateId} {
       allow read: if isAuthenticated() && (
