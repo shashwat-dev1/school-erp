@@ -67,15 +67,24 @@ export class WhatsAppNotificationService {
     session: AttendanceSession,
     students: StudentRecord[]
   ): Promise<WhatsAppNotificationJob[]> {
-    const studentMap = new Map<string, StudentRecord>(students.map(s => [s.id, s]));
+    const studentMap = new Map<string, StudentRecord>();
+    for (const s of students) {
+      studentMap.set(s.id, s);
+      studentMap.set(s.id.toLowerCase(), s);
+      studentMap.set(s.id.toUpperCase(), s);
+      if (s.rollNumber) studentMap.set(`roll_${s.rollNumber}`, s);
+    }
+
     const formattedDate = formatLocalSchoolDate(session.date);
     const jobs: WhatsAppNotificationJob[] = [];
     const nowIso = new Date().toISOString();
 
     for (const record of session.records) {
-      const student = studentMap.get(record.studentId);
+      const student = studentMap.get(record.studentId) ||
+                      studentMap.get(record.studentId?.toLowerCase()) ||
+                      studentMap.get(record.studentId?.toUpperCase());
       const studentName = student ? `${student.firstName} ${student.lastName}`.trim() : record.studentName;
-      const guardianName = student?.guardianName || 'Parent/Guardian';
+      const guardianName = student?.guardianName || (record as any).guardianName || 'Parent/Guardian';
       const rawPhone = student?.primaryPhone || '';
       const state = record.state; // 'present' | 'absent'
 
