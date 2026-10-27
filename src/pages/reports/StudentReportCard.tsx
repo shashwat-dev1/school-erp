@@ -8,7 +8,7 @@ import { ErrorBanner } from '../../components/feedback/ErrorBanner';
 import { AccessDenied } from '../error/AccessDenied';
 import { Permissions } from '../../domain/permissions';
 import type { StudentRecord } from '../../domain/types';
-import logoSvg from '../../assets/logo.svg';
+import hanujaiLogo from '../../assets/hanujai_logo.png';
 import { Printer } from 'lucide-react';
 
 export const StudentReportCard: React.FC = () => {
@@ -158,7 +158,7 @@ export const StudentReportCard: React.FC = () => {
           }}
         >
           <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
-            <img src={logoSvg} alt="School Crest" style={{ height: '64px', width: 'auto' }} />
+            <img src={hanujaiLogo} alt="HanuJai High School Crest" style={{ height: '64px', width: '64px', objectFit: 'contain' }} />
             <div>
               <h2 style={{ fontSize: '1.45rem', fontWeight: 800, margin: 0, color: 'var(--hhs-primary)', letterSpacing: '-0.02em' }}>
                 HANUJAI HIGH SCHOOL

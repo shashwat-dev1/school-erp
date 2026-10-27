@@ -8,7 +8,7 @@ import { ErrorBanner } from '../../components/feedback/ErrorBanner';
 import { AccessDenied } from '../error/AccessDenied';
 import { Permissions } from '../../domain/permissions';
 import type { StudentRecord } from '../../domain/types';
-import logoSvg from '../../assets/logo.svg';
+import hanujaiLogo from '../../assets/hanujai_logo.png';
 import { Printer } from 'lucide-react';
 
 export const PTMSlip: React.FC = () => {
@@ -143,7 +143,7 @@ export const PTMSlip: React.FC = () => {
           }}
         >
           <div style={{ display: 'flex', alignItems: 'center', gap: '14px' }}>
-            <img src={logoSvg} alt="School Crest" style={{ height: '50px', width: 'auto' }} />
+            <img src={hanujaiLogo} alt="HanuJai High School Crest" style={{ height: '52px', width: '52px', objectFit: 'contain' }} />
             <div>
               <h2 style={{ fontSize: '1.25rem', fontWeight: 800, margin: 0, color: 'var(--hhs-primary)' }}>
                 HANUJAI HIGH SCHOOL, JAIPUR

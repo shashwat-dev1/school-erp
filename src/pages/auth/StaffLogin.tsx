@@ -4,7 +4,7 @@ import { useAuth } from '../../context/AuthContext';
 import { useData } from '../../context/DataContext';
 import { initialStaff } from '../../data/demo/seedData';
 import { Eye, EyeOff, ShieldCheck, ArrowRight, AlertCircle } from 'lucide-react';
-import logoSvg from '../../assets/logo.svg';
+import hanujaiLogo from '../../assets/hanujai_logo.png';
 
 export const StaffLogin: React.FC = () => {
   const navigate = useNavigate();
@@ -60,12 +60,16 @@ export const StaffLogin: React.FC = () => {
         }}
       >
         <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-          <img src={logoSvg} alt="HanuJai High School Crest" style={{ height: '44px', width: 'auto' }} />
+          <img
+            src={hanujaiLogo}
+            alt="HanuJai High School Crest"
+            style={{ height: '48px', width: '48px', objectFit: 'contain', flexShrink: 0 }}
+          />
           <div>
-            <div style={{ fontWeight: 700, fontSize: '0.92rem', color: 'var(--hhs-text-primary)' }}>
+            <div style={{ fontWeight: 800, fontSize: '0.96rem', color: 'var(--hhs-text-primary)' }}>
               HanuJai High School
             </div>
-            <div style={{ fontSize: '0.72rem', color: 'var(--hhs-text-secondary)' }}>
+            <div style={{ fontSize: '0.74rem', color: 'var(--hhs-text-secondary)' }}>
               Jaipur, Rajasthan • Staff Administration ERP
             </div>
           </div>
@@ -102,17 +106,29 @@ export const StaffLogin: React.FC = () => {
             }}
           >
             {/* Header info */}
-            <div style={{ marginBottom: '24px' }}>
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '12px' }}>
+            <div style={{ marginBottom: '24px', textAlign: 'center' }}>
+              <div style={{ display: 'flex', justifyContent: 'center', marginBottom: '14px' }}>
+                <img
+                  src={hanujaiLogo}
+                  alt="HanuJai High School Crest"
+                  style={{
+                    height: '68px',
+                    width: '68px',
+                    objectFit: 'contain',
+                    filter: 'drop-shadow(0 2px 8px rgba(31, 107, 255, 0.15))',
+                  }}
+                />
+              </div>
+              <div style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', marginBottom: '10px' }}>
                 <span
                   style={{
-                    backgroundColor: 'var(--hhs-primary-light)',
-                    color: 'var(--hhs-primary-text)',
-                    fontSize: '0.7rem',
+                    backgroundColor: 'var(--pop-electric-blue-tint)',
+                    color: 'var(--pop-electric-blue)',
+                    fontSize: '0.72rem',
                     fontWeight: 700,
-                    padding: '3px 8px',
-                    borderRadius: 'var(--hhs-radius-sm)',
-                    border: '1px solid var(--hhs-border)',
+                    padding: '3px 10px',
+                    borderRadius: '12px',
+                    border: '1px solid var(--pop-electric-blue)',
                     textTransform: 'uppercase',
                     letterSpacing: '0.04em',
                   }}
@@ -120,13 +136,13 @@ export const StaffLogin: React.FC = () => {
                   Authorized Staff Access
                 </span>
                 <span style={{ fontSize: '0.7rem', color: 'var(--hhs-text-muted)' }}>
-                  {dataMode === 'demo' ? 'Sample Data' : 'Cloud Mode'}
+                  ({dataMode === 'demo' ? 'Sample Data' : 'Cloud Mode'})
                 </span>
               </div>
-              <h1 className="hhs-headline-md" style={{ marginBottom: '4px' }}>
+              <h1 className="hhs-headline-md" style={{ marginBottom: '4px', fontSize: '1.3rem', fontWeight: 800 }}>
                 Staff Authentication
               </h1>
-              <p className="hhs-body-sm" style={{ color: 'var(--hhs-text-secondary)' }}>
+              <p className="hhs-body-sm" style={{ color: 'var(--hhs-text-secondary)', fontSize: '0.84rem' }}>
                 Single-school internal portal for Leadership and Teaching Faculty.
               </p>
             </div>

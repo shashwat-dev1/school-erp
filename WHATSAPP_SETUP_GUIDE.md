@@ -36,9 +36,10 @@
 ```
 
 > [!IMPORTANT]
-> **Why Baileys Runs as a Separate Worker and NOT inside Vercel Functions:**  
-> The React/Vite website is deployed on Vercel as static frontend assets and ephemeral serverless functions. WhatsApp Web protocol requires an uninterrupted, stateful WebSocket connection with persistent cryptographic credentials. Vercel Functions spin down after execution (maximum 15–60s) and have read-only or ephemeral local filesystems, making it technically impossible to maintain a permanent WhatsApp socket or store auth state reliably.  
-> The worker is therefore isolated into a dedicated Node.js process (`scripts/whatsappWorker.ts` / `whatsapp-worker/`).
+> **Why Baileys Runs as a Separate Persistent Worker and NOT inside Vercel Functions:**  
+> The React/Vite website is deployed on Vercel as static frontend assets (`dist/`). WhatsApp Web protocol requires an uninterrupted, stateful, outgoing TLS WebSocket connection with persistent cryptographic credentials. Vercel Functions spin down after execution (max 10–60s on standard plans, up to 300s on Fluid Compute) and have ephemeral filesystems, making it impossible to maintain a permanent WhatsApp socket or store auth state reliably.  
+> The worker is therefore isolated into a dedicated Node.js process (`scripts/whatsappWorker.ts` / `whatsapp-worker/`). For production, run the worker on a persistent container platform (e.g. Railway, Render, Fly.io, or VPS) with an attached persistent disk volume for `.baileys_auth/`.  
+> For the comprehensive technical evaluation and documentation citations, see: [HanuJai ERP System Architecture — Section F](docs/architecture/HANUJAI_ERP_SYSTEM_ARCHITECTURE.md#section-f--whatsapp--websocket-architecture).
 
 ---
 

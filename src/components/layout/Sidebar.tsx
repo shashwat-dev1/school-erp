@@ -12,7 +12,7 @@ import {
   MessageSquare,
   X,
 } from 'lucide-react';
-import logoSvg from '../../assets/logo.svg';
+import hanujaiLogo from '../../assets/hanujai_logo.png';
 
 interface SidebarProps {
   isMobileOpen?: boolean;
@@ -65,15 +65,42 @@ export const Sidebar: React.FC<SidebarProps> = ({ isMobileOpen = false, onClose 
             minHeight: '64px',
           }}
         >
-          <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
             <img
-              src={logoSvg}
-              alt="HanuJai High School"
-              style={{ height: '42px', maxWidth: '185px', objectFit: 'contain', display: 'block' }}
+              src={hanujaiLogo}
+              alt="HanuJai High School Crest"
+              style={{
+                height: '42px',
+                width: '42px',
+                objectFit: 'contain',
+                display: 'block',
+                flexShrink: 0,
+              }}
             />
-            <span style={{ position: 'absolute', width: '1px', height: '1px', padding: 0, margin: '-1px', overflow: 'hidden', clip: 'rect(0, 0, 0, 0)', border: 0 }}>
-              HanuJai High School
-            </span>
+            <div style={{ display: 'flex', flexDirection: 'column' }}>
+              <span
+                style={{
+                  fontWeight: 800,
+                  fontSize: '0.92rem',
+                  color: 'var(--hhs-text-primary)',
+                  lineHeight: 1.15,
+                  letterSpacing: '0.01em',
+                }}
+              >
+                HanuJai High School
+              </span>
+              <span
+                style={{
+                  fontSize: '0.70rem',
+                  fontWeight: 600,
+                  color: 'var(--pop-deep-violet)',
+                  letterSpacing: '0.04em',
+                  textTransform: 'uppercase',
+                }}
+              >
+                Jaipur • Staff ERP
+              </span>
+            </div>
           </div>
           {onClose && (
             <button

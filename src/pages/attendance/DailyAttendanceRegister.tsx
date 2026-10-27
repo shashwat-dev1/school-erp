@@ -751,8 +751,8 @@ export const DailyAttendanceRegister: React.FC = () => {
             }}
           >
             {/* Selection Controls */}
-            <div style={{ display: 'flex', flexWrap: 'wrap', gap: '12px', alignItems: 'center' }}>
-              <div>
+            <div style={{ display: 'flex', flexWrap: 'wrap', gap: '12px', alignItems: 'center', width: '100%', maxWidth: '440px' }}>
+              <div style={{ flex: '1 1 180px', minWidth: '140px' }}>
                 <label className="hhs-label" htmlFor="register-class" style={{ marginBottom: '4px', display: 'block' }}>
                   Class & Section
                 </label>
@@ -764,7 +764,7 @@ export const DailyAttendanceRegister: React.FC = () => {
                     navigate(`/attendance/register/${e.target.value}`);
                   }}
                   className="hhs-select"
-                  style={{ width: '180px', height: '40px' }}
+                  style={{ width: '100%', height: '42px' }}
                   disabled={currentUser.role === 'class_teacher'}
                 >
                   {availableClasses.map(c => (
@@ -775,7 +775,7 @@ export const DailyAttendanceRegister: React.FC = () => {
                 </select>
               </div>
 
-              <div>
+              <div style={{ flex: '1 1 150px', minWidth: '140px' }}>
                 <label className="hhs-label" htmlFor="register-date" style={{ marginBottom: '4px', display: 'block' }}>
                   Attendance Date
                 </label>
@@ -785,7 +785,7 @@ export const DailyAttendanceRegister: React.FC = () => {
                   value={selectedDate}
                   onChange={e => setSelectedDate(e.target.value)}
                   className="hhs-input tnum"
-                  style={{ width: '160px', height: '40px' }}
+                  style={{ width: '100%', height: '42px' }}
                 />
               </div>
             </div>
@@ -901,45 +901,25 @@ export const DailyAttendanceRegister: React.FC = () => {
                   return (
                     <div
                       key={row.studentId}
+                      className="hhs-attendance-roster-row"
                       style={{
-                        padding: '12px 16px',
                         borderBottom: index < attendanceRows.length - 1 ? '1px solid var(--hhs-border)' : 'none',
                         backgroundColor: isUnmarked
                           ? 'var(--hhs-surface)'
                           : isPresent
-                          ? 'rgba(34, 197, 94, 0.03)'
-                          : 'rgba(239, 68, 68, 0.03)',
-                        display: 'flex',
-                        flexDirection: 'column',
-                        gap: '8px',
-                        transition: 'background-color 0.15s ease',
+                          ? 'rgba(34, 197, 94, 0.04)'
+                          : 'rgba(239, 68, 68, 0.04)',
                       }}
                     >
-                      <div
-                        style={{
-                          display: 'flex',
-                          alignItems: 'center',
-                          justifyContent: 'space-between',
-                          gap: '12px',
-                          width: '100%',
-                        }}
-                      >
+                      <div className="hhs-attendance-row-main">
                         {/* Student Name: First Name on line 1, Last Name on line 2 */}
-                        <div
-                          style={{
-                            display: 'flex',
-                            alignItems: 'center',
-                            gap: '12px',
-                            minWidth: 0,
-                            flex: 1,
-                          }}
-                        >
+                        <div className="hhs-attendance-student-info">
                           {/* Roll Number Pill */}
                           <div
                             className="tnum"
                             style={{
-                              width: '32px',
-                              height: '32px',
+                              width: '34px',
+                              height: '34px',
                               borderRadius: '50%',
                               backgroundColor: 'var(--hhs-canvas)',
                               border: '1.5px solid var(--hhs-border)',
@@ -947,7 +927,7 @@ export const DailyAttendanceRegister: React.FC = () => {
                               alignItems: 'center',
                               justifyContent: 'center',
                               fontWeight: 800,
-                              fontSize: '0.82rem',
+                              fontSize: '0.84rem',
                               color: 'var(--hhs-text-primary)',
                               flexShrink: 0,
                             }}
@@ -956,7 +936,7 @@ export const DailyAttendanceRegister: React.FC = () => {
                           </div>
 
                           {/* Student Name Breakdown */}
-                          <div style={{ minWidth: 0, overflow: 'hidden' }}>
+                          <div style={{ minWidth: 0, overflow: 'hidden', flex: 1 }}>
                             <div
                               style={{
                                 fontWeight: 700,
@@ -982,43 +962,27 @@ export const DailyAttendanceRegister: React.FC = () => {
                           </div>
                         </div>
 
-                        {/* Two-Choice Attendance Toggle (Present / Absent) — min 44px touch targets */}
-                        <div
-                          style={{
-                            display: 'flex',
-                            gap: '8px',
-                            alignItems: 'center',
-                            flexShrink: 0,
-                          }}
-                        >
+                        {/* Two-Choice Attendance Toggle (Present / Absent) — Accessible Touch Targets (min 44px) */}
+                        <div className="hhs-attendance-toggle-group">
                           {/* Present Button */}
                           <button
                             type="button"
                             onClick={() => canMark && handleStateChange(row.studentId, 'present')}
                             disabled={!canMark}
                             aria-label={`Mark ${row.name} Present`}
+                            aria-pressed={isPresent}
+                            className="hhs-attendance-btn"
                             style={{
-                              minHeight: '44px',
-                              minWidth: '76px',
-                              padding: '8px 14px',
-                              borderRadius: '8px',
-                              fontSize: '0.84rem',
-                              fontWeight: 700,
-                              display: 'flex',
-                              alignItems: 'center',
-                              justifyContent: 'center',
-                              gap: '6px',
-                              cursor: canMark ? 'pointer' : 'default',
                               border: isPresent
                                 ? '2px solid var(--pop-apple-green)'
                                 : '1.5px solid #bbf7d0',
                               backgroundColor: isPresent ? 'var(--pop-apple-green)' : '#f0fdf4',
                               color: isPresent ? '#FFFFFF' : '#166534',
                               boxShadow: isPresent ? '0 2px 6px rgba(22, 163, 74, 0.3)' : 'none',
-                              transition: 'all 0.15s ease',
+                              cursor: canMark ? 'pointer' : 'default',
                             }}
                           >
-                            <Check size={16} strokeWidth={isPresent ? 3 : 2} />
+                            <Check size={17} strokeWidth={isPresent ? 3 : 2} />
                             <span>Present</span>
                           </button>
 
@@ -1028,28 +992,19 @@ export const DailyAttendanceRegister: React.FC = () => {
                             onClick={() => canMark && handleStateChange(row.studentId, 'absent')}
                             disabled={!canMark}
                             aria-label={`Mark ${row.name} Absent`}
+                            aria-pressed={isAbsent}
+                            className="hhs-attendance-btn"
                             style={{
-                              minHeight: '44px',
-                              minWidth: '76px',
-                              padding: '8px 14px',
-                              borderRadius: '8px',
-                              fontSize: '0.84rem',
-                              fontWeight: 700,
-                              display: 'flex',
-                              alignItems: 'center',
-                              justifyContent: 'center',
-                              gap: '6px',
-                              cursor: canMark ? 'pointer' : 'default',
                               border: isAbsent
                                 ? '2px solid var(--pop-coral-red)'
                                 : '1.5px solid #fecaca',
                               backgroundColor: isAbsent ? 'var(--pop-coral-red)' : '#fef2f2',
                               color: isAbsent ? '#FFFFFF' : '#991b1b',
                               boxShadow: isAbsent ? '0 2px 6px rgba(239, 68, 68, 0.3)' : 'none',
-                              transition: 'all 0.15s ease',
+                              cursor: canMark ? 'pointer' : 'default',
                             }}
                           >
-                            <XIcon size={16} strokeWidth={isAbsent ? 3 : 2} />
+                            <XIcon size={17} strokeWidth={isAbsent ? 3 : 2} />
                             <span>Absent</span>
                           </button>
                         </div>
@@ -1057,7 +1012,7 @@ export const DailyAttendanceRegister: React.FC = () => {
 
                       {/* Optional Reason / Remarks row when absent or marked */}
                       {(isAbsent || row.remarks) && (
-                        <div style={{ paddingLeft: '44px', width: '100%' }}>
+                        <div className="hhs-attendance-remarks-wrap" style={{ paddingLeft: '46px', width: '100%' }}>
                           {canMark ? (
                             <input
                               type="text"
@@ -1065,7 +1020,7 @@ export const DailyAttendanceRegister: React.FC = () => {
                               onChange={e => handleRemarksChange(row.studentId, e.target.value)}
                               placeholder="Reason / note (e.g. sick leave, medical, informed by parent)..."
                               className="hhs-input"
-                              style={{ height: '32px', fontSize: '0.8rem', width: '100%', maxWidth: '400px' }}
+                              style={{ height: '34px', fontSize: '0.8rem', width: '100%', maxWidth: '420px' }}
                             />
                           ) : (
                             <span style={{ fontSize: '0.78rem', color: 'var(--hhs-text-secondary)', fontStyle: 'italic' }}>
@@ -1084,10 +1039,8 @@ export const DailyAttendanceRegister: React.FC = () => {
           {/* Mobile Bottom Floating Action Bar */}
           {canMark && unmarkedCount > 0 && (
             <div
+              className="hhs-floating-submit-bar"
               style={{
-                position: 'sticky',
-                bottom: '12px',
-                zIndex: 10,
                 padding: '12px 18px',
                 backgroundColor: 'var(--hhs-surface)',
                 borderRadius: 'var(--hhs-radius-container)',
@@ -1109,7 +1062,7 @@ export const DailyAttendanceRegister: React.FC = () => {
                 </div>
               </div>
 
-              <div style={{ display: 'flex', gap: '8px' }}>
+              <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
                 <button
                   type="button"
                   onClick={handleMarkAllPresent}

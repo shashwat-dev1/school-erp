@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { useAuth } from '../../context/AuthContext';
 import { LogOut, ChevronDown, User, Menu } from 'lucide-react';
 import type { StaffRole } from '../../domain/types';
+import hanujaiLogo from '../../assets/hanujai_logo.png';
 
 interface TopbarProps {
   onToggleSidebar?: () => void;
@@ -70,8 +71,8 @@ export const Topbar: React.FC<TopbarProps> = ({ onToggleSidebar }) => {
         zIndex: 30,
       }}
     >
-      {/* Left: Mobile hamburger & Session */}
-      <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+      {/* Left: Mobile hamburger & School Brand */}
+      <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
         {onToggleSidebar && (
           <button
             onClick={onToggleSidebar}
@@ -89,18 +90,43 @@ export const Topbar: React.FC<TopbarProps> = ({ onToggleSidebar }) => {
             <Menu size={18} />
           </button>
         )}
-        <div style={{ display: 'flex', alignItems: 'center' }}>
-          <span
-            className="hhs-topbar-session"
+        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+          <img
+            src={hanujaiLogo}
+            alt="HanuJai High School Crest"
             style={{
-              fontSize: '0.82rem',
-              fontWeight: 700,
-              color: 'var(--hhs-text-primary)',
-              whiteSpace: 'nowrap',
+              height: '34px',
+              width: '34px',
+              objectFit: 'contain',
+              display: 'block',
+              flexShrink: 0,
             }}
-          >
-            Session 2025–2026
-          </span>
+          />
+          <div style={{ display: 'flex', flexDirection: 'column' }}>
+            <span
+              className="hhs-topbar-title"
+              style={{
+                fontSize: '0.86rem',
+                fontWeight: 800,
+                color: 'var(--hhs-text-primary)',
+                lineHeight: 1.15,
+                whiteSpace: 'nowrap',
+              }}
+            >
+              HanuJai High School
+            </span>
+            <span
+              className="hhs-topbar-session"
+              style={{
+                fontSize: '0.70rem',
+                fontWeight: 600,
+                color: 'var(--hhs-text-secondary)',
+                whiteSpace: 'nowrap',
+              }}
+            >
+              Session 2025–2026
+            </span>
+          </div>
         </div>
       </div>
 

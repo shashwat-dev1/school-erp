@@ -1,0 +1,22 @@
+{
+  "name": "HanuJai High School ERP",
+  "short_name": "HanuJai ERP",
+  "description": "Internal School Enterprise Resource Planning Platform for HanuJai High School, Jaipur",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#FFFFFF",
+  "theme_color": "#1F6BFF",
+  "icons": [
+    {
+      "src": "/assets/hanujai_logo.png",
+      "sizes": "260x268",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/favicon.png",
+      "sizes": "260x268",
+      "type": "image/png"
+    }
+  ]
+}

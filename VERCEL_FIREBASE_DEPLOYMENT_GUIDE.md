@@ -4,6 +4,7 @@
 **Target Repository:** `C:\Projects\School\hanujai-erp`  
 **Original Gibbon Core (Untouched):** `C:\Projects\School\core`  
 **Operating Environment:** Windows (PowerShell) • React 18 • TypeScript 5.6 • Vite 5.4 • Cloud Firestore • Vercel  
+**System Architecture Reference:** [docs/architecture/HANUJAI_ERP_SYSTEM_ARCHITECTURE.md](docs/architecture/HANUJAI_ERP_SYSTEM_ARCHITECTURE.md)  
 
 ---
 
