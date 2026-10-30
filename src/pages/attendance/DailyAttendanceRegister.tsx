@@ -195,6 +195,11 @@ export const DailyAttendanceRegister: React.FC = () => {
           if (nameComp !== 0) return nameComp;
           return a.rollNumber - b.rollNumber;
         });
+
+        // Assign roll numbers strictly according to alphabetical order (1 to 50)
+        initialRows.forEach((r, idx) => {
+          r.rollNumber = idx + 1;
+        });
         setAttendanceRows(initialRows);
 
         // Load WhatsApp notifications if session exists

@@ -177,7 +177,7 @@ export class FirestoreRepository implements DataProvider {
       where('classId', '==', classId)
     );
     const snap = await getDocs(q);
-    return snap.docs
+    const sorted = snap.docs
       .map(d => d.data() as StudentRecord)
       .sort((a, b) => {
         const nameComp = (a.firstName || '').localeCompare(b.firstName || '', undefined, { sensitivity: 'base' })
@@ -185,6 +185,10 @@ export class FirestoreRepository implements DataProvider {
         if (nameComp !== 0) return nameComp;
         return a.rollNumber - b.rollNumber;
       });
+    return sorted.map((s, idx) => ({
+      ...s,
+      rollNumber: idx + 1,
+    }));
   }
 
   public async getSubjects(): Promise<Subject[]> {

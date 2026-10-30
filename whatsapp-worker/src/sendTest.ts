@@ -58,9 +58,6 @@ async function runTestSend() {
 
   const knownMap: Record<string, { parent: string; student: string }> = {
     '9009519718': { parent: 'Shashwat', student: 'Aarav Singhania' },
-    '8952031365': { parent: 'Nitin', student: 'Ananya Sharma' },
-    '8947903712': { parent: 'Vijaya', student: 'Rohan Mehta' },
-    '9460221177': { parent: 'Rajveer', student: 'Diya Patel' },
   };
 
   for (const [phone, item] of Object.entries(knownMap)) {
@@ -74,9 +71,6 @@ async function runTestSend() {
   if (!parent && student) {
     const lower = student.toLowerCase();
     if (lower.includes('aarav') || lower.includes('singhania')) parent = 'Shashwat';
-    else if (lower.includes('ananya') || lower.includes('sharma')) parent = 'Nitin';
-    else if (lower.includes('rohan') || lower.includes('mehta')) parent = 'Vijaya';
-    else if (lower.includes('diya') || lower.includes('patel')) parent = 'Rajveer';
   }
 
   student = student || 'Aarav Singhania';
