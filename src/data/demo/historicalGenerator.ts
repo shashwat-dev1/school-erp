@@ -681,49 +681,49 @@ export function generateAllHistoricalStudents(): StudentRecord[] {
             acadAvg = 93.5;
             enrollmentDate = '2023-04-03';
           } else if (roll === 3) {
-            fName = 'Rohan';
-            lName = 'Mehta';
+            fName = 'Devendra';
+            lName = 'Bhati';
+            attPct = 74.0;
             enrollmentDate = '2023-04-03';
+            flags = [{ id: 'flag-05', code: 'ATT-03', type: 'attendance', severity: 'alert', title: 'Below 75% CBSE Threshold', reason: 'Cumulative attendance at 74.0% is below the mandatory 75% requirement.', triggeredAt: '2025-10-20T08:00:00Z', resolved: false }];
           } else if (roll === 4) {
             fName = 'Diya';
             lName = 'Patel';
             enrollmentDate = '2023-04-03';
-          } else if (roll === 5) { // Kabir Verma (Attendance risk)
+          } else if (roll === 5) {
+            fName = 'Harshvardhan';
+            lName = 'Joshi';
+            enrollmentDate = '2023-04-03';
+          } else if (roll === 6) {
+            fName = 'Ishaan';
+            lName = 'Gupta';
+            enrollmentDate = '2023-04-03';
+          } else if (roll === 7) { // Kabir Verma (Attendance risk)
             fName = 'Kabir';
             lName = 'Verma';
             attPct = 72.0;
             acadAvg = 65.0;
             enrollmentDate = '2023-04-03';
             flags = [{ id: 'flag-03', code: 'ATT-03', type: 'attendance', severity: 'alert', title: 'Below 75% CBSE Threshold', reason: 'Cumulative attendance at 72.0% is below the mandatory 75% requirement.', triggeredAt: '2025-10-20T08:00:00Z', resolved: false }];
-          } else if (roll === 6) {
-            fName = 'Ishaan';
-            lName = 'Gupta';
-            enrollmentDate = '2023-04-03';
-          } else if (roll === 7) {
-            fName = 'Priya';
-            lName = 'Sen';
-            enrollmentDate = '2023-04-03';
           } else if (roll === 8) {
-            fName = 'Tanvi';
-            lName = 'Shekhawat';
-            enrollmentDate = '2023-04-03';
-          } else if (roll === 9) {
-            fName = 'Harshvardhan';
-            lName = 'Joshi';
-            enrollmentDate = '2023-04-03';
-          } else if (roll === 10) {
             fName = 'Meera';
             lName = 'Rajput';
             enrollmentDate = '2023-04-03';
-          } else if (roll === 11) {
-            fName = 'Devendra';
-            lName = 'Bhati';
-            attPct = 74.0;
+          } else if (roll === 9) {
+            fName = 'Priya';
+            lName = 'Sen';
             enrollmentDate = '2023-04-03';
-            flags = [{ id: 'flag-05', code: 'ATT-03', type: 'attendance', severity: 'alert', title: 'Below 75% CBSE Threshold', reason: 'Cumulative attendance at 74.0% is below the mandatory 75% requirement.', triggeredAt: '2025-10-20T08:00:00Z', resolved: false }];
-          } else if (roll === 12) {
+          } else if (roll === 10) {
             fName = 'Riya';
             lName = 'Choudhary';
+            enrollmentDate = '2023-04-03';
+          } else if (roll === 11) {
+            fName = 'Rohan';
+            lName = 'Mehta';
+            enrollmentDate = '2023-04-03';
+          } else if (roll === 12) {
+            fName = 'Tanvi';
+            lName = 'Shekhawat';
             enrollmentDate = '2023-04-03';
           } else if (roll === 15) { // Admitted in previous academic year (2024–25)
             fName = 'Pooja';

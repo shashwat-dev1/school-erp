@@ -258,6 +258,13 @@ export const AttendanceReport: React.FC = () => {
         isBelow75: roundedRate !== null && roundedRate < 75,
         attendanceByDate,
       };
+    }).sort((a, b) => {
+      const classComp = a.classLabel.localeCompare(b.classLabel);
+      if (classComp !== 0) return classComp;
+      const nameComp = (a.student.firstName || '').localeCompare(b.student.firstName || '', undefined, { sensitivity: 'base' })
+        || (a.student.lastName || '').localeCompare(b.student.lastName || '', undefined, { sensitivity: 'base' });
+      if (nameComp !== 0) return nameComp;
+      return a.student.rollNumber - b.student.rollNumber;
     });
   }, [students, classes, dateList, attendanceSessions]);
 

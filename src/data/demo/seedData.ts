@@ -232,27 +232,27 @@ const COLONIES = ['Malviya Nagar', 'Vidyadhar Nagar', 'Mansarovar', 'Vaishali Na
 function generateSyntheticStudents(): StudentRecord[] {
   const students: StudentRecord[] = [];
 
-  // Seed baseline explicit students for Class 10-A (Preserves existing tests and UI links)
+  // Seed baseline explicit students for Class 10-A (Alphabetical A-Z roll order matching Indian school standards)
   const baseline10A: Partial<StudentRecord>[] = [
     { id: 'STU-10A-01', rollNumber: 1, firstName: 'Aarav', lastName: 'Singhania', gender: 'M', attendancePercentage: 88.5, academicAverage: 81.0, guardianName: 'Shashwat', primaryPhone: '+91 90095 19718', activeFlags: [
       { id: 'flag-01', code: 'ATT-01', type: 'attendance', severity: 'alert', title: '3 Consecutive Absences', reason: 'Rule #ATT-01: Absent on consecutive operational days without parent medical note.', triggeredAt: '2026-10-20T09:30:00Z', resolved: false },
       { id: 'flag-02', code: 'ACAD-04', type: 'academic', severity: 'warning', title: 'Performance Decline (-28% in Math)', reason: 'Rule #ACAD-04: Drop from 22/25 (88%) in UT 1 to 15/25 (60%) in UT 2 in Mathematics.', triggeredAt: '2026-10-18T14:15:00Z', resolved: false },
     ]},
     { id: 'STU-10A-02', rollNumber: 2, firstName: 'Ananya', lastName: 'Sharma', gender: 'F', attendancePercentage: 96.0, academicAverage: 92.5, guardianName: 'Nitin', primaryPhone: '+91 89520 31365', activeFlags: [] },
-    { id: 'STU-10A-03', rollNumber: 3, firstName: 'Rohan', lastName: 'Mehta', gender: 'M', attendancePercentage: 91.5, academicAverage: 78.0, guardianName: 'Vijaya', primaryPhone: '+91 89479 03712', activeFlags: [] },
-    { id: 'STU-10A-04', rollNumber: 4, firstName: 'Diya', lastName: 'Patel', gender: 'F', attendancePercentage: 94.0, academicAverage: 88.0, guardianName: 'Rajveer', primaryPhone: '+91 94602 21177', activeFlags: [] },
-    { id: 'STU-10A-05', rollNumber: 5, firstName: 'Kabir', lastName: 'Verma', gender: 'M', attendancePercentage: 72.0, academicAverage: 65.0, guardianName: 'Ashok Verma', primaryPhone: '+91 98291 55005', activeFlags: [
-      { id: 'flag-03', code: 'ATT-03', type: 'attendance', severity: 'alert', title: 'Below 75% CBSE Threshold', reason: 'Rule #ATT-03: Attendance at 72.0% is below the mandatory 75% requirement.', triggeredAt: '2026-10-20T08:00:00Z', resolved: false }
-    ]},
-    { id: 'STU-10A-06', rollNumber: 6, firstName: 'Ishaan', lastName: 'Gupta', gender: 'M', attendancePercentage: 97.0, academicAverage: 94.0, guardianName: 'Rajeev Gupta', primaryPhone: '+91 98291 55006', activeFlags: [] },
-    { id: 'STU-10A-07', rollNumber: 7, firstName: 'Priya', lastName: 'Sen', gender: 'F', attendancePercentage: 89.0, academicAverage: 74.0, guardianName: 'Arun Sen', primaryPhone: '+91 98291 55007', activeFlags: [] },
-    { id: 'STU-10A-08', rollNumber: 8, firstName: 'Tanvi', lastName: 'Shekhawat', gender: 'F', attendancePercentage: 93.0, academicAverage: 91.0, guardianName: 'Bhanwar Singh Shekhawat', primaryPhone: '+91 98291 55008', activeFlags: [] },
-    { id: 'STU-10A-09', rollNumber: 9, firstName: 'Harshvardhan', lastName: 'Joshi', gender: 'M', attendancePercentage: 81.0, academicAverage: 69.5, guardianName: 'Manoj Joshi', primaryPhone: '+91 98291 55009', activeFlags: [] },
-    { id: 'STU-10A-10', rollNumber: 10, firstName: 'Meera', lastName: 'Rajput', gender: 'F', attendancePercentage: 95.0, academicAverage: 86.0, guardianName: 'Surendra Rajput', primaryPhone: '+91 98291 55010', activeFlags: [] },
-    { id: 'STU-10A-11', rollNumber: 11, firstName: 'Devendra', lastName: 'Bhati', gender: 'M', attendancePercentage: 74.0, academicAverage: 73.0, guardianName: 'Govind Bhati', primaryPhone: '+91 98291 55011', activeFlags: [
+    { id: 'STU-10A-03', rollNumber: 3, firstName: 'Devendra', lastName: 'Bhati', gender: 'M', attendancePercentage: 74.0, academicAverage: 73.0, guardianName: 'Govind Bhati', primaryPhone: '+91 98291 55011', activeFlags: [
       { id: 'flag-05', code: 'ATT-03', type: 'attendance', severity: 'alert', title: 'Below 75% CBSE Threshold', reason: 'Rule #ATT-03: Attendance at 74.0% is below the mandatory 75% requirement.', triggeredAt: '2026-10-20T08:00:00Z', resolved: false }
     ]},
-    { id: 'STU-10A-12', rollNumber: 12, firstName: 'Riya', lastName: 'Choudhary', gender: 'F', attendancePercentage: 92.0, academicAverage: 84.0, guardianName: 'Mahaveer Choudhary', primaryPhone: '+91 98291 55012', activeFlags: [] },
+    { id: 'STU-10A-04', rollNumber: 4, firstName: 'Diya', lastName: 'Patel', gender: 'F', attendancePercentage: 94.0, academicAverage: 88.0, guardianName: 'Rajveer', primaryPhone: '+91 94602 21177', activeFlags: [] },
+    { id: 'STU-10A-05', rollNumber: 5, firstName: 'Harshvardhan', lastName: 'Joshi', gender: 'M', attendancePercentage: 81.0, academicAverage: 69.5, guardianName: 'Manoj Joshi', primaryPhone: '+91 98291 55009', activeFlags: [] },
+    { id: 'STU-10A-06', rollNumber: 6, firstName: 'Ishaan', lastName: 'Gupta', gender: 'M', attendancePercentage: 97.0, academicAverage: 94.0, guardianName: 'Rajeev Gupta', primaryPhone: '+91 98291 55006', activeFlags: [] },
+    { id: 'STU-10A-07', rollNumber: 7, firstName: 'Kabir', lastName: 'Verma', gender: 'M', attendancePercentage: 72.0, academicAverage: 65.0, guardianName: 'Ashok Verma', primaryPhone: '+91 98291 55005', activeFlags: [
+      { id: 'flag-03', code: 'ATT-03', type: 'attendance', severity: 'alert', title: 'Below 75% CBSE Threshold', reason: 'Rule #ATT-03: Attendance at 72.0% is below the mandatory 75% requirement.', triggeredAt: '2026-10-20T08:00:00Z', resolved: false }
+    ]},
+    { id: 'STU-10A-08', rollNumber: 8, firstName: 'Meera', lastName: 'Rajput', gender: 'F', attendancePercentage: 95.0, academicAverage: 86.0, guardianName: 'Surendra Rajput', primaryPhone: '+91 98291 55010', activeFlags: [] },
+    { id: 'STU-10A-09', rollNumber: 9, firstName: 'Priya', lastName: 'Sen', gender: 'F', attendancePercentage: 89.0, academicAverage: 74.0, guardianName: 'Arun Sen', primaryPhone: '+91 98291 55007', activeFlags: [] },
+    { id: 'STU-10A-10', rollNumber: 10, firstName: 'Riya', lastName: 'Choudhary', gender: 'F', attendancePercentage: 92.0, academicAverage: 84.0, guardianName: 'Mahaveer Choudhary', primaryPhone: '+91 98291 55012', activeFlags: [] },
+    { id: 'STU-10A-11', rollNumber: 11, firstName: 'Rohan', lastName: 'Mehta', gender: 'M', attendancePercentage: 91.5, academicAverage: 78.0, guardianName: 'Vijaya', primaryPhone: '+91 89479 03712', activeFlags: [] },
+    { id: 'STU-10A-12', rollNumber: 12, firstName: 'Tanvi', lastName: 'Shekhawat', gender: 'F', attendancePercentage: 93.0, academicAverage: 91.0, guardianName: 'Bhanwar Singh Shekhawat', primaryPhone: '+91 98291 55008', activeFlags: [] },
   ];
 
   // Baseline explicit students for Class 10-B

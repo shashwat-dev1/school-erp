@@ -69,10 +69,12 @@ export function createAttendanceRegisterWorkbook(options: AttendanceRegisterExpo
     throw new Error('Select at least one date and one student before exporting attendance.');
   }
 
-  // Stable ordering by class/section and roll number
+  // Stable ordering by class/section and student name (A-Z)
   const sortedStudents = [...students].sort((a, b) => {
     const classComp = a.classLabel.localeCompare(b.classLabel);
     if (classComp !== 0) return classComp;
+    const nameComp = (a.studentName || '').localeCompare(b.studentName || '', undefined, { sensitivity: 'base' });
+    if (nameComp !== 0) return nameComp;
     const rollA = typeof a.rollNumber === 'number' ? a.rollNumber : parseInt(String(a.rollNumber), 10) || 0;
     const rollB = typeof b.rollNumber === 'number' ? b.rollNumber : parseInt(String(b.rollNumber), 10) || 0;
     return rollA - rollB;

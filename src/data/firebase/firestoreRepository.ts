@@ -179,7 +179,12 @@ export class FirestoreRepository implements DataProvider {
     const snap = await getDocs(q);
     return snap.docs
       .map(d => d.data() as StudentRecord)
-      .sort((a, b) => a.rollNumber - b.rollNumber);
+      .sort((a, b) => {
+        const nameComp = (a.firstName || '').localeCompare(b.firstName || '', undefined, { sensitivity: 'base' })
+          || (a.lastName || '').localeCompare(b.lastName || '', undefined, { sensitivity: 'base' });
+        if (nameComp !== 0) return nameComp;
+        return a.rollNumber - b.rollNumber;
+      });
   }
 
   public async getSubjects(): Promise<Subject[]> {

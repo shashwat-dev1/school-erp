@@ -188,7 +188,13 @@ export const DailyAttendanceRegister: React.FC = () => {
           };
         });
 
-        initialRows.sort((a, b) => a.rollNumber - b.rollNumber);
+        // Sort ascending A-Z by student name (First Name then Last Name), matching school roll call conventions
+        initialRows.sort((a, b) => {
+          const nameComp = (a.firstName || '').localeCompare(b.firstName || '', undefined, { sensitivity: 'base' })
+            || (a.lastName || '').localeCompare(b.lastName || '', undefined, { sensitivity: 'base' });
+          if (nameComp !== 0) return nameComp;
+          return a.rollNumber - b.rollNumber;
+        });
         setAttendanceRows(initialRows);
 
         // Load WhatsApp notifications if session exists
@@ -197,7 +203,10 @@ export const DailyAttendanceRegister: React.FC = () => {
             setIsLoadingWhatsApp(true);
             const { jobs, stats } = await WhatsAppNotificationService.getSessionNotifications(session.id);
             if (isMounted) {
-              setWhatsappJobs(jobs);
+              const sortedJobs = [...jobs].sort((a, b) =>
+                (a.studentName || '').localeCompare(b.studentName || '', undefined, { sensitivity: 'base' })
+              );
+              setWhatsappJobs(sortedJobs);
               setWhatsappStats(stats);
             }
           } catch (waErr) {
@@ -314,7 +323,10 @@ export const DailyAttendanceRegister: React.FC = () => {
           savedSession,
           rawStudents
         );
-        setWhatsappJobs(processedJobs);
+        const sortedProcessedJobs = [...processedJobs].sort((a, b) =>
+          (a.studentName || '').localeCompare(b.studentName || '', undefined, { sensitivity: 'base' })
+        );
+        setWhatsappJobs(sortedProcessedJobs);
         const { stats } = await WhatsAppNotificationService.getSessionNotifications(savedSession.id);
         setWhatsappStats(stats);
       } catch (waErr) {
@@ -353,7 +365,10 @@ export const DailyAttendanceRegister: React.FC = () => {
     setIsLoadingWhatsApp(true);
     try {
       const { jobs, stats } = await WhatsAppNotificationService.getSessionNotifications(existingSession.id);
-      setWhatsappJobs(jobs);
+      const sortedJobs = [...jobs].sort((a, b) =>
+        (a.studentName || '').localeCompare(b.studentName || '', undefined, { sensitivity: 'base' })
+      );
+      setWhatsappJobs(sortedJobs);
       setWhatsappStats(stats);
     } catch (err) {
       console.warn('Manual WhatsApp refresh failed:', err);
@@ -371,7 +386,10 @@ export const DailyAttendanceRegister: React.FC = () => {
     const interval = setInterval(async () => {
       try {
         const { jobs, stats } = await WhatsAppNotificationService.getSessionNotifications(existingSession.id);
-        setWhatsappJobs(jobs);
+        const sortedJobs = [...jobs].sort((a, b) =>
+          (a.studentName || '').localeCompare(b.studentName || '', undefined, { sensitivity: 'base' })
+        );
+        setWhatsappJobs(sortedJobs);
         setWhatsappStats(stats);
       } catch {
         // silent background poll
@@ -496,6 +514,8 @@ export const DailyAttendanceRegister: React.FC = () => {
     const studentList = Array.from(studentMap.values()).sort((a, b) => {
       const classComp = a.classLabel.localeCompare(b.classLabel);
       if (classComp !== 0) return classComp;
+      const nameComp = (a.studentName || '').localeCompare(b.studentName || '', undefined, { sensitivity: 'base' });
+      if (nameComp !== 0) return nameComp;
       const rollA = typeof a.rollNumber === 'number' ? a.rollNumber : parseInt(String(a.rollNumber), 10) || 0;
       const rollB = typeof b.rollNumber === 'number' ? b.rollNumber : parseInt(String(b.rollNumber), 10) || 0;
       return rollA - rollB;
@@ -932,7 +952,7 @@ export const DailyAttendanceRegister: React.FC = () => {
                               flexShrink: 0,
                             }}
                           >
-                            {row.rollNumber}
+                            {index + 1}
                           </div>
 
                           {/* Student Name Breakdown */}

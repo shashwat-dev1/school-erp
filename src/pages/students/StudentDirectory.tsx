@@ -162,6 +162,13 @@ export const StudentDirectory: React.FC = () => {
       }
 
       return matchesSearch && matchesClass && matchesAttendance;
+    }).sort((a, b) => {
+      const classComp = a.classLabel.localeCompare(b.classLabel);
+      if (classComp !== 0) return classComp;
+      const nameComp = (a.firstName || '').localeCompare(b.firstName || '', undefined, { sensitivity: 'base' })
+        || (a.lastName || '').localeCompare(b.lastName || '', undefined, { sensitivity: 'base' });
+      if (nameComp !== 0) return nameComp;
+      return a.rollNumber - b.rollNumber;
     });
   }, [students, searchQuery, selectedClass, attendanceFilter]);
 

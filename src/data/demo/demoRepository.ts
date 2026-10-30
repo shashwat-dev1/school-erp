@@ -440,7 +440,14 @@ class DemoRepository implements DataProvider {
 
   public async getClassStudents(classId: string): Promise<StudentRecord[]> {
     const store = this.loadStore();
-    return store.students.filter(s => s.classId === classId);
+    return store.students
+      .filter(s => s.classId === classId)
+      .sort((a, b) => {
+        const nameComp = (a.firstName || '').localeCompare(b.firstName || '', undefined, { sensitivity: 'base' })
+          || (a.lastName || '').localeCompare(b.lastName || '', undefined, { sensitivity: 'base' });
+        if (nameComp !== 0) return nameComp;
+        return a.rollNumber - b.rollNumber;
+      });
   }
 
   public async updateClassTeacher(
