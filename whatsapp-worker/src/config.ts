@@ -59,9 +59,12 @@ export function loadWorkerConfig(): WorkerConfig {
   const sendEnabled = get('WHATSAPP_SEND_ENABLED', 'false') === 'true';
   const dryRun = get('WHATSAPP_DRY_RUN', 'true') === 'true';
 
-  // Normalize allowlist phone numbers to pure digits
-  const rawAllowlist = get('WHATSAPP_TEST_ALLOWLIST') || get('WHATSAPP_TEST_RECIPIENTS') || '';
-  const testAllowlist = rawAllowlist
+  // Normalize allowlist phone numbers to pure digits (Strictly Shashwat only by default)
+  const allowedPhoneNumbers: string[] = (
+    get('WHATSAPP_TEST_ALLOWLIST') ||
+    get('WHATSAPP_TEST_RECIPIENTS') ||
+    '9009519718'
+  )
     .split(',')
     .map(s => s.trim().replace(/\D/g, ''))
     .filter(Boolean);
@@ -89,7 +92,7 @@ export function loadWorkerConfig(): WorkerConfig {
     sendEnabled,
     dryRun,
     authDir,
-    testAllowlist,
+    testAllowlist: allowedPhoneNumbers,
     workerPort,
     firebase,
   };

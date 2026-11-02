@@ -99,12 +99,12 @@ export const WhatsAppOperationsHub: React.FC = () => {
     if (isMatch) {
       setTestResult({
         allowed: true,
-        reason: `Verified Test Allowlist Member: Recipient matches authorized developer/admin number. Live WhatsApp messages will be dispatched!`,
+        reason: `Verified Test Allowlist Member: Recipient matches authorized number (${clean} - Shashwat). Live WhatsApp messages will be dispatched!`,
       });
     } else {
       setTestResult({
         allowed: false,
-        reason: `Filtered by Safety Guard: ${clean} is not in VITE_WHATSAPP_TEST_ALLOWLIST. Message will be safely marked as 'skipped' to protect parents during testing.`,
+        reason: `Filtered by Safety Guard: ${clean} is not in WHATSAPP_TEST_ALLOWLIST. Message will be safely marked as 'skipped' to protect parents during testing. Only Shashwat (9009519718) is authorized.`,
       });
     }
   };
@@ -252,7 +252,7 @@ export const WhatsAppOperationsHub: React.FC = () => {
             {allowlist.length} Authorized
           </div>
           <div style={{ fontSize: '0.75rem', color: '#64748B' }}>
-            {allowlist.length > 0 ? allowlist.join(', ') : 'Open cohort'}
+            {allowlist.length > 0 ? `${allowlist.join(', ')} (Shashwat only)` : 'Open cohort'}
           </div>
         </div>
 
@@ -400,8 +400,8 @@ export const WhatsAppOperationsHub: React.FC = () => {
             }}
           >
             {activeTemplateTab === 'present'
-              ? PHASE_CONFIG.whatsapp.templates.present('Aarav Singhania', '02 Nov 2026', 'Shashwat')
-              : PHASE_CONFIG.whatsapp.templates.absent('Aarav Singhania', '02 Nov 2026', 'Shashwat')}
+              ? PHASE_CONFIG.whatsapp.templates.present('[Student Name]', '02 Nov 2026', '[Parent Name]')
+              : PHASE_CONFIG.whatsapp.templates.absent('[Student Name]', '02 Nov 2026', '[Parent Name]')}
           </div>
         </div>
 
