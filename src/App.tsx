@@ -27,6 +27,7 @@ import { ClassTeacherAssignments } from './pages/admin/ClassTeacherAssignments';
 import { SubjectFacultyAssignments } from './pages/admin/SubjectFacultyAssignments';
 import { RolePermissionMatrix } from './pages/admin/RolePermissionMatrix';
 import { StaffDirectory } from './pages/admin/StaffDirectory';
+import { WhatsAppOperationsHub } from './pages/admin/WhatsAppOperationsHub';
 
 // Assessment Cycles & Marks Entry
 import { AssessmentList } from './pages/academics/AssessmentList';
@@ -241,6 +242,24 @@ export const App: React.FC = () => {
           element={
             <RoleGuard allowedRoles={['principal']}>
               <RolePermissionMatrix />
+            </RoleGuard>
+          }
+        />
+
+        {/* WhatsApp Operations Hub (Principal & Class Teacher Monitoring) */}
+        <Route
+          path="admin/whatsapp"
+          element={
+            <RoleGuard allowedRoles={['principal', 'class_teacher']}>
+              <WhatsAppOperationsHub />
+            </RoleGuard>
+          }
+        />
+        <Route
+          path="whatsapp"
+          element={
+            <RoleGuard allowedRoles={['principal', 'class_teacher']}>
+              <WhatsAppOperationsHub />
             </RoleGuard>
           }
         />

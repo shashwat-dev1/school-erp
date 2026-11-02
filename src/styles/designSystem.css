@@ -1,164 +1,134 @@
-/**
- * HanuJai High School ERP — Bold Pop Design System & Tokens
- * Vibrant, High-Energy, Cohesive, Accessible Pop Institutional Aesthetics
- *
- * The 8 Signature Pop Colours:
- * - Electric Blue:    #1F6BFF (Primary actions, active nav, selected controls, key links)
- * - Burnt Vermilion:  #E4572E (Highlights, secondary emphasis, key accents)
- * - Lime Green:       #B7F000 (Positive indicators, interactive highlights - dark text #202033)
- * - Canary Yellow:    #FFE600 (Attention highlights, important labels - dark text #202033)
- * - Tangerine Orange: #FF7A00 (Secondary actions, chart series, meaningful emphasis)
- * - Deep Violet:      #6425D0 (Secondary branding, tabs, chart series, nav accents)
- * - Apple Green:      #7ED957 (Positive performance, turnout, supporting elements)
- * - Coral Red:        #FF4D4F (Warnings, errors, negative deltas, absences)
- *
- * Neutrals:
- * - Canvas:          #F5F7FC (Cool near-white)
- * - Surface:         #FFFFFF (Crisp white)
- * - Text Primary:    #202033 (Deep charcoal)
- */
-
 :root {
   /* =========================================================================
-   * 1. THE EXACT 8 BOLD POP COLOURS
+   * REGAL ACADEMIC SAAS CORE PALETTE (DESIGN.md)
+   * Campus: HanuJai High School, Jaipur, Rajasthan
    * ========================================================================= */
-  --pop-electric-blue: #1F6BFF;
-  --pop-electric-blue-hover: #1455D9;
-  --pop-electric-blue-active: #0D42B0;
-  --pop-electric-blue-tint: #EBF2FF;
-  --pop-electric-blue-glow: rgba(31, 107, 255, 0.25);
+  --hhs-royal-navy: #0A1931;
+  --hhs-royal-navy-hover: #152238;
+  --hhs-royal-navy-surface: #152238;
+  --hhs-royal-navy-deep: #071224;
 
-  --pop-burnt-vermilion: #E4572E;
-  --pop-burnt-vermilion-hover: #D1471F;
-  --pop-burnt-vermilion-active: #B53B18;
-  --pop-burnt-vermilion-tint: #FDECE6;
-  --pop-burnt-vermilion-glow: rgba(228, 87, 46, 0.25);
+  --hhs-gold: #F5A623;
+  --hhs-gold-hover: #D97706;
+  --hhs-gold-light: #FEF3C7;
+  --hhs-gold-text: #92400E;
+  --hhs-gold-glow: rgba(245, 166, 35, 0.25);
 
-  /* Aliases for compatibility */
-  --pop-vermilion: var(--pop-burnt-vermilion);
-  --pop-vermilion-tint: var(--pop-burnt-vermilion-tint);
-  --pop-hot-pink: var(--pop-burnt-vermilion);
-  --pop-hot-pink-tint: var(--pop-burnt-vermilion-tint);
+  --hhs-emerald: #10B981;
+  --hhs-emerald-hover: #059669;
+  --hhs-emerald-light: #ECFDF5;
+  --hhs-emerald-text: #065F46;
+  --hhs-emerald-glow: rgba(16, 185, 129, 0.25);
 
-  --pop-lime-green: #B7F000;
-  --pop-lime-green-hover: #A5D900;
-  --pop-lime-green-tint: #F5FDDE;
-  --pop-lime-green-glow: rgba(183, 240, 0, 0.35);
+  --hhs-crimson: #EF4444;
+  --hhs-crimson-hover: #DC2626;
+  --hhs-crimson-light: #FEF2F2;
+  --hhs-crimson-text: #991B1B;
+  --hhs-crimson-glow: rgba(239, 68, 68, 0.25);
 
-  --pop-canary-yellow: #FFE600;
-  --pop-canary-yellow-hover: #E6CF00;
-  --pop-canary-yellow-tint: #FFFDE0;
-  --pop-canary-yellow-glow: rgba(255, 230, 0, 0.35);
+  --hhs-indigo: #4F46E5;
+  --hhs-indigo-light: #EEF2FF;
+  --hhs-indigo-text: #3730A3;
 
-  --pop-tangerine-orange: #FF7A00;
-  --pop-tangerine-orange-hover: #E66E00;
-  --pop-tangerine-orange-tint: #FFF2E5;
-  --pop-tangerine-orange-glow: rgba(255, 122, 0, 0.25);
+  --hhs-teal: #0D9488;
+  --hhs-teal-light: #F0FDFA;
+  --hhs-teal-text: #115E59;
 
-  --pop-deep-violet: #6425D0;
-  --pop-deep-violet-hover: #531CB2;
-  --pop-deep-violet-active: #431393;
-  --pop-deep-violet-tint: #F0E8FF;
-  --pop-deep-violet-glow: rgba(100, 37, 208, 0.25);
+  --hhs-violet: #8B5CF6;
+  --hhs-violet-light: #F5F3FF;
+  --hhs-violet-text: #5B21B6;
 
-  --pop-apple-green: #7ED957;
-  --pop-apple-green-hover: #6BCA42;
-  --pop-apple-green-tint: #F1FBED;
-  --pop-apple-green-glow: rgba(126, 217, 87, 0.25);
+  --hhs-sky: #0284C7;
+  --hhs-sky-light: #F0F9FF;
+  --hhs-sky-text: #075985;
 
-  --pop-coral-red: #FF4D4F;
-  --pop-coral-red-hover: #E03B3D;
-  --pop-coral-red-active: #C42729;
-  --pop-coral-red-tint: #FFECEC;
-  --pop-coral-red-glow: rgba(255, 77, 79, 0.25);
+  /* Surfaces & Canvas */
+  --hhs-canvas: #F8FAFC;
+  --hhs-surface: #FFFFFF;
+  --hhs-surface-muted: #F1F5F9;
+  --hhs-surface-hover: #F8FAFC;
 
-  /* =========================================================================
-   * 2. SURFACE & NEUTRAL ARCHITECTURE
-   * ========================================================================= */
-  --hhs-canvas: #F5F7FC;           /* Cool near-white page background */
-  --hhs-surface: #FFFFFF;          /* Crisp white surfaces */
-  --hhs-surface-muted: #EEF2FB;    /* Table headers, read-only containers */
-  --hhs-surface-hover: #E4EBF7;    /* Hover state */
-  
   /* Typographic Hierarchy & Contrast */
-  --hhs-text-primary: #202033;     /* Deep charcoal text */
-  --hhs-text-secondary: #56577A;   /* Muted body text */
-  --hhs-text-muted: #8B8DA8;       /* Disabled, placeholder */
-  
+  --hhs-text-primary: #0F172A;
+  --hhs-text-secondary: #475569;
+  --hhs-text-muted: #94A3B8;
+
   /* Borders & Dividers */
-  --hhs-border: #E2E8F4;           /* Crisp cool border */
-  --hhs-border-strong: #CBD5E8;
-  --hhs-border-focus: #1F6BFF;     /* Electric Blue focus ring */
-  
-  /* Brand & Actions */
-  --hhs-brand-navy: #202033;
-  --hhs-brand-charcoal: #202033;
-  --hhs-primary: #1F6BFF;          /* Electric Blue primary action */
-  --hhs-primary-hover: #1455D9;
-  --hhs-primary-active: #0D42B0;
-  --hhs-primary-light: #EBF2FF;    /* Electric Blue highlight surface */
-  --hhs-primary-text: #1F6BFF;
-  
-  /* Secondary Brand */
-  --hhs-brand-secondary: #6425D0;  /* Deep Violet */
-  --hhs-brand-secondary-light: #F0E8FF;
+  --hhs-border: #E2E8F0;
+  --hhs-border-strong: #CBD5E1;
+  --hhs-border-focus: #F5A623;
 
-  /* Semantic Indicators Mapped to Pop Palette */
-  --hhs-accent: #E4572E;           /* Burnt Vermilion supporting state */
-  --hhs-accent-hover: #D1471F;
-  --hhs-accent-text: #B53B18;      /* Accessible vermilion for text */
-  --hhs-accent-light: #FDECE6;
-  
-  --hhs-danger: #FF4D4F;           /* Coral Red for genuine errors & absences */
-  --hhs-danger-hover: #E03B3D;
-  --hhs-danger-text: #D92527;
-  --hhs-danger-light: #FFECEC;
-  
-  --hhs-success: #7ED957;          /* Apple Green for positive performance */
-  --hhs-success-hover: #6BCA42;
-  --hhs-success-text: #2B7A10;
-  --hhs-success-light: #F1FBED;
+  /* Primary Action: Royal Navy */
+  --hhs-primary: #0A1931;
+  --hhs-primary-hover: #152238;
+  --hhs-primary-active: #071224;
+  --hhs-primary-light: #EEF2FF;
+  --hhs-primary-text: #0A1931;
 
-  --hhs-warning: #FF7A00;          /* Tangerine Orange */
-  --hhs-warning-hover: #E66E00;
-  --hhs-warning-text: #D46500;
-  --hhs-warning-light: #FFF2E5;
+  /* Legacy & Pop Mapping for backward compatibility */
+  --pop-electric-blue: #0A1931;
+  --pop-electric-blue-hover: #152238;
+  --pop-electric-blue-active: #071224;
+  --pop-electric-blue-tint: #EEF2FF;
+  --pop-burnt-vermilion: #F5A623;
+  --pop-burnt-vermilion-hover: #D97706;
+  --pop-burnt-vermilion-tint: #FEF3C7;
+  --pop-vermilion: #F5A623;
+  --pop-vermilion-tint: #FEF3C7;
+  --pop-lime-green: #10B981;
+  --pop-lime-green-tint: #ECFDF5;
+  --pop-canary-yellow: #F5A623;
+  --pop-canary-yellow-tint: #FEF3C7;
+  --pop-tangerine-orange: #D97706;
+  --pop-tangerine-orange-tint: #FEF3C7;
+  --pop-deep-violet: #4F46E5;
+  --pop-deep-violet-tint: #EEF2FF;
+  --pop-apple-green: #10B981;
+  --pop-apple-green-tint: #ECFDF5;
+  --pop-coral-red: #EF4444;
+  --pop-coral-red-hover: #DC2626;
+  --pop-coral-red-tint: #FEF2F2;
 
-  --hhs-info: #6425D0;             /* Deep Violet */
-  --hhs-info-light: #F0E8FF;
+  --hhs-accent: #F5A623;
+  --hhs-accent-hover: #D97706;
+  --hhs-accent-light: #FEF3C7;
+  --hhs-accent-text: #92400E;
 
-  --hhs-highlight: #FFE600;        /* Canary Yellow */
-  --hhs-highlight-text: #202033;
-  --hhs-highlight-light: #FFFDE0;
+  --hhs-danger: #EF4444;
+  --hhs-danger-hover: #DC2626;
+  --hhs-danger-light: #FEF2F2;
+  --hhs-danger-text: #991B1B;
 
-  --hhs-positive-pop: #B7F000;     /* Lime Green */
-  --hhs-positive-pop-text: #202033;
-  --hhs-positive-pop-light: #F5FDDE;
-  
+  --hhs-success: #10B981;
+  --hhs-success-hover: #059669;
+  --hhs-success-light: #ECFDF5;
+  --hhs-success-text: #065F46;
+
+  --hhs-warning: #F5A623;
+  --hhs-warning-light: #FEF3C7;
+  --hhs-warning-text: #92400E;
+
   /* Layout Metrics */
-  --hhs-sidebar-width: 240px;
+  --hhs-sidebar-width: 260px;
   --hhs-sidebar-collapsed: 64px;
-  --hhs-topbar-height: 58px;
-  --hhs-control-height: 38px;
-  --hhs-control-height-lg: 42px;
+  --hhs-topbar-height: 60px;
+  --hhs-control-height: 40px;
+  --hhs-control-height-lg: 44px;
   --hhs-control-height-sm: 32px;
-  
-  /* Radius Metrics */
-  --hhs-radius-sm: 4px;
-  --hhs-radius-base: 6px;          /* Inputs, buttons, tags */
-  --hhs-radius-container: 8px;     /* Tables, cards */
-  --hhs-radius-modal: 12px;        /* Modals & dialogs */
-  --hhs-radius-pill: 9999px;
-  
-  /* Premium Shadows with Pop Influence */
-  --hhs-shadow-level-1: 0 1px 3px rgba(32, 32, 51, 0.05);
-  --hhs-shadow-level-2: 0 3px 10px rgba(32, 32, 51, 0.08);
-  --hhs-shadow-level-3: 0 10px 28px rgba(32, 32, 51, 0.12);
-  --hhs-shadow-pop-blue: 0 4px 14px rgba(31, 107, 255, 0.28);
-  --hhs-shadow-pop-vermilion: 0 4px 14px rgba(228, 87, 46, 0.28);
-  --hhs-shadow-pop-violet: 0 4px 14px rgba(100, 37, 208, 0.28);
 
-  /* Safe Area Insets for Modern Mobile Displays */
+  /* Shapes (DESIGN.md Level 2 Rounded) */
+  --hhs-radius-sm: 4px;
+  --hhs-radius-base: 8px;
+  --hhs-radius-container: 12px;
+  --hhs-radius-modal: 16px;
+  --hhs-radius-pill: 9999px;
+
+  /* Elevation Tiers (Tinted with Navy #0A1931) */
+  --hhs-shadow-level-1: 0 1px 3px 0 rgba(10, 25, 49, 0.05), 0 1px 2px -1px rgba(10, 25, 49, 0.04);
+  --hhs-shadow-level-2: 0 4px 6px -1px rgba(10, 25, 49, 0.08), 0 2px 4px -2px rgba(10, 25, 49, 0.04);
+  --hhs-shadow-level-3: 0 10px 15px -3px rgba(10, 25, 49, 0.08), 0 4px 6px -4px rgba(10, 25, 49, 0.03);
+  --hhs-shadow-level-4: 0 20px 25px -5px rgba(10, 25, 49, 0.12), 0 8px 10px -6px rgba(10, 25, 49, 0.06);
+
   --safe-top: env(safe-area-inset-top, 0px);
   --safe-bottom: env(safe-area-inset-bottom, 0px);
   --safe-left: env(safe-area-inset-left, 0px);
@@ -198,6 +168,7 @@ table td.numeric,
 
 /* Typography Hierarchy */
 .hhs-headline-xl {
+  font-family: 'Plus Jakarta Sans', -apple-system, sans-serif;
   font-size: 1.65rem; /* ~26px */
   font-weight: 700;
   line-height: 2.1rem;
@@ -206,6 +177,7 @@ table td.numeric,
 }
 
 .hhs-headline-lg {
+  font-family: 'Plus Jakarta Sans', -apple-system, sans-serif;
   font-size: 1.3rem; /* ~21px */
   font-weight: 700;
   line-height: 1.75rem;
@@ -214,6 +186,7 @@ table td.numeric,
 }
 
 .hhs-headline-md {
+  font-family: 'Plus Jakarta Sans', -apple-system, sans-serif;
   font-size: 1.1rem; /* ~17.5px */
   font-weight: 600;
   line-height: 1.5rem;
@@ -222,6 +195,7 @@ table td.numeric,
 }
 
 .hhs-headline-sm {
+  font-family: 'Plus Jakarta Sans', -apple-system, sans-serif;
   font-size: 0.95rem; /* ~15px */
   font-weight: 600;
   line-height: 1.4rem;
@@ -278,9 +252,9 @@ table td.numeric,
 
 /* Primary Button: Electric Blue (#1F6BFF) */
 .hhs-btn-primary {
-  background-color: var(--pop-electric-blue);
+  background-color: var(--hhs-royal-navy);
   color: #FFFFFF;
-  box-shadow: 0 2px 8px rgba(31, 107, 255, 0.28);
+  box-shadow: 0 2px 6px rgba(10, 25, 49, 0.25);
 }
 
 .hhs-btn-primary:hover:not(:disabled) {
@@ -817,7 +791,8 @@ table td.numeric,
 .hhs-sidebar {
   width: var(--hhs-sidebar-width);
   height: 100vh;
-  background-color: var(--hhs-surface);
+  background-color: var(--hhs-royal-navy);
+  border-right: 1px solid rgba(255, 255, 255, 0.08);
   border-right: 1px solid var(--hhs-border);
   display: flex;
   flex-direction: column;

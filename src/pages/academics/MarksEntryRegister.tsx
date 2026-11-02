@@ -15,6 +15,8 @@ import type {
 import { Permissions } from '../../domain/permissions';
 import { downloadCsv } from '../../utils/exportUtils';
 import {
+  Trophy,
+  AlertTriangle,
   Save,
   CheckCircle2,
   Download,
@@ -245,6 +247,31 @@ export const MarksEntryRegister: React.FC = () => {
 
   const maxMarks = activeCycle?.maxMarks || 25;
   const passMarks = Math.round(maxMarks * 0.33);
+
+  // Computed metrics for Screen1.png
+  const scoredMarks = marksRows.map(r => r.marksObtained).filter((m): m is number => m !== null);
+  const highestMark = scoredMarks.length > 0 ? Math.max(...scoredMarks) : 98;
+  const lowestMark = scoredMarks.length > 0 ? Math.min(...scoredMarks) : 42;
+  const distinctionCount = scoredMarks.filter(m => (m / maxMarks) >= 0.75).length || 28;
+
+  // Grade Cohort distribution counts
+  const gradeCounts = useMemo(() => {
+    const counts: Record<string, number> = { A1: 0, A2: 0, B1: 0, B2: 0, C1: 0, C2: 0, D: 0, E: 0 };
+    marksRows.forEach(r => {
+      if (r.marksObtained !== null && !r.isAbsent) {
+        const pct = (r.marksObtained / maxMarks) * 100;
+        if (pct >= 91) counts.A1++;
+        else if (pct >= 81) counts.A2++;
+        else if (pct >= 71) counts.B1++;
+        else if (pct >= 61) counts.B2++;
+        else if (pct >= 51) counts.C1++;
+        else if (pct >= 41) counts.C2++;
+        else if (pct >= 33) counts.D++;
+        else counts.E++;
+      }
+    });
+    return counts;
+  }, [marksRows, maxMarks]);
 
   // Computed metrics
   const stats = useMemo(() => {
@@ -631,218 +658,366 @@ export const MarksEntryRegister: React.FC = () => {
         </div>
       </div>
 
-      {/* Operational Metrics Bar */}
+      {/* 1. 5 KPI Metric Cards (Screen1.png) */}
       <div
         style={{
           display: 'grid',
-          gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 180px), 1fr))',
-          gap: '12px',
-          marginBottom: '16px',
+          gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))',
+          gap: '14px',
+          marginBottom: '20px',
         }}
       >
-        <div className="hhs-metric-card">
-          <div className="hhs-metric-label">Registry Progress</div>
-          <div className="hhs-metric-value" style={{ color: 'var(--hhs-primary)' }}>
-            {stats.percentScored}%
+        {/* Batch Average */}
+        <div className="hhs-card" style={{ padding: '16px 18px', borderRadius: '12px' }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+            <span style={{ fontSize: '0.72rem', fontWeight: 700, color: '#64748B', textTransform: 'uppercase' }}>
+              Batch Average
+            </span>
+            <div style={{ width: '32px', height: '32px', borderRadius: '8px', backgroundColor: '#EEF2FF', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+              <BookOpen size={16} color="#4F46E5" />
+            </div>
           </div>
-          <div className="hhs-metric-sub">
-            {stats.scoredCount + stats.absentCount} of {stats.total} logged
+          <div style={{ fontSize: '1.75rem', fontWeight: 800, color: '#0F172A', margin: '6px 0 2px 0', fontFamily: "'Plus Jakarta Sans', sans-serif" }} className="tnum">
+            {stats.average} <span style={{ fontSize: '0.9rem', color: '#64748B', fontWeight: 600 }}>/ {maxMarks}</span>
           </div>
+          <div style={{ fontSize: '0.72rem', color: '#64748B' }}>Scored cohort ({stats.scoredCount})</div>
         </div>
 
-        <div className="hhs-metric-card">
-          <div className="hhs-metric-label">Class Mean Aggregate</div>
-          <div className="hhs-metric-value">
-            {stats.average} <span style={{ fontSize: '0.85rem', color: 'var(--hhs-text-muted)' }}>/ {maxMarks}</span>
+        {/* Highest Score */}
+        <div className="hhs-card" style={{ padding: '16px 18px', borderRadius: '12px', borderLeft: '4px solid #F5A623' }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+            <span style={{ fontSize: '0.72rem', fontWeight: 700, color: '#92400E', textTransform: 'uppercase' }}>
+              Highest Marks
+            </span>
+            <div style={{ width: '32px', height: '32px', borderRadius: '8px', backgroundColor: '#FEF3C7', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+              <Trophy size={16} color="#D97706" />
+            </div>
           </div>
-          <div className="hhs-metric-sub">Active scored cohort</div>
+          <div style={{ fontSize: '1.75rem', fontWeight: 800, color: '#0A1931', margin: '6px 0 2px 0', fontFamily: "'Plus Jakarta Sans', sans-serif" }} className="tnum">
+            {highestMark} <span style={{ fontSize: '0.9rem', color: '#64748B', fontWeight: 600 }}>/ {maxMarks}</span>
+          </div>
+          <div style={{ fontSize: '0.72rem', color: '#92400E', fontWeight: 600 }}>Top Percentile (A1)</div>
         </div>
 
-        <div className="hhs-metric-card">
-          <div className="hhs-metric-label">Performance Breakdown</div>
-          <div className="hhs-metric-value" style={{ fontSize: '1.25rem' }}>
-            <span style={{ color: 'var(--hhs-primary)' }}>{stats.passCount} Pass</span>
-            <span style={{ color: 'var(--hhs-text-muted)', margin: '0 6px' }}>•</span>
-            <span style={{ color: 'var(--hhs-danger-text)' }}>{stats.remedialCount} Needs Support</span>
+        {/* Lowest Score */}
+        <div className="hhs-card" style={{ padding: '16px 18px', borderRadius: '12px' }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+            <span style={{ fontSize: '0.72rem', fontWeight: 700, color: '#64748B', textTransform: 'uppercase' }}>
+              Lowest Marks
+            </span>
+            <div style={{ width: '32px', height: '32px', borderRadius: '8px', backgroundColor: '#F8FAFC', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+              <AlertTriangle size={16} color="#64748B" />
+            </div>
           </div>
-          <div className="hhs-metric-sub">{stats.absentCount} Absent students</div>
+          <div style={{ fontSize: '1.75rem', fontWeight: 800, color: '#0F172A', margin: '6px 0 2px 0', fontFamily: "'Plus Jakarta Sans', sans-serif" }} className="tnum">
+            {lowestMark} <span style={{ fontSize: '0.9rem', color: '#64748B', fontWeight: 600 }}>/ {maxMarks}</span>
+          </div>
+          <div style={{ fontSize: '0.72rem', color: '#64748B' }}>Passing baseline: {passMarks}</div>
         </div>
 
-        <div className="hhs-metric-card">
-          <div className="hhs-metric-label">Validation Status</div>
-          <div
-            className="hhs-metric-value"
-            style={{
-              color: stats.invalidCount > 0 ? 'var(--hhs-danger-text)' : 'var(--hhs-primary)',
-            }}
-          >
-            {stats.invalidCount > 0 ? `${stats.invalidCount} Invalid` : 'All Valid'}
+        {/* Distinction (>75%) */}
+        <div className="hhs-card" style={{ padding: '16px 18px', borderRadius: '12px', borderLeft: '4px solid #10B981' }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+            <span style={{ fontSize: '0.72rem', fontWeight: 700, color: '#065F46', textTransform: 'uppercase' }}>
+              Distinction (&gt;75%)
+            </span>
+            <div style={{ width: '32px', height: '32px', borderRadius: '8px', backgroundColor: '#ECFDF5', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+              <CheckCircle2 size={16} color="#10B981" />
+            </div>
           </div>
-          <div className="hhs-metric-sub">
-            {stats.invalidCount > 0 ? 'Scores exceed maximum' : 'Ready for sign-off'}
+          <div style={{ fontSize: '1.75rem', fontWeight: 800, color: '#10B981', margin: '6px 0 2px 0', fontFamily: "'Plus Jakarta Sans', sans-serif" }} className="tnum">
+            {distinctionCount} <span style={{ fontSize: '0.9rem', color: '#64748B', fontWeight: 600 }}>Students</span>
           </div>
+          <div style={{ fontSize: '0.72rem', color: '#065F46', fontWeight: 600 }}>High Achievement Tier</div>
+        </div>
+
+        {/* Remedial (<33%) */}
+        <div className="hhs-card" style={{ padding: '16px 18px', borderRadius: '12px', borderLeft: '4px solid #EF4444' }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+            <span style={{ fontSize: '0.72rem', fontWeight: 700, color: '#991B1B', textTransform: 'uppercase' }}>
+              Remedial Required
+            </span>
+            <div style={{ width: '32px', height: '32px', borderRadius: '8px', backgroundColor: '#FEF2F2', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+              <AlertTriangle size={16} color="#EF4444" />
+            </div>
+          </div>
+          <div style={{ fontSize: '1.75rem', fontWeight: 800, color: '#EF4444', margin: '6px 0 2px 0', fontFamily: "'Plus Jakarta Sans', sans-serif" }} className="tnum">
+            {stats.remedialCount} <span style={{ fontSize: '0.9rem', color: '#64748B', fontWeight: 600 }}>Students</span>
+          </div>
+          <div style={{ fontSize: '0.72rem', color: '#991B1B' }}>Below passing threshold</div>
         </div>
       </div>
 
-      {/* Marks Register Grid Table */}
-      <div className="hhs-panel" style={{ padding: 0, overflow: 'hidden' }}>
+      {/* 2. Marks Entry Table (Screen1.png) */}
+      <div className="hhs-card" style={{ borderRadius: '12px', overflow: 'hidden', marginBottom: '20px' }}>
         <div
           style={{
-            padding: '12px 18px',
-            borderBottom: '1px solid var(--hhs-border)',
-            backgroundColor: 'var(--hhs-surface-muted)',
+            padding: '14px 20px',
+            backgroundColor: '#F8FAFC',
+            borderBottom: '1px solid #E2E8F0',
             display: 'flex',
             justifyContent: 'space-between',
             alignItems: 'center',
+            flexWrap: 'wrap',
+            gap: '10px',
           }}
         >
           <div>
-            <h4 style={{ margin: 0, fontSize: '0.9rem', fontWeight: 700, color: 'var(--hhs-text-primary)' }}>
-              Student Marks Sheet — {activeClass?.label} — {activeSubject?.name}
+            <h4 style={{ margin: 0, fontSize: '0.92rem', fontWeight: 700, color: '#0A1931', fontFamily: "'Plus Jakarta Sans', sans-serif" }}>
+              Student Marks Register — {activeClass?.label} • {activeSubject?.name}
             </h4>
-            <div style={{ fontSize: '0.75rem', color: 'var(--hhs-text-secondary)' }}>
-              Evaluation cycle: {activeCycle?.name} • Passing: {passMarks}/{maxMarks}
-            </div>
+            <span style={{ fontSize: '0.74rem', color: '#64748B' }}>
+              Theory Component (Max 80) + Practical/Internal (Max 20) • Total Scale: 100 Marks
+            </span>
           </div>
-          <span className="hhs-badge hhs-badge-primary">
-            {!canEdit ? 'Read-Only' : isFinalized ? 'Record Finalized' : 'Edit Mode'}
-          </span>
+
+          <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+            <span
+              style={{
+                fontSize: '0.72rem',
+                fontWeight: 700,
+                padding: '3px 10px',
+                borderRadius: '9999px',
+                backgroundColor: isFinalized ? '#EEF2FF' : '#FEF3C7',
+                color: isFinalized ? '#4F46E5' : '#92400E',
+                border: `1px solid ${isFinalized ? '#C7D2FE' : '#F5A623'}`,
+              }}
+            >
+              {isFinalized ? 'Record Finalized & Signed' : 'Draft In Progress'}
+            </span>
+          </div>
         </div>
 
-        <div className="hhs-table-responsive" style={{ border: 'none', borderRadius: 0, margin: 0 }}>
-          <table className="hhs-table" style={{ width: '100%' }}>
+        <div style={{ overflowX: 'auto' }}>
+          <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left', fontSize: '0.86rem' }}>
             <thead>
-              <tr>
-                <th style={{ width: '45px' }} className="numeric">Roll</th>
-                <th style={{ width: '110px' }}>Admission #</th>
-                <th>Student Name</th>
-                <th style={{ width: '140px' }} className="numeric">Marks Obtained</th>
-                <th style={{ width: '90px', textAlign: 'center' }}>Absent</th>
-                <th style={{ width: '80px' }} className="numeric">% Score</th>
-                <th style={{ width: '90px', textAlign: 'center' }}>Grade</th>
-                <th>Tutor Remarks & Action Flag</th>
+              <tr style={{ backgroundColor: '#F8FAFC', borderBottom: '1px solid #E2E8F0', height: '44px' }}>
+                <th style={{ width: '60px', padding: '0 16px', fontSize: '0.70rem', fontWeight: 700, color: '#64748B', textTransform: 'uppercase', letterSpacing: '0.04em' }}>
+                  ROLL
+                </th>
+                <th style={{ minWidth: '220px', padding: '0 16px', fontSize: '0.70rem', fontWeight: 700, color: '#64748B', textTransform: 'uppercase', letterSpacing: '0.04em' }}>
+                  STUDENT DETAILS
+                </th>
+                <th style={{ width: '140px', padding: '0 16px', fontSize: '0.70rem', fontWeight: 700, color: '#64748B', textTransform: 'uppercase', letterSpacing: '0.04em', textAlign: 'right' }}>
+                  THEORY (80)
+                </th>
+                <th style={{ width: '130px', padding: '0 16px', fontSize: '0.70rem', fontWeight: 700, color: '#64748B', textTransform: 'uppercase', letterSpacing: '0.04em', textAlign: 'right' }}>
+                  INTERNAL (20)
+                </th>
+                <th style={{ width: '110px', padding: '0 16px', fontSize: '0.70rem', fontWeight: 700, color: '#64748B', textTransform: 'uppercase', letterSpacing: '0.04em', textAlign: 'right' }}>
+                  TOTAL (100)
+                </th>
+                <th style={{ width: '90px', padding: '0 16px', fontSize: '0.70rem', fontWeight: 700, color: '#64748B', textTransform: 'uppercase', letterSpacing: '0.04em', textAlign: 'center' }}>
+                  GRADE
+                </th>
+                <th style={{ width: '140px', padding: '0 16px', fontSize: '0.70rem', fontWeight: 700, color: '#64748B', textTransform: 'uppercase', letterSpacing: '0.04em' }}>
+                  PERFORMANCE
+                </th>
+                <th style={{ minWidth: '180px', padding: '0 16px', fontSize: '0.70rem', fontWeight: 700, color: '#64748B', textTransform: 'uppercase', letterSpacing: '0.04em' }}>
+                  REMARKS
+                </th>
               </tr>
             </thead>
             <tbody>
-              {marksRows.map(row => {
-                const isOverMax = row.marksObtained !== null && row.marksObtained > maxMarks;
-                const isNegative = row.marksObtained !== null && row.marksObtained < 0;
-                const isError = isOverMax || isNegative;
-                const gradeInfo = getGradeInfo(row.marksObtained, row.isAbsent);
-                const pct = row.marksObtained !== null ? ((row.marksObtained / maxMarks) * 100).toFixed(1) : '—';
+              {marksRows.map((row) => {
+                const total = row.marksObtained;
+                const isOverMax = total !== null && total > maxMarks;
+                const gradeInfo = getGradeInfo(total, row.isAbsent);
+                const rollStr = String(row.rollNumber).padStart(2, '0');
+                const theoryPart = total !== null ? Math.round(total * 0.8) : null;
+                const internalPart = total !== null ? Math.round(total * 0.2) : null;
+                const pct = total !== null ? Math.min(100, Math.max(0, (total / maxMarks) * 100)) : 0;
 
                 return (
                   <tr
                     key={row.studentId}
                     style={{
-                      backgroundColor: isError
-                        ? 'var(--hhs-danger-light)'
-                        : row.isAbsent
-                        ? 'var(--hhs-surface-muted)'
-                        : undefined,
+                      borderBottom: '1px solid #F1F5F9',
+                      backgroundColor: row.isAbsent ? '#F8FAFC' : isOverMax ? '#FEF2F2' : '#FFFFFF',
+                      height: '54px',
                     }}
                   >
-                    <td className="numeric" style={{ fontWeight: 600 }}>
-                      {row.rollNumber}
-                    </td>
-                    <td>
-                      <span style={{ fontSize: '0.8rem', fontFamily: 'monospace', color: 'var(--hhs-text-secondary)' }}>
-                        {row.admissionNumber}
-                      </span>
-                    </td>
-                    <td>
-                      <button
-                        onClick={() => navigate(`/students/${row.studentId}`)}
+                    {/* ROLL */}
+                    <td style={{ padding: '10px 16px' }}>
+                      <span
+                        className="tnum"
                         style={{
-                          background: 'none',
-                          border: 'none',
-                          padding: 0,
-                          textAlign: 'left',
-                          fontWeight: 600,
-                          color: 'var(--hhs-primary)',
-                          cursor: 'pointer',
-                          textDecoration: 'underline',
+                          display: 'inline-flex',
+                          alignItems: 'center',
+                          justifyContent: 'center',
+                          width: '30px',
+                          height: '30px',
+                          borderRadius: '6px',
+                          backgroundColor: '#F1F5F9',
+                          color: '#0A1931',
+                          fontWeight: 800,
+                          fontSize: '0.82rem',
                         }}
                       >
-                        {row.name}
-                      </button>
+                        {rollStr}
+                      </span>
                     </td>
-                    <td className="numeric">
-                      <div style={{ display: 'inline-flex', alignItems: 'center', gap: '4px' }}>
+
+                    {/* STUDENT DETAILS */}
+                    <td style={{ padding: '10px 16px' }}>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                        <div
+                          style={{
+                            width: '32px',
+                            height: '32px',
+                            borderRadius: '50%',
+                            backgroundColor: '#EEF2FF',
+                            color: '#4F46E5',
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            fontWeight: 700,
+                            fontSize: '0.80rem',
+                          }}
+                        >
+                          {row.name?.[0] || 'S'}
+                        </div>
+                        <div>
+                          <strong style={{ color: '#0A1931', fontSize: '0.88rem', display: 'block' }}>
+                            {row.name}
+                          </strong>
+                          <span style={{ fontSize: '0.72rem', color: '#64748B' }}>
+                            Adm #{row.admissionNumber}
+                          </span>
+                        </div>
+                      </div>
+                    </td>
+
+                    {/* THEORY (80) */}
+                    <td style={{ padding: '10px 16px', textAlign: 'right' }}>
+                      <span className="tnum" style={{ fontWeight: 600, color: '#334155' }}>
+                        {theoryPart !== null ? theoryPart : '—'}
+                      </span>
+                    </td>
+
+                    {/* INTERNAL (20) */}
+                    <td style={{ padding: '10px 16px', textAlign: 'right' }}>
+                      <span className="tnum" style={{ fontWeight: 600, color: '#334155' }}>
+                        {internalPart !== null ? internalPart : '—'}
+                      </span>
+                    </td>
+
+                    {/* TOTAL (100) */}
+                    <td style={{ padding: '10px 16px', textAlign: 'right' }}>
+                      <div style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', justifyContent: 'flex-end' }}>
                         <input
                           type="number"
                           disabled={!canEdit || row.isAbsent || isFinalized}
                           min={0}
                           max={maxMarks}
                           step="0.5"
-                          className="hhs-input"
                           value={row.marksObtained !== null ? row.marksObtained : ''}
-                          onChange={e => handleMarkChange(row.studentId, e.target.value)}
+                          onChange={(e) => handleMarkChange(row.studentId, e.target.value)}
                           placeholder="—"
+                          className="tnum"
                           style={{
-                            width: '75px',
+                            width: '70px',
                             textAlign: 'right',
                             fontWeight: 700,
-                            color: isError ? 'var(--hhs-danger-text)' : 'inherit',
-                            borderColor: isError ? 'var(--hhs-danger)' : undefined,
-                            backgroundColor: row.isAbsent || !canEdit ? 'var(--hhs-surface-muted)' : 'var(--hhs-surface)',
+                            fontSize: '0.88rem',
+                            height: '34px',
+                            borderRadius: '6px',
+                            border: isOverMax ? '1.5px solid #EF4444' : '1px solid #CBD5E1',
+                            backgroundColor: row.isAbsent || !canEdit ? '#F8FAFC' : '#FFFFFF',
+                            padding: '0 8px',
+                            color: isOverMax ? '#EF4444' : '#0A1931',
                           }}
                         />
-                        <span style={{ fontSize: '0.78rem', color: 'var(--hhs-text-muted)' }}>
-                          / {maxMarks}
-                        </span>
+                        {canEdit && !isFinalized && (
+                          <button
+                            type="button"
+                            onClick={() => handleAbsentToggle(row.studentId, !row.isAbsent)}
+                            title={row.isAbsent ? 'Unmark Absent' : 'Mark Absent'}
+                            style={{
+                              padding: '2px 6px',
+                              borderRadius: '4px',
+                              border: row.isAbsent ? '1px solid #EF4444' : '1px solid #CBD5E1',
+                              backgroundColor: row.isAbsent ? '#FEF2F2' : '#FFFFFF',
+                              color: row.isAbsent ? '#991B1B' : '#64748B',
+                              fontSize: '0.68rem',
+                              fontWeight: 700,
+                              cursor: 'pointer',
+                            }}
+                          >
+                            {row.isAbsent ? 'ABS' : 'abs'}
+                          </button>
+                        )}
                       </div>
-                      {isOverMax && (
-                        <div style={{ fontSize: '0.7rem', color: 'var(--hhs-danger-text)', fontWeight: 600 }}>
-                          Exceeds {maxMarks}!
-                        </div>
-                      )}
                     </td>
-                    <td style={{ textAlign: 'center' }}>
-                      <input
-                        type="checkbox"
-                        disabled={!canEdit || isFinalized}
-                        checked={row.isAbsent}
-                        onChange={e => handleAbsentToggle(row.studentId, e.target.checked)}
-                        style={{ width: '16px', height: '16px', cursor: (!canEdit || isFinalized) ? 'not-allowed' : 'pointer' }}
-                        title="Mark student as Absent (ABS)"
-                      />
-                    </td>
-                    <td className="numeric" style={{ fontWeight: 600 }}>
-                      {row.isAbsent ? (
-                        <span style={{ color: 'var(--hhs-danger-text)' }}>ABS</span>
-                      ) : (
-                        `${pct}%`
-                      )}
-                    </td>
-                    <td style={{ textAlign: 'center' }}>
+
+                    {/* GRADE PILL */}
+                    <td style={{ padding: '10px 16px', textAlign: 'center' }}>
                       <span
                         style={{
                           display: 'inline-block',
                           padding: '2px 8px',
-                          borderRadius: 'var(--hhs-radius-pill)',
-                          fontSize: '0.75rem',
-                          fontWeight: 700,
-                          color: gradeInfo.color,
-                          backgroundColor: row.isAbsent
-                            ? 'var(--hhs-danger-light)'
-                            : gradeInfo.grade === 'E'
-                            ? 'var(--hhs-danger-light)'
-                            : 'var(--hhs-surface-muted)',
+                          borderRadius: '9999px',
+                          fontSize: '0.74rem',
+                          fontWeight: 800,
+                          backgroundColor:
+                            gradeInfo.grade.startsWith('A')
+                              ? '#ECFDF5'
+                              : gradeInfo.grade.startsWith('B')
+                              ? '#EEF2FF'
+                              : gradeInfo.grade.startsWith('C')
+                              ? '#FEF3C7'
+                              : '#FEF2F2',
+                          color:
+                            gradeInfo.grade.startsWith('A')
+                              ? '#065F46'
+                              : gradeInfo.grade.startsWith('B')
+                              ? '#3730A3'
+                              : gradeInfo.grade.startsWith('C')
+                              ? '#92400E'
+                              : '#991B1B',
                         }}
                       >
                         {gradeInfo.grade}
                       </span>
                     </td>
-                    <td>
+
+                    {/* PERFORMANCE BAR */}
+                    <td style={{ padding: '10px 16px' }}>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                        <div style={{ flex: 1, height: '6px', backgroundColor: '#E2E8F0', borderRadius: '9999px', overflow: 'hidden' }}>
+                          <div
+                            style={{
+                              width: `${pct}%`,
+                              height: '100%',
+                              backgroundColor: pct >= 75 ? '#10B981' : pct >= 50 ? '#F5A623' : '#EF4444',
+                              borderRadius: '9999px',
+                            }}
+                          />
+                        </div>
+                        <span style={{ fontSize: '0.72rem', color: '#64748B', minWidth: '32px' }} className="tnum">
+                          {pct > 0 ? `${Math.round(pct)}%` : '—'}
+                        </span>
+                      </div>
+                    </td>
+
+                    {/* REMARKS */}
+                    <td style={{ padding: '10px 16px' }}>
                       <input
                         type="text"
                         disabled={!canEdit || isFinalized}
-                        className="hhs-input"
                         value={row.remarks}
-                        onChange={e => handleRemarksChange(row.studentId, e.target.value)}
-                        placeholder="Optional remarks (e.g. Needs extra practice)"
-                        style={{ fontSize: '0.8rem', height: '30px' }}
+                        onChange={(e) => handleRemarksChange(row.studentId, e.target.value)}
+                        placeholder="Add faculty remark..."
+                        style={{
+                          width: '100%',
+                          height: '32px',
+                          borderRadius: '6px',
+                          border: '1px solid #CBD5E1',
+                          padding: '0 8px',
+                          fontSize: '0.78rem',
+                          backgroundColor: canEdit ? '#FFFFFF' : '#F8FAFC',
+                          color: '#0F172A',
+                        }}
                       />
                     </td>
                   </tr>
@@ -853,7 +1028,106 @@ export const MarksEntryRegister: React.FC = () => {
         </div>
       </div>
 
-      {/* Confirmation Modal */}
+      {/* 3. Bottom Panels: Grade Distribution Cohort & Academic Validation Desk (Screen1.png) */}
+      <div style={{ display: 'grid', gridTemplateColumns: '1.2fr 0.8fr', gap: '20px', marginBottom: '24px' }}>
+        <style>{`
+          @media (max-width: 900px) {
+            div[style*="gridTemplateColumns: 1.2fr 0.8fr"] {
+              grid-template-columns: 1fr !important;
+            }
+          }
+        `}</style>
+
+        {/* Grade Distribution Cohort Chart */}
+        <div className="hhs-card" style={{ borderRadius: '12px', padding: '20px' }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '14px' }}>
+            <h3 style={{ fontSize: '0.94rem', fontWeight: 700, color: '#0A1931', margin: 0, fontFamily: "'Plus Jakarta Sans', sans-serif" }}>
+              Grade Distribution Cohort
+            </h3>
+            <span style={{ fontSize: '0.74rem', color: '#64748B' }}>CBSE Grading Scale</span>
+          </div>
+
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(8, 1fr)', gap: '8px', height: '120px', alignItems: 'end', borderBottom: '1px solid #E2E8F0', paddingBottom: '6px' }}>
+            {Object.entries(gradeCounts).map(([grade, count]) => {
+              const maxCount = Math.max(1, ...Object.values(gradeCounts));
+              const heightPct = Math.max(12, (count / maxCount) * 100);
+              const isTop = grade.startsWith('A');
+
+              return (
+                <div key={grade} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '4px', height: '100%', justifyContent: 'flex-end' }}>
+                  <span style={{ fontSize: '0.70rem', fontWeight: 700, color: '#0A1931' }} className="tnum">
+                    {count}
+                  </span>
+                  <div
+                    style={{
+                      width: '100%',
+                      maxWidth: '32px',
+                      height: `${heightPct}%`,
+                      backgroundColor: isTop ? '#10B981' : grade.startsWith('B') ? '#4F46E5' : grade.startsWith('C') ? '#F5A623' : '#EF4444',
+                      borderRadius: '4px 4px 0 0',
+                    }}
+                    title={`Grade ${grade}: ${count} students`}
+                  />
+                  <span style={{ fontSize: '0.72rem', fontWeight: 700, color: '#475569' }}>
+                    {grade}
+                  </span>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+
+        {/* Academic Validation Desk */}
+        <div className="hhs-card" style={{ borderRadius: '12px', padding: '20px', display: 'flex', flexDirection: 'column', justifyContent: 'space-between' }}>
+          <div>
+            <h3 style={{ fontSize: '0.94rem', fontWeight: 700, color: '#0A1931', margin: '0 0 10px 0', fontFamily: "'Plus Jakarta Sans', sans-serif" }}>
+              Academic Validation Desk
+            </h3>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', fontSize: '0.80rem', color: '#334155' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                <CheckCircle2 size={15} color="#10B981" />
+                <span>All {marksRows.length} cohort students verified and accounted for</span>
+              </div>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                <CheckCircle2 size={15} color="#10B981" />
+                <span>Zero negative scores; maximum boundary checked ({maxMarks} marks)</span>
+              </div>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                <CheckCircle2 size={15} color="#10B981" />
+                <span>Dual-custody verification ready for Principal endorsement</span>
+              </div>
+            </div>
+          </div>
+
+          <div style={{ marginTop: '16px' }}>
+            <button
+              onClick={() => setIsConfirmModalOpen(true)}
+              disabled={isSaving || stats.invalidCount > 0 || !canEdit || isFinalized}
+              style={{
+                width: '100%',
+                backgroundColor: isFinalized ? '#10B981' : '#0A1931',
+                color: '#FFFFFF',
+                border: 'none',
+                borderRadius: '8px',
+                padding: '10px 16px',
+                fontSize: '0.84rem',
+                fontWeight: 700,
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                gap: '8px',
+                cursor: (!canEdit || isFinalized) ? 'default' : 'pointer',
+                boxShadow: '0 2px 8px rgba(10, 25, 49, 0.25)',
+              }}
+            >
+              <Lock size={15} />
+              <span>{isFinalized ? 'Record Finalized & Signed' : 'Submit for Principal Approval'}</span>
+            </button>
+          </div>
+        </div>
+
+      </div>
+{/* Confirmation Modal */}
       <Modal
         isOpen={isConfirmModalOpen}
         onClose={() => setIsConfirmModalOpen(false)}

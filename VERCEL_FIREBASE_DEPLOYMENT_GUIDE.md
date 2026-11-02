@@ -149,7 +149,7 @@ Follow these exact steps in your browser to configure Cloud Firestore and Fireba
 7. Click **Add user** to provision the initial administrative test accounts matching the staff directory:
    * **Principal Account:**
      * Email: `principal@hanujai.edu.in`
-     * Password: Create a secure temporary password (e.g. `HanuJai#2026!`)
+     * Password: Create a secure temporary password (e.g. `demo-password`)
    * **Class Teacher Account (Class 10-A):**
      * Email: `rajeshwar.choudhary@hanujai.edu.in`
      * Password: Create a secure temporary password
