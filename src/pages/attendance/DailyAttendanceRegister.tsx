@@ -1430,7 +1430,7 @@ export const DailyAttendanceRegister: React.FC = () => {
                   <ShieldCheck size={13} />
                   <span>
                     {PHASE_CONFIG.whatsapp.sendEnabled
-                      ? 'Live Worker Connected'
+                      ? 'Live Queue Active (Worker Dispatches)'
                       : 'Dry-Run Mode (Safe Preview)'}
                   </span>
                 </span>

@@ -97,8 +97,8 @@ export function startStatusServer(
     res.end(JSON.stringify({ error: 'Endpoint not found. Available: /health, /status, /qr' }));
   });
 
-  server.listen(config.workerPort, () => {
-    console.log(`[HTTP Server] Health & status monitor listening on http://localhost:${config.workerPort}/health`);
+  server.listen(config.workerPort, '0.0.0.0', () => {
+    console.log(`[HTTP Server] Health & status monitor listening on port ${config.workerPort} (/health, /status, /qr)`);
   });
 
   return server;

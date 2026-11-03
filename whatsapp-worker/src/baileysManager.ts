@@ -158,7 +158,10 @@ export class BaileysManager {
       auth: state,
       printQRInTerminal: false,
       connectTimeoutMs: 60000,
-      keepAliveIntervalMs: 30000,
+      keepAliveIntervalMs: 25000,
+      defaultQueryTimeoutMs: 60000,
+      syncFullHistory: false,
+      browser: ['HanuJai ERP Dispatcher', 'Chrome', '120.0.0.0'],
     });
 
     this.sock.ev.on('creds.update', saveCreds);

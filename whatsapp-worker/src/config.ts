@@ -76,7 +76,7 @@ export function loadWorkerConfig(): WorkerConfig {
     authDir = path.resolve(cwd, authDir);
   }
 
-  const workerPort = parseInt(get('WHATSAPP_WORKER_PORT', '5050'), 10) || 5050;
+  const workerPort = parseInt(get('PORT') || get('WHATSAPP_WORKER_PORT', '5050'), 10) || 5050;
 
   const firebase = {
     apiKey: get('VITE_FIREBASE_API_KEY'),

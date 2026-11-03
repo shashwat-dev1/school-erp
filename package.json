@@ -15,6 +15,7 @@
     "whatsapp:worker": "node --experimental-strip-types scripts/whatsappWorker.ts",
     "whatsapp:status": "node --experimental-strip-types scripts/whatsappStatus.ts",
     "whatsapp:logout": "node --experimental-strip-types scripts/whatsappLogout.ts",
+    "whatsapp:clear": "node --experimental-strip-types whatsapp-worker/src/clearQueue.ts",
     "whatsapp:test": "node --experimental-strip-types scripts/whatsappSendTest.ts"
   },
   "dependencies": {

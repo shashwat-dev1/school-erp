@@ -8,7 +8,11 @@
     "worker": "node --experimental-strip-types src/index.ts",
     "status": "node --experimental-strip-types src/status.ts",
     "logout": "node --experimental-strip-types src/logout.ts",
+    "clear": "node --experimental-strip-types src/clearQueue.ts",
     "test:send": "node --experimental-strip-types src/sendTest.ts"
+  },
+  "engines": {
+    "node": ">=22.6.0"
   },
   "dependencies": {
     "@whiskeysockets/baileys": "^7.0.0-rc14",
