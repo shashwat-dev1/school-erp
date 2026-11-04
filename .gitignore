@@ -57,3 +57,7 @@ baileys_auth_info/
 auth_info_baileys/
 *.session.json
 *.qr.png
+
+# Render env upload files
+render-env.txt
+*render*.env*
