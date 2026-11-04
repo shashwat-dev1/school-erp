@@ -31,12 +31,13 @@ export function startStatusServer(
       const baileysStatus = baileys.getStatus();
       const isHealthy = config.dryRun || baileysStatus.connected;
 
-      res.writeHead(isHealthy ? 200 : 503, { 'Content-Type': 'application/json' });
+      // Always return 200 so ping/waker monitors keep the instance awake
+      res.writeHead(200, { 'Content-Type': 'application/json' });
       res.end(
         JSON.stringify(
           {
             service: 'HanuJai High School WhatsApp Worker',
-            status: isHealthy ? 'healthy' : 'degraded',
+            status: isHealthy ? 'healthy' : 'awaiting_connection',
             provider: config.provider,
             liveSendEnabled: config.sendEnabled,
             dryRun: config.dryRun,
