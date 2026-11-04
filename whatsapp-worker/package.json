@@ -5,6 +5,7 @@
   "type": "module",
   "scripts": {
     "start": "node --experimental-strip-types src/index.ts",
+    "build": "node -e \"console.log('Worker ready - no build step required')\"",
     "worker": "node --experimental-strip-types src/index.ts",
     "status": "node --experimental-strip-types src/status.ts",
     "logout": "node --experimental-strip-types src/logout.ts",
