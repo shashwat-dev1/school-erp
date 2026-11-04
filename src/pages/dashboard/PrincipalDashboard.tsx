@@ -177,7 +177,7 @@ export const PrincipalDashboard: React.FC = () => {
                 margin: 0,
               }}
             >
-              Welcome, {currentUser?.name || 'Dr. Anand Sharma'}. Real-time operational pulse across {totalEnrolment} enrolled students, {classes.length || 10} academic sections, faculty turnout, and automated WhatsApp parent communications.
+              Welcome, {currentUser?.name || 'Dr. Anand Sharma'}. Real-time operational pulse across all enrolled students, {classes.length || 10} academic sections, faculty turnout, and automated WhatsApp parent communications.
             </p>
           </div>
 
@@ -271,9 +271,10 @@ export const PrincipalDashboard: React.FC = () => {
           <div style={{ fontSize: '1.9rem', fontWeight: 800, color: '#10B981', fontFamily: "'Plus Jakarta Sans', sans-serif", margin: '8px 0 4px 0' }} className="tnum">
             {attendanceTurnoutPct}%
           </div>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '4px', fontSize: '0.75rem', color: '#065F46' }}>
-            <TrendingUp size={13} />
-            <span>+1.4% vs last week</span>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '0.74rem', color: '#64748B' }}>
+            <span>Present Today: <strong className="tnum">{totalPresent}</strong></span>
+            <span>•</span>
+            <span>Absent Today: <strong className="tnum">{totalAbsent}</strong></span>
           </div>
         </div>
 
@@ -350,7 +351,7 @@ export const PrincipalDashboard: React.FC = () => {
             <div className="hhs-card-header" style={{ padding: '16px 20px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
               <div>
                 <h3 style={{ fontSize: '0.98rem', fontWeight: 700, color: '#0A1931', margin: 0, fontFamily: "'Plus Jakarta Sans', sans-serif" }}>
-                  Class-wise Attendance Turnout
+                  Attendance by Class (Today)
                 </h3>
                 <span style={{ fontSize: '0.74rem', color: '#64748B' }}>Live roll-call tally for today</span>
               </div>

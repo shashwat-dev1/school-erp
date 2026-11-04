@@ -583,11 +583,13 @@ export const DailyAttendanceRegister: React.FC = () => {
     );
   }
 
+  const classDisplayName = activeClass?.label || classes.find(c => c.id === selectedClassId)?.label || (selectedClassId === 'class-10-a' ? 'Class 10-A' : selectedClassId || 'Class');
+
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: '16px', maxWidth: '100%' }}>
       {/* Page Header */}
       <PageHeader
-        title={`Daily Attendance Register — ${activeClass?.label || 'Class'}`}
+        title={`Daily Attendance Register — ${classDisplayName}`}
         subtitle={`Class Teacher: ${activeClass?.classTeacherName || currentUser?.name} • Session 2025–2026`}
         roleScope={currentUser.role === 'principal' ? 'Principal Oversight' : 'Class Teacher'}
         breadcrumbs={[
@@ -1065,7 +1067,7 @@ export const DailyAttendanceRegister: React.FC = () => {
                   onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = '#FFFFFF')}
                 >
                   <Check size={14} color="#10B981" />
-                  <span>Mark All Present</span>
+                  <span>Quick Present</span>
                 </button>
               )}
             </div>
@@ -1167,37 +1169,45 @@ export const DailyAttendanceRegister: React.FC = () => {
                                     {row.firstName} {row.lastName}
                                   </strong>
                                   <span style={{ fontSize: '0.72rem', color: '#64748B' }}>
-                                    Tagore House • Adm #{row.admissionNumber}
+                                    Tagore House • Class 10-A
                                   </span>
                                 </div>
                               </div>
                             </td>
 
                             {/* DAILY ATTENDANCE STATUS SEGMENTED TOGGLE (screen3.png) */}
-                            <td style={{ padding: '12px 16px' }}>
+                            <td style={{ padding: '10px 16px' }}>
                               <div style={{ display: 'inline-flex', gap: '8px' }}>
                                 <button
                                   type="button"
                                   onClick={() => canMark && handleStateChange(row.studentId, 'present')}
                                   disabled={!canMark}
+                                  aria-pressed={isPresent}
+                                  aria-label={`Mark ${row.firstName} ${row.lastName} Present`}
                                   style={{
-                                    height: '36px',
-                                    padding: '0 16px',
+                                    minHeight: '40px',
+                                    padding: '0 18px',
                                     borderRadius: '8px',
                                     border: isPresent ? '1.5px solid #10B981' : '1px solid #CBD5E1',
                                     backgroundColor: isPresent ? '#10B981' : '#FFFFFF',
                                     color: isPresent ? '#FFFFFF' : '#475569',
                                     fontWeight: 700,
-                                    fontSize: '0.82rem',
+                                    fontSize: '0.84rem',
                                     display: 'inline-flex',
                                     alignItems: 'center',
-                                    gap: '6px',
+                                    gap: '7px',
                                     cursor: canMark ? 'pointer' : 'default',
                                     boxShadow: isPresent ? '0 2px 6px rgba(16, 185, 129, 0.3)' : 'none',
                                     transition: 'all 0.15s ease',
                                   }}
+                                  onMouseEnter={(e) => {
+                                    if (!isPresent && canMark) e.currentTarget.style.backgroundColor = '#ECFDF5';
+                                  }}
+                                  onMouseLeave={(e) => {
+                                    if (!isPresent && canMark) e.currentTarget.style.backgroundColor = '#FFFFFF';
+                                  }}
                                 >
-                                  <Check size={15} strokeWidth={isPresent ? 3 : 2} />
+                                  <Check size={16} strokeWidth={isPresent ? 3 : 2} />
                                   <span>Present</span>
                                 </button>
 
@@ -1205,24 +1215,32 @@ export const DailyAttendanceRegister: React.FC = () => {
                                   type="button"
                                   onClick={() => canMark && handleStateChange(row.studentId, 'absent')}
                                   disabled={!canMark}
+                                  aria-pressed={isAbsent}
+                                  aria-label={`Mark ${row.firstName} ${row.lastName} Absent`}
                                   style={{
-                                    height: '36px',
-                                    padding: '0 16px',
+                                    minHeight: '40px',
+                                    padding: '0 18px',
                                     borderRadius: '8px',
                                     border: isAbsent ? '1.5px solid #EF4444' : '1px solid #CBD5E1',
                                     backgroundColor: isAbsent ? '#EF4444' : '#FFFFFF',
                                     color: isAbsent ? '#FFFFFF' : '#475569',
                                     fontWeight: 700,
-                                    fontSize: '0.82rem',
+                                    fontSize: '0.84rem',
                                     display: 'inline-flex',
                                     alignItems: 'center',
-                                    gap: '6px',
+                                    gap: '7px',
                                     cursor: canMark ? 'pointer' : 'default',
                                     boxShadow: isAbsent ? '0 2px 6px rgba(239, 68, 68, 0.3)' : 'none',
                                     transition: 'all 0.15s ease',
                                   }}
+                                  onMouseEnter={(e) => {
+                                    if (!isAbsent && canMark) e.currentTarget.style.backgroundColor = '#FEF2F2';
+                                  }}
+                                  onMouseLeave={(e) => {
+                                    if (!isAbsent && canMark) e.currentTarget.style.backgroundColor = '#FFFFFF';
+                                  }}
                                 >
-                                  <XIcon size={15} strokeWidth={isAbsent ? 3 : 2} />
+                                  <XIcon size={16} strokeWidth={isAbsent ? 3 : 2} />
                                   <span>Absent</span>
                                 </button>
                               </div>
@@ -1280,7 +1298,9 @@ export const DailyAttendanceRegister: React.FC = () => {
             style={{
               position: 'sticky',
               bottom: '16px',
-              backgroundColor: '#FFFFFF',
+              backgroundColor: 'rgba(255, 255, 255, 0.94)',
+              backdropFilter: 'blur(12px)',
+              WebkitBackdropFilter: 'blur(12px)',
               borderRadius: '12px',
               padding: '14px 20px',
               border: '1px solid #E2E8F0',
@@ -1296,8 +1316,8 @@ export const DailyAttendanceRegister: React.FC = () => {
             <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
               <div
                 style={{
-                  width: '32px',
-                  height: '32px',
+                  width: '36px',
+                  height: '36px',
                   borderRadius: '50%',
                   backgroundColor: '#ECFDF5',
                   display: 'flex',
@@ -1305,20 +1325,20 @@ export const DailyAttendanceRegister: React.FC = () => {
                   justifyContent: 'center',
                 }}
               >
-                <CheckCircle2 size={18} color="#10B981" />
+                <CheckCircle2 size={20} color="#10B981" />
               </div>
               <div>
-                <strong style={{ fontSize: '0.88rem', color: '#0A1931', display: 'block' }}>
+                <strong style={{ fontSize: '0.90rem', color: '#0A1931', display: 'block' }}>
                   {unmarkedCount === 0 ? `All ${totalCount} students marked` : `${presentCount + absentCount} of ${totalCount} marked (${unmarkedCount} pending)`}
                 </strong>
-                <span style={{ fontSize: '0.74rem', color: '#64748B', display: 'inline-flex', alignItems: 'center', gap: '5px' }}>
+                <span style={{ fontSize: '0.76rem', color: '#64748B', display: 'inline-flex', alignItems: 'center', gap: '5px' }}>
                   <MessageSquare size={13} color="#10B981" />
                   <span>{absentCount} absentees flagged for automatic WhatsApp alert</span>
                 </span>
               </div>
             </div>
 
-            <div style={{ display: 'flex', gap: '10px' }}>
+            <div style={{ display: 'flex', gap: '10px', alignItems: 'center' }}>
               <button
                 type="button"
                 onClick={handleInitiateSubmit}
@@ -1327,11 +1347,15 @@ export const DailyAttendanceRegister: React.FC = () => {
                   border: '1px solid #CBD5E1',
                   color: '#0A1931',
                   borderRadius: '8px',
-                  padding: '9px 16px',
-                  fontSize: '0.82rem',
+                  padding: '9px 18px',
+                  minHeight: '42px',
+                  fontSize: '0.84rem',
                   fontWeight: 600,
                   cursor: 'pointer',
+                  transition: 'all 0.15s ease',
                 }}
+                onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = '#F8FAFC')}
+                onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = '#FFFFFF')}
               >
                 Save Draft
               </button>
@@ -1341,18 +1365,26 @@ export const DailyAttendanceRegister: React.FC = () => {
                 onClick={handleInitiateSubmit}
                 disabled={!canMark || isSubmitting}
                 style={{
-                  backgroundColor: '#0A1931',
+                  backgroundColor: '#F5A623',
                   border: 'none',
-                  color: '#FFFFFF',
+                  color: '#0A1931',
                   borderRadius: '8px',
-                  padding: '9px 20px',
-                  fontSize: '0.84rem',
-                  fontWeight: 700,
+                  padding: '9px 22px',
+                  minHeight: '42px',
+                  fontSize: '0.86rem',
+                  fontWeight: 800,
                   display: 'inline-flex',
                   alignItems: 'center',
                   gap: '8px',
                   cursor: canMark ? 'pointer' : 'not-allowed',
-                  boxShadow: '0 2px 8px rgba(10, 25, 49, 0.25)',
+                  boxShadow: '0 2px 10px rgba(245, 166, 35, 0.35)',
+                  transition: 'all 0.15s ease',
+                }}
+                onMouseEnter={(e) => {
+                  if (canMark) (e.currentTarget.style.backgroundColor = '#D97706');
+                }}
+                onMouseLeave={(e) => {
+                  if (canMark) (e.currentTarget.style.backgroundColor = '#F5A623');
                 }}
               >
                 <Lock size={15} />

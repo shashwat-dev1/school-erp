@@ -196,7 +196,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ isMobileOpen = false, onClose 
             {role === 'principal' && (
               <>
                 <li>
-                  <SidebarItem to="/" icon={<LayoutDashboard size={18} />} label="Executive Overview" end onClick={onClose} />
+                  <SidebarItem to="/" icon={<LayoutDashboard size={18} />} label="Home Dashboard" end onClick={onClose} />
                 </li>
                 <li>
                   <SidebarItem to="/students" icon={<Users size={18} />} label="Student Master Dossiers" onClick={onClose} />
@@ -399,8 +399,8 @@ const SidebarItem: React.FC<SidebarItemProps> = ({ to, icon, label, end, onClick
         display: 'flex',
         alignItems: 'center',
         gap: '12px',
-        padding: '10px 14px',
-        minHeight: '42px',
+        padding: '11px 14px',
+        minHeight: '44px',
         borderRadius: '8px',
         fontSize: '0.86rem',
         fontWeight: isActive ? 700 : 500,
@@ -409,6 +409,7 @@ const SidebarItem: React.FC<SidebarItemProps> = ({ to, icon, label, end, onClick
         backgroundColor: isActive ? '#F5A623' : 'transparent',
         boxShadow: isActive ? '0 2px 8px rgba(245, 166, 35, 0.35)' : 'none',
         transition: 'all 0.15s ease',
+        outline: 'none',
       })}
       onMouseEnter={(e) => {
         const target = e.currentTarget;

@@ -189,7 +189,7 @@ export const StaffLogin: React.FC = () => {
                 margin: '0 0 6px 0',
               }}
             >
-              Staff Desk Authentication
+              Staff Authentication
             </h2>
             <p style={{ fontSize: '0.84rem', color: '#64748B', margin: 0 }}>
               Enter your credentials to access your authorized workspace.
