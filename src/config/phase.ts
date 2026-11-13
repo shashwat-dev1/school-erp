@@ -65,7 +65,7 @@ export const PHASE_CONFIG: PhaseConfig = {
   whatsapp: {
     provider: ((import.meta.env.VITE_WHATSAPP_PROVIDER as string) || 'baileys') as 'dry_run' | 'baileys' | 'cloud_api',
     sendEnabled: import.meta.env.VITE_WHATSAPP_SEND_ENABLED !== 'false',
-    testRecipientAllowlist: (import.meta.env.VITE_WHATSAPP_TEST_ALLOWLIST || '9009519718')
+    testRecipientAllowlist: (import.meta.env.VITE_WHATSAPP_TEST_ALLOWLIST || '9009519718,8952031365,8947903712,9460221177')
       .split(',')
       .map((s: string) => s.trim().replace(/\D/g, ''))
       .filter(Boolean),

@@ -59,11 +59,11 @@ export function loadWorkerConfig(): WorkerConfig {
   const sendEnabled = get('WHATSAPP_SEND_ENABLED', 'false') === 'true';
   const dryRun = get('WHATSAPP_DRY_RUN', 'true') === 'true';
 
-  // Normalize allowlist phone numbers to pure digits (Strictly Shashwat only by default)
+  // Normalize allowlist phone numbers to pure digits (Authorized Pilot Recipients: Shashwat, Nitin, Vijaya, Rajvir)
   const allowedPhoneNumbers: string[] = (
     get('WHATSAPP_TEST_ALLOWLIST') ||
     get('WHATSAPP_TEST_RECIPIENTS') ||
-    '9009519718'
+    '9009519718,8952031365,8947903712,9460221177'
   )
     .split(',')
     .map(s => s.trim().replace(/\D/g, ''))

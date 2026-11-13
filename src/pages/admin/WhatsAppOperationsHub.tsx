@@ -99,12 +99,12 @@ export const WhatsAppOperationsHub: React.FC = () => {
     if (isMatch) {
       setTestResult({
         allowed: true,
-        reason: `Verified Test Allowlist Member: Recipient matches authorized number (${clean} - Shashwat). Live WhatsApp messages will be dispatched!`,
+        reason: `Verified Test Allowlist Member: Recipient matches authorized pilot recipient (${clean}). Live WhatsApp messages will be dispatched!`,
       });
     } else {
       setTestResult({
         allowed: false,
-        reason: `Filtered by Safety Guard: ${clean} is not in WHATSAPP_TEST_ALLOWLIST. Message will be safely marked as 'skipped' to protect parents during testing. Only Shashwat (9009519718) is authorized.`,
+        reason: `Filtered by Safety Guard: ${clean} is not in WHATSAPP_TEST_ALLOWLIST. Message will be safely marked as 'skipped' to protect parents during testing. Authorized pilot recipients: Shashwat (9009519718), Nitin (8952031365), Vijaya (8947903712), Rajvir (9460221177).`,
       });
     }
   };
