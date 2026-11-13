@@ -27,7 +27,6 @@ import {
   Calendar,
   MessageSquare,
   ShieldCheck,
-  TrendingUp,
   ExternalLink,
 } from 'lucide-react';
 
