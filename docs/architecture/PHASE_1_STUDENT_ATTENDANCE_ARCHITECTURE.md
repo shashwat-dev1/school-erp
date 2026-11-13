@@ -86,3 +86,4 @@ A controlled migration was executed against the production demo Firebase databas
 ### Issue 2: "Uncaught Error: java.io.IOException: Failed to download remote update"
 - **Root Cause**: Occurred when opening the application in Expo Go while the development machine's Metro server was disconnected or on a different network, causing Expo's dynamic bundle loader to fail with an I/O network exception.
 - **Resolution**: Standalone Android APK builds (`eas build -p android --profile preview`) package all JavaScript assets directly inside the APK package, operating 100% offline without requiring Expo Go or a running Metro development server.
+

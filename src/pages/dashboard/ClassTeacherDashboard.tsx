@@ -121,10 +121,8 @@ export const ClassTeacherDashboard: React.FC = () => {
     <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
       {/* Header */}
       <PageHeader
-        title={`My Class (${assignedClassLabel})`}
-        subtitle={`Class Teacher: ${currentUser?.name} • Room ${classSection.roomNumber} • Session 2025–2026`}
-        roleScope={assignedClassLabel}
-        breadcrumbs={[{ label: 'Class Workspace' }]}
+        title={assignedClassLabel}
+        subtitle={`Teacher: ${currentUser?.name || 'Class Teacher'} • Room ${classSection.roomNumber}`}
         actions={
           <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
             <button
@@ -133,7 +131,7 @@ export const ClassTeacherDashboard: React.FC = () => {
               style={{ display: 'flex', alignItems: 'center', gap: '6px' }}
             >
               <CalendarCheck size={15} />
-              <span>{isAttendanceSubmitted ? 'Review Attendance Register' : 'Mark Daily Roll Call'}</span>
+              <span>{isAttendanceSubmitted ? 'View Attendance' : 'Mark Attendance'}</span>
             </button>
             <button
               onClick={() => navigate('/students')}
@@ -141,7 +139,7 @@ export const ClassTeacherDashboard: React.FC = () => {
               style={{ display: 'flex', alignItems: 'center', gap: '6px' }}
             >
               <Users size={15} />
-              <span>Class Roster</span>
+              <span>Students</span>
             </button>
             <button
               onClick={() => navigate('/reports/attendance')}
@@ -149,7 +147,7 @@ export const ClassTeacherDashboard: React.FC = () => {
               style={{ display: 'flex', alignItems: 'center', gap: '6px' }}
             >
               <FileSpreadsheet size={15} />
-              <span>Export Excel</span>
+              <span>Export Attendance</span>
             </button>
           </div>
         }
@@ -174,10 +172,10 @@ export const ClassTeacherDashboard: React.FC = () => {
         >
           <div>
             <div style={{ fontWeight: 800, color: '#202033', fontSize: '0.94rem' }}>
-              Today&apos;s Roll Call is Pending
+              Today&apos;s Attendance is Pending
             </div>
             <div style={{ fontSize: '0.82rem', color: '#45455E', marginTop: '2px' }}>
-              Please take morning roll call for {assignedClassLabel} and submit the register. Automated notifications will dispatch in the background.
+              Please take morning attendance for {assignedClassLabel}.
             </div>
           </div>
           <button
@@ -204,10 +202,10 @@ export const ClassTeacherDashboard: React.FC = () => {
         >
           <div>
             <div style={{ fontWeight: 800, color: '#065F46', fontSize: '0.92rem' }}>
-              ✓ Today&apos;s Attendance Register is Submitted
+              Today&apos;s Attendance is Submitted
             </div>
             <div style={{ fontSize: '0.80rem', color: '#047857', marginTop: '2px' }}>
-              {assignedClassLabel} roll call completed ({presentCount} Present, {absentCount} Absent • {attendanceRate}% turnout).
+              {presentCount} Present, {absentCount} Absent ({attendanceRate}%).
             </div>
           </div>
           <button
@@ -219,10 +217,10 @@ export const ClassTeacherDashboard: React.FC = () => {
         </div>
       )}
 
-      {/* 5 Scoped Attendance Metrics */}
+      {/* 4 Attendance Metrics */}
       <div className="hhs-metrics-grid">
         <MetricCard
-          label="Assigned Students"
+          label="Total Students"
           value={totalStudents.toString()}
           subtext={`Room ${classSection.roomNumber}`}
           icon={<Users size={20} />}
@@ -231,21 +229,21 @@ export const ClassTeacherDashboard: React.FC = () => {
         <MetricCard
           label="Present Today"
           value={presentCount.toString()}
-          subtext={isAttendanceSubmitted ? `${attendanceRate}% turnout` : 'Roll call pending'}
+          subtext={isAttendanceSubmitted ? `${attendanceRate}% turnout` : 'Pending'}
           icon={<CheckCircle size={20} />}
           accent="success"
         />
         <MetricCard
           label="Absent Today"
           value={absentCount.toString()}
-          subtext={isAttendanceSubmitted ? 'Alerts queued' : 'Not yet submitted'}
+          subtext={isAttendanceSubmitted ? `${absentCount} recorded` : 'Pending'}
           icon={<AlertCircle size={20} />}
           accent="danger"
         />
         <MetricCard
-          label="Unmarked Count"
+          label="Unmarked"
           value={unmarkedCount.toString()}
-          subtext={isAttendanceSubmitted ? 'Complete' : 'Awaiting roll call'}
+          subtext={isAttendanceSubmitted ? 'Complete' : 'Pending'}
           icon={<Clock size={20} />}
           accent="warning"
         />
@@ -318,11 +316,11 @@ export const ClassTeacherDashboard: React.FC = () => {
           )}
         </div>
 
-        {/* Supporting Area 2: Class Attendance History & Quick Navigation */}
+        {/* Supporting Area 2: Quick Links */}
         <div className="hhs-card" style={{ padding: 'clamp(14px, 2vw, 20px)' }}>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '14px' }}>
             <div>
-              <h3 className="hhs-headline-sm">Class Attendance Operations</h3>
+              <h3 className="hhs-headline-sm">Quick Links</h3>
               <p className="hhs-body-sm" style={{ color: 'var(--hhs-text-secondary)' }}>
                 Roster, reports, and export tools for {assignedClassLabel}.
               </p>
@@ -344,9 +342,9 @@ export const ClassTeacherDashboard: React.FC = () => {
               }}
             >
               <div>
-                <div style={{ fontWeight: 600, fontSize: '0.86rem' }}>View Class Roster</div>
+                <div style={{ fontWeight: 600, fontSize: '0.86rem' }}>Class Students</div>
                 <div style={{ fontSize: '0.76rem', color: 'var(--hhs-text-secondary)', marginTop: '2px' }}>
-                  Complete list of {totalStudents} students enrolled in {assignedClassLabel}.
+                  {totalStudents} students enrolled in {assignedClassLabel}.
                 </div>
               </div>
               <ArrowRight size={16} color="var(--hhs-primary)" />
@@ -366,9 +364,9 @@ export const ClassTeacherDashboard: React.FC = () => {
               }}
             >
               <div>
-                <div style={{ fontWeight: 600, fontSize: '0.86rem' }}>Attendance Records & History</div>
+                <div style={{ fontWeight: 600, fontSize: '0.86rem' }}>Attendance History</div>
                 <div style={{ fontSize: '0.76rem', color: 'var(--hhs-text-secondary)', marginTop: '2px' }}>
-                  Full multi-month attendance registers and matrix view.
+                  Attendance registers and monthly history.
                 </div>
               </div>
               <ArrowRight size={16} color="var(--hhs-primary)" />

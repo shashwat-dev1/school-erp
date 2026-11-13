@@ -13,7 +13,6 @@ import { ErrorBanner } from '../../components/feedback/ErrorBanner';
 import type { StudentRecord, ClassSection } from '../../domain/types';
 import type { NewStudentInput } from '../../data/provider';
 import { downloadCsv } from '../../utils/exportUtils';
-import { PHASE_CONFIG } from '../../config/phase';
 import {
   Users,
   Search,
@@ -200,7 +199,7 @@ export const StudentDirectory: React.FC = () => {
           className="numeric tnum"
           style={{ fontWeight: 600, color: 'var(--hhs-primary)', cursor: 'pointer' }}
           onClick={() => navigate(`/students/${s.id}`)}
-          title="Open student dossier"
+          title="View student profile"
         >
           {s.rollNumber}
         </span>
@@ -224,7 +223,7 @@ export const StudentDirectory: React.FC = () => {
               textDecoration: 'underline',
               fontSize: '0.88rem',
             }}
-            title="Open student dossier"
+            title="View student profile"
           >
             {s.firstName} {s.lastName}
           </button>
@@ -232,7 +231,7 @@ export const StudentDirectory: React.FC = () => {
             className="tnum"
             style={{ fontSize: '0.72rem', color: 'var(--hhs-text-muted)', cursor: 'pointer' }}
             onClick={() => navigate(`/students/${s.id}`)}
-            title="Open student dossier"
+            title="View student profile"
           >
             {s.admissionNumber} • {s.gender === 'M' ? 'Boy' : s.gender === 'F' ? 'Girl' : 'Other'}
           </div>
@@ -330,9 +329,9 @@ export const StudentDirectory: React.FC = () => {
             onClick={() => navigate(`/students/${s.id}`)}
             className="hhs-btn hhs-btn-primary hhs-btn-sm"
             style={{ fontSize: '0.74rem', padding: '4px 8px' }}
-            title="Open complete student dossier"
+            title="View student profile"
           >
-            Dossier
+            Profile
           </button>
           <button
             onClick={() => setActiveStudent(s)}
@@ -350,11 +349,10 @@ export const StudentDirectory: React.FC = () => {
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
       <PageHeader
-        title="Student Ledger & Profiles"
-        subtitle="HanuJai High School, Jaipur • Official master student records, demographic registry, and attendance compliance."
+        title="Students"
+        subtitle="Student directory and profile records."
         breadcrumbs={[
-          { label: 'Campus' },
-          { label: 'Student Directory' },
+          { label: 'Students' },
         ]}
         actions={
           <div style={{ display: 'flex', gap: '10px' }}>
@@ -371,43 +369,6 @@ export const StudentDirectory: React.FC = () => {
       />
 
       {error && <ErrorBanner title="Error Loading Records" message={error} />}
-
-      {/* Phase 1 Controlled Demo Cohort Banner */}
-      {PHASE_CONFIG.phase1Only && (
-        <div
-          style={{
-            padding: '14px 18px',
-            borderRadius: 'var(--hhs-radius-base)',
-            backgroundColor: 'var(--pop-electric-blue-tint)',
-            border: '1.5px solid var(--pop-electric-blue)',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'space-between',
-            flexWrap: 'wrap',
-            gap: '12px',
-          }}
-        >
-          <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-            <Users size={20} color="var(--pop-electric-blue)" />
-            <div>
-              <div style={{ fontWeight: 800, color: 'var(--hhs-text-primary)', fontSize: '0.9rem' }}>
-                Phase 1 Active Demo Cohort: {PHASE_CONFIG.demoCohort.targetClassLabel}
-              </div>
-              <div style={{ fontSize: '0.78rem', color: 'var(--hhs-text-secondary)' }}>
-                Scoped cohort of 20 enrolled students for daily attendance roll-call and WhatsApp parent notifications. Underlying school records remain safely preserved.
-              </div>
-            </div>
-          </div>
-          <button
-            type="button"
-            onClick={() => setSelectedClass(PHASE_CONFIG.demoCohort.targetClassId)}
-            className="hhs-btn hhs-btn-primary hhs-btn-sm"
-            style={{ fontSize: '0.75rem', padding: '6px 12px' }}
-          >
-            Filter to {PHASE_CONFIG.demoCohort.targetClassLabel}
-          </button>
-        </div>
-      )}
 
       {/* Filter and Search Controls */}
       <div
@@ -656,7 +617,7 @@ export const StudentDirectory: React.FC = () => {
         isOpen={isEnrollModalOpen}
         onClose={() => setIsEnrollModalOpen(false)}
         title="Enroll New Student"
-        subtitle="Master student admission record for HanuJai High School, Jaipur."
+        subtitle="Student admission record."
       >
         <form onSubmit={handleEnrollSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>

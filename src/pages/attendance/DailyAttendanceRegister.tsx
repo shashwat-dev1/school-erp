@@ -10,7 +10,7 @@ import { Modal } from '../../components/ui/Modal';
 import { Permissions } from '../../domain/permissions';
 import { getSchoolLocalDate } from '../../domain/policy';
 import { downloadAttendanceRegisterXlsx, type AttendanceRegisterExportRow } from '../../utils/exportUtils';
-import type { ClassSection, AttendanceSession, AcademicYear, StudentRecord } from '../../domain/types';
+import type { ClassSection, AttendanceSession, StudentRecord } from '../../domain/types';
 import { WhatsAppNotificationService } from '../../services/whatsapp/whatsappService';
 import type { WhatsAppNotificationJob } from '../../services/whatsapp/types';
 import { PHASE_CONFIG } from '../../config/phase';
@@ -28,7 +28,6 @@ import {
   MessageSquare,
   Check,
   X as XIcon,
-  Clock,
   ShieldCheck,
   AlertCircle,
 } from 'lucide-react';
@@ -58,7 +57,6 @@ export const DailyAttendanceRegister: React.FC = () => {
 
   // Master Data
   const [classes, setClasses] = useState<ClassSection[]>([]);
-  const [academicYears, setAcademicYears] = useState<AcademicYear[]>([]);
   const initialClassId = paramClassId || currentUser?.assignedClassId || (currentUser?.role === 'principal' ? 'class-10-a' : '');
   const [selectedClassId, setSelectedClassId] = useState<string>(initialClassId);
   const [selectedDate, setSelectedDate] = useState<string>(getSchoolLocalDate());
@@ -82,7 +80,6 @@ export const DailyAttendanceRegister: React.FC = () => {
   const [whatsappJobs, setWhatsappJobs] = useState<WhatsAppNotificationJob[]>([]);
 
   // History & Export Workflow State (Preserved for administrative oversight)
-  const [historyYearId, setHistoryYearId] = useState<string>('year-2025-2026');
   const [historySelectedClasses, setHistorySelectedClasses] = useState<string[]>([initialClassId || 'class-10-a']);
   const [dateRangePreset, setDateRangePreset] = useState<AttendanceRangePreset>('3m');
   const [customStartDate] = useState<string>('2025-07-01');
@@ -102,20 +99,14 @@ export const DailyAttendanceRegister: React.FC = () => {
     }
   }, [paramClassId, selectedClassId, historySelectedClasses]);
 
-  // Load Classes & Academic Years
+  // Load Classes
   useEffect(() => {
     let isMounted = true;
     async function fetchMaster() {
       try {
-        const [clsList, years] = await Promise.all([
-          provider.getClasses(),
-          provider.getAcademicYears(),
-        ]);
+        const clsList = await provider.getClasses();
         if (isMounted) {
           setClasses(clsList);
-          setAcademicYears(years);
-          const currentYear = years.find(y => y.isCurrent) || years[0];
-          if (currentYear) setHistoryYearId(currentYear.id);
         }
       } catch (err: unknown) {
         console.error('Error fetching classes:', err);
@@ -536,9 +527,8 @@ export const DailyAttendanceRegister: React.FC = () => {
     <div style={{ display: 'flex', flexDirection: 'column', gap: '16px', maxWidth: '100%' }}>
       {/* Page Header */}
       <PageHeader
-        title={`Daily Attendance Register — ${classDisplayName}`}
-        subtitle={`Class Teacher: ${activeClass?.classTeacherName || currentUser?.name} • Session 2025–2026`}
-        roleScope={currentUser.role === 'principal' ? 'Principal Oversight' : 'Class Teacher'}
+        title={`Attendance Register — ${classDisplayName}`}
+        subtitle={activeClass?.classTeacherName ? `Class Teacher: ${activeClass.classTeacherName}` : undefined}
         breadcrumbs={[
           { label: 'Attendance', to: '/attendance' },
           { label: activeClass?.label || 'Register' },
@@ -733,7 +723,7 @@ export const DailyAttendanceRegister: React.FC = () => {
             </div>
           )}
 
-          {/* 1. Four-Item Selector Bar (screen3.png) */}
+          {/* 1. Selector Bar */}
           <div
             className="hhs-card"
             style={{
@@ -742,14 +732,14 @@ export const DailyAttendanceRegister: React.FC = () => {
               backgroundColor: '#FFFFFF',
               border: '1px solid #E2E8F0',
               display: 'grid',
-              gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))',
+              gridTemplateColumns: 'minmax(200px, 320px) minmax(180px, 240px)',
               gap: '14px',
               alignItems: 'end',
             }}
           >
             <div>
               <label style={{ fontSize: '0.72rem', fontWeight: 700, color: '#64748B', textTransform: 'uppercase', letterSpacing: '0.04em', display: 'block', marginBottom: '6px' }}>
-                1. Class & Grade
+                Class & Section
               </label>
               <select
                 id="register-class"
@@ -772,29 +762,7 @@ export const DailyAttendanceRegister: React.FC = () => {
 
             <div>
               <label style={{ fontSize: '0.72rem', fontWeight: 700, color: '#64748B', textTransform: 'uppercase', letterSpacing: '0.04em', display: 'block', marginBottom: '6px' }}>
-                2. Section & Stream
-              </label>
-              <div
-                style={{
-                  height: '40px',
-                  backgroundColor: '#F8FAFC',
-                  border: '1px solid #CBD5E1',
-                  borderRadius: '8px',
-                  display: 'flex',
-                  alignItems: 'center',
-                  padding: '0 12px',
-                  fontSize: '0.84rem',
-                  fontWeight: 600,
-                  color: '#0A1931',
-                }}
-              >
-                Section A • CBSE General Curriculum
-              </div>
-            </div>
-
-            <div>
-              <label style={{ fontSize: '0.72rem', fontWeight: 700, color: '#64748B', textTransform: 'uppercase', letterSpacing: '0.04em', display: 'block', marginBottom: '6px' }}>
-                3. Session Date
+                Attendance Date
               </label>
               <input
                 id="register-date"
@@ -805,31 +773,9 @@ export const DailyAttendanceRegister: React.FC = () => {
                 style={{ width: '100%', height: '40px', borderRadius: '8px' }}
               />
             </div>
-
-            <div>
-              <label style={{ fontSize: '0.72rem', fontWeight: 700, color: '#64748B', textTransform: 'uppercase', letterSpacing: '0.04em', display: 'block', marginBottom: '6px' }}>
-                4. Academic Term
-              </label>
-              <div
-                style={{
-                  height: '40px',
-                  backgroundColor: '#F8FAFC',
-                  border: '1px solid #CBD5E1',
-                  borderRadius: '8px',
-                  display: 'flex',
-                  alignItems: 'center',
-                  padding: '0 12px',
-                  fontSize: '0.84rem',
-                  fontWeight: 600,
-                  color: '#0A1931',
-                }}
-              >
-                Term 1 (2025–2026)
-              </div>
-            </div>
           </div>
 
-          {/* 2. 5 KPI Summary Metric Cards (screen3.png) */}
+          {/* 2. KPI Summary Metric Cards */}
           <div
             style={{
               display: 'grid',
@@ -837,18 +783,17 @@ export const DailyAttendanceRegister: React.FC = () => {
               gap: '14px',
             }}
           >
-            {/* Roster Strength */}
+            {/* Total Students */}
             <div className="hhs-card" style={{ padding: '16px 18px', borderRadius: '12px' }}>
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                 <span style={{ fontSize: '0.72rem', fontWeight: 700, color: '#64748B', textTransform: 'uppercase' }}>
-                  Roster Strength
+                  Total Students
                 </span>
                 <Users size={16} color="#4F46E5" />
               </div>
               <div style={{ fontSize: '1.75rem', fontWeight: 800, color: '#0F172A', margin: '6px 0 2px 0', fontFamily: "'Plus Jakarta Sans', sans-serif" }} className="tnum">
                 {totalCount}
               </div>
-              <div style={{ fontSize: '0.72rem', color: '#64748B' }}>Enrolled Cohort</div>
             </div>
 
             {/* Present Today */}
@@ -862,50 +807,31 @@ export const DailyAttendanceRegister: React.FC = () => {
               <div style={{ fontSize: '1.75rem', fontWeight: 800, color: '#10B981', margin: '6px 0 2px 0', fontFamily: "'Plus Jakarta Sans', sans-serif" }} className="tnum">
                 {presentCount}
               </div>
-              <div style={{ fontSize: '0.72rem', color: '#065F46' }}>Verified Turnout</div>
             </div>
 
-            {/* Marked Absent */}
+            {/* Absent Today */}
             <div className="hhs-card" style={{ padding: '16px 18px', borderRadius: '12px', borderLeft: '4px solid #EF4444' }}>
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                 <span style={{ fontSize: '0.72rem', fontWeight: 700, color: '#991B1B', textTransform: 'uppercase' }}>
-                  Marked Absent
+                  Absent Today
                 </span>
                 <XIcon size={16} color="#EF4444" />
               </div>
               <div style={{ fontSize: '1.75rem', fontWeight: 800, color: '#EF4444', margin: '6px 0 2px 0', fontFamily: "'Plus Jakarta Sans', sans-serif" }} className="tnum">
                 {absentCount}
               </div>
-              <div style={{ fontSize: '0.72rem', color: '#991B1B' }}>WhatsApp alert queued</div>
             </div>
 
-            {/* Approved Leave */}
-            <div className="hhs-card" style={{ padding: '16px 18px', borderRadius: '12px' }}>
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                <span style={{ fontSize: '0.72rem', fontWeight: 700, color: '#64748B', textTransform: 'uppercase' }}>
-                  Approved Leave
-                </span>
-                <Clock size={16} color="#8B5CF6" />
-              </div>
-              <div style={{ fontSize: '1.75rem', fontWeight: 800, color: '#0F172A', margin: '6px 0 2px 0', fontFamily: "'Plus Jakarta Sans', sans-serif" }} className="tnum">
-                0
-              </div>
-              <div style={{ fontSize: '0.72rem', color: '#64748B' }}>Medical / Excused</div>
-            </div>
-
-            {/* Turnout % */}
+            {/* Attendance Rate */}
             <div className="hhs-card" style={{ padding: '16px 18px', borderRadius: '12px', borderLeft: '4px solid #F5A623' }}>
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                 <span style={{ fontSize: '0.72rem', fontWeight: 700, color: '#92400E', textTransform: 'uppercase' }}>
-                  Turnout Rate
+                  Attendance Rate
                 </span>
                 <ShieldCheck size={16} color="#F5A623" />
               </div>
               <div style={{ fontSize: '1.75rem', fontWeight: 800, color: '#0A1931', margin: '6px 0 2px 0', fontFamily: "'Plus Jakarta Sans', sans-serif" }} className="tnum">
                 {unmarkedCount === 0 ? `${turnoutRate.toFixed(1)}%` : 'Pending'}
-              </div>
-              <div style={{ fontSize: '0.72rem', color: '#64748B' }}>
-                {unmarkedCount === 0 ? 'CBSE compliant (>75%)' : `${unmarkedCount} unmarked`}
               </div>
             </div>
           </div>
@@ -1355,7 +1281,7 @@ export const DailyAttendanceRegister: React.FC = () => {
             >
               <CheckCircle2 size={18} color="#10B981" />
               <span style={{ fontSize: '0.84rem', color: '#065F46', fontWeight: 600 }}>
-                Attendance register submitted. Automated WhatsApp parent notifications for Present and Absent students are queued in the background.
+                Attendance register submitted successfully.
               </span>
             </div>
           )}
@@ -1374,9 +1300,6 @@ export const DailyAttendanceRegister: React.FC = () => {
                   Filter attendance across sections and download official Excel reports.
                 </p>
               </div>
-              <span className="hhs-badge hhs-badge-primary">
-                {academicYears.find(y => y.id === historyYearId)?.name || 'Session 2025–2026'}
-              </span>
             </div>
 
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: '14px', alignItems: 'end' }}>

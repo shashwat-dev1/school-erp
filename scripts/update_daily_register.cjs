@@ -41,3 +41,4 @@ if (sIdx !== -1 && eIdx !== -1) {
 } else {
   console.error('Markers not found: sIdx =', sIdx, ', eIdx =', eIdx);
 }
+

@@ -6,7 +6,6 @@ import {
   ChevronDown,
   Menu,
   Search,
-  Calendar,
   Clock,
   Bell,
   Shield,
@@ -81,17 +80,17 @@ export const Topbar: React.FC<TopbarProps> = ({ onToggleSidebar }) => {
 
   const getBreadcrumbs = () => {
     const path = location.pathname;
-    if (path === '/') return 'Overview • Executive Dashboard';
-    if (path.startsWith('/attendance/register')) return 'Attendance • Daily Classroom Register';
-    if (path.startsWith('/attendance')) return 'Attendance • Whole-School Oversight';
-    if (path.startsWith('/students/')) return 'Master Dossiers • Student Profile';
-    if (path.startsWith('/students')) return 'Master Dossiers • Student Directory';
-    if (path.startsWith('/staff')) return 'Administration • Faculty & Staff Directory';
-    if (path.startsWith('/academics') || path.startsWith('/assessments')) return 'Academics • Marks Entry Register';
-    if (path.startsWith('/reports')) return 'Analytics • Performance & Attendance Reports';
-    if (path.startsWith('/admin/whatsapp') || path.startsWith('/whatsapp')) return 'Operations • WhatsApp Hub';
-    if (path.startsWith('/settings')) return 'Governance • Institutional Settings';
-    return 'HanuJai ERP • Operational Platform';
+    if (path === '/') return 'Dashboard';
+    if (path.startsWith('/attendance/register')) return 'Daily Attendance';
+    if (path.startsWith('/attendance')) return 'Attendance';
+    if (path.startsWith('/students/')) return 'Student Profile';
+    if (path.startsWith('/students')) return 'Students';
+    if (path.startsWith('/staff')) return 'Faculty & Staff';
+    if (path.startsWith('/academics') || path.startsWith('/assessments')) return 'Academics';
+    if (path.startsWith('/reports')) return 'Reports';
+    if (path.startsWith('/admin/whatsapp') || path.startsWith('/whatsapp')) return 'WhatsApp';
+    if (path.startsWith('/settings')) return 'Settings';
+    return 'HanuJai ERP';
   };
 
   // Formatted live date for Jaipur IST
@@ -189,16 +188,6 @@ export const Topbar: React.FC<TopbarProps> = ({ onToggleSidebar }) => {
             }}
           >
             {getBreadcrumbs()}
-          </span>
-          <span
-            style={{
-              fontSize: '0.68rem',
-              color: '#64748B',
-              fontWeight: 500,
-              letterSpacing: '0.02em',
-            }}
-          >
-            Jaipur Campus • Est. 1998
           </span>
         </div>
 
@@ -309,34 +298,8 @@ export const Topbar: React.FC<TopbarProps> = ({ onToggleSidebar }) => {
         </div>
       </div>
 
-      {/* Right: Academic Status Pills, Role Switcher & Notifications */}
+      {/* Right: Role Switcher & Notifications */}
       <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-        
-        {/* Session Badge Pill */}
-        <div
-          className="hhs-session-pill"
-          style={{
-            display: 'none',
-            alignItems: 'center',
-            gap: '6px',
-            backgroundColor: '#F8FAFC',
-            border: '1px solid #E2E8F0',
-            borderRadius: '9999px',
-            padding: '4px 12px',
-            fontSize: '0.75rem',
-            fontWeight: 600,
-            color: '#334155',
-          }}
-        >
-          <style>{`
-            @media (min-width: 680px) {
-              .hhs-session-pill { display: inline-flex !important; }
-            }
-          `}</style>
-          <Calendar size={13} color="#4F46E5" />
-          <span>2025–2026 Term 1</span>
-        </div>
-
         {/* Live Date Pill */}
         <div
           className="hhs-date-pill"

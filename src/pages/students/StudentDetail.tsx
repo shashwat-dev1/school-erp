@@ -123,14 +123,14 @@ export const StudentDetail: React.FC = () => {
   }, [id, provider, currentUser]);
 
   if (isLoading) {
-    return <LoadingState message="Retrieving student dossier..." />;
+    return <LoadingState message="Loading student profile..." />;
   }
 
   if (error || !student) {
     return (
       <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
         <PageHeader
-          title="Student Dossier"
+          title="Student Profile"
           breadcrumbs={[{ label: 'Students', to: '/students' }, { label: 'Record' }]}
         />
         <ErrorBanner title="Could not load record" message={error || 'Student not found.'} />
@@ -140,7 +140,7 @@ export const StudentDetail: React.FC = () => {
           style={{ width: 'fit-content' }}
         >
           <ArrowLeft size={16} />
-          <span>Return to Student Directory</span>
+          <span>Back to Students</span>
         </button>
       </div>
     );
@@ -240,7 +240,6 @@ export const StudentDetail: React.FC = () => {
       <PageHeader
         title={`${student.firstName} ${student.lastName}`}
         subtitle={`Admission #${student.admissionNumber} • Roll #${student.rollNumber} • ${student.classLabel}`}
-        roleScope={student.classLabel}
         breadcrumbs={[
           { label: 'Students', to: '/students' },
           { label: `${student.firstName} ${student.lastName}` },
@@ -329,7 +328,7 @@ export const StudentDetail: React.FC = () => {
         <div style={{ display: 'flex', gap: '20px', alignItems: 'center' }}>
           <div style={{ textAlign: 'right' }}>
             <div style={{ fontSize: '0.72rem', color: '#94A3B8', textTransform: 'uppercase', fontWeight: 700 }}>
-              Attendance Turnout
+              Attendance Rate
             </div>
             <div style={{ fontSize: '1.6rem', fontWeight: 800, color: attendanceRate >= 75 ? '#10B981' : '#F5A623' }} className="tnum">
               {attendanceRate}%
@@ -356,11 +355,11 @@ export const StudentDetail: React.FC = () => {
             }
           `}</style>
 
-          {/* Academic & Enrolment Identity */}
+          {/* Student Details */}
           <div className="hhs-card" style={{ padding: '20px' }}>
             <h3 className="hhs-headline-sm" style={{ marginBottom: '16px', display: 'flex', alignItems: 'center', gap: '8px' }}>
               <User size={16} color="var(--hhs-primary)" />
-              <span>Enrollment & Identity Details</span>
+              <span>Student Details</span>
             </h3>
 
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '14px', fontSize: '0.85rem' }}>
@@ -375,10 +374,6 @@ export const StudentDetail: React.FC = () => {
               <div>
                 <span className="hhs-label">Class & Section</span>
                 <div style={{ fontWeight: 600 }}>{student.classLabel}</div>
-              </div>
-              <div>
-                <span className="hhs-label">Academic Session</span>
-                <div style={{ fontWeight: 600 }}>2025–2026</div>
               </div>
               <div>
                 <span className="hhs-label">Date of Birth</span>

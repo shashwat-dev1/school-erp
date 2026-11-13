@@ -417,11 +417,11 @@ export const AttendanceReport: React.FC = () => {
         </div>
 
         <div className="hhs-metric-card">
-          <div className="hhs-metric-label">Turnout Aggregate</div>
+          <div className="hhs-metric-label">Average Attendance</div>
           <div className="hhs-metric-value" style={{ color: 'var(--hhs-primary)' }}>
             {stats.averageRate}%
           </div>
-          <div className="hhs-metric-sub">Mean turnout for selected dates</div>
+          <div className="hhs-metric-sub">For selected date range</div>
         </div>
 
         <div className="hhs-metric-card">
@@ -621,7 +621,7 @@ export const AttendanceReport: React.FC = () => {
             className="hhs-select"
             style={{ width: '180px', height: '34px', fontSize: '0.82rem' }}
           >
-            <option value="all">All Turnout Levels ({computedSummaries.length})</option>
+            <option value="all">All Attendance Rates ({computedSummaries.length})</option>
             <option value="below75">Below 75% ({stats.deficitCount})</option>
             <option value="above75">75% or above ({stats.compliantCount})</option>
           </select>
@@ -667,7 +667,7 @@ export const AttendanceReport: React.FC = () => {
                   <th className="numeric" style={{ width: '110px' }}>School Days</th>
                   <th className="numeric" style={{ width: '90px' }}>Present</th>
                   <th className="numeric" style={{ width: '90px' }}>Absent</th>
-                  <th className="numeric" style={{ width: '100px' }}>Turnout %</th>
+                  <th className="numeric" style={{ width: '100px' }}>Attendance %</th>
                   <th style={{ width: '140px' }}>Threshold Status</th>
                   <th style={{ textAlign: 'right', width: '90px' }} className="no-print">Actions</th>
                 </tr>

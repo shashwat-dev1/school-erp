@@ -238,9 +238,8 @@ export const StudentAttendanceHistory: React.FC = () => {
         }}
       >
         <div className="hhs-metric-card">
-          <div className="hhs-metric-label">Recorded Present / Absent</div>
+          <div className="hhs-metric-label">Total Recorded Days</div>
           <div className="hhs-metric-value">{totalRecordedDays} Days</div>
-          <div className="hhs-metric-sub">Academic Session 2025–26</div>
         </div>
 
         <div className="hhs-metric-card">
@@ -248,7 +247,6 @@ export const StudentAttendanceHistory: React.FC = () => {
           <div className="hhs-metric-value" style={{ color: 'var(--hhs-primary)' }}>
             {presentDays} Days
           </div>
-          <div className="hhs-metric-sub">Attended morning instructional hours</div>
         </div>
 
         <div className="hhs-metric-card">
@@ -259,11 +257,10 @@ export const StudentAttendanceHistory: React.FC = () => {
           >
             {absentDays} Days
           </div>
-          <div className="hhs-metric-sub">Excused &amp; unexcused absences</div>
         </div>
 
         <div className="hhs-metric-card">
-          <div className="hhs-metric-label">Turnout Percentage</div>
+          <div className="hhs-metric-label">Attendance Rate</div>
           <div
             className="hhs-metric-value"
             style={{
@@ -273,7 +270,7 @@ export const StudentAttendanceHistory: React.FC = () => {
             {attendanceTurnout}%
           </div>
           <div className="hhs-metric-sub">
-            {parseFloat(attendanceTurnout) < 75.0 ? 'Below 75% threshold' : '75% or above (Meets criteria)'}
+            {parseFloat(attendanceTurnout) < 75.0 ? 'Below 75%' : '75% or above'}
           </div>
         </div>
       </div>
@@ -292,13 +289,9 @@ export const StudentAttendanceHistory: React.FC = () => {
         >
           <div>
             <h4 style={{ margin: 0, fontSize: '0.92rem', fontWeight: 700, color: 'var(--hhs-text-primary)' }}>
-              Day-by-Day Attendance Record
+              Daily Attendance Log
             </h4>
-            <div style={{ fontSize: '0.76rem', color: 'var(--hhs-text-secondary)', marginTop: '2px' }}>
-              Chronological log of verified morning roll-call sessions
-            </div>
           </div>
-          <span className="hhs-badge hhs-badge-primary">Session 2025–26</span>
         </div>
 
         <div style={{ overflowX: 'auto' }}>

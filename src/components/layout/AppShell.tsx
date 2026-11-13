@@ -37,10 +37,10 @@ export const AppShell: React.FC = () => {
           }}
         >
           <div>
-            <strong>HanuJai High School ERP</strong> &#8226; Jaipur, Rajasthan, India &#8226; Est. 1998
+            <strong>HanuJai High School ERP</strong>
           </div>
           <div>
-            Academic Session 2025–2026 &#8226; Internal Operational Platform
+            HanuJai High School
           </div>
         </footer>
       </div>

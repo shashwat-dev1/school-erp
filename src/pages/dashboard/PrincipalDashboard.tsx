@@ -21,7 +21,6 @@ import {
   Calendar,
   FileSpreadsheet,
   ArrowRight,
-  ShieldCheck,
   AlertCircle,
   Clock,
 } from 'lucide-react';
@@ -70,7 +69,7 @@ export const PrincipalDashboard: React.FC = () => {
   }, [provider]);
 
   if (isLoading) {
-    return <LoadingState message="Loading administrative executive pulse..." />;
+    return <LoadingState message="Loading dashboard..." />;
   }
 
   if (error) {
@@ -125,30 +124,6 @@ export const PrincipalDashboard: React.FC = () => {
       >
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', flexWrap: 'wrap', gap: '16px' }}>
           <div style={{ display: 'flex', flexDirection: 'column', gap: '6px', maxWidth: '720px' }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-              <span
-                style={{
-                  display: 'inline-flex',
-                  alignItems: 'center',
-                  gap: '5px',
-                  backgroundColor: 'rgba(245, 166, 35, 0.15)',
-                  border: '1px solid #F5A623',
-                  color: '#F5A623',
-                  borderRadius: '9999px',
-                  padding: '3px 10px',
-                  fontSize: '0.68rem',
-                  fontWeight: 700,
-                  letterSpacing: '0.06em',
-                  textTransform: 'uppercase',
-                }}
-              >
-                <ShieldCheck size={12} color="#F5A623" />
-                School-Wide Overview • Read-Only
-              </span>
-              <span style={{ fontSize: '0.74rem', color: '#94A3B8' }}>
-                Academic Session 2025–2026
-              </span>
-            </div>
             <h1
               style={{
                 fontFamily: "'Plus Jakarta Sans', sans-serif",
@@ -159,17 +134,28 @@ export const PrincipalDashboard: React.FC = () => {
                 margin: 0,
               }}
             >
-              HanuJai High School Administration Desk
+              HanuJai High School
             </h1>
             <p
               style={{
                 color: '#CBD5E1',
-                fontSize: '0.86rem',
+                fontSize: '0.90rem',
+                fontWeight: 600,
                 lineHeight: 1.45,
                 margin: 0,
               }}
             >
-              Welcome, {currentUser?.name || 'Dr. Vikramaditya Sharma'}. Overseeing ~1,000 enrolled students across {classes.length || 20} class sections and daily attendance records.
+              Welcome, {currentUser?.name || 'Principal'}
+            </p>
+            <p
+              style={{
+                color: '#94A3B8',
+                fontSize: '0.84rem',
+                lineHeight: 1.4,
+                margin: 0,
+              }}
+            >
+              View the school&apos;s attendance and student records.
             </p>
           </div>
 
@@ -316,7 +302,7 @@ export const PrincipalDashboard: React.FC = () => {
             {totalAbsent || (classes.length * 2)}
           </div>
           <div style={{ fontSize: '0.75rem', color: '#991B1B' }}>
-            Automated WhatsApp alerts processed
+            Students recorded absent
           </div>
         </div>
       </div>
@@ -461,27 +447,15 @@ export const PrincipalDashboard: React.FC = () => {
         {/* Right Column: 7-Day Trajectory & Quick Management */}
         <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
           
-          {/* 7-Day Attendance Trajectory */}
+          {/* 7-Day Attendance Trend */}
           <div className="hhs-card" style={{ borderRadius: '12px', padding: '18px 20px' }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
               <div>
                 <h3 style={{ fontSize: '0.98rem', fontWeight: 700, color: '#0A1931', margin: 0, fontFamily: "'Plus Jakarta Sans', sans-serif" }}>
-                  7-Day Attendance Trajectory
+                  7-Day Attendance Trend
                 </h3>
-                <span style={{ fontSize: '0.74rem', color: '#64748B' }}>Statutory CBSE attendance threshold: 75%</span>
+                <span style={{ fontSize: '0.74rem', color: '#64748B' }}>Daily turnout across all classes</span>
               </div>
-              <span
-                style={{
-                  fontSize: '0.72rem',
-                  fontWeight: 700,
-                  padding: '3px 8px',
-                  borderRadius: '4px',
-                  backgroundColor: '#ECFDF5',
-                  color: '#065F46',
-                }}
-              >
-                Stable Turnout
-              </span>
             </div>
 
             {/* Trajectory Bar Chart */}
@@ -529,7 +503,7 @@ export const PrincipalDashboard: React.FC = () => {
           {/* Direct Navigation Links Card */}
           <div className="hhs-card" style={{ borderRadius: '12px', padding: '18px 20px' }}>
             <h3 style={{ fontSize: '0.94rem', fontWeight: 700, color: '#0A1931', margin: '0 0 14px 0', fontFamily: "'Plus Jakarta Sans', sans-serif" }}>
-              Operational Quick Links
+              Quick Links
             </h3>
 
             <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>

@@ -8,7 +8,7 @@ import React, { useState } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import { initialStaff } from '../../data/demo/seedData';
-import { Eye, EyeOff, ShieldCheck, ArrowRight, AlertCircle, Check, Sparkles } from 'lucide-react';
+import { Eye, EyeOff, ShieldCheck, ArrowRight, AlertCircle } from 'lucide-react';
 import hanujaiLogo from '../../assets/hanujai_logo.png';
 
 export const StaffLogin: React.FC = () => {
@@ -130,49 +130,13 @@ export const StaffLogin: React.FC = () => {
               </div>
             </div>
 
-            <div
-              style={{
-                display: 'inline-flex',
-                alignItems: 'center',
-                gap: '6px',
-                padding: '4px 12px',
-                borderRadius: '9999px',
-                backgroundColor: 'rgba(245, 166, 35, 0.15)',
-                border: '1px solid #F5A623',
-                color: '#F5A623',
-                fontSize: '0.70rem',
-                fontWeight: 700,
-                letterSpacing: '0.04em',
-                textTransform: 'uppercase',
-                marginBottom: '20px',
-              }}
-            >
-              <Sparkles size={13} color="#F5A623" />
-              <span>Institutional Staff ERP</span>
-            </div>
-
             <p style={{ color: '#CBD5E1', fontSize: '0.88rem', lineHeight: 1.5, marginBottom: '20px' }}>
-              Empowering leadership and teaching faculty with real-time academic intelligence, daily attendance registers, and automated WhatsApp parent communications.
+              Staff portal for daily attendance and student management.
             </p>
-
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '10px', fontSize: '0.78rem', color: '#94A3B8' }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                <Check size={14} color="#10B981" />
-                <span>CBSE Affiliated Institutional Standard</span>
-              </div>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                <Check size={14} color="#10B981" />
-                <span>Automated Baileys Parent WhatsApp Notifications</span>
-              </div>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                <Check size={14} color="#10B981" />
-                <span>Role-Based Dual Custody & Academic Integrity</span>
-              </div>
-            </div>
           </div>
 
           <div style={{ borderTop: '1px solid rgba(255, 255, 255, 0.1)', paddingTop: '16px', fontSize: '0.72rem', color: '#64748B' }}>
-            Jaipur Campus • Est. 1998 • Academic Session 2025–2026
+            HanuJai High School
           </div>
         </div>
 
@@ -304,7 +268,7 @@ export const StaffLogin: React.FC = () => {
                 <span>Authenticating...</span>
               ) : (
                 <>
-                  <span>Sign In to Staff Desk</span>
+                  <span>Sign In</span>
                   <ArrowRight size={16} />
                 </>
               )}
@@ -327,7 +291,7 @@ export const StaffLogin: React.FC = () => {
               }}
             >
               <ShieldCheck size={14} color="#0A1931" />
-              <span>Select Authorized Demo Persona:</span>
+              <span>Demo Quick Sign In:</span>
             </div>
 
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(130px, 1fr))', gap: '8px' }}>
