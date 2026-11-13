@@ -12,7 +12,7 @@ import { getSchoolLocalDate } from '../../domain/policy';
 import { downloadAttendanceRegisterXlsx, type AttendanceRegisterExportRow } from '../../utils/exportUtils';
 import type { ClassSection, AttendanceSession, AcademicYear, StudentRecord } from '../../domain/types';
 import { WhatsAppNotificationService } from '../../services/whatsapp/whatsappService';
-import type { WhatsAppNotificationJob, WhatsAppStats } from '../../services/whatsapp/types';
+import type { WhatsAppNotificationJob } from '../../services/whatsapp/types';
 import { PHASE_CONFIG } from '../../config/phase';
 import {
   Search,
@@ -26,9 +26,6 @@ import {
   FileSpreadsheet,
   Send,
   MessageSquare,
-  RefreshCw,
-  ChevronDown,
-  ChevronUp,
   Check,
   X as XIcon,
   Clock,
@@ -83,10 +80,6 @@ export const DailyAttendanceRegister: React.FC = () => {
 
   // WhatsApp Notification State
   const [whatsappJobs, setWhatsappJobs] = useState<WhatsAppNotificationJob[]>([]);
-  const [whatsappStats, setWhatsappStats] = useState<WhatsAppStats | null>(null);
-  const [isLoadingWhatsApp, setIsLoadingWhatsApp] = useState<boolean>(false);
-  const [isWhatsAppPanelOpen, setIsWhatsAppPanelOpen] = useState<boolean>(true);
-  const [retryingJobId, setRetryingJobId] = useState<string | null>(null);
 
   // History & Export Workflow State (Preserved for administrative oversight)
   const [historyYearId, setHistoryYearId] = useState<string>('year-2025-2026');
@@ -210,23 +203,18 @@ export const DailyAttendanceRegister: React.FC = () => {
         // Load WhatsApp notifications if session exists
         if (session && session.id) {
           try {
-            setIsLoadingWhatsApp(true);
-            const { jobs, stats } = await WhatsAppNotificationService.getSessionNotifications(session.id);
+            const { jobs } = await WhatsAppNotificationService.getSessionNotifications(session.id);
             if (isMounted) {
               const sortedJobs = [...jobs].sort((a, b) =>
                 (a.studentName || '').localeCompare(b.studentName || '', undefined, { sensitivity: 'base' })
               );
               setWhatsappJobs(sortedJobs);
-              setWhatsappStats(stats);
             }
           } catch (waErr) {
             console.warn('Failed to fetch WhatsApp notification jobs:', waErr);
-          } finally {
-            if (isMounted) setIsLoadingWhatsApp(false);
           }
         } else {
           setWhatsappJobs([]);
-          setWhatsappStats(null);
         }
       } catch (err: unknown) {
         if (!isMounted) return;
@@ -343,7 +331,6 @@ export const DailyAttendanceRegister: React.FC = () => {
       setIsConfirmModalOpen(false);
 
       // 2. Enqueue WhatsApp attendance notifications for parents (Present & Absent)
-      setIsLoadingWhatsApp(true);
       try {
         const processedJobs = await WhatsAppNotificationService.enqueueSessionNotifications(
           savedSession,
@@ -353,53 +340,14 @@ export const DailyAttendanceRegister: React.FC = () => {
           (a.studentName || '').localeCompare(b.studentName || '', undefined, { sensitivity: 'base' })
         );
         setWhatsappJobs(sortedProcessedJobs);
-        const { stats } = await WhatsAppNotificationService.getSessionNotifications(savedSession.id);
-        setWhatsappStats(stats);
       } catch (waErr) {
         console.error('WhatsApp notification dispatch error:', waErr);
-      } finally {
-        setIsLoadingWhatsApp(false);
       }
     } catch (err: unknown) {
       const msg = err instanceof Error ? err.message : 'Failed to submit daily register.';
       setError(msg);
     } finally {
       setIsSubmitting(false);
-    }
-  };
-
-  // Retry an individual WhatsApp notification job
-  const handleRetryNotification = async (job: WhatsAppNotificationJob) => {
-    setRetryingJobId(job.id);
-    try {
-      const updated = await WhatsAppNotificationService.retryJob(job);
-      setWhatsappJobs(prev => prev.map(j => (j.id === updated.id ? updated : j)));
-      if (existingSession) {
-        const { stats } = await WhatsAppNotificationService.getSessionNotifications(existingSession.id);
-        setWhatsappStats(stats);
-      }
-    } catch (err) {
-      console.error('Retry failed:', err);
-    } finally {
-      setRetryingJobId(null);
-    }
-  };
-
-  // Manual refresh for WhatsApp notification jobs
-  const handleManualRefreshWhatsApp = async () => {
-    if (!existingSession) return;
-    setIsLoadingWhatsApp(true);
-    try {
-      const { jobs, stats } = await WhatsAppNotificationService.getSessionNotifications(existingSession.id);
-      const sortedJobs = [...jobs].sort((a, b) =>
-        (a.studentName || '').localeCompare(b.studentName || '', undefined, { sensitivity: 'base' })
-      );
-      setWhatsappJobs(sortedJobs);
-      setWhatsappStats(stats);
-    } catch (err) {
-      console.warn('Manual WhatsApp refresh failed:', err);
-    } finally {
-      setIsLoadingWhatsApp(false);
     }
   };
 
@@ -411,12 +359,11 @@ export const DailyAttendanceRegister: React.FC = () => {
 
     const interval = setInterval(async () => {
       try {
-        const { jobs, stats } = await WhatsAppNotificationService.getSessionNotifications(existingSession.id);
+        const { jobs } = await WhatsAppNotificationService.getSessionNotifications(existingSession.id);
         const sortedJobs = [...jobs].sort((a, b) =>
           (a.studentName || '').localeCompare(b.studentName || '', undefined, { sensitivity: 'base' })
         );
         setWhatsappJobs(sortedJobs);
-        setWhatsappStats(stats);
       } catch {
         // silent background poll
       }
@@ -1393,389 +1340,28 @@ export const DailyAttendanceRegister: React.FC = () => {
             </div>
           </div>
 {/* ========================================================================= */}
-          {/* WHATSAPP PARENT NOTIFICATIONS STATUS PANEL (PHASE 1 CORE) */}
-          {/* ========================================================================= */}
-          <div
-            className="hhs-card"
-            style={{
-              padding: '0',
-              overflow: 'hidden',
-              border: isSessionActuallySaved ? '1.5px solid var(--pop-apple-green)' : '1px solid var(--hhs-border)',
-              backgroundColor: 'var(--hhs-surface)',
-            }}
-          >
-            {/* Header */}
+                    {/* WhatsApp Parent Notification Confirmation (Runs in background) */}
+          {isSessionActuallySaved && (
             <div
-              onClick={() => setIsWhatsAppPanelOpen(!isWhatsAppPanelOpen)}
               style={{
                 padding: '14px 18px',
-                backgroundColor: isSessionActuallySaved ? 'rgba(34, 197, 94, 0.08)' : 'var(--hhs-surface-muted)',
-                borderBottom: isWhatsAppPanelOpen ? '1px solid var(--hhs-border)' : 'none',
+                borderRadius: 'var(--hhs-radius-container)',
+                backgroundColor: '#ECFDF5',
+                border: '1px solid #A7F3D0',
                 display: 'flex',
-                justifyContent: 'space-between',
                 alignItems: 'center',
-                cursor: 'pointer',
-                userSelect: 'none',
+                gap: '10px',
               }}
             >
-              <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-                <div
-                  style={{
-                    width: '32px',
-                    height: '32px',
-                    borderRadius: '8px',
-                    backgroundColor: 'var(--pop-apple-green)',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    color: '#FFFFFF',
-                  }}
-                >
-                  <MessageSquare size={18} />
-                </div>
-                <div>
-                  <div style={{ fontWeight: 800, fontSize: '0.94rem', color: 'var(--hhs-text-primary)' }}>
-                    Parent WhatsApp Attendance Notifications
-                  </div>
-                  <div style={{ fontSize: '0.78rem', color: 'var(--hhs-text-secondary)' }}>
-                    Automatic notification dispatch for Present and Absent students
-                  </div>
-                </div>
-              </div>
-
-              <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-                {/* Provider Status Pill */}
-                <span
-                  style={{
-                    padding: '4px 10px',
-                    borderRadius: '12px',
-                    fontSize: '0.74rem',
-                    fontWeight: 700,
-                    backgroundColor: PHASE_CONFIG.whatsapp.sendEnabled ? 'var(--pop-apple-green-tint)' : 'var(--pop-canary-yellow-tint)',
-                    border: PHASE_CONFIG.whatsapp.sendEnabled ? '1px solid var(--pop-apple-green)' : '1px solid var(--pop-canary-yellow)',
-                    color: PHASE_CONFIG.whatsapp.sendEnabled ? '#166534' : '#854d0e',
-                    display: 'flex',
-                    alignItems: 'center',
-                    gap: '4px',
-                  }}
-                >
-                  <ShieldCheck size={13} />
-                  <span>
-                    {PHASE_CONFIG.whatsapp.sendEnabled
-                      ? 'Live Queue Active (Worker Dispatches)'
-                      : 'Dry-Run Mode (Safe Preview)'}
-                  </span>
-                </span>
-
-                {isSessionActuallySaved && (
-                  <button
-                    type="button"
-                    onClick={handleManualRefreshWhatsApp}
-                    disabled={isLoadingWhatsApp}
-                    title="Refresh WhatsApp Delivery Status"
-                    style={{
-                      display: 'flex',
-                      alignItems: 'center',
-                      gap: '5px',
-                      padding: '4px 10px',
-                      borderRadius: 'var(--hhs-radius-sm)',
-                      border: '1px solid var(--hhs-border)',
-                      backgroundColor: 'var(--hhs-surface)',
-                      fontSize: '0.74rem',
-                      fontWeight: 600,
-                      cursor: 'pointer',
-                      color: 'var(--hhs-text-primary)',
-                    }}
-                  >
-                    <RefreshCw size={12} style={{ animation: isLoadingWhatsApp ? 'spin 1s linear infinite' : 'none' }} />
-                    <span>Refresh Status</span>
-                  </button>
-                )}
-
-                <button
-                  type="button"
-                  onClick={() => setIsWhatsAppPanelOpen(!isWhatsAppPanelOpen)}
-                  style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--hhs-text-secondary)', display: 'flex', alignItems: 'center' }}
-                >
-                  {isWhatsAppPanelOpen ? <ChevronUp size={20} /> : <ChevronDown size={20} />}
-                </button>
-              </div>
+              <CheckCircle2 size={18} color="#10B981" />
+              <span style={{ fontSize: '0.84rem', color: '#065F46', fontWeight: 600 }}>
+                Attendance register submitted. Automated WhatsApp parent notifications for Present and Absent students are queued in the background.
+              </span>
             </div>
-
-            {/* Panel Body */}
-            {isWhatsAppPanelOpen && (
-              <div style={{ padding: '16px 18px', display: 'flex', flexDirection: 'column', gap: '14px' }}>
-                {/* Summary Metrics Bar */}
-                <div
-                  style={{
-                    display: 'grid',
-                    gridTemplateColumns: 'repeat(auto-fit, minmax(130px, 1fr))',
-                    gap: '10px',
-                  }}
-                >
-                  <div
-                    style={{
-                      padding: '10px 14px',
-                      borderRadius: 'var(--hhs-radius-base)',
-                      backgroundColor: 'var(--hhs-canvas)',
-                      border: '1px solid var(--hhs-border)',
-                      textAlign: 'center',
-                    }}
-                  >
-                    <div className="tnum" style={{ fontSize: '1.25rem', fontWeight: 800, color: 'var(--hhs-text-primary)' }}>
-                      {whatsappStats ? whatsappStats.total : isSessionActuallySaved ? totalCount : 0}
-                    </div>
-                    <div style={{ fontSize: '0.72rem', fontWeight: 700, color: 'var(--hhs-text-secondary)', textTransform: 'uppercase' }}>
-                      Eligible Parents
-                    </div>
-                  </div>
-
-                  <div
-                    style={{
-                      padding: '10px 14px',
-                      borderRadius: 'var(--hhs-radius-base)',
-                      backgroundColor: 'var(--pop-apple-green-tint)',
-                      border: '1px solid var(--pop-apple-green)',
-                      textAlign: 'center',
-                    }}
-                  >
-                    <div className="tnum" style={{ fontSize: '1.25rem', fontWeight: 800, color: 'var(--pop-apple-green)' }}>
-                      {whatsappStats ? whatsappStats.sent : 0}
-                    </div>
-                    <div style={{ fontSize: '0.72rem', fontWeight: 700, color: '#166534', textTransform: 'uppercase' }}>
-                      {PHASE_CONFIG.whatsapp.sendEnabled ? 'Sent' : 'Simulated'}
-                    </div>
-                  </div>
-
-                  <div
-                    style={{
-                      padding: '10px 14px',
-                      borderRadius: 'var(--hhs-radius-base)',
-                      backgroundColor: 'var(--pop-canary-yellow-tint)',
-                      border: '1px solid var(--pop-canary-yellow)',
-                      textAlign: 'center',
-                    }}
-                  >
-                    <div className="tnum" style={{ fontSize: '1.25rem', fontWeight: 800, color: '#854d0e' }}>
-                      {whatsappStats ? whatsappStats.pending : 0}
-                    </div>
-                    <div style={{ fontSize: '0.72rem', fontWeight: 700, color: '#854d0e', textTransform: 'uppercase' }}>
-                      Pending Queue
-                    </div>
-                  </div>
-
-                  <div
-                    style={{
-                      padding: '10px 14px',
-                      borderRadius: 'var(--hhs-radius-base)',
-                      backgroundColor: 'var(--hhs-surface-muted)',
-                      border: '1px solid var(--hhs-border)',
-                      textAlign: 'center',
-                    }}
-                  >
-                    <div className="tnum" style={{ fontSize: '1.25rem', fontWeight: 800, color: 'var(--hhs-text-secondary)' }}>
-                      {whatsappStats ? whatsappStats.skipped : 0}
-                    </div>
-                    <div style={{ fontSize: '0.72rem', fontWeight: 700, color: 'var(--hhs-text-secondary)', textTransform: 'uppercase' }}>
-                      Skipped (No Phone)
-                    </div>
-                  </div>
-
-                  <div
-                    style={{
-                      padding: '10px 14px',
-                      borderRadius: 'var(--hhs-radius-base)',
-                      backgroundColor: 'var(--pop-coral-red-tint)',
-                      border: '1px solid var(--pop-coral-red)',
-                      textAlign: 'center',
-                    }}
-                  >
-                    <div className="tnum" style={{ fontSize: '1.25rem', fontWeight: 800, color: 'var(--pop-coral-red)' }}>
-                      {whatsappStats ? whatsappStats.failed : 0}
-                    </div>
-                    <div style={{ fontSize: '0.72rem', fontWeight: 700, color: '#991b1b', textTransform: 'uppercase' }}>
-                      Failed
-                    </div>
-                  </div>
-                </div>
-
-                {/* Queue status banner */}
-                {!isSessionActuallySaved && (
-                  <div
-                    style={{
-                      padding: '12px 14px',
-                      borderRadius: 'var(--hhs-radius-base)',
-                      backgroundColor: 'var(--hhs-canvas)',
-                      border: '1px dashed var(--hhs-border)',
-                      fontSize: '0.82rem',
-                      color: 'var(--hhs-text-secondary)',
-                      display: 'flex',
-                      alignItems: 'center',
-                      gap: '8px',
-                    }}
-                  >
-                    <Clock size={16} color="var(--pop-tangerine-orange)" />
-                    <span>
-                      Parent notifications are enqueued only <strong>after</strong> the daily attendance register is successfully saved and submitted.
-                    </span>
-                  </div>
-                )}
-
-                {/* Jobs List */}
-                {isLoadingWhatsApp ? (
-                  <div style={{ padding: '16px', textAlign: 'center', color: 'var(--hhs-text-secondary)' }}>
-                    Loading parent notification queue...
-                  </div>
-                ) : whatsappJobs.length > 0 ? (
-                  <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', marginTop: '6px' }}>
-                    <div style={{ fontWeight: 700, fontSize: '0.82rem', color: 'var(--hhs-text-secondary)', textTransform: 'uppercase' }}>
-                      Individual Parent Notification Records ({whatsappJobs.length})
-                    </div>
-
-                    <div
-                      style={{
-                        maxHeight: '320px',
-                        overflowY: 'auto',
-                        border: '1px solid var(--hhs-border)',
-                        borderRadius: 'var(--hhs-radius-base)',
-                      }}
-                    >
-                      {whatsappJobs.map(job => (
-                        <div
-                          key={job.id}
-                          style={{
-                            padding: '10px 14px',
-                            borderBottom: '1px solid var(--hhs-border)',
-                            backgroundColor: 'var(--hhs-surface)',
-                            display: 'flex',
-                            flexDirection: 'column',
-                            gap: '6px',
-                            fontSize: '0.82rem',
-                          }}
-                        >
-                          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '8px' }}>
-                            <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                              <span style={{ fontWeight: 700, color: 'var(--hhs-text-primary)' }}>
-                                {job.studentName}
-                              </span>
-                              <span
-                                style={{
-                                  padding: '2px 8px',
-                                  borderRadius: '6px',
-                                  fontSize: '0.72rem',
-                                  fontWeight: 700,
-                                  backgroundColor: job.attendanceState === 'present' ? 'var(--pop-apple-green-tint)' : 'var(--pop-coral-red-tint)',
-                                  color: job.attendanceState === 'present' ? '#166534' : '#991b1b',
-                                }}
-                              >
-                                {job.attendanceState.toUpperCase()}
-                              </span>
-                              <span style={{ color: 'var(--hhs-text-secondary)', fontSize: '0.78rem' }}>
-                                Guardian: {job.guardianName} ({job.recipientPhone || 'No phone'})
-                              </span>
-                            </div>
-
-                            <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-                              {job.deliveryStatus === 'sent' && (
-                                <span
-                                  style={{
-                                    padding: '3px 8px',
-                                    borderRadius: '6px',
-                                    fontSize: '0.72rem',
-                                    fontWeight: 700,
-                                    backgroundColor: 'var(--pop-apple-green)',
-                                    color: '#FFFFFF',
-                                    display: 'flex',
-                                    alignItems: 'center',
-                                    gap: '4px',
-                                  }}
-                                >
-                                  <Check size={12} />
-                                  <span>{PHASE_CONFIG.whatsapp.sendEnabled ? 'Sent' : 'Simulated (Dry-Run)'}</span>
-                                </span>
-                              )}
-                              {job.deliveryStatus === 'pending' && (
-                                <span
-                                  style={{
-                                    padding: '3px 8px',
-                                    borderRadius: '6px',
-                                    fontSize: '0.72rem',
-                                    fontWeight: 700,
-                                    backgroundColor: 'var(--pop-canary-yellow)',
-                                    color: '#854d0e',
-                                  }}
-                                >
-                                  Queued
-                                </span>
-                              )}
-                              {job.deliveryStatus === 'skipped' && (
-                                <span
-                                  style={{
-                                    padding: '3px 8px',
-                                    borderRadius: '6px',
-                                    fontSize: '0.72rem',
-                                    fontWeight: 600,
-                                    backgroundColor: 'var(--hhs-canvas)',
-                                    color: 'var(--hhs-text-secondary)',
-                                  }}
-                                >
-                                  Skipped ({job.skipReason || 'no phone'})
-                                </span>
-                              )}
-                              {job.deliveryStatus === 'failed' && (
-                                <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-                                  <span
-                                    style={{
-                                      padding: '3px 8px',
-                                      borderRadius: '6px',
-                                      fontSize: '0.72rem',
-                                      fontWeight: 700,
-                                      backgroundColor: 'var(--pop-coral-red)',
-                                      color: '#FFFFFF',
-                                    }}
-                                  >
-                                    Failed
-                                  </span>
-                                  <button
-                                    type="button"
-                                    onClick={() => handleRetryNotification(job)}
-                                    disabled={retryingJobId === job.id}
-                                    className="hhs-btn hhs-btn-sm"
-                                    style={{ padding: '2px 8px', fontSize: '0.72rem' }}
-                                  >
-                                    <RefreshCw size={11} className={retryingJobId === job.id ? 'animate-spin' : ''} />
-                                    <span>Retry</span>
-                                  </button>
-                                </div>
-                              )}
-                            </div>
-                          </div>
-
-                          {/* Message Body Snippet */}
-                          <div
-                            style={{
-                              backgroundColor: 'var(--hhs-canvas)',
-                              padding: '6px 10px',
-                              borderRadius: '4px',
-                              fontSize: '0.76rem',
-                              color: 'var(--hhs-text-secondary)',
-                              borderLeft: `3px solid ${job.attendanceState === 'present' ? 'var(--pop-apple-green)' : 'var(--pop-coral-red)'}`,
-                            }}
-                          >
-                            &quot;{job.messageText}&quot;
-                          </div>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-                ) : null}
-              </div>
-            )}
-          </div>
+          )}
         </>
       )}
 
-      {/* ========================================================================= */}
       {/* MODE 2: ATTENDANCE HISTORY & EXCEL EXPORT (PRESERVED) */}
       {/* ========================================================================= */}
       {activeMode === 'history' && (

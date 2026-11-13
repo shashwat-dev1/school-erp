@@ -1,7 +1,8 @@
 /**
  * HanuJai High School ERP — Class Teacher Workspace
  * Clean, focused view for the assigned class (e.g. Class 10-A).
- * Prioritizes daily roll call, absent follow-up, and class performance.
+ * Phase 1 Scope: Assigned Section Roll Call & Student Information.
+ * WhatsApp automated dispatches occur in the background upon register submission.
  */
 
 import React, { useState, useEffect } from 'react';
@@ -17,17 +18,15 @@ import type {
   StudentRecord,
   AttendanceSession,
 } from '../../domain/types';
-import type { RiskWatchlistItem } from '../../data/provider';
-import { PHASE_CONFIG } from '../../config/phase';
 import {
   CalendarCheck,
   Users,
   Phone,
-  ArrowRight,
   CheckCircle,
   AlertCircle,
-  GraduationCap,
-  MessageSquare,
+  Clock,
+  FileSpreadsheet,
+  ArrowRight,
 } from 'lucide-react';
 
 export const ClassTeacherDashboard: React.FC = () => {
@@ -36,7 +35,7 @@ export const ClassTeacherDashboard: React.FC = () => {
   const { provider } = useData();
 
   const assignedClassId = currentUser?.assignedClassId;
-  const assignedClassLabel = currentUser?.assignedClassLabel || (assignedClassId ? `Class ${assignedClassId.toUpperCase()}` : 'Assigned Class');
+  const assignedClassLabel = currentUser?.assignedClassLabel || (assignedClassId ? `Class ${assignedClassId.toUpperCase().replace('CLASS-', '')}` : 'Assigned Class');
 
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
@@ -44,7 +43,6 @@ export const ClassTeacherDashboard: React.FC = () => {
   const [classSection, setClassSection] = useState<ClassSection | null>(null);
   const [students, setStudents] = useState<StudentRecord[]>([]);
   const [todaySession, setTodaySession] = useState<AttendanceSession | null>(null);
-  const [classWatchlist, setClassWatchlist] = useState<RiskWatchlistItem[]>([]);
 
   useEffect(() => {
     if (!assignedClassId) {
@@ -58,18 +56,16 @@ export const ClassTeacherDashboard: React.FC = () => {
       setError(null);
       try {
         const today = new Intl.DateTimeFormat('en-CA', { timeZone: 'Asia/Kolkata' }).format(new Date());
-        const [cls, stuList, session, watchlist] = await Promise.all([
+        const [cls, stuList, session] = await Promise.all([
           provider.getClassById(assignedClassId!),
           provider.getClassStudents(assignedClassId!),
           provider.getAttendanceSession(assignedClassId!, today),
-          provider.getRiskWatchlist(assignedClassId!),
         ]);
 
         if (!isMounted) return;
         setClassSection(cls);
         setStudents(stuList);
         setTodaySession(session);
-        setClassWatchlist(watchlist);
       } catch (err: unknown) {
         if (!isMounted) return;
         setError(err instanceof Error ? err.message : 'Could not load class records.');
@@ -93,7 +89,7 @@ export const ClassTeacherDashboard: React.FC = () => {
         />
         <ErrorBanner
           title="No Class Assigned"
-          message="Your account is not assigned to a class section yet. Please ask the Principal to assign your class."
+          message="Your account is not assigned to a class section yet. Please ask the Principal to assign your class section."
         />
       </div>
     );
@@ -108,9 +104,11 @@ export const ClassTeacherDashboard: React.FC = () => {
   }
 
   const totalStudents = students.length;
+  const isAttendanceSubmitted = todaySession?.status === 'submitted';
   const presentCount = todaySession ? todaySession.presentCount : 0;
   const absentCount = todaySession ? todaySession.absentCount : 0;
-  const attendanceRate = totalStudents > 0 ? Math.round((presentCount / totalStudents) * 100) : 0;
+  const unmarkedCount = isAttendanceSubmitted ? 0 : Math.max(0, totalStudents - presentCount - absentCount);
+  const attendanceRate = totalStudents > 0 && isAttendanceSubmitted ? Math.round((presentCount / totalStudents) * 100) : 0;
 
   // Filter absent students from today's session
   const absentRecords = todaySession?.records.filter(r => r.state === 'absent') || [];
@@ -119,22 +117,6 @@ export const ClassTeacherDashboard: React.FC = () => {
     return { record: r, student: stu };
   });
 
-  const isAttendanceSubmitted = todaySession?.status === 'submitted';
-
-  // Plain-language trigger translation
-  const translateTrigger = (trigger: string): string => {
-    if (trigger.includes('ATT-01') || trigger.toLowerCase().includes('consecutive')) {
-      return '3 consecutive absences';
-    }
-    if (trigger.includes('ATT-03') || trigger.includes('<75') || trigger.toLowerCase().includes('turnout')) {
-      return 'Attendance below 75%';
-    }
-    if (trigger.includes('ACAD-04') || trigger.toLowerCase().includes('drop')) {
-      return 'Subject marks dropped >20%';
-    }
-    return trigger.replace(/#[A-Z]+-[0-9]+/g, '').trim() || 'Needs academic follow-up';
-  };
-
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
       {/* Header */}
@@ -142,33 +124,39 @@ export const ClassTeacherDashboard: React.FC = () => {
         title={`My Class (${assignedClassLabel})`}
         subtitle={`Class Teacher: ${currentUser?.name} • Room ${classSection.roomNumber} • Session 2025–2026`}
         roleScope={assignedClassLabel}
-        breadcrumbs={[{ label: 'My Class' }]}
+        breadcrumbs={[{ label: 'Class Workspace' }]}
         actions={
-          <div style={{ display: 'flex', gap: '8px' }}>
+          <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
             <button
               onClick={() => navigate(`/attendance/register/${assignedClassId}`)}
               className="hhs-btn hhs-btn-primary"
               style={{ display: 'flex', alignItems: 'center', gap: '6px' }}
             >
               <CalendarCheck size={15} />
-              <span>{isAttendanceSubmitted ? 'Review Attendance' : 'Mark Today’s Attendance'}</span>
+              <span>{isAttendanceSubmitted ? 'Review Attendance Register' : 'Mark Daily Roll Call'}</span>
             </button>
-            {!PHASE_CONFIG.phase1Only && (
-              <button
-                onClick={() => navigate(`/performance/classes/${assignedClassId}`)}
-                className="hhs-btn hhs-btn-secondary"
-                style={{ display: 'flex', alignItems: 'center', gap: '6px' }}
-              >
-                <GraduationCap size={15} />
-                <span>Class Results</span>
-              </button>
-            )}
+            <button
+              onClick={() => navigate('/students')}
+              className="hhs-btn hhs-btn-secondary"
+              style={{ display: 'flex', alignItems: 'center', gap: '6px' }}
+            >
+              <Users size={15} />
+              <span>Class Roster</span>
+            </button>
+            <button
+              onClick={() => navigate('/reports/attendance')}
+              className="hhs-btn hhs-btn-secondary"
+              style={{ display: 'flex', alignItems: 'center', gap: '6px' }}
+            >
+              <FileSpreadsheet size={15} />
+              <span>Export Excel</span>
+            </button>
           </div>
         }
       />
 
-      {/* Prominent Call to Action with Canary Yellow Alert Pop Banner */}
-      {!isAttendanceSubmitted && (
+      {/* Prominent Roll Call Alert Banner */}
+      {!isAttendanceSubmitted ? (
         <div
           style={{
             padding: '16px 20px',
@@ -186,25 +174,55 @@ export const ClassTeacherDashboard: React.FC = () => {
         >
           <div>
             <div style={{ fontWeight: 800, color: '#202033', fontSize: '0.94rem' }}>
-              Today&apos;s Attendance is Pending
+              Today&apos;s Roll Call is Pending
             </div>
             <div style={{ fontSize: '0.82rem', color: '#45455E', marginTop: '2px' }}>
-              Please take roll call for {assignedClassLabel} and submit the register to notify parents via WhatsApp.
+              Please take morning roll call for {assignedClassLabel} and submit the register. Automated notifications will dispatch in the background.
             </div>
           </div>
           <button
             onClick={() => navigate(`/attendance/register/${assignedClassId}`)}
             className="hhs-btn hhs-btn-primary"
           >
-            Take Attendance Now
+            Mark Now
+          </button>
+        </div>
+      ) : (
+        <div
+          style={{
+            padding: '14px 18px',
+            borderRadius: 'var(--hhs-radius-container)',
+            backgroundColor: '#ECFDF5',
+            border: '1px solid #A7F3D0',
+            borderLeft: '5px solid #10B981',
+            display: 'flex',
+            justifyContent: 'space-between',
+            alignItems: 'center',
+            flexWrap: 'wrap',
+            gap: '12px',
+          }}
+        >
+          <div>
+            <div style={{ fontWeight: 800, color: '#065F46', fontSize: '0.92rem' }}>
+              ✓ Today&apos;s Attendance Register is Submitted
+            </div>
+            <div style={{ fontSize: '0.80rem', color: '#047857', marginTop: '2px' }}>
+              {assignedClassLabel} roll call completed ({presentCount} Present, {absentCount} Absent • {attendanceRate}% turnout).
+            </div>
+          </div>
+          <button
+            onClick={() => navigate(`/attendance/register/${assignedClassId}`)}
+            className="hhs-btn hhs-btn-secondary hhs-btn-sm"
+          >
+            View Register
           </button>
         </div>
       )}
 
-      {/* 4 Focused Scoped Metrics with Vibrant Pop Accents */}
+      {/* 5 Scoped Attendance Metrics */}
       <div className="hhs-metrics-grid">
         <MetricCard
-          label="Total Students"
+          label="Assigned Students"
           value={totalStudents.toString()}
           subtext={`Room ${classSection.roomNumber}`}
           icon={<Users size={20} />}
@@ -213,27 +231,27 @@ export const ClassTeacherDashboard: React.FC = () => {
         <MetricCard
           label="Present Today"
           value={presentCount.toString()}
-          subtext={isAttendanceSubmitted ? `${attendanceRate}% turnout today` : 'Roll call pending'}
+          subtext={isAttendanceSubmitted ? `${attendanceRate}% turnout` : 'Roll call pending'}
           icon={<CheckCircle size={20} />}
           accent="success"
         />
         <MetricCard
           label="Absent Today"
           value={absentCount.toString()}
-          subtext={isAttendanceSubmitted ? 'Alerts queued/sent' : 'Not yet submitted'}
+          subtext={isAttendanceSubmitted ? 'Alerts queued' : 'Not yet submitted'}
           icon={<AlertCircle size={20} />}
           accent="danger"
         />
         <MetricCard
-          label="WhatsApp Alerts"
-          value={isAttendanceSubmitted ? totalStudents.toString() : '0'}
-          subtext={PHASE_CONFIG.whatsapp.sendEnabled ? 'Live dispatch' : 'Dry-run preview'}
-          icon={<MessageSquare size={20} />}
+          label="Unmarked Count"
+          value={unmarkedCount.toString()}
+          subtext={isAttendanceSubmitted ? 'Complete' : 'Awaiting roll call'}
+          icon={<Clock size={20} />}
           accent="warning"
         />
       </div>
 
-      {/* 2 Supporting Areas: Absent Students Follow-up & Class Performance Summary */}
+      {/* 2 Focused Operational Areas */}
       <div className="hhs-grid-2col">
         
         {/* Supporting Area 1: Absent Students & Parent Contacts */}
@@ -249,7 +267,7 @@ export const ClassTeacherDashboard: React.FC = () => {
               onClick={() => navigate(`/attendance/register/${assignedClassId}`)}
               className="hhs-btn hhs-btn-secondary hhs-btn-sm"
             >
-              <span>Attendance Register</span>
+              <span>Register</span>
             </button>
           </div>
 
@@ -291,7 +309,7 @@ export const ClassTeacherDashboard: React.FC = () => {
                       className="hhs-btn hhs-btn-secondary hhs-btn-sm"
                       style={{ flexShrink: 0, padding: '4px 8px', fontSize: '0.76rem' }}
                     >
-                      <span>View</span>
+                      <span>Profile</span>
                     </button>
                   )}
                 </div>
@@ -300,66 +318,83 @@ export const ClassTeacherDashboard: React.FC = () => {
           )}
         </div>
 
-        {/* Supporting Area 2: Class Performance & Attention List */}
+        {/* Supporting Area 2: Class Attendance History & Quick Navigation */}
         <div className="hhs-card" style={{ padding: 'clamp(14px, 2vw, 20px)' }}>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '14px' }}>
             <div>
-              <h3 className="hhs-headline-sm">Students Needing Follow-up</h3>
+              <h3 className="hhs-headline-sm">Class Attendance Operations</h3>
               <p className="hhs-body-sm" style={{ color: 'var(--hhs-text-secondary)' }}>
-                Academic or attendance flags.
+                Roster, reports, and export tools for {assignedClassLabel}.
               </p>
             </div>
-            {!PHASE_CONFIG.phase1Only && (
-              <button
-                onClick={() => navigate('/behaviour')}
-                className="hhs-btn hhs-btn-secondary hhs-btn-sm"
-              >
-                <span>Teacher notes</span>
-              </button>
-            )}
           </div>
 
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-            {classWatchlist.slice(0, 4).map(item => (
-              <div
-                key={item.student.id}
-                style={{
-                  padding: '10px 12px',
-                  borderRadius: 'var(--hhs-radius-base)',
-                  border: '1px solid var(--hhs-border)',
-                  backgroundColor: 'var(--hhs-canvas)',
-                  display: 'flex',
-                  justifyContent: 'space-between',
-                  alignItems: 'center',
-                }}
-              >
-                <div>
-                  <div style={{ fontWeight: 600, fontSize: '0.86rem' }}>
-                    Roll #{item.student.rollNumber} — {item.student.fullName}
-                  </div>
-                  <div style={{ fontSize: '0.78rem', color: 'var(--hhs-accent)', marginTop: '2px' }}>
-                    {translateTrigger(item.primaryTrigger)}
-                  </div>
-                  <div style={{ fontSize: '0.74rem', color: 'var(--hhs-text-secondary)', marginTop: '2px' }}>
-                    Attendance: <strong className="tnum">{item.attendanceRate}%</strong>
-                  </div>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+            <div
+              onClick={() => navigate('/students')}
+              style={{
+                padding: '12px 14px',
+                borderRadius: 'var(--hhs-radius-base)',
+                border: '1px solid var(--hhs-border)',
+                backgroundColor: 'var(--hhs-canvas)',
+                display: 'flex',
+                justifyContent: 'space-between',
+                alignItems: 'center',
+                cursor: 'pointer',
+              }}
+            >
+              <div>
+                <div style={{ fontWeight: 600, fontSize: '0.86rem' }}>View Class Roster</div>
+                <div style={{ fontSize: '0.76rem', color: 'var(--hhs-text-secondary)', marginTop: '2px' }}>
+                  Complete list of {totalStudents} students enrolled in {assignedClassLabel}.
                 </div>
-
-                <button
-                  onClick={() => navigate(`/students/${item.student.id}`)}
-                  className="hhs-btn hhs-btn-text hhs-btn-sm"
-                  style={{ color: 'var(--hhs-primary)', padding: '2px 6px' }}
-                >
-                  <ArrowRight size={14} />
-                </button>
               </div>
-            ))}
+              <ArrowRight size={16} color="var(--hhs-primary)" />
+            </div>
 
-            {classWatchlist.length === 0 && (
-              <div style={{ padding: '24px 12px', textAlign: 'center', color: 'var(--hhs-text-secondary)', fontSize: '0.84rem' }}>
-                No students currently flagged in your class.
+            <div
+              onClick={() => navigate('/reports/attendance')}
+              style={{
+                padding: '12px 14px',
+                borderRadius: 'var(--hhs-radius-base)',
+                border: '1px solid var(--hhs-border)',
+                backgroundColor: 'var(--hhs-canvas)',
+                display: 'flex',
+                justifyContent: 'space-between',
+                alignItems: 'center',
+                cursor: 'pointer',
+              }}
+            >
+              <div>
+                <div style={{ fontWeight: 600, fontSize: '0.86rem' }}>Attendance Records & History</div>
+                <div style={{ fontSize: '0.76rem', color: 'var(--hhs-text-secondary)', marginTop: '2px' }}>
+                  Full multi-month attendance registers and matrix view.
+                </div>
               </div>
-            )}
+              <ArrowRight size={16} color="var(--hhs-primary)" />
+            </div>
+
+            <div
+              onClick={() => navigate('/reports/attendance')}
+              style={{
+                padding: '12px 14px',
+                borderRadius: 'var(--hhs-radius-base)',
+                border: '1px solid var(--hhs-border)',
+                backgroundColor: 'var(--hhs-canvas)',
+                display: 'flex',
+                justifyContent: 'space-between',
+                alignItems: 'center',
+                cursor: 'pointer',
+              }}
+            >
+              <div>
+                <div style={{ fontWeight: 600, fontSize: '0.86rem' }}>Export Attendance to Excel</div>
+                <div style={{ fontSize: '0.76rem', color: 'var(--hhs-text-secondary)', marginTop: '2px' }}>
+                  Download official CBSE-compliant XLSX attendance sheet.
+                </div>
+              </div>
+              <FileSpreadsheet size={16} color="var(--hhs-accent)" />
+            </div>
           </div>
         </div>
 

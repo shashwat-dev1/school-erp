@@ -116,6 +116,18 @@ export const Permissions = {
   },
 
   /**
+   * Student Contact Modification:
+   * - Principal: Read-only.
+   * - Class Teacher: Allowed for students enrolled in their assigned section.
+   */
+  canEditStudentContact(user: StaffUser | null, studentOrClassId: StudentRecord | string): boolean {
+    if (!user) return false;
+    if (user.role === 'principal') return false;
+    const targetClassId = typeof studentOrClassId === 'string' ? studentOrClassId : studentOrClassId.classId;
+    return Boolean(user.role === 'class_teacher' && user.assignedClassId === targetClassId);
+  },
+
+  /**
    * Risk Watchlist Access:
    * - Principal: Whole-school overview.
    * - Class Teacher: Scoped strictly to their assigned class.

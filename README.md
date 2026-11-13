@@ -16,10 +16,11 @@
 
 HanuJai High School ERP is a modern, high-performance institutional portal engineered to streamline school administration, teaching faculty workflows, and student records.
 
-The current approved production milestone is **Phase 1**:
-1. **Authenticated Faculty Portals:** Role-Based Access Control (RBAC) supporting **Principal**, **Class Teacher**, and **Subject Teacher** roles.
-2. **Class Teacher Daily Roll Call:** Intuitive, touch-friendly morning attendance register for authorized sections with live Present, Absent, Unmarked, and Turnout rate calculations.
-3. **Bilingual Parent WhatsApp Notifications:** Automated, asynchronous WhatsApp alerts in English & Hindi notifying parents of daily Present or Absent attendance status via a durable Cloud Firestore outbox queue.
+The current approved production milestone is **Phase 1: Student Management & Attendance Only**:
+1. **Student Information Management:** Student master ledger, identity, admission details, and guardian emergency contact records.
+2. **Daily Attendance Management:** Rapid morning roll call (strictly Present or Absent; no Late), multi-month history, and multi-class compliance reporting with genuine Excel exports (.xlsx).
+3. **Bilingual Parent WhatsApp Notifications:** Automated, background asynchronous WhatsApp alerts notifying parents of daily attendance status via Cloud Firestore.
+4. **Role-Based Access Control (RBAC):** Principal (School-Wide Read-Only) and Class Teacher (Assigned Classroom Authority). Subject Teacher is disabled in Phase 1.
 
 ---
 

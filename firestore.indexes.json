@@ -25,27 +25,11 @@
       ]
     },
     {
-      "collectionGroup": "marksRegisters",
-      "queryScope": "COLLECTION",
-      "fields": [
-        { "fieldPath": "classId", "order": "ASCENDING" },
-        { "fieldPath": "assessmentId", "order": "ASCENDING" }
-      ]
-    },
-    {
       "collectionGroup": "auditEvents",
       "queryScope": "COLLECTION",
       "fields": [
         { "fieldPath": "targetId", "order": "ASCENDING" },
         { "fieldPath": "timestamp", "order": "DESCENDING" }
-      ]
-    },
-    {
-      "collectionGroup": "studentFollowUps",
-      "queryScope": "COLLECTION",
-      "fields": [
-        { "fieldPath": "studentId", "order": "ASCENDING" },
-        { "fieldPath": "createdAt", "order": "DESCENDING" }
       ]
     }
   ],

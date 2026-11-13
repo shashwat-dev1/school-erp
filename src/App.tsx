@@ -24,32 +24,15 @@ import { AttendanceCorrections } from './pages/attendance/AttendanceCorrections'
 import { ClassesDirectory } from './pages/admin/ClassesDirectory';
 import { SectionRoster } from './pages/admin/SectionRoster';
 import { ClassTeacherAssignments } from './pages/admin/ClassTeacherAssignments';
-import { SubjectFacultyAssignments } from './pages/admin/SubjectFacultyAssignments';
 import { RolePermissionMatrix } from './pages/admin/RolePermissionMatrix';
 import { StaffDirectory } from './pages/admin/StaffDirectory';
-import { WhatsAppOperationsHub } from './pages/admin/WhatsAppOperationsHub';
 
-// Assessment Cycles & Marks Entry
-import { AssessmentList } from './pages/academics/AssessmentList';
-import { MarksEntryRegister } from './pages/academics/MarksEntryRegister';
-import { ClassPerformanceLedger } from './pages/performance/ClassPerformanceLedger';
-
-// Risk Watchlist & Pastoral Care
-import { RiskWatchlist } from './pages/risk/RiskWatchlist';
-import { BehaviourDirectory } from './pages/behaviour/BehaviourDirectory';
-
-// Institutional Reports & Print Dossiers
-import { ReportsHub } from './pages/reports/ReportsHub';
-import { StudentReportCard } from './pages/reports/StudentReportCard';
-import { PTMSlip } from './pages/reports/PTMSlip';
+// Attendance Reports & Exports
 import { AttendanceReport } from './pages/reports/AttendanceReport';
-import { AcademicComparisonReport } from './pages/reports/AcademicComparisonReport';
-import { ClassAcademicSummary } from './pages/reports/ClassAcademicSummary';
 
 // Settings & Security Governance
 import { SystemSettings } from './pages/settings/SystemSettings';
 import { AcademicYearSettings } from './pages/settings/AcademicYearSettings';
-import { AssessmentTypeSettings } from './pages/settings/AssessmentTypeSettings';
 import { AttendancePolicySettings } from './pages/settings/AttendancePolicySettings';
 import { AuditLogDirectory } from './pages/audit/AuditLogDirectory';
 
@@ -128,49 +111,16 @@ export const App: React.FC = () => {
             </SectionGuard>
           }
         />
-        <Route
-          path="classes/:classId/performance"
-          element={
-            <SectionGuard>
-              <ClassPerformanceLedger />
-            </SectionGuard>
-          }
-        />
-        <Route
-          path="performance/classes/:classId"
-          element={
-            <SectionGuard>
-              <ClassPerformanceLedger />
-            </SectionGuard>
-          }
-        />
+        {/* Deprecated Academic & Performance Routes -> Redirect to Students / Classes */}
+        <Route path="classes/:classId/performance" element={<Navigate to="/students" replace />} />
+        <Route path="performance/classes/:classId" element={<Navigate to="/students" replace />} />
+        <Route path="assessments" element={<Navigate to="/students" replace />} />
+        <Route path="academics/*" element={<Navigate to="/students" replace />} />
+        <Route path="assessments/*" element={<Navigate to="/students" replace />} />
+        <Route path="risk-watchlist" element={<Navigate to="/students" replace />} />
+        <Route path="behaviour" element={<Navigate to="/students" replace />} />
 
-        {/* Assessment Cycles & Marks Sheets */}
-        <Route path="assessments" element={<AssessmentList />} />
-        <Route path="academics/assessments" element={<AssessmentList />} />
-        <Route path="academics/marks" element={<MarksEntryRegister />} />
-        <Route path="academics/marks/:assessmentId" element={<MarksEntryRegister />} />
-        <Route path="academics/marks/:assessmentId/:classId/:subjectId" element={<MarksEntryRegister />} />
-        <Route path="academics/assessments/marks/:registerId" element={<MarksEntryRegister />} />
-        <Route path="assessments/marks/:registerId" element={<MarksEntryRegister />} />
-
-        {/* Performance Risk Watchlist (Principal, Class Teacher) */}
-        <Route
-          path="risk-watchlist"
-          element={
-            <RoleGuard allowedRoles={['principal', 'class_teacher']}>
-              <RiskWatchlist />
-            </RoleGuard>
-          }
-        />
-
-        {/* Behaviour & Proctorial Care */}
-        <Route path="behaviour" element={<BehaviourDirectory />} />
-
-        {/* Institutional Reports & Print Views */}
-        <Route path="reports" element={<ReportsHub />} />
-        <Route path="reports/report-card/:studentId" element={<StudentReportCard />} />
-        <Route path="reports/ptm-slip/:studentId" element={<PTMSlip />} />
+        {/* Attendance Reports & History */}
         <Route
           path="reports/attendance"
           element={
@@ -179,32 +129,10 @@ export const App: React.FC = () => {
             </RoleGuard>
           }
         />
-        <Route
-          path="reports/academic-comparison"
-          element={
-            <RoleGuard allowedRoles={['principal']}>
-              <AcademicComparisonReport />
-            </RoleGuard>
-          }
-        />
-        <Route
-          path="reports/class-summary"
-          element={
-            <RoleGuard allowedRoles={['principal', 'class_teacher']}>
-              <ClassAcademicSummary />
-            </RoleGuard>
-          }
-        />
-        <Route
-          path="reports/student-followup"
-          element={
-            <RoleGuard allowedRoles={['principal', 'class_teacher']}>
-              <RiskWatchlist />
-            </RoleGuard>
-          }
-        />
+        <Route path="reports" element={<Navigate to="/reports/attendance" replace />} />
+        <Route path="reports/*" element={<Navigate to="/reports/attendance" replace />} />
 
-        {/* Staff Administration & Allocations */}
+        {/* Staff Administration */}
         <Route
           path="staff"
           element={
@@ -229,14 +157,7 @@ export const App: React.FC = () => {
             </RoleGuard>
           }
         />
-        <Route
-          path="admin/subject-teachers"
-          element={
-            <RoleGuard allowedRoles={['principal']}>
-              <SubjectFacultyAssignments />
-            </RoleGuard>
-          }
-        />
+        <Route path="admin/subject-teachers" element={<Navigate to="/admin/class-teachers" replace />} />
         <Route
           path="admin/roles"
           element={
@@ -246,25 +167,11 @@ export const App: React.FC = () => {
           }
         />
 
-        {/* WhatsApp Operations Hub (Principal & Class Teacher Monitoring) */}
-        <Route
-          path="admin/whatsapp"
-          element={
-            <RoleGuard allowedRoles={['principal', 'class_teacher']}>
-              <WhatsAppOperationsHub />
-            </RoleGuard>
-          }
-        />
-        <Route
-          path="whatsapp"
-          element={
-            <RoleGuard allowedRoles={['principal', 'class_teacher']}>
-              <WhatsAppOperationsHub />
-            </RoleGuard>
-          }
-        />
+        {/* WhatsApp Hub redirected to Home (runs automatically in background) */}
+        <Route path="admin/whatsapp" element={<Navigate to="/" replace />} />
+        <Route path="whatsapp" element={<Navigate to="/" replace />} />
 
-        {/* Institutional Settings & Identity (Principal Governance Only) */}
+        {/* Institutional Settings */}
         <Route
           path="settings/system-config"
           element={
@@ -289,14 +196,7 @@ export const App: React.FC = () => {
             </RoleGuard>
           }
         />
-        <Route
-          path="settings/assessment-types"
-          element={
-            <RoleGuard allowedRoles={['principal']}>
-              <AssessmentTypeSettings />
-            </RoleGuard>
-          }
-        />
+        <Route path="settings/assessment-types" element={<Navigate to="/settings/system-config" replace />} />
         <Route
           path="settings/attendance-policy"
           element={

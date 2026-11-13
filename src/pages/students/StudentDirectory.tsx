@@ -66,23 +66,15 @@ export const StudentDirectory: React.FC = () => {
       setError(null);
       try {
         const isClassTeacher = currentUser?.role === 'class_teacher';
-        const isSubjectTeacher = currentUser?.role === 'subject_teacher';
         const defaultClass = isClassTeacher
           ? (currentUser.assignedClassId || '')
-          : isSubjectTeacher
-          ? (currentUser.assignedClasses?.[0] || 'all')
           : 'all';
         setSelectedClass(defaultClass);
 
         // Pre-query authorization scoping
         const scopedStudentRequest = isClassTeacher && currentUser.assignedClassId
           ? provider.getStudents({ classId: currentUser.assignedClassId, limit: 100 })
-          : isSubjectTeacher && currentUser.assignedClasses?.length
-            ? Promise.all(currentUser.assignedClasses.map(classId => provider.getStudents({ classId, limit: 100 })))
-                .then(results => ({ items: results.flatMap(result => result.items), total: results.reduce((sum, result) => sum + result.total, 0), page: 1, pageSize: 1000, totalPages: 1 }))
-            : isSubjectTeacher
-              ? Promise.resolve({ items: [], total: 0, page: 1, pageSize: 100, totalPages: 0 })
-            : provider.getStudents({ limit: 1000 });
+          : provider.getStudents({ limit: 1000 });
 
         const [studentRes, classRes] = await Promise.all([
           scopedStudentRequest,
@@ -94,8 +86,6 @@ export const StudentDirectory: React.FC = () => {
         let availableClasses = classRes;
         if (isClassTeacher && currentUser.assignedClassId) {
           availableClasses = classRes.filter(c => c.id === currentUser.assignedClassId);
-        } else if (isSubjectTeacher && currentUser.assignedClasses) {
-          availableClasses = classRes.filter(c => currentUser.assignedClasses!.includes(c.id));
         }
 
         setStudents(studentRes.items);
@@ -123,7 +113,6 @@ export const StudentDirectory: React.FC = () => {
       'Class Section',
       'Gender',
       'Attendance %',
-      'Academic %',
       'Status',
     ];
 
@@ -134,7 +123,6 @@ export const StudentDirectory: React.FC = () => {
       s.classLabel,
       s.gender,
       s.attendancePercentage + '%',
-      (s.academicAverage || 0) + '%',
       s.status,
     ]);
 
@@ -466,7 +454,7 @@ export const StudentDirectory: React.FC = () => {
             >
               {currentUser?.role !== 'class_teacher' && (
                 <option value="all">
-                  {currentUser?.role === 'subject_teacher' ? 'All Assigned Classes' : 'All 20 Classes'}
+                  All 20 Classes
                 </option>
               )}
               {classes
@@ -474,9 +462,6 @@ export const StudentDirectory: React.FC = () => {
                   if (!currentUser) return true;
                   if (currentUser.role === 'class_teacher') {
                     return c.id === currentUser.assignedClassId;
-                  }
-                  if (currentUser.role === 'subject_teacher') {
-                    return currentUser.assignedClasses?.includes(c.id);
                   }
                   return true;
                 })

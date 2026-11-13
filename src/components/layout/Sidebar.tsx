@@ -7,8 +7,6 @@ import {
   GraduationCap,
   CalendarCheck,
   FileSpreadsheet,
-  Award,
-  MessageSquare,
   Settings,
   LogOut,
   X,
@@ -25,7 +23,6 @@ export const Sidebar: React.FC<SidebarProps> = ({ isMobileOpen = false, onClose 
   const navigate = useNavigate();
   const role = currentUser?.role;
   const assignedClassId = currentUser?.assignedClassId || 'class-10-a';
-  const primaryClass = currentUser?.assignedClasses?.[0] || 'class-10-a';
 
   React.useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
@@ -199,25 +196,22 @@ export const Sidebar: React.FC<SidebarProps> = ({ isMobileOpen = false, onClose 
                   <SidebarItem to="/" icon={<LayoutDashboard size={18} />} label="Home Dashboard" end onClick={onClose} />
                 </li>
                 <li>
-                  <SidebarItem to="/students" icon={<Users size={18} />} label="Student Master Dossiers" onClick={onClose} />
+                  <SidebarItem to="/students" icon={<Users size={18} />} label="Student Directory" onClick={onClose} />
                 </li>
                 <li>
-                  <SidebarItem to="/staff" icon={<GraduationCap size={18} />} label="Faculty & Staff" onClick={onClose} />
+                  <SidebarItem to="/attendance" icon={<CalendarCheck size={18} />} label="Attendance Overview" onClick={onClose} />
                 </li>
                 <li>
-                  <SidebarItem to="/attendance" icon={<CalendarCheck size={18} />} label="Attendance Oversight" onClick={onClose} />
+                  <SidebarItem to="/reports/attendance" icon={<FileSpreadsheet size={18} />} label="Attendance Records & Export" onClick={onClose} />
                 </li>
                 <li>
-                  <SidebarItem to="/academics/assessments" icon={<FileSpreadsheet size={18} />} label="Marks & Academics" onClick={onClose} />
+                  <SidebarItem to="/classes" icon={<GraduationCap size={18} />} label="Classes & Sections" onClick={onClose} />
                 </li>
                 <li>
-                  <SidebarItem to="/reports" icon={<Award size={18} />} label="Results & Analytics" onClick={onClose} />
+                  <SidebarItem to="/staff" icon={<Users size={18} />} label="Faculty & Staff" onClick={onClose} />
                 </li>
                 <li>
-                  <SidebarItem to="/admin/whatsapp" icon={<MessageSquare size={18} />} label="WhatsApp Hub" onClick={onClose} />
-                </li>
-                <li>
-                  <SidebarItem to="/settings/system-config" icon={<Settings size={18} />} label="Institutional Settings" onClick={onClose} />
+                  <SidebarItem to="/settings/system-config" icon={<Settings size={18} />} label="System Settings" onClick={onClose} />
                 </li>
               </>
             )}
@@ -247,41 +241,10 @@ export const Sidebar: React.FC<SidebarProps> = ({ isMobileOpen = false, onClose 
                 <li>
                   <SidebarItem
                     to="/reports/attendance"
-                    icon={<Award size={18} />}
-                    label="Attendance Records"
+                    icon={<FileSpreadsheet size={18} />}
+                    label="Attendance Records & Export"
                     onClick={onClose}
                   />
-                </li>
-                <li>
-                  <SidebarItem
-                    to="/admin/whatsapp"
-                    icon={<MessageSquare size={18} />}
-                    label="WhatsApp Delivery"
-                    onClick={onClose}
-                  />
-                </li>
-              </>
-            )}
-
-            {/* 3. SUBJECT TEACHER WORKSPACE */}
-            {role === 'subject_teacher' && (
-              <>
-                <li>
-                  <SidebarItem to="/" icon={<LayoutDashboard size={18} />} label="Faculty Workspace" end onClick={onClose} />
-                </li>
-                <li>
-                  <SidebarItem to="/academics/assessments" icon={<FileSpreadsheet size={18} />} label="Marks Entry Register" onClick={onClose} />
-                </li>
-                <li>
-                  <SidebarItem
-                    to={`/performance/classes/${primaryClass}`}
-                    icon={<Award size={18} />}
-                    label="Performance Ledger"
-                    onClick={onClose}
-                  />
-                </li>
-                <li>
-                  <SidebarItem to="/students" icon={<Users size={18} />} label="Student Directory" onClick={onClose} />
                 </li>
               </>
             )}

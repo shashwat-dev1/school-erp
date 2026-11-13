@@ -7,7 +7,7 @@ import { App } from '../App';
 import { demoRepository } from '../data/demo/demoRepository';
 import { initialStaff } from '../data/demo/seedData';
 
-describe('HanuJai ERP Foundation — Core Workflows', () => {
+describe('HanuJai ERP Foundation — Phase 1 Core Workflows (Student & Attendance Only)', () => {
   beforeEach(async () => {
     localStorage.clear();
     if (demoRepository.resetDemoData) {
@@ -40,11 +40,12 @@ describe('HanuJai ERP Foundation — Core Workflows', () => {
       expect(screen.getAllByText(/Home/i)[0]).toBeInTheDocument();
     });
 
-    // Verify presence of calculated figures from repository (1,000 total students)
+    // Verify presence of calculated figures from repository (~1,000 total students)
     expect(screen.getAllByText(/Total Students/i)[0]).toBeInTheDocument();
     expect(screen.getByText(/1000/i)).toBeInTheDocument();
     expect(screen.getAllByText(/Present Today/i)[0]).toBeInTheDocument();
     expect(screen.getAllByText(/Absent Today/i)[0]).toBeInTheDocument();
+    expect(screen.getByText(/Attendance by Class \(Today\)/i)).toBeInTheDocument();
   });
 
   it('renders the Student Ledger with seed student records', async () => {
@@ -75,7 +76,7 @@ describe('HanuJai ERP Foundation — Core Workflows', () => {
     expect(screen.getByText(/Export CSV/i)).toBeInTheDocument();
   });
 
-  it('shows final academic charts and an evidence-based marks comparison on a student profile', async () => {
+  it('renders clean Phase 1 Student Profile dossier with basic info and attendance ledger', async () => {
     const principal = initialStaff.find(s => s.role === 'principal')!;
     setupUserSession(principal.id);
 
@@ -89,16 +90,25 @@ describe('HanuJai ERP Foundation — Core Workflows', () => {
       </MemoryRouter>
     );
 
-    await waitFor(() => expect(screen.getAllByText(/Aarav Singhania/i).length).toBeGreaterThan(0));
-    fireEvent.click(screen.getByText('Academic Performance'));
-    expect(await screen.findByText('Academic progress')).toBeInTheDocument();
-    expect(screen.getByText(/finalized result/i)).toBeInTheDocument();
+    await waitFor(() => {
+      expect(screen.getAllByText(/Aarav Singhania/i).length).toBeGreaterThan(0);
+      // Phase 1: Student Information
+      expect(screen.getByText(/Enrollment & Identity Details/i)).toBeInTheDocument();
+      expect(screen.getByText(/Parent \/ Guardian & Residence/i)).toBeInTheDocument();
+    });
 
-    fireEvent.click(screen.getByRole('button', { name: 'Review evidence' }));
-    expect(await screen.findByText(/Possible contributing factors/i)).toBeInTheDocument();
-    expect(screen.getAllByText(/22\/25/).length).toBeGreaterThan(0);
-    expect(screen.getByText(/absences were recorded between the assessment periods/i)).toBeInTheDocument();
-    expect(screen.queryByText(/no submitted attendance sessions are available/i)).not.toBeInTheDocument();
+    // Switch to Attendance Profile & History Tab
+    fireEvent.click(screen.getByRole('tab', { name: /Attendance Profile & History/i }));
+
+    await waitFor(() => {
+      expect(screen.getByText(/Daily Attendance Register Logs/i)).toBeInTheDocument();
+      expect(screen.getByText(/Export Attendance \(Excel\)/i)).toBeInTheDocument();
+    });
+    
+    // Academic tabs and marks must NOT be present
+    expect(screen.queryByText(/Academic Performance/i)).not.toBeInTheDocument();
+    expect(screen.queryByText(/Teacher notes/i)).not.toBeInTheDocument();
+    expect(screen.queryByText(/Academic Report/i)).not.toBeInTheDocument();
   });
 
   it('renders the Daily Attendance Register in read-only mode for Principal', async () => {
@@ -116,7 +126,6 @@ describe('HanuJai ERP Foundation — Core Workflows', () => {
     );
 
     await waitFor(() => {
-      console.log("MAIN HTML:", document.querySelector('main')?.innerHTML);
       expect(screen.getByText(/Daily Attendance Register/i)).toBeInTheDocument();
     });
 
@@ -146,7 +155,7 @@ describe('HanuJai ERP Foundation — Core Workflows', () => {
     });
   });
 
-  it('renders the Staff Login portal with exactly three profiles', async () => {
+  it('renders the Staff Login portal', async () => {
     render(
       <MemoryRouter initialEntries={['/login']}>
         <AuthProvider>
@@ -160,7 +169,6 @@ describe('HanuJai ERP Foundation — Core Workflows', () => {
     await waitFor(() => {
       expect(screen.getByText(/Staff Authentication/i)).toBeInTheDocument();
     });
-    console.log("LOGIN BODY:", document.body.innerHTML);
     expect(screen.getAllByText(/Sign In/i)[0]).toBeInTheDocument();
   });
 
@@ -180,30 +188,7 @@ describe('HanuJai ERP Foundation — Core Workflows', () => {
     });
   });
 
-  it('renders Student Profile dossier with 3 clear areas', async () => {
-    const principal = initialStaff.find(s => s.role === 'principal')!;
-    setupUserSession(principal.id);
-
-    render(
-      <MemoryRouter initialEntries={['/students/STU-10A-01']}>
-        <AuthProvider>
-          <DataContextProvider>
-            <App />
-          </DataContextProvider>
-        </AuthProvider>
-      </MemoryRouter>
-    );
-
-    await waitFor(() => {
-      expect(screen.getAllByText(/Aarav Singhania/i)[0]).toBeInTheDocument();
-      expect(screen.getByText(/Attendance Summary/i)).toBeInTheDocument();
-      expect(screen.getByText(/Academic Results/i)).toBeInTheDocument();
-      expect(screen.getAllByText(/Teacher notes/i)[0]).toBeInTheDocument();
-      expect(screen.getByText(/Academic Report/i)).toBeInTheDocument();
-    });
-  });
-
-  it('renders Assessment Directory with Examination schedule', async () => {
+  it('redirects obsolete academic routes to active Phase 1 screens', async () => {
     const principal = initialStaff.find(s => s.role === 'principal')!;
     setupUserSession(principal.id);
 
@@ -217,18 +202,18 @@ describe('HanuJai ERP Foundation — Core Workflows', () => {
       </MemoryRouter>
     );
 
+    // /assessments redirects to /students
     await waitFor(() => {
-      expect(screen.getByText(/Assessment Cycles & Marks Entry/i)).toBeInTheDocument();
-      expect(screen.getByText(/Examination & Evaluation Schedule/i)).toBeInTheDocument();
+      expect(screen.getByText(/Student Ledger & Profiles/i)).toBeInTheDocument();
     });
   });
 
-  it('renders Class Performance Matrix and Results', async () => {
+  it('renders Attendance Report screen with multi-month presets', async () => {
     const principal = initialStaff.find(s => s.role === 'principal')!;
     setupUserSession(principal.id);
 
     render(
-      <MemoryRouter initialEntries={['/performance/classes/class-10-a']}>
+      <MemoryRouter initialEntries={['/reports/attendance']}>
         <AuthProvider>
           <DataContextProvider>
             <App />
@@ -237,31 +222,11 @@ describe('HanuJai ERP Foundation — Core Workflows', () => {
       </MemoryRouter>
     );
 
-    await waitFor(() => {
-      expect(screen.getAllByText(/Class Results/i)[0]).toBeInTheDocument();
-      expect(screen.getAllByText(/Class Average/i)[0]).toBeInTheDocument();
-      expect(screen.getByText(/Export CSV/i)).toBeInTheDocument();
-    });
-  });
-
-  it('renders Reports Hub with 3 main tools and Class Academic Summary', async () => {
-    const principal = initialStaff.find(s => s.role === 'principal')!;
-    setupUserSession(principal.id);
-
-    render(
-      <MemoryRouter initialEntries={['/reports']}>
-        <AuthProvider>
-          <DataContextProvider>
-            <App />
-          </DataContextProvider>
-        </AuthProvider>
-      </MemoryRouter>
-    );
     await waitFor(() => {
       expect(screen.getAllByText(/Attendance Ledger/i)[0]).toBeInTheDocument();
-      expect(screen.getAllByText(/Academic Performance Comparison/i)[0]).toBeInTheDocument();
-      expect(screen.getAllByText(/Student Follow-up/i)[0]).toBeInTheDocument();
-      expect(screen.getAllByText(/Academic Summary/i)[0]).toBeInTheDocument();
+      expect(screen.getByText(/Last 3 Months/i)).toBeInTheDocument();
+      expect(screen.getByText(/Last 6 Months/i)).toBeInTheDocument();
+      expect(screen.getByText(/Last 9 Months/i)).toBeInTheDocument();
     });
   });
 });

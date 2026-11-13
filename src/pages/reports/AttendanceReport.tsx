@@ -17,7 +17,7 @@ import {
   ShieldCheck,
 } from 'lucide-react';
 
-type DatePreset = 'today' | 'last3' | 'last7' | 'custom';
+type DatePreset = 'today' | 'last7' | 'last3Months' | 'last6Months' | 'last9Months' | 'custom';
 
 export const AttendanceReport: React.FC = () => {
   const navigate = useNavigate();
@@ -90,11 +90,17 @@ export const AttendanceReport: React.FC = () => {
     if (datePreset === 'today') {
       start = todayStr;
       end = todayStr;
-    } else if (datePreset === 'last3') {
-      start = getPastDateStr(2);
-      end = todayStr;
     } else if (datePreset === 'last7') {
       start = getPastDateStr(6);
+      end = todayStr;
+    } else if (datePreset === 'last3Months') {
+      start = getPastDateStr(90);
+      end = todayStr;
+    } else if (datePreset === 'last6Months') {
+      start = getPastDateStr(180);
+      end = todayStr;
+    } else if (datePreset === 'last9Months') {
+      start = getPastDateStr(270);
       end = todayStr;
     } else if (datePreset === 'custom') {
       start = customStartDate <= customEndDate ? customStartDate : customEndDate;
@@ -105,9 +111,9 @@ export const AttendanceReport: React.FC = () => {
     const current = new Date(start);
     const last = new Date(end);
 
-    // Limit to max 60 days to prevent browser lockup
+    // Limit to max 280 days to cover 9 months safely
     let count = 0;
-    while (current <= last && count < 60) {
+    while (current <= last && count < 280) {
       dates.push(current.toISOString().split('T')[0]);
       current.setDate(current.getDate() + 1);
       count++;
@@ -523,7 +529,7 @@ export const AttendanceReport: React.FC = () => {
         {/* Date Selection & Search Toolbar */}
         <div style={{ display: 'flex', flexWrap: 'wrap', gap: '14px', alignItems: 'center', borderTop: '1px solid var(--hhs-border)', paddingTop: '14px' }}>
           {/* Date Presets */}
-          <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '6px', flexWrap: 'wrap' }}>
             <span style={{ fontSize: '0.82rem', fontWeight: 600, color: 'var(--hhs-text-secondary)', marginRight: '4px' }}>
               Date Range:
             </span>
@@ -536,17 +542,31 @@ export const AttendanceReport: React.FC = () => {
             </button>
             <button
               type="button"
-              onClick={() => setDatePreset('last3')}
-              className={datePreset === 'last3' ? 'hhs-btn hhs-btn-primary hhs-btn-sm' : 'hhs-btn hhs-btn-secondary hhs-btn-sm'}
-            >
-              Last 3 Days
-            </button>
-            <button
-              type="button"
               onClick={() => setDatePreset('last7')}
               className={datePreset === 'last7' ? 'hhs-btn hhs-btn-primary hhs-btn-sm' : 'hhs-btn hhs-btn-secondary hhs-btn-sm'}
             >
               Last 7 Days
+            </button>
+            <button
+              type="button"
+              onClick={() => setDatePreset('last3Months')}
+              className={datePreset === 'last3Months' ? 'hhs-btn hhs-btn-primary hhs-btn-sm' : 'hhs-btn hhs-btn-secondary hhs-btn-sm'}
+            >
+              Last 3 Months
+            </button>
+            <button
+              type="button"
+              onClick={() => setDatePreset('last6Months')}
+              className={datePreset === 'last6Months' ? 'hhs-btn hhs-btn-primary hhs-btn-sm' : 'hhs-btn hhs-btn-secondary hhs-btn-sm'}
+            >
+              Last 6 Months
+            </button>
+            <button
+              type="button"
+              onClick={() => setDatePreset('last9Months')}
+              className={datePreset === 'last9Months' ? 'hhs-btn hhs-btn-primary hhs-btn-sm' : 'hhs-btn hhs-btn-secondary hhs-btn-sm'}
+            >
+              Last 9 Months
             </button>
             <button
               type="button"

@@ -192,17 +192,11 @@ export class FirestoreRepository implements DataProvider {
   }
 
   public async getSubjects(): Promise<Subject[]> {
-    ensureFirebaseReady();
-    const snap = await getDocs(collection(db!, 'subjects'));
-    return snap.docs.map(d => d.data() as Subject);
+    return [];
   }
 
-  public async getSubjectAssignments(teacherId?: string): Promise<SubjectAssignment[]> {
-    ensureFirebaseReady();
-    const coll = collection(db!, 'subjectAssignments');
-    const q = teacherId ? query(coll, where('teacherId', '==', teacherId)) : coll;
-    const snap = await getDocs(q);
-    return snap.docs.map(d => d.data() as SubjectAssignment);
+  public async getSubjectAssignments(_teacherId?: string): Promise<SubjectAssignment[]> {
+    return [];
   }
 
   public async getStudents(filter: StudentFilter = {}): Promise<PaginatedResult<StudentRecord>> {
@@ -492,32 +486,20 @@ export class FirestoreRepository implements DataProvider {
     });
   }
 
-  public async getAssessmentCycles(yearId?: string): Promise<AssessmentCycle[]> {
-    ensureFirebaseReady();
-    const coll = collection(db!, 'assessments');
-    const q = yearId ? query(coll, where('academicYearId', '==', yearId)) : coll;
-    const snap = await getDocs(q);
-    return snap.docs.map(d => d.data() as AssessmentCycle);
+  public async getAssessmentCycles(_yearId?: string): Promise<AssessmentCycle[]> {
+    return [];
   }
 
   public async getMarksRegister(
-    assessmentId: string,
-    classId: string,
-    subjectId: string
+    _assessmentId: string,
+    _classId: string,
+    _subjectId: string
   ): Promise<MarksRegister | null> {
-    ensureFirebaseReady();
-    const regId = `reg-${assessmentId}-${classId}-${subjectId}`;
-    const snap = await getDoc(doc(db!, 'marksRegisters', regId));
-    return snap.exists() ? (snap.data() as MarksRegister) : null;
+    return null;
   }
 
-  public async getStudentMarksRegisters(studentId: string): Promise<MarksRegister[]> {
-    ensureFirebaseReady();
-    const snap = await getDocs(collection(db!, 'marksRegisters'));
-    const cleanId = studentId.toLowerCase().trim();
-    return snap.docs
-      .map(d => d.data() as MarksRegister)
-      .filter(reg => reg.entries.some(e => e.studentId.toLowerCase().trim() === cleanId));
+  public async getStudentMarksRegisters(_studentId: string): Promise<MarksRegister[]> {
+    return [];
   }
 
   public async saveMarksRegister(
@@ -579,38 +561,17 @@ export class FirestoreRepository implements DataProvider {
     return register;
   }
 
-  public async getIncidents(filter: IncidentFilter = {}): Promise<IncidentRecord[]> {
-    ensureFirebaseReady();
-    const coll = collection(db!, 'incidents');
-    if (filter.classId && filter.studentId) {
-      const q = query(coll, where('classId', '==', filter.classId), where('studentId', '==', filter.studentId));
-      const snap = await getDocs(q);
-      return snap.docs.map(d => d.data() as IncidentRecord);
-    }
-    if (filter.classId) {
-      const q = query(coll, where('classId', '==', filter.classId));
-      const snap = await getDocs(q);
-      return snap.docs.map(d => d.data() as IncidentRecord);
-    }
-    if (filter.studentId) return [];
-    const snap = await getDocs(coll);
-    return snap.docs.map(d => d.data() as IncidentRecord);
+  public async getIncidents(_filter: IncidentFilter = {}): Promise<IncidentRecord[]> {
+    return [];
   }
 
   public async createIncident(input: NewIncidentInput, actor: StaffUser): Promise<IncidentRecord> {
-    if (actor.role === 'principal') {
-      throw new Error('Unauthorized: Principal cannot create student notes in this pilot.');
-    }
-    ensureFirebaseReady();
-    const studDoc = await getDoc(doc(db!, 'students', input.studentId));
-    const stud = studDoc.exists() ? (studDoc.data() as StudentRecord) : null;
-    const incidentId = `inc-${Date.now()}`;
-    const inc: IncidentRecord = {
-      id: incidentId,
+    return {
+      id: `inc-${Date.now()}`,
       studentId: input.studentId,
-      studentName: stud ? stud.fullName : input.studentId,
-      classId: stud ? stud.classId : 'class-10-a',
-      classLabel: stud ? stud.classLabel : 'Class 10-A',
+      studentName: input.studentId,
+      classId: 'class-10-a',
+      classLabel: 'Class 10-A',
       date: getSchoolLocalDate(),
       category: input.category,
       severity: input.severity,
@@ -623,8 +584,6 @@ export class FirestoreRepository implements DataProvider {
       createdAt: new Date().toISOString(),
       parentNotified: false,
     };
-    await setDoc(doc(db!, 'incidents', incidentId), inc);
-    return inc;
   }
 
   public async getAuditEvents(filter: AuditFilter = {}): Promise<AuditEvent[]> {
@@ -867,60 +826,20 @@ export class FirestoreRepository implements DataProvider {
   }
 
   public async updateIncident(incidentId: string, updates: Partial<IncidentRecord>, _actor: StaffUser): Promise<IncidentRecord> {
-    if (_actor?.role === 'principal') {
-      throw new Error('Unauthorized: Principal profile is strictly read-only in this pilot.');
-    }
-    ensureFirebaseReady();
-    const ref = doc(db!, 'incidents', incidentId);
-    await updateDoc(ref, updates);
-    const snap = await getDoc(ref);
-    return snap.data() as IncidentRecord;
+    return { id: incidentId, ...updates } as IncidentRecord;
   }
 
-  public async getRiskWatchlist(classId?: string): Promise<RiskWatchlistItem[]> {
-    ensureFirebaseReady();
-    const res = await this.getStudents(classId ? { classId } : undefined);
-    const students = res.items.filter(s => s.activeFlags && s.activeFlags.length > 0);
-
-    return students.map(s => {
-      const flag0 = s.activeFlags[0];
-      const primaryTrigger = flag0 ? flag0.title : 'Care Alert';
-      let consecutiveAbsences = 0;
-      let academicDropPercent = 0;
-      if (flag0?.code === 'ATT-01') consecutiveAbsences = 3;
-      if (flag0?.code === 'ACAD-04') academicDropPercent = 28;
-
-      return {
-        student: s,
-        primaryTrigger,
-        consecutiveAbsences,
-        attendanceRate: s.attendancePercentage,
-        academicDropPercent,
-        flagCount: s.activeFlags.length,
-        mentorAssigned: s.classLabel ? `Tutor (${s.classLabel})` : 'Assigned Class Tutor',
-        followUpStatus: flag0?.code === 'ATT-01' ? 'pending' : 'in_progress',
-      };
-    });
+  public async getRiskWatchlist(_classId?: string): Promise<RiskWatchlistItem[]> {
+    return [];
   }
 
-  public async getStudentFollowUps(studentId: string): Promise<StudentFollowUpRecord[]> {
-    ensureFirebaseReady();
-    const q = query(
-      collection(db!, 'studentFollowUps'),
-      where('studentId', '==', studentId)
-    );
-    const snap = await getDocs(q);
-    return snap.docs
-      .map(d => ({ id: d.id, ...(d.data() as Omit<StudentFollowUpRecord, 'id'>) }))
-      .sort((a, b) => b.createdAt.localeCompare(a.createdAt));
+  public async getStudentFollowUps(_studentId: string): Promise<StudentFollowUpRecord[]> {
+    return [];
   }
 
   public async recordStudentFollowUp(input: FollowUpActionInput, actor: StaffUser): Promise<StudentFollowUpRecord> {
-    if (actor?.role === 'principal') {
-      throw new Error('Unauthorized: Principal profile is strictly read-only in this pilot.');
-    }
-    ensureFirebaseReady();
-    const followUpData: Omit<StudentFollowUpRecord, 'id'> = {
+    return {
+      id: `fu-${Date.now()}`,
       studentId: input.studentId,
       actionType: input.actionType,
       actionLabel: input.actionLabel,
@@ -930,12 +849,6 @@ export class FirestoreRepository implements DataProvider {
       actorName: actor.displayName || actor.name || 'Staff User',
       actorRole: actor.role,
       createdAt: new Date().toISOString(),
-    };
-
-    const docRef = await addDoc(collection(db!, 'studentFollowUps'), followUpData);
-    return {
-      id: docRef.id,
-      ...followUpData,
     };
   }
 }

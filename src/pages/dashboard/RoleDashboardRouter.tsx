@@ -8,7 +8,6 @@ import { Navigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import { PrincipalDashboard } from './PrincipalDashboard';
 import { ClassTeacherDashboard } from './ClassTeacherDashboard';
-import { SubjectTeacherDashboard } from './SubjectTeacherDashboard';
 import { LoadingState } from '../../components/feedback/LoadingState';
 import { AccessDenied } from '../error/AccessDenied';
 
@@ -29,7 +28,12 @@ export const RoleDashboardRouter: React.FC = () => {
     case 'class_teacher':
       return <ClassTeacherDashboard />;
     case 'subject_teacher':
-      return <SubjectTeacherDashboard />;
+      return (
+        <AccessDenied
+          title="Role Restricted in Phase 1"
+          message="Subject Teacher access is not active in Phase 1. HanuJai ERP Phase 1 focuses exclusively on Student Information and Daily Attendance for the Principal and designated Class Teachers."
+        />
+      );
     default:
       return (
         <AccessDenied
