@@ -845,10 +845,9 @@ class DemoRepository implements DataProvider {
       throw new Error('Unauthorized: Principal has strictly read-only access. Principal cannot mark or edit classroom attendance.');
     }
 
-    const isClassTeacher = actor.assignedClassId === input.classId || 
-      (actor.role === 'class_teacher' && actor.assignedClasses?.includes(input.classId));
-    if (!isClassTeacher) {
-      throw new Error(`Unauthorized: Only the assigned Class Teacher can mark attendance for class ${input.classId}.`);
+    const isAuthorized = actor.role === 'admin' || actor.role === 'developer';
+    if (!isAuthorized) {
+      throw new Error('Unauthorized: Only Admin Office is authorized to submit daily classroom attendance.');
     }
 
     const store = this.loadStore();
@@ -938,10 +937,9 @@ class DemoRepository implements DataProvider {
     const student = store.students.find(s => s.id === input.studentId);
     const classId = session ? session.classId : 'class-10-a';
 
-    const isClassTeacher = actor.assignedClassId === classId || 
-      (actor.role === 'class_teacher' && actor.assignedClasses?.includes(classId));
-    if (!isClassTeacher) {
-      throw new Error('Unauthorized: Only the assigned Class Teacher can request attendance corrections.');
+    const isAuthorized = actor.role === 'admin' || actor.role === 'developer';
+    if (!isAuthorized) {
+      throw new Error('Unauthorized: Only Admin Office is authorized to record attendance corrections.');
     }
 
     const correction: AttendanceCorrection = {

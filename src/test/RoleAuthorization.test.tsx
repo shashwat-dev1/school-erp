@@ -153,44 +153,31 @@ describe('HANUJAI ERP — Role Model, Student Dossier & Permission Test Matrix',
   });
 
   // =========================================================================
-  // 2. CLASS TEACHER: FULL RESPONSIBILITY FOR ASSIGNED CLASS
+  // 2. ADMIN OFFICE: FULL ATTENDANCE MARKING & STUDENT DIRECTORY ACROSS ALL CLASSES
   // =========================================================================
-  describe('2. Class Teacher: Full Responsibility for Assigned Section', () => {
-    // Shri Alok Saxena is Class Teacher of Class 10-A
-    const getClassTeacher = () => initialStaff.find(s => s.role === 'class_teacher' && s.assignedClassId === 'class-10-a')!;
+  describe('2. Admin Office: Centralized Daily Attendance & Operations Across All Classes', () => {
+    const getAdminOffice = () => initialStaff.find(s => s.role === 'admin')!;
 
-    it('Class Teacher can access assigned class (10-A) for class-teacher functions', () => {
-      const classTeacher = getClassTeacher();
+    it('Admin Office can access any class (10-A, 10-B, 08-B, 01-A) for attendance entry', () => {
+      const admin = getAdminOffice();
 
-      expect(Permissions.canAccessSection(classTeacher, 'class-10-a')).toBe(true);
-      expect(Permissions.canMarkAttendance(classTeacher, 'class-10-a')).toBe(true);
-      expect(Permissions.canViewIndividualAttendance(classTeacher)).toBe(false);
-      expect(Permissions.canViewIndividualAttendance(classTeacher, 'class-10-a')).toBe(true);
-      expect(Permissions.canViewStudent(classTeacher, 'class-10-a')).toBe(true);
-      expect(Permissions.canViewRiskWatchlist(classTeacher, 'class-10-a')).toBe(true);
+      expect(Permissions.canAccessSection(admin, 'class-10-a')).toBe(true);
+      expect(Permissions.canAccessSection(admin, 'class-10-b')).toBe(true);
+      expect(Permissions.canAccessSection(admin, 'class-08-b')).toBe(true);
+      expect(Permissions.canAccessSection(admin, 'class-01-a')).toBe(true);
+
+      expect(Permissions.canMarkAttendance(admin, 'class-10-a')).toBe(true);
+      expect(Permissions.canMarkAttendance(admin, 'class-10-b')).toBe(true);
+      expect(Permissions.canSubmitAttendance(admin, 'class-10-a')).toBe(true);
+
+      expect(Permissions.canViewIndividualAttendance(admin)).toBe(true);
+      expect(Permissions.canViewStudent(admin, 'class-10-a')).toBe(true);
+      expect(Permissions.canExportAttendance(admin)).toBe(true);
+      expect(Permissions.canEditStudentContact(admin)).toBe(true);
     });
 
-    it('Class Teacher can view cross-subject results matrix for assigned class 10-A', () => {
-      const classTeacher = getClassTeacher();
-
-      expect(Permissions.canAccessSubjectMarks(classTeacher, 'class-10-a', 'sub-math-10')).toBe(true);
-      expect(Permissions.canAccessSubjectMarks(classTeacher, 'class-10-a', 'sub-sci-10')).toBe(true);
-      expect(Permissions.canAccessSubjectMarks(classTeacher, 'class-10-a', 'sub-eng-10')).toBe(true);
-      expect(Permissions.canAccessSubjectMarks(classTeacher, 'class-10-a', 'sub-hin-10')).toBe(true);
-      expect(Permissions.canAccessSubjectMarks(classTeacher, 'class-10-a', 'sub-sst-10')).toBe(true);
-    });
-
-    it('Class Teacher is forbidden from marking attendance or viewing unrelated classes', () => {
-      const classTeacher = getClassTeacher();
-
-      expect(Permissions.canAccessSection(classTeacher, 'class-08-b')).toBe(false);
-      expect(Permissions.canMarkAttendance(classTeacher, 'class-08-b')).toBe(false);
-      expect(Permissions.canViewStudent(classTeacher, 'class-08-b')).toBe(false);
-      expect(Permissions.canViewRiskWatchlist(classTeacher, 'class-08-b')).toBe(false);
-    });
-
-    it('Class Teacher attendance form saves attendance against proper session and students', async () => {
-      const classTeacher = getClassTeacher();
+    it('Admin Office attendance submission saves attendance against proper session and students', async () => {
+      const admin = getAdminOffice();
 
       const session = await demoRepository.submitDailyAttendance(
         {
@@ -202,117 +189,87 @@ describe('HANUJAI ERP — Role Model, Student Dossier & Permission Test Matrix',
             { studentId: 'STU-10A-02', state: 'absent', remarks: 'Medical leave' },
           ],
         },
-        classTeacher
+        admin
       );
 
       expect(session).toBeDefined();
       expect(session.classId).toBe('class-10-a');
-      expect(session.markedByStaffId).toBe(classTeacher.id);
+      expect(session.markedByStaffId).toBe(admin.id);
       expect(session.totalPresent).toBe(1);
       expect(session.totalAbsent).toBe(1);
     });
   });
 
   // =========================================================================
-  // 3. SUBJECT TEACHER: ONLY ASSIGNED SUBJECTS AND CLASSES
+  // 3. DEACTIVATED TEACHER ACCOUNTS: REVOKED ACTIVE LOGIN & PERMISSION ACCESS
   // =========================================================================
-  describe('3. Subject Teacher: Scoped strictly to assigned subjects/classes', () => {
-    // Smt. Priyanka Sen is Science teacher for Class 10-A and 10-B
-    const getSubjectTeacher = () => initialStaff.find(s => s.role === 'subject_teacher' && s.id === 'staff-004')!;
+  describe('3. Deactivated Teacher Accounts: Revoked Active Login & Permissions', () => {
+    const getClassTeacher = () => initialStaff.find(s => s.role === 'class_teacher')!;
+    const getSubjectTeacher = () => initialStaff.find(s => s.role === 'subject_teacher')!;
 
-    it('Subject Teacher can access assigned subject (Science) in assigned classes (10-A, 10-B)', () => {
-      const subjectTeacher = getSubjectTeacher();
-
-      expect(Permissions.canAccessSubjectMarks(subjectTeacher, 'class-10-a', 'sub-sci-10')).toBe(true);
-      expect(Permissions.canEditMarks(subjectTeacher, 'class-10-a', 'sub-sci-10')).toBe(true);
-      expect(Permissions.canAccessSubjectMarks(subjectTeacher, 'class-10-b', 'sub-sci-10')).toBe(true);
-      expect(Permissions.canEditMarks(subjectTeacher, 'class-10-b', 'sub-sci-10')).toBe(true);
+    it('Class Teacher accounts are deactivated and denied active attendance marking', () => {
+      const classTeacher = getClassTeacher();
+      expect(classTeacher.status).toBe('deactivated');
+      expect(Permissions.canAccessSection(classTeacher, 'class-10-a')).toBe(false);
+      expect(Permissions.canMarkAttendance(classTeacher, 'class-10-a')).toBe(false);
+      expect(Permissions.canSubmitAttendance(classTeacher, 'class-10-a')).toBe(false);
+      expect(Permissions.canViewIndividualAttendance(classTeacher)).toBe(false);
+      expect(Permissions.canViewStudent(classTeacher, 'class-10-a')).toBe(false);
     });
 
-    it('Subject Teacher CANNOT access other subjects (e.g. Mathematics, English)', () => {
+    it('Subject Teacher accounts are deactivated and denied marks and attendance access', () => {
       const subjectTeacher = getSubjectTeacher();
-
-      expect(Permissions.canAccessSubjectMarks(subjectTeacher, 'class-10-a', 'sub-math-10')).toBe(false);
-      expect(Permissions.canEditMarks(subjectTeacher, 'class-10-a', 'sub-math-10')).toBe(false);
-      expect(Permissions.canAccessSubjectMarks(subjectTeacher, 'class-10-a', 'sub-eng-10')).toBe(false);
-      expect(Permissions.canEditMarks(subjectTeacher, 'class-10-a', 'sub-eng-10')).toBe(false);
-    });
-
-    it('Subject Teacher cannot access individual attendance registers or absent lists', () => {
-      const subjectTeacher = getSubjectTeacher();
-
+      expect(subjectTeacher.status).toBe('deactivated');
+      expect(Permissions.canAccessSection(subjectTeacher, 'class-10-a')).toBe(false);
       expect(Permissions.canMarkAttendance(subjectTeacher, 'class-10-a')).toBe(false);
+      expect(Permissions.canEditMarks(subjectTeacher, 'class-10-a', 'sub-sci-10')).toBe(false);
       expect(Permissions.canViewIndividualAttendance(subjectTeacher)).toBe(false);
     });
 
-    it('Subject Teacher cannot retrieve unrelated student records', () => {
-      const subjectTeacher = getSubjectTeacher();
-
-      // Class 01-A is unrelated to Smt. Priyanka Sen
-      expect(Permissions.canViewStudent(subjectTeacher, 'class-01-a')).toBe(false);
-      expect(Permissions.canViewRiskWatchlist(subjectTeacher, 'class-01-a')).toBe(false);
+    it('Deactivated teachers are forbidden from submitting daily attendance in repository', async () => {
+      const classTeacher = getClassTeacher();
+      await expect(
+        demoRepository.submitDailyAttendance(
+          {
+            classId: 'class-10-a',
+            date: '2026-10-23',
+            academicYearId: 'year-2025-2026',
+            records: [
+              { studentId: 'STU-10A-01', state: 'present' },
+            ],
+          },
+          classTeacher
+        )
+      ).rejects.toThrow(/Only Admin Office is authorized to submit daily classroom attendance/i);
     });
   });
 
   // =========================================================================
-  // 4. DUAL-RESPONSIBILITY TEACHER: SHRI ALOK SAXENA
+  // 4. DEVELOPER / ROOT ADMIN ARCHITECTURE READINESS
   // =========================================================================
-  describe('4. Dual-Responsibility Teacher (Class Teacher 10-A + Math across 10-A, 10-B, 9-A, 9-B)', () => {
-    // Shri Alok Saxena: staff-003
-    const getDualTeacher = () => initialStaff.find(s => s.id === 'staff-003')!;
+  describe('4. Developer / Root Admin Architecture Readiness', () => {
+    it('Developer role is ready in permission architecture but hidden from active user lists', () => {
+      const mockDeveloper: StaffUser = {
+        id: 'staff-root',
+        email: 'root@hanujai.edu.in',
+        name: 'Root Developer',
+        role: 'developer',
+        status: 'active',
+        employeeCode: 'EMP-DEV-00',
+        designation: 'Lead Developer',
+        department: 'Information Technology',
+        phone: '+91 98290 00000',
+        createdAt: '2026-11-13T00:00:00.000Z',
+      };
 
-    it('In Class 10-A context: can mark attendance and view all subjects marks', () => {
-      const teacher = getDualTeacher();
+      // Developer has system access when provisioned
+      expect(Permissions.canAccessSection(mockDeveloper, 'class-10-a')).toBe(true);
+      expect(Permissions.canMarkAttendance(mockDeveloper, 'class-10-a')).toBe(true);
+      expect(Permissions.canManageSettings(mockDeveloper)).toBe(true);
 
-      // Class teacher capabilities in 10-A
-      expect(Permissions.canMarkAttendance(teacher, 'class-10-a')).toBe(true);
-      expect(Permissions.canViewStudent(teacher, 'class-10-a')).toBe(true);
-      expect(Permissions.canAccessSubjectMarks(teacher, 'class-10-a', 'sub-math-10')).toBe(true);
-      expect(Permissions.canAccessSubjectMarks(teacher, 'class-10-a', 'sub-sci-10')).toBe(true);
-      expect(Permissions.canAccessSubjectMarks(teacher, 'class-10-a', 'sub-eng-10')).toBe(true);
-    });
-
-    it('In Class 10-A Mathematics context: can enter Mathematics marks', () => {
-      const teacher = getDualTeacher();
-
-      expect(Permissions.canEditMarks(teacher, 'class-10-a', 'sub-math-10')).toBe(true);
-      // In 10-A, Alok Saxena is NOT Science teacher, so cannot edit Science marks
-      expect(Permissions.canEditMarks(teacher, 'class-10-a', 'sub-sci-10')).toBe(false);
-    });
-
-    it('In Classes 10-B, 9-A, 9-B: can enter Math marks and view aggregate attendance only', () => {
-      const teacher = getDualTeacher();
-
-      // 10-B context
-      expect(Permissions.canEditMarks(teacher, 'class-10-b', 'sub-math-10')).toBe(true);
-      expect(Permissions.canAccessSubjectMarks(teacher, 'class-10-b', 'sub-math-10')).toBe(true);
-      // But CANNOT mark attendance in 10-B
-      expect(Permissions.canMarkAttendance(teacher, 'class-10-b')).toBe(false);
-      // CANNOT view other subject marks in 10-B
-      expect(Permissions.canAccessSubjectMarks(teacher, 'class-10-b', 'sub-sci-10')).toBe(false);
-      expect(Permissions.canAccessSubjectMarks(teacher, 'class-10-b', 'sub-eng-10')).toBe(false);
-
-      // 09-A context
-      expect(Permissions.canEditMarks(teacher, 'class-09-a', 'sub-math-09')).toBe(true);
-      expect(Permissions.canMarkAttendance(teacher, 'class-09-a')).toBe(false);
-      expect(Permissions.canAccessSubjectMarks(teacher, 'class-09-a', 'sub-sci-09')).toBe(false);
-
-      // 09-B context
-      expect(Permissions.canEditMarks(teacher, 'class-09-b', 'sub-math-09')).toBe(true);
-      expect(Permissions.canMarkAttendance(teacher, 'class-09-b')).toBe(false);
-      expect(Permissions.canAccessSubjectMarks(teacher, 'class-09-b', 'sub-sci-09')).toBe(false);
-    });
-
-    it('Class 10-A class-teacher privileges DO NOT leak into 10-B, 9-A, or 9-B', () => {
-      const teacher = getDualTeacher();
-
-      // Cannot access cumulative report card for a student in 10-B (subject teacher only)
-      const student10B = { classId: 'class-10-b' } as any;
-      expect(Permissions.canViewStudentReportCard(teacher, student10B)).toBe(false);
-
-      // Cannot access cumulative report card for a student in 09-A
-      const student09A = { classId: 'class-09-a' } as any;
-      expect(Permissions.canViewStudentReportCard(teacher, student09A)).toBe(false);
+      // Verify no developer account is in default initialStaff seeds
+      const seedDeveloper = initialStaff.find(s => s.role === 'developer');
+      expect(seedDeveloper).toBeUndefined();
     });
   });
 
@@ -409,16 +366,18 @@ describe('HANUJAI ERP — Role Model, Student Dossier & Permission Test Matrix',
   });
 
   // =========================================================================
-  // 6. THREE PROFILES VERIFICATION & RESIDUAL OFFICE ROLE PURGE
+  // 6. OPERATING MODEL PROFILES & ACCESS ENFORCEMENT
   // =========================================================================
-  describe('6. Strictly 3 Profiles in System', () => {
-    it('All seed staff members belong strictly to the 3 permitted roles', () => {
-      const allowedRoles = ['principal', 'class_teacher', 'subject_teacher'];
-      initialStaff.forEach(staff => {
-        expect(allowedRoles).toContain(staff.role);
-        expect((staff.role as string)).not.toBe('office_admin');
-        expect((staff.role as string)).not.toBe('office_staff');
-      });
+  describe('6. Strictly 2 Active Roles in Operating Model', () => {
+    it('Active staff members belong strictly to the 2 permitted roles: principal and admin', () => {
+      const activeStaff = initialStaff.filter(s => s.status === 'active');
+      expect(activeStaff.length).toBe(2);
+      const activeRoles = activeStaff.map(s => s.role);
+      expect(activeRoles).toContain('principal');
+      expect(activeRoles).toContain('admin');
+      expect(activeRoles).not.toContain('class_teacher');
+      expect(activeRoles).not.toContain('subject_teacher');
+      expect(activeRoles).not.toContain('office_admin');
     });
 
     it('Unsupported legacy roles cannot access protected pages', async () => {
@@ -427,6 +386,7 @@ describe('HANUJAI ERP — Role Model, Student Dossier & Permission Test Matrix',
         email: 'legacy@hanujai.edu.in',
         name: 'Legacy Office Staff',
         role: 'office_admin' as any,
+        status: 'active' as any,
       };
       localStorage.setItem('hanujai_demo_user_override', JSON.stringify(unsupportedUser));
 

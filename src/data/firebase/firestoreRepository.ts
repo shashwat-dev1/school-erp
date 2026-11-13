@@ -350,12 +350,11 @@ export class FirestoreRepository implements DataProvider {
     actor: StaffUser
   ): Promise<AttendanceSession> {
     if (actor.role === 'principal') {
-      throw new Error('Unauthorized: Principal cannot mark or edit classroom attendance.');
+      throw new Error('Unauthorized: Principal profile is strictly read-only and cannot submit attendance.');
     }
-    const isClassTeacher = actor.assignedClassId === input.classId || 
-      (actor.role === 'class_teacher' && actor.assignedClasses?.includes(input.classId));
-    if (!isClassTeacher) {
-      throw new Error(`Unauthorized: Only the assigned Class Teacher can mark attendance for class ${input.classId}.`);
+    const isAuthorized = actor.role === 'admin' || actor.role === 'developer';
+    if (!isAuthorized) {
+      throw new Error('Unauthorized: Only Admin Office is authorized to submit daily classroom attendance.');
     }
     ensureFirebaseReady();
     const [cls, students] = await Promise.all([
@@ -435,10 +434,9 @@ export class FirestoreRepository implements DataProvider {
     const sess = sessDoc.exists() ? (sessDoc.data() as AttendanceSession) : null;
 
     const classId = sess?.classId || stud?.classId || 'class-10-a';
-    const isClassTeacher = actor.assignedClassId === classId || 
-      (actor.role === 'class_teacher' && actor.assignedClasses?.includes(classId));
-    if (!isClassTeacher) {
-      throw new Error('Unauthorized: Only the assigned Class Teacher can request attendance corrections.');
+    const isAuthorized = actor.role === 'admin' || actor.role === 'developer';
+    if (!isAuthorized) {
+      throw new Error('Unauthorized: Only Admin Office is authorized to record attendance corrections.');
     }
 
     const classLabel = sess?.classLabel || stud?.classLabel || classId;

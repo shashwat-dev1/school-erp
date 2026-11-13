@@ -333,9 +333,9 @@ describe('HanuJai ERP — Complete 3-Year Historical Demonstration Dataset', () 
     });
 
     it('preserves user modifications in localStorage overlay without corrupting baseline', async () => {
-      const tutor = (await demoRepository.getStaffMembers()).find(s => s.id === 'staff-003')!;
+      const adminActor = (await demoRepository.getStaffMembers()).find(s => s.role === 'admin')!;
 
-      // Teacher submits attendance for a test date
+      // Admin Office submits attendance for a test date
       await demoRepository.submitDailyAttendance(
         {
           academicYearId: 'year-2025-2026',
@@ -346,7 +346,7 @@ describe('HanuJai ERP — Complete 3-Year Historical Demonstration Dataset', () 
             { studentId: 'STU-10A-02', state: 'absent' },
           ],
         },
-        tutor
+        adminActor
       );
 
       // Verify session exists

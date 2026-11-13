@@ -74,15 +74,11 @@ describe('Workflow Corrections & Domain Logic Validation', () => {
   });
 
   describe('2. Teacher Notes Permission Boundary (Safest Option)', () => {
-    it('allows Class Teacher to log notes on their assigned class section only', () => {
+    it('denies teacher notes and incident logging in Phase 1 scope', () => {
       const classTeacher = getClassTeacher();
-      expect(Permissions.canLogIncident(classTeacher, 'class-10-a')).toBe(true);
-      expect(Permissions.canLogIncident(classTeacher, 'class-10-b')).toBe(false);
-    });
-
-    it('denies Principal and Subject Teacher from creating teacher notes', () => {
       const principal = getPrincipal();
       const subjectTeacher = getSubjectTeacher();
+      expect(Permissions.canLogIncident(classTeacher, 'class-10-a')).toBe(false);
       expect(Permissions.canLogIncident(principal, 'class-10-a')).toBe(false);
       expect(Permissions.canLogIncident(subjectTeacher, 'class-10-a')).toBe(false);
     });

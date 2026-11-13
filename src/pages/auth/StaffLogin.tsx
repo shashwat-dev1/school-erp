@@ -16,7 +16,7 @@ export const StaffLogin: React.FC = () => {
   const location = useLocation();
   const { login, isLoading, error: authError } = useAuth();
 
-  const [email, setEmail] = useState('principal@hanujai.edu.in');
+  const [email, setEmail] = useState('admin@hanujai.edu.in');
   const [password, setPassword] = useState('demo-password');
   const [showPassword, setShowPassword] = useState(false);
   const [localError, setLocalError] = useState<string | null>(null);
@@ -294,35 +294,37 @@ export const StaffLogin: React.FC = () => {
               <span>Demo Quick Sign In:</span>
             </div>
 
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(130px, 1fr))', gap: '8px' }}>
-              {initialStaff.slice(0, 3).map((s) => {
-                const isSelected = email.toLowerCase() === s.email.toLowerCase();
-                const roleBadge = s.role === 'principal' ? 'Principal' : s.role === 'class_teacher' ? 'Class 10-A' : 'Mathematics';
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(140px, 1fr))', gap: '8px' }}>
+              {initialStaff
+                .filter(s => s.status === 'active' && (s.role === 'principal' || s.role === 'admin'))
+                .map((s) => {
+                  const isSelected = email.toLowerCase() === s.email.toLowerCase();
+                  const roleBadge = s.role === 'principal' ? 'Principal' : 'Admin Office';
 
-                return (
-                  <button
-                    key={s.id}
-                    type="button"
-                    onClick={() => selectPersona(s.email)}
-                    style={{
-                      textAlign: 'left',
-                      padding: '8px 10px',
-                      borderRadius: '8px',
-                      border: isSelected ? '1.5px solid #F5A623' : '1px solid #E2E8F0',
-                      backgroundColor: isSelected ? '#FEF3C7' : '#F8FAFC',
-                      cursor: 'pointer',
-                      transition: 'all 0.15s ease',
-                    }}
-                  >
-                    <div style={{ fontWeight: 700, fontSize: '0.76rem', color: isSelected ? '#92400E' : '#0A1931' }}>
-                      {s.name}
-                    </div>
-                    <div style={{ fontSize: '0.68rem', color: '#64748B', marginTop: '2px' }}>
-                      {roleBadge}
-                    </div>
-                  </button>
-                );
-              })}
+                  return (
+                    <button
+                      key={s.id}
+                      type="button"
+                      onClick={() => selectPersona(s.email)}
+                      style={{
+                        textAlign: 'left',
+                        padding: '8px 10px',
+                        borderRadius: '8px',
+                        border: isSelected ? '1.5px solid #F5A623' : '1px solid #E2E8F0',
+                        backgroundColor: isSelected ? '#FEF3C7' : '#F8FAFC',
+                        cursor: 'pointer',
+                        transition: 'all 0.15s ease',
+                      }}
+                    >
+                      <div style={{ fontWeight: 700, fontSize: '0.76rem', color: isSelected ? '#92400E' : '#0A1931' }}>
+                        {s.name}
+                      </div>
+                      <div style={{ fontSize: '0.68rem', color: '#64748B', marginTop: '2px' }}>
+                        {roleBadge}
+                      </div>
+                    </button>
+                  );
+                })}
             </div>
           </div>
 

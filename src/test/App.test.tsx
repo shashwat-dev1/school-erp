@@ -133,9 +133,9 @@ describe('HanuJai ERP Foundation — Phase 1 Core Workflows (Student & Attendanc
     expect(screen.queryByText(/Save & Submit/i)).not.toBeInTheDocument();
   });
 
-  it('renders interactive attendance controls for assigned Class Teacher', async () => {
-    const classTeacher = initialStaff.find(s => s.role === 'class_teacher' && s.assignedClassId === 'class-10-a')!;
-    setupUserSession(classTeacher.id);
+  it('renders interactive attendance controls for Admin Office across any class', async () => {
+    const adminStaff = initialStaff.find(s => s.role === 'admin')!;
+    setupUserSession(adminStaff.id);
 
     render(
       <MemoryRouter initialEntries={['/attendance/register/class-10-a']}>
@@ -151,6 +151,25 @@ describe('HanuJai ERP Foundation — Phase 1 Core Workflows (Student & Attendanc
       expect(screen.getAllByText(/Attendance Register/i).length).toBeGreaterThan(0);
       expect(screen.getByText(/Mark All Present/i)).toBeInTheDocument();
       expect(screen.getByText(/Save & Submit/i)).toBeInTheDocument();
+    });
+  });
+
+  it('denies attendance register access to deactivated teacher accounts', async () => {
+    const classTeacher = initialStaff.find(s => s.role === 'class_teacher')!;
+    setupUserSession(classTeacher.id);
+
+    render(
+      <MemoryRouter initialEntries={['/attendance/register/class-10-a']}>
+        <AuthProvider>
+          <DataContextProvider>
+            <App />
+          </DataContextProvider>
+        </AuthProvider>
+      </MemoryRouter>
+    );
+
+    await waitFor(() => {
+      expect(screen.queryByText(/Mark All Present/i)).not.toBeInTheDocument();
     });
   });
 

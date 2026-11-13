@@ -1,6 +1,10 @@
 /**
  * HanuJai High School ERP — Authentication Context
- * Supports both Firebase Authentication and In-Browser Demo Authentication.
+ * Supports both Firebase Authentication and Secure In-Browser Demo Authentication.
+ * 
+ * Strict Phase 1 Role Architecture:
+ * Only TWO active accounts: Principal (read-only) and Admin Office (full entry).
+ * All teacher accounts are deactivated from active login.
  */
 
 import React, { createContext, useContext, useState, useEffect } from 'react';
@@ -29,24 +33,20 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    // 1. Check if user actively selected a role persona override
-    const overrideJson = localStorage.getItem('hanujai_demo_user_override');
-    if (overrideJson) {
-      try {
-        const savedOverride = JSON.parse(overrideJson);
-        if (savedOverride && savedOverride.role) {
-          setCurrentUser(savedOverride);
+    if (isDemoMode()) {
+      const override = localStorage.getItem('hanujai_demo_user_override');
+      if (override) {
+        try {
+          const parsed = JSON.parse(override);
+          setCurrentUser(parsed);
           setIsLoading(false);
           return;
+        } catch {
+          // ignore invalid json
         }
-      } catch {
-        localStorage.removeItem('hanujai_demo_user_override');
       }
-    }
-
-    if (isDemoMode()) {
-      const savedUserId = localStorage.getItem('hanujai_demo_user_id') || 'staff-001';
-      const user = initialStaff.find(s => s.id === savedUserId) || initialStaff[0];
+      const savedUserId = localStorage.getItem('hanujai_demo_user_id') || 'staff-admin';
+      const user = initialStaff.find(s => s.id === savedUserId && s.status === 'active') || initialStaff[0];
       setCurrentUser(user);
       setIsLoading(false);
     } else if (auth) {
@@ -54,19 +54,21 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         setIsLoading(true);
         if (user) {
           try {
-            // Re-check override on auth change
-            const activeOverride = localStorage.getItem('hanujai_demo_user_override');
-            if (activeOverride) {
-              const parsed = JSON.parse(activeOverride);
-              if (parsed && parsed.role) {
-                setCurrentUser(parsed);
-                setIsLoading(false);
-                return;
-              }
-            }
             const provider = getDataProvider();
             const staffDoc = await provider.getCurrentStaffUser(user.uid);
-            setCurrentUser(staffDoc);
+            if (staffDoc) {
+              if (staffDoc.status === 'deactivated' || staffDoc.role === 'class_teacher' || staffDoc.role === 'subject_teacher') {
+                setError('Teacher accounts are deactivated in this operating phase. Only Principal and Admin Office accounts have active access.');
+                setCurrentUser(null);
+                if (auth) {
+                  await firebaseSignOut(auth);
+                }
+              } else {
+                setCurrentUser(staffDoc);
+              }
+            } else {
+              setCurrentUser(null);
+            }
           } catch (err) {
             console.error('Failed to load user profile from Firestore:', err);
             setError('Could not retrieve staff profile.');
@@ -87,33 +89,49 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     setIsLoading(true);
     setError(null);
     try {
-      if (!email.trim() || !pass.trim()) {
+      const cleanEmail = email.trim().toLowerCase();
+      if (!cleanEmail || !pass.trim()) {
         throw new Error('Please enter both your institutional email and password.');
       }
 
-      // Clear any prior demo override upon explicit new login
-      localStorage.removeItem('hanujai_demo_user_override');
+      // Check for known teacher email patterns
+      if (
+        cleanEmail.includes('teacher.') ||
+        cleanEmail.includes('rajeshwar.choudhary') ||
+        cleanEmail.includes('alok.saxena') ||
+        cleanEmail.includes('priyanka.sen') ||
+        cleanEmail.includes('tutor.')
+      ) {
+        throw new Error('Classroom teacher accounts are deactivated in this operating phase. Classroom attendance is entered centrally by the Admin Office.');
+      }
 
       if (isDemoMode()) {
         const found = initialStaff.find(
-          s => s.email.toLowerCase() === email.toLowerCase().trim()
+          s => s.email.toLowerCase() === cleanEmail
         );
         if (found) {
+          if (found.status === 'deactivated' || found.role === 'class_teacher' || found.role === 'subject_teacher') {
+            throw new Error('Classroom teacher accounts are deactivated in this operating phase. Only Principal and Admin Office accounts are authorized.');
+          }
           setCurrentUser(found);
           localStorage.setItem('hanujai_demo_user_id', found.id);
         } else {
-          throw new Error('Staff account not found with this email address. Please select an authorized demo persona or verify credentials.');
+          throw new Error('Staff account not found with this email address. Please verify credentials.');
         }
       } else if (auth) {
-        const cred = await signInWithEmailAndPassword(auth, email.trim(), pass);
+        const cred = await signInWithEmailAndPassword(auth, cleanEmail, pass);
         const provider = getDataProvider();
         const staffDoc = await provider.getCurrentStaffUser(cred.user.uid);
         if (!staffDoc) {
           throw new Error('No staff record linked to this authenticated account.');
         }
+        if (staffDoc.status === 'deactivated' || staffDoc.role === 'class_teacher' || staffDoc.role === 'subject_teacher') {
+          await firebaseSignOut(auth);
+          throw new Error('Classroom teacher accounts are deactivated in this operating phase. Only Principal and Admin Office accounts are authorized.');
+        }
         setCurrentUser(staffDoc);
       } else {
-        throw new Error('Firebase Authentication services are offline or unconfigured. Run in Demo Mode or configure .env.local.');
+        throw new Error('Firebase Authentication services are offline or unconfigured.');
       }
     } catch (err: unknown) {
       const msg = err instanceof Error ? err.message : 'Invalid credentials. Please verify username and password.';
@@ -127,7 +145,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const logout = async () => {
     setIsLoading(true);
     try {
-      localStorage.removeItem('hanujai_demo_user_override');
       localStorage.removeItem('hanujai_demo_user_id');
       if (auth) {
         await firebaseSignOut(auth);
@@ -141,19 +158,13 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const switchDemoRole = (role: StaffRole) => {
     let target: StaffUser | undefined;
     if (role === 'principal') {
-      target = initialStaff.find(s => s.role === 'principal');
-    } else if (role === 'class_teacher') {
-      target = initialStaff.find(s => s.id === 'staff-002') || initialStaff.find(s => s.id === 'staff-003');
-    } else if (role === 'subject_teacher') {
-      const base = initialStaff.find(s => s.id === 'staff-003');
-      target = base
-        ? { ...base, role: 'subject_teacher' as StaffRole }
-        : initialStaff.find(s => s.role === 'subject_teacher');
+      target = initialStaff.find(s => s.role === 'principal' && s.status === 'active');
+    } else if (role === 'admin') {
+      target = initialStaff.find(s => s.role === 'admin' && s.status === 'active');
     }
 
     if (target) {
       setCurrentUser(target);
-      localStorage.setItem('hanujai_demo_user_override', JSON.stringify(target));
       localStorage.setItem('hanujai_demo_user_id', target.id);
     }
   };

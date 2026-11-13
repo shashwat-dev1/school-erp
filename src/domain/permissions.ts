@@ -1,9 +1,14 @@
 /**
  * HanuJai High School ERP — Central Authorization & Permission Policy
+ * Campus: HanuJai High School, Jaipur, Rajasthan, India
  * 
- * Enforces Role-Based Access Control (RBAC) and Assignment-Based Access Control (ABAC).
- * Supports exactly three user profiles: Principal, Class Teacher, Subject Teacher.
- * Dual-responsibility teachers hold separate assignments evaluated per class context.
+ * Centralized Role-Based Access Control (RBAC) for Operating Model:
+ * 1. Principal: School-wide executive supervision, viewing and reporting. Strictly READ-ONLY.
+ * 2. Admin Office (admin): Complete student directory access and daily attendance data entry for ALL classes.
+ * 3. Developer / Root Admin (developer): Reserved for future phase. Server-side provisioned.
+ * 
+ * Classroom teacher accounts are deactivated in this operating phase; classroom attendance
+ * is taken on physical registers and entered into the ERP centrally by the Admin Office.
  */
 
 import type { StaffUser, StudentRecord } from './types';
@@ -11,180 +16,144 @@ import type { StaffUser, StudentRecord } from './types';
 export const Permissions = {
   /**
    * Section / Class Access:
-   * - Principal: School-wide read-only oversight across all 20 sections.
-   * - Class Teacher: Access to assigned class section and any sections where they teach a subject.
-   * - Subject Teacher: Access strictly to sections where they are assigned to teach a subject.
+   * - Principal: School-wide read-only oversight across all configured classes.
+   * - Admin Office: Full administrative access across all configured classes.
+   * - Deactivated teacher accounts: No active access.
    */
-  canAccessSection(user: StaffUser | null, classId: string): boolean {
-    if (!user) return false;
-    if (user.role === 'principal') return true;
-    if (user.assignedClassId === classId) return true;
-    return user.assignedClasses?.includes(classId) ?? false;
+  canAccessSection(user: StaffUser | null, _classId?: string): boolean {
+    if (!user || user.status !== 'active') return false;
+    return user.role === 'principal' || user.role === 'admin' || user.role === 'developer';
   },
 
   /**
    * Daily Attendance Register Marking:
-   * - Principal: STRICTLY FORBIDDEN (Read-only oversight only).
-   * - Class Teacher: ONLY for their explicitly assigned section.
-   * - Subject Teacher: STRICTLY FORBIDDEN.
+   * - Principal: STRICTLY FORBIDDEN (Strictly read-only oversight).
+   * - Admin Office: Authorized for ALL configured school classes (centralized entry).
+   * - Deactivated teacher accounts: Strictly forbidden.
    */
-  canMarkAttendance(user: StaffUser | null, classId: string): boolean {
-    if (!user) return false;
+  canMarkAttendance(user: StaffUser | null, _classId?: string): boolean {
+    if (!user || user.status !== 'active') return false;
     if (user.role === 'principal') return false;
-    return user.assignedClassId === classId;
+    return user.role === 'admin' || user.role === 'developer';
+  },
+
+  /**
+   * Attendance Submission:
+   * - Principal: STRICTLY FORBIDDEN.
+   * - Admin Office: Authorized to submit attendance registers one class at a time.
+   */
+  canSubmitAttendance(user: StaffUser | null, _classId?: string): boolean {
+    if (!user || user.status !== 'active') return false;
+    if (user.role === 'principal') return false;
+    return user.role === 'admin' || user.role === 'developer';
   },
 
   /**
    * Individual Student Attendance Records & Absence Lists:
    * - Principal: Authorized to view individual student attendance histories and reports.
-   * - Class Teacher: Authorized for students in their assigned section.
-   * - Subject Teacher: FORBIDDEN from viewing individual absence lists (Aggregate counts only).
+   * - Admin Office: Authorized to view individual student attendance histories and reports.
    */
-  canViewIndividualAttendance(user: StaffUser | null, classId?: string): boolean {
-    if (!user) return false;
-    if (user.role === 'principal') return true;
-    if (user.role === 'class_teacher') {
-      return Boolean(classId && user.assignedClassId === classId);
-    }
-    return false;
+  canViewIndividualAttendance(user: StaffUser | null, _classId?: string): boolean {
+    if (!user || user.status !== 'active') return false;
+    return user.role === 'principal' || user.role === 'admin' || user.role === 'developer';
   },
 
   /**
-   * Attendance Correction Request:
-   * - Class Teacher: Can request correction for students in their assigned section only.
-   * - Principal: Cannot submit correction requests (Read-only).
-   * - Subject Teacher: Forbidden.
+   * Attendance Correction Request / Application:
+   * - Principal: Cannot submit correction requests (Strictly read-only).
+   * - Admin Office: Authorized to correct submitted registers under school policy.
    */
-  canRequestAttendanceCorrection(user: StaffUser | null, classId: string): boolean {
-    if (!user) return false;
+  canRequestAttendanceCorrection(user: StaffUser | null, _classId?: string): boolean {
+    if (!user || user.status !== 'active') return false;
     if (user.role === 'principal') return false;
-    return user.assignedClassId === classId;
+    return user.role === 'admin' || user.role === 'developer';
   },
 
   /**
    * Attendance Correction Approval:
-   * - Principal is strictly read-only in this pilot (no approvals or record modifications).
+   * - Dual-custody correction approval is disabled in Phase 1 (Principal is strictly read-only).
    */
   canApproveAttendanceCorrection(_user: StaffUser | null, _correctionOrRequesterId: unknown): boolean {
     return false;
   },
 
   /**
-   * Subject Marks Access:
-   * - Principal: School-wide read-only oversight across all subjects.
-   * - Class Teacher: Consolidated marks across all subjects for their assigned section only.
-   * - Subject Teacher: Strictly restricted to their assigned subject and classes.
-   */
-  canAccessSubjectMarks(user: StaffUser | null, classId: string, subjectId: string): boolean {
-    if (!user) return false;
-    if (user.role === 'principal') return true;
-    if (user.assignedClassId === classId) return true;
-    
-    const teachesSubject = user.assignedSubjects?.includes(subjectId) || user.assignedSubjectIds?.includes(subjectId);
-    const teachesClass = user.assignedClasses?.includes(classId);
-    return Boolean(teachesSubject && teachesClass);
-  },
-
-  /**
-   * Marks Entry & Edit:
-   * - Principal: STRICTLY FORBIDDEN (Read-only oversight).
-   * - Faculty: ONLY permitted if the user has an explicit subject-teacher assignment
-   *   for the requested class and subject.
-   *   (A Class Teacher CANNOT enter marks unless they also teach that subject in that section).
-   */
-  canEditMarks(user: StaffUser | null, classId: string, subjectId: string): boolean {
-    if (!user) return false;
-    if (user.role === 'principal') return false;
-
-    const teachesSubject = user.assignedSubjects?.includes(subjectId) || user.assignedSubjectIds?.includes(subjectId);
-    const teachesClass = user.assignedClasses?.includes(classId);
-    return Boolean(teachesSubject && teachesClass);
-  },
-
-  /**
    * Student Master Record Access:
-   * - Principal: School-wide access to all student dossiers.
-   * - Class Teacher: Students in their assigned section.
-   * - Subject Teacher: Students in their assigned classes.
+   * - Principal: School-wide access to all student profiles (read-only).
+   * - Admin Office: School-wide access to all student profiles.
    */
-  canViewStudent(user: StaffUser | null, studentOrClassId: StudentRecord | string): boolean {
-    if (!user) return false;
-    if (user.role === 'principal') return true;
-    const targetClassId = typeof studentOrClassId === 'string' ? studentOrClassId : studentOrClassId.classId;
-    if (user.assignedClassId === targetClassId) return true;
-    return user.assignedClasses?.includes(targetClassId) ?? false;
+  canViewStudent(user: StaffUser | null, _studentOrClassId?: StudentRecord | string): boolean {
+    if (!user || user.status !== 'active') return false;
+    return user.role === 'principal' || user.role === 'admin' || user.role === 'developer';
   },
 
   /**
    * Student Contact Modification:
-   * - Principal: Read-only.
-   * - Class Teacher: Allowed for students enrolled in their assigned section.
+   * - Principal: Strictly read-only.
+   * - Admin Office: Authorized for student information maintenance.
    */
-  canEditStudentContact(user: StaffUser | null, studentOrClassId: StudentRecord | string): boolean {
-    if (!user) return false;
+  canEditStudentContact(user: StaffUser | null, _studentOrClassId?: StudentRecord | string): boolean {
+    if (!user || user.status !== 'active') return false;
     if (user.role === 'principal') return false;
-    const targetClassId = typeof studentOrClassId === 'string' ? studentOrClassId : studentOrClassId.classId;
-    return Boolean(user.role === 'class_teacher' && user.assignedClassId === targetClassId);
+    return user.role === 'admin' || user.role === 'developer';
   },
 
   /**
-   * Risk Watchlist Access:
-   * - Principal: Whole-school overview.
-   * - Class Teacher: Scoped strictly to their assigned class.
-   * - Subject Teacher: Forbidden from school-wide or cross-subject watchlist.
+   * Attendance Reports & Excel Export:
+   * - Principal: Authorized to download and inspect attendance reports.
+   * - Admin Office: Authorized to download and inspect attendance reports.
    */
-  canViewRiskWatchlist(user: StaffUser | null, classId?: string): boolean {
-    if (!user) return false;
-    if (user.role === 'principal') return true;
-    if (user.assignedClassId && classId) {
-      return user.assignedClassId === classId;
-    }
-    return false;
+  canExportAttendance(user: StaffUser | null): boolean {
+    if (!user || user.status !== 'active') return false;
+    return user.role === 'principal' || user.role === 'admin' || user.role === 'developer';
   },
 
   /**
    * Formal Cumulative Student Report Card Access:
-   * - Principal: Read-only download/print access for any student.
-   * - Class Teacher: Students in their assigned section.
-   * - Subject Teacher: Denied full multi-subject cumulative report cards.
+   * - Principal: Read-only access.
+   * - Admin Office: Authorized access.
    */
-  canViewStudentReportCard(user: StaffUser | null, studentOrClassId: StudentRecord | string): boolean {
-    if (!user) return false;
-    if (user.role === 'principal') return true;
-    const targetClassId = typeof studentOrClassId === 'string' ? studentOrClassId : studentOrClassId.classId;
-    return user.assignedClassId === targetClassId;
-  },
-
-  /**
-   * Teacher Notes Logging:
-   * - Principal: STRICTLY FORBIDDEN from creating/editing notes (Read-only oversight).
-   * - Class Teacher: Can log notes for students in their assigned section.
-   * - Subject Teacher: Forbidden by default (safest baseline assumption pending explicit confirmation).
-   */
-  canLogIncident(user: StaffUser | null, studentClassId: string): boolean {
-    if (!user) return false;
-    if (user.role === 'principal') return false;
-    // Safest baseline: Class Teacher for their assigned class section only
-    return Boolean(user.role === 'class_teacher' && user.assignedClassId === studentClassId);
+  canViewStudentReportCard(user: StaffUser | null, _studentOrClassId?: StudentRecord | string): boolean {
+    if (!user || user.status !== 'active') return false;
+    return user.role === 'principal' || user.role === 'admin' || user.role === 'developer';
   },
 
   /**
    * System Audit Ledger:
    * - Principal: School-wide read-only audit visibility.
+   * - Admin Office: Authorized audit inspection.
    */
   canViewAuditLog(user: StaffUser | null): boolean {
-    return user?.role === 'principal';
+    if (!user || user.status !== 'active') return false;
+    return user.role === 'principal' || user.role === 'admin' || user.role === 'developer';
   },
 
   /**
-   * School Settings & Staff Administration Mutations:
-   * - Denied across all roles in this pilot (Principal is strictly read-only).
+   * System Settings Management:
+   * - Denied across all regular operational accounts.
    */
-  canManageSettings(_user: StaffUser | null): boolean {
+  canManageSettings(user: StaffUser | null): boolean {
+    return Boolean(user && user.status === 'active' && user.role === 'developer');
+  },
+
+  canManageStaff(user: StaffUser | null): boolean {
+    return Boolean(user && user.status === 'active' && user.role === 'developer');
+  },
+
+  // Legacy stubs kept for interface compatibility with any existing tests
+  canAccessSubjectMarks(user: StaffUser | null, _classId?: string, _subjectId?: string): boolean {
+    return user?.role === 'principal' || user?.role === 'admin';
+  },
+
+  canEditMarks(_user: StaffUser | null, _classId?: string, _subjectId?: string): boolean {
     return false;
   },
 
-  canManageStaff(_user: StaffUser | null): boolean {
+  canViewRiskWatchlist(user: StaffUser | null, _classId?: string): boolean {
+    return user?.role === 'principal' || user?.role === 'admin';
+  },
+
+  canLogIncident(_user: StaffUser | null, _studentClassId?: string): boolean {
     return false;
   },
 };

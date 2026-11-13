@@ -2,7 +2,6 @@ import React from 'react';
 import { Routes, Route, Navigate } from 'react-router-dom';
 import { AppShell } from './components/layout/AppShell';
 import { RoleGuard } from './components/auth/RoleGuard';
-import { SectionGuard } from './components/auth/SectionGuard';
 
 // Public Auth
 import { StaffLogin } from './pages/auth/StaffLogin';
@@ -64,31 +63,39 @@ export const App: React.FC = () => {
         <Route path="students/:id/attendance" element={<StudentAttendanceHistory />} />
         <Route path="students/:studentId/attendance" element={<StudentAttendanceHistory />} />
 
-        {/* Whole-School Attendance (Principal only) */}
+        {/* Whole-School Attendance (Principal oversight) */}
         <Route
           path="attendance"
           element={
-            <RoleGuard allowedRoles={['principal']}>
+            <RoleGuard allowedRoles={['principal', 'admin', 'developer']}>
               <AttendanceDashboard />
             </RoleGuard>
           }
         />
 
-        {/* Daily Classroom Register (Guarded by Section Clearance) */}
+        {/* Daily Classroom Register (Admin Entry & Principal Oversight) */}
+        <Route
+          path="attendance/register"
+          element={
+            <RoleGuard allowedRoles={['principal', 'admin', 'developer']}>
+              <DailyAttendanceRegister />
+            </RoleGuard>
+          }
+        />
         <Route
           path="attendance/register/:classId"
           element={
-            <SectionGuard action="mark_attendance">
+            <RoleGuard allowedRoles={['principal', 'admin', 'developer']}>
               <DailyAttendanceRegister />
-            </SectionGuard>
+            </RoleGuard>
           }
         />
 
-        {/* Attendance Corrections (Principal & Class Teachers) */}
+        {/* Attendance Corrections (Admin Office Operations) */}
         <Route
           path="attendance/corrections"
           element={
-            <RoleGuard allowedRoles={['principal', 'class_teacher']}>
+            <RoleGuard allowedRoles={['admin', 'developer']}>
               <AttendanceCorrections />
             </RoleGuard>
           }
@@ -98,7 +105,7 @@ export const App: React.FC = () => {
         <Route
           path="classes"
           element={
-            <RoleGuard allowedRoles={['principal']}>
+            <RoleGuard allowedRoles={['principal', 'admin', 'developer']}>
               <ClassesDirectory />
             </RoleGuard>
           }
@@ -106,9 +113,9 @@ export const App: React.FC = () => {
         <Route
           path="classes/:classId/students"
           element={
-            <SectionGuard>
+            <RoleGuard allowedRoles={['principal', 'admin', 'developer']}>
               <SectionRoster />
-            </SectionGuard>
+            </RoleGuard>
           }
         />
         {/* Deprecated Academic & Performance Routes -> Redirect to Students / Classes */}
@@ -124,7 +131,7 @@ export const App: React.FC = () => {
         <Route
           path="reports/attendance"
           element={
-            <RoleGuard allowedRoles={['principal', 'class_teacher']}>
+            <RoleGuard allowedRoles={['principal', 'admin', 'developer']}>
               <AttendanceReport />
             </RoleGuard>
           }

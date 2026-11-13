@@ -12,18 +12,15 @@ service cloud.firestore {
     }
 
     function hasRole(role) {
-      return isAuthenticated() && getUserData().role == role;
+      return isAuthenticated() && getUserData().role == role && getUserData().status == 'active';
     }
 
     function isPrincipal() {
       return hasRole('principal');
     }
 
-    function isAssignedClassTeacher(classId) {
-      return isAuthenticated() && (
-        getUserData().role == 'class_teacher' && 
-        getUserData().assignedClassId == classId
-      );
+    function isAdmin() {
+      return hasRole('admin') || hasRole('developer');
     }
 
     // Default: Deny all reads and writes
@@ -31,97 +28,72 @@ service cloud.firestore {
       allow read, write: if false;
     }
 
-    // School Settings: Read by authenticated staff; Principal is strictly read-only in pilot
+    // School Settings: Read by authenticated staff; Principal is strictly read-only
     match /schoolSettings/{settingId} {
-      allow read: if isAuthenticated();
+      allow read: if isAuthenticated() && (isPrincipal() || isAdmin());
       allow write: if false;
     }
 
-    // Academic Years: Read by authenticated staff; write disabled in pilot
+    // Academic Years: Read by authenticated staff
     match /academicYears/{yearId} {
-      allow read: if isAuthenticated();
+      allow read: if isAuthenticated() && (isPrincipal() || isAdmin());
       allow write: if false;
     }
 
-    // Classes & Sections: Read by authenticated staff; write disabled in pilot
+    // Classes & Sections: Read by authenticated staff
     match /classes/{classId} {
-      allow read: if isAuthenticated();
+      allow read: if isAuthenticated() && (isPrincipal() || isAdmin());
       allow write: if false;
     }
 
     // Staff Accounts: Read by authenticated staff; allow authenticated user to link their own document
     match /staff/{staffId} {
-      allow read: if isAuthenticated();
+      allow read: if isAuthenticated() && (isPrincipal() || isAdmin());
       allow create, update: if isAuthenticated() && request.auth.uid == staffId;
       allow delete: if false;
     }
 
-    // Student Master Records: Read authorized by assigned class/section or principal oversight.
-    // Writes are disabled in this pilot phase (managed via trusted server or read-only).
+    // Student Master Records: Read authorized for Principal oversight and Admin Office operations.
     match /students/{studentId} {
-      allow read: if isAuthenticated() && (
-        isPrincipal() ||
-        isAssignedClassTeacher(resource.data.classId)
-      );
-      allow create, update, delete: if false;
+      allow read: if isAuthenticated() && (isPrincipal() || isAdmin());
+      allow create, update: if isAuthenticated() && isAdmin();
+      allow delete: if false;
     }
 
     // Attendance Sessions & Daily Registers:
-    // Only assigned Class Teacher can submit attendance for their section. Principal has read-only oversight.
+    // Admin Office submits registers for any authorized school class. Principal has strictly read-only oversight.
     match /attendanceSessions/{sessionId} {
-      allow read: if isAuthenticated() && (
-        isPrincipal() || 
-        isAssignedClassTeacher(resource.data.classId)
-      );
-      
-      allow create, update: if isAuthenticated() && isAssignedClassTeacher(request.resource.data.classId);
+      allow read: if isAuthenticated() && (isPrincipal() || isAdmin());
+      allow create, update: if isAuthenticated() && isAdmin();
       allow delete: if false;
     }
 
     // Attendance WhatsApp Notifications:
-    // Assigned Class Teacher can create/read notification jobs for their section; Principal has read oversight.
+    // Admin Office generates parent notification jobs upon submission. Principal has read oversight.
     match /attendanceNotifications/{jobId} {
-      allow read: if isAuthenticated() && (
-        isPrincipal() || 
-        isAssignedClassTeacher(resource.data.classId)
-      );
-      allow create: if isAuthenticated() && isAssignedClassTeacher(request.resource.data.classId);
-      allow update: if isAuthenticated() && (
-        isAssignedClassTeacher(resource.data.classId) ||
-        isPrincipal()
-      );
+      allow read: if isAuthenticated() && (isPrincipal() || isAdmin());
+      allow create, update: if isAuthenticated() && isAdmin();
       allow delete: if false;
     }
 
     // Aggregate-only attendance metrics.
     match /attendanceAggregates/{aggregateId} {
-      allow read: if isAuthenticated() && (
-        isPrincipal() ||
-        isAssignedClassTeacher(resource.data.classId)
-      );
-      allow create, update: if isAuthenticated() && isAssignedClassTeacher(request.resource.data.classId);
+      allow read: if isAuthenticated() && (isPrincipal() || isAdmin());
+      allow create, update: if isAuthenticated() && isAdmin();
       allow delete: if false;
     }
 
-    // Attendance Correction Requests:
-    // Only assigned Class Teacher can request corrections for their section.
+    // Attendance Correction Records:
+    // Admin Office can record corrections. Principal has read-only audit oversight.
     match /attendanceCorrections/{correctionId} {
-      allow read: if isAuthenticated() && (
-        isPrincipal() || 
-        resource.data.requestedByStaffId == request.auth.uid ||
-        isAssignedClassTeacher(resource.data.classId)
-      );
-      
-      allow create: if isAuthenticated() && 
-        isAssignedClassTeacher(request.resource.data.classId) && 
-        request.resource.data.requestedByStaffId == request.auth.uid;
-
-      allow update, delete: if false;
+      allow read: if isAuthenticated() && (isPrincipal() || isAdmin());
+      allow create, update: if isAuthenticated() && isAdmin();
+      allow delete: if false;
     }
 
     // System Audit Log: Append-only, prevents forgery of actor identity
     match /auditEvents/{eventId} {
-      allow read: if isPrincipal();
+      allow read: if isAuthenticated() && (isPrincipal() || isAdmin());
       allow create: if isAuthenticated() && request.resource.data.actorId == request.auth.uid;
       allow update, delete: if false;
     }

@@ -85,7 +85,7 @@ export const initialAcademicYear = initialAcademicYears[0];
 // 3. Faculty Staff Directory (22 Distinct Staff Members adhering to Rule SEC-108)
 // ============================================================================
 export const initialStaff: StaffUser[] = [
-  // 1. Principal & Executive Leadership
+  // 1. Principal & Executive Leadership (Strictly Read-Only)
   {
     id: 'staff-001',
     email: 'principal@hanujai.edu.in',
@@ -98,7 +98,22 @@ export const initialStaff: StaffUser[] = [
     status: 'active',
     createdAt: '2023-01-01T00:00:00Z',
   },
-  // 2. Class Teacher (Class 10-A) - Senior Hindi & Moral Education Faculty
+  // 2. Admin Office — Central Attendance & Student Operations
+  {
+    id: 'staff-admin',
+    email: 'admin@hanujai.edu.in',
+    name: 'Admin Office',
+    displayName: 'Admin Office',
+    fullName: 'Admin Office',
+    role: 'admin',
+    employeeCode: 'EMP-ADMIN-01',
+    designation: 'Administrative Officer',
+    department: 'School Administration',
+    phone: '+91 98290 11002',
+    status: 'active',
+    createdAt: '2026-11-13T00:00:00Z',
+  },
+  // Historical Teacher Records (Preserved for audit attribution, deactivated from active application access)
   {
     id: 'staff-002',
     email: 'rajeshwar.choudhary@hanujai.edu.in',
@@ -112,10 +127,9 @@ export const initialStaff: StaffUser[] = [
     assignedClassLabel: 'Class 10-A',
     assignedSubjects: ['sub-hin-10', 'sub-hin-09'],
     assignedClasses: ['class-10-a', 'class-10-b'],
-    status: 'active',
+    status: 'deactivated',
     createdAt: '2023-01-01T00:00:00Z',
   },
-  // 3. Class Teacher (Class 10-A) & Mathematics Faculty (Dual-Responsibility Teacher)
   {
     id: 'staff-003',
     email: 'alok.saxena@hanujai.edu.in',
@@ -129,10 +143,9 @@ export const initialStaff: StaffUser[] = [
     assignedClassLabel: 'Class 10-A',
     assignedSubjects: ['sub-math-10', 'sub-math-09'],
     assignedClasses: ['class-10-a', 'class-10-b', 'class-09-a', 'class-09-b'],
-    status: 'active',
+    status: 'deactivated',
     createdAt: '2023-01-01T00:00:00Z',
   },
-  // 3. Dedicated Subject Teacher: Science Faculty
   {
     id: 'staff-004',
     email: 'priyanka.sen@hanujai.edu.in',
@@ -144,29 +157,28 @@ export const initialStaff: StaffUser[] = [
     phone: '+91 98290 66092',
     assignedSubjects: ['sub-sci-10', 'sub-sci-09'],
     assignedClasses: ['class-10-a', 'class-10-b', 'class-09-a', 'class-09-b'],
-    status: 'active',
+    status: 'deactivated',
     createdAt: '2023-01-01T00:00:00Z',
   },
-  // 5 to 22: Individual Dedicated Class Teachers for each remaining section (SEC-108)
-  { id: 'staff-005', email: 'tutor.10b@hanujai.edu.in', name: 'Smt. Sunita Verma', role: 'class_teacher', employeeCode: 'EMP-2014-052', designation: 'PGT Chemistry', department: 'Science', phone: '+91 98290 55005', assignedClassId: 'class-10-b', assignedClassLabel: 'Class 10-B', assignedSubjects: ['sub-sci-10'], assignedClasses: ['class-10-a', 'class-10-b'], status: 'active', createdAt: '2023-01-01T00:00:00Z' },
-  { id: 'staff-006', email: 'tutor.09a@hanujai.edu.in', name: 'Shri Dinesh Rathore', role: 'class_teacher', employeeCode: 'EMP-2015-061', designation: 'TGT Social Studies', department: 'Social Sciences', phone: '+91 98290 55006', assignedClassId: 'class-09-a', assignedClassLabel: 'Class 09-A', assignedSubjects: ['sub-sst-10'], assignedClasses: ['class-09-a'], status: 'active', createdAt: '2023-01-01T00:00:00Z' },
-  { id: 'staff-007', email: 'tutor.09b@hanujai.edu.in', name: 'Smt. Kavita Shekhawat', role: 'class_teacher', employeeCode: 'EMP-2017-074', designation: 'TGT English', department: 'Languages', phone: '+91 98290 55007', assignedClassId: 'class-09-b', assignedClassLabel: 'Class 09-B', assignedSubjects: ['sub-eng-10'], assignedClasses: ['class-09-b'], status: 'active', createdAt: '2023-01-01T00:00:00Z' },
-  { id: 'staff-008', email: 'tutor.08a@hanujai.edu.in', name: 'Shri Mahesh Tiwari', role: 'class_teacher', employeeCode: 'EMP-2018-081', designation: 'TGT Science', department: 'Science', phone: '+91 98290 55008', assignedClassId: 'class-08-a', assignedClassLabel: 'Class 08-A', status: 'active', createdAt: '2023-01-01T00:00:00Z' },
-  { id: 'staff-009', email: 'tutor.08b@hanujai.edu.in', name: 'Smt. Pooja Khandelwal', role: 'class_teacher', employeeCode: 'EMP-2019-093', designation: 'TGT Mathematics', department: 'Mathematics', phone: '+91 98290 55009', assignedClassId: 'class-08-b', assignedClassLabel: 'Class 08-B', status: 'active', createdAt: '2023-01-01T00:00:00Z' },
-  { id: 'staff-010', email: 'tutor.07a@hanujai.edu.in', name: 'Shri Rameshwar Dayal', role: 'class_teacher', employeeCode: 'EMP-2016-068', designation: 'TGT Hindi', department: 'Languages', phone: '+91 98290 55010', assignedClassId: 'class-07-a', assignedClassLabel: 'Class 07-A', status: 'active', createdAt: '2023-01-01T00:00:00Z' },
-  { id: 'staff-011', email: 'tutor.07b@hanujai.edu.in', name: 'Smt. Anju Bhargava', role: 'class_teacher', employeeCode: 'EMP-2018-089', designation: 'TGT Sanskrit', department: 'Languages', phone: '+91 98290 55011', assignedClassId: 'class-07-b', assignedClassLabel: 'Class 07-B', status: 'active', createdAt: '2023-01-01T00:00:00Z' },
-  { id: 'staff-012', email: 'tutor.06a@hanujai.edu.in', name: 'Shri Gopal Soni', role: 'class_teacher', employeeCode: 'EMP-2017-076', designation: 'TGT General Science', department: 'Science', phone: '+91 98290 55012', assignedClassId: 'class-06-a', assignedClassLabel: 'Class 06-A', status: 'active', createdAt: '2023-01-01T00:00:00Z' },
-  { id: 'staff-013', email: 'tutor.06b@hanujai.edu.in', name: 'Smt. Seema Rawat', role: 'class_teacher', employeeCode: 'EMP-2020-104', designation: 'TGT Social Studies', department: 'Social Sciences', phone: '+91 98290 55013', assignedClassId: 'class-06-b', assignedClassLabel: 'Class 06-B', status: 'active', createdAt: '2023-01-01T00:00:00Z' },
-  { id: 'staff-014', email: 'tutor.05a@hanujai.edu.in', name: 'Shri Naresh Agarwal', role: 'class_teacher', employeeCode: 'EMP-2015-058', designation: 'PRT Senior', department: 'Primary', phone: '+91 98290 55014', assignedClassId: 'class-05-a', assignedClassLabel: 'Class 05-A', status: 'active', createdAt: '2023-01-01T00:00:00Z' },
-  { id: 'staff-015', email: 'tutor.05b@hanujai.edu.in', name: 'Smt. Rekha Jain', role: 'class_teacher', employeeCode: 'EMP-2019-095', designation: 'PRT', department: 'Primary', phone: '+91 98290 55015', assignedClassId: 'class-05-b', assignedClassLabel: 'Class 05-B', status: 'active', createdAt: '2023-01-01T00:00:00Z' },
-  { id: 'staff-016', email: 'tutor.04a@hanujai.edu.in', name: 'Shri Vinod Mathur', role: 'class_teacher', employeeCode: 'EMP-2018-085', designation: 'PRT', department: 'Primary', phone: '+91 98290 55016', assignedClassId: 'class-04-a', assignedClassLabel: 'Class 04-A', status: 'active', createdAt: '2023-01-01T00:00:00Z' },
-  { id: 'staff-017', email: 'tutor.04b@hanujai.edu.in', name: 'Smt. Deepa Goyal', role: 'class_teacher', employeeCode: 'EMP-2021-112', designation: 'PRT', department: 'Primary', phone: '+91 98290 55017', assignedClassId: 'class-04-b', assignedClassLabel: 'Class 04-B', status: 'active', createdAt: '2023-01-01T00:00:00Z' },
-  { id: 'staff-018', email: 'tutor.03a@hanujai.edu.in', name: 'Shri Ashok Tanwar', role: 'class_teacher', employeeCode: 'EMP-2016-069', designation: 'PRT', department: 'Primary', phone: '+91 98290 55018', assignedClassId: 'class-03-a', assignedClassLabel: 'Class 03-A', status: 'active', createdAt: '2023-01-01T00:00:00Z' },
-  { id: 'staff-019', email: 'tutor.03b@hanujai.edu.in', name: 'Smt. Vandana Shrimali', role: 'class_teacher', employeeCode: 'EMP-2020-108', designation: 'PRT', department: 'Primary', phone: '+91 98290 55019', assignedClassId: 'class-03-b', assignedClassLabel: 'Class 03-B', status: 'active', createdAt: '2023-01-01T00:00:00Z' },
-  { id: 'staff-020', email: 'tutor.02a@hanujai.edu.in', name: 'Shri Hemant Kulshreshtha', role: 'class_teacher', employeeCode: 'EMP-2017-078', designation: 'PRT', department: 'Primary', phone: '+91 98290 55020', assignedClassId: 'class-02-a', assignedClassLabel: 'Class 02-A', status: 'active', createdAt: '2023-01-01T00:00:00Z' },
-  { id: 'staff-021', email: 'tutor.02b@hanujai.edu.in', name: 'Smt. Neetu Meena', role: 'class_teacher', employeeCode: 'EMP-2021-115', designation: 'PRT', department: 'Primary', phone: '+91 98290 55021', assignedClassId: 'class-02-b', assignedClassLabel: 'Class 02-B', status: 'active', createdAt: '2023-01-01T00:00:00Z' },
-  { id: 'staff-022', email: 'tutor.01a@hanujai.edu.in', name: 'Smt. Suman Lata', role: 'class_teacher', employeeCode: 'EMP-2014-049', designation: 'Headmistress Primary', department: 'Primary', phone: '+91 98290 55022', assignedClassId: 'class-01-a', assignedClassLabel: 'Class 01-A', status: 'active', createdAt: '2023-01-01T00:00:00Z' },
-  { id: 'staff-023', email: 'tutor.01b@hanujai.edu.in', name: 'Smt. Bhavna Pareek', role: 'class_teacher', employeeCode: 'EMP-2022-124', designation: 'PRT Junior', department: 'Primary', phone: '+91 98290 55023', assignedClassId: 'class-01-b', assignedClassLabel: 'Class 01-B', status: 'active', createdAt: '2023-01-01T00:00:00Z' },
+  { id: 'staff-005', email: 'tutor.10b@hanujai.edu.in', name: 'Smt. Sunita Verma', role: 'class_teacher', employeeCode: 'EMP-2014-052', designation: 'PGT Chemistry', department: 'Science', phone: '+91 98290 55005', assignedClassId: 'class-10-b', assignedClassLabel: 'Class 10-B', assignedSubjects: ['sub-sci-10'], assignedClasses: ['class-10-a', 'class-10-b'], status: 'deactivated', createdAt: '2023-01-01T00:00:00Z' },
+  { id: 'staff-006', email: 'tutor.09a@hanujai.edu.in', name: 'Shri Dinesh Rathore', role: 'class_teacher', employeeCode: 'EMP-2015-061', designation: 'TGT Social Studies', department: 'Social Sciences', phone: '+91 98290 55006', assignedClassId: 'class-09-a', assignedClassLabel: 'Class 09-A', assignedSubjects: ['sub-sst-10'], assignedClasses: ['class-09-a'], status: 'deactivated', createdAt: '2023-01-01T00:00:00Z' },
+  { id: 'staff-007', email: 'tutor.09b@hanujai.edu.in', name: 'Smt. Kavita Shekhawat', role: 'class_teacher', employeeCode: 'EMP-2017-074', designation: 'TGT English', department: 'Languages', phone: '+91 98290 55007', assignedClassId: 'class-09-b', assignedClassLabel: 'Class 09-B', assignedSubjects: ['sub-eng-10'], assignedClasses: ['class-09-b'], status: 'deactivated', createdAt: '2023-01-01T00:00:00Z' },
+  { id: 'staff-008', email: 'tutor.08a@hanujai.edu.in', name: 'Shri Mahesh Tiwari', role: 'class_teacher', employeeCode: 'EMP-2018-081', designation: 'TGT Science', department: 'Science', phone: '+91 98290 55008', assignedClassId: 'class-08-a', assignedClassLabel: 'Class 08-A', status: 'deactivated', createdAt: '2023-01-01T00:00:00Z' },
+  { id: 'staff-009', email: 'tutor.08b@hanujai.edu.in', name: 'Smt. Pooja Khandelwal', role: 'class_teacher', employeeCode: 'EMP-2019-093', designation: 'TGT Mathematics', department: 'Mathematics', phone: '+91 98290 55009', assignedClassId: 'class-08-b', assignedClassLabel: 'Class 08-B', status: 'deactivated', createdAt: '2023-01-01T00:00:00Z' },
+  { id: 'staff-010', email: 'tutor.07a@hanujai.edu.in', name: 'Shri Rameshwar Dayal', role: 'class_teacher', employeeCode: 'EMP-2016-068', designation: 'TGT Hindi', department: 'Languages', phone: '+91 98290 55010', assignedClassId: 'class-07-a', assignedClassLabel: 'Class 07-A', status: 'deactivated', createdAt: '2023-01-01T00:00:00Z' },
+  { id: 'staff-011', email: 'tutor.07b@hanujai.edu.in', name: 'Smt. Anju Bhargava', role: 'class_teacher', employeeCode: 'EMP-2018-089', designation: 'TGT Sanskrit', department: 'Languages', phone: '+91 98290 55011', assignedClassId: 'class-07-b', assignedClassLabel: 'Class 07-B', status: 'deactivated', createdAt: '2023-01-01T00:00:00Z' },
+  { id: 'staff-012', email: 'tutor.06a@hanujai.edu.in', name: 'Shri Gopal Soni', role: 'class_teacher', employeeCode: 'EMP-2017-076', designation: 'TGT General Science', department: 'Science', phone: '+91 98290 55012', assignedClassId: 'class-06-a', assignedClassLabel: 'Class 06-A', status: 'deactivated', createdAt: '2023-01-01T00:00:00Z' },
+  { id: 'staff-013', email: 'tutor.06b@hanujai.edu.in', name: 'Smt. Seema Rawat', role: 'class_teacher', employeeCode: 'EMP-2020-104', designation: 'TGT Social Studies', department: 'Social Sciences', phone: '+91 98290 55013', assignedClassId: 'class-06-b', assignedClassLabel: 'Class 06-B', status: 'deactivated', createdAt: '2023-01-01T00:00:00Z' },
+  { id: 'staff-014', email: 'tutor.05a@hanujai.edu.in', name: 'Shri Naresh Agarwal', role: 'class_teacher', employeeCode: 'EMP-2015-058', designation: 'PRT Senior', department: 'Primary', phone: '+91 98290 55014', assignedClassId: 'class-05-a', assignedClassLabel: 'Class 05-A', status: 'deactivated', createdAt: '2023-01-01T00:00:00Z' },
+  { id: 'staff-015', email: 'tutor.05b@hanujai.edu.in', name: 'Smt. Rekha Jain', role: 'class_teacher', employeeCode: 'EMP-2019-095', designation: 'PRT', department: 'Primary', phone: '+91 98290 55015', assignedClassId: 'class-05-b', assignedClassLabel: 'Class 05-B', status: 'deactivated', createdAt: '2023-01-01T00:00:00Z' },
+  { id: 'staff-016', email: 'tutor.04a@hanujai.edu.in', name: 'Shri Vinod Mathur', role: 'class_teacher', employeeCode: 'EMP-2018-085', designation: 'PRT', department: 'Primary', phone: '+91 98290 55016', assignedClassId: 'class-04-a', assignedClassLabel: 'Class 04-A', status: 'deactivated', createdAt: '2023-01-01T00:00:00Z' },
+  { id: 'staff-017', email: 'tutor.04b@hanujai.edu.in', name: 'Smt. Deepa Goyal', role: 'class_teacher', employeeCode: 'EMP-2021-112', designation: 'PRT', department: 'Primary', phone: '+91 98290 55017', assignedClassId: 'class-04-b', assignedClassLabel: 'Class 04-B', status: 'deactivated', createdAt: '2023-01-01T00:00:00Z' },
+  { id: 'staff-018', email: 'tutor.03a@hanujai.edu.in', name: 'Shri Ashok Tanwar', role: 'class_teacher', employeeCode: 'EMP-2016-069', designation: 'PRT', department: 'Primary', phone: '+91 98290 55018', assignedClassId: 'class-03-a', assignedClassLabel: 'Class 03-A', status: 'deactivated', createdAt: '2023-01-01T00:00:00Z' },
+  { id: 'staff-019', email: 'tutor.03b@hanujai.edu.in', name: 'Smt. Vandana Shrimali', role: 'class_teacher', employeeCode: 'EMP-2020-108', designation: 'PRT', department: 'Primary', phone: '+91 98290 55019', assignedClassId: 'class-03-b', assignedClassLabel: 'Class 03-B', status: 'deactivated', createdAt: '2023-01-01T00:00:00Z' },
+  { id: 'staff-020', email: 'tutor.02a@hanujai.edu.in', name: 'Shri Hemant Kulshreshtha', role: 'class_teacher', employeeCode: 'EMP-2017-078', designation: 'PRT', department: 'Primary', phone: '+91 98290 55020', assignedClassId: 'class-02-a', assignedClassLabel: 'Class 02-A', status: 'deactivated', createdAt: '2023-01-01T00:00:00Z' },
+  { id: 'staff-021', email: 'tutor.02b@hanujai.edu.in', name: 'Smt. Neetu Meena', role: 'class_teacher', employeeCode: 'EMP-2021-115', designation: 'PRT', department: 'Primary', phone: '+91 98290 55021', assignedClassId: 'class-02-b', assignedClassLabel: 'Class 02-B', status: 'deactivated', createdAt: '2023-01-01T00:00:00Z' },
+  { id: 'staff-022', email: 'tutor.01a@hanujai.edu.in', name: 'Smt. Suman Lata', role: 'class_teacher', employeeCode: 'EMP-2014-049', designation: 'Headmistress Primary', department: 'Primary', phone: '+91 98290 55022', assignedClassId: 'class-01-a', assignedClassLabel: 'Class 01-A', status: 'deactivated', createdAt: '2023-01-01T00:00:00Z' },
+  { id: 'staff-023', email: 'tutor.01b@hanujai.edu.in', name: 'Smt. Bhavna Pareek', role: 'class_teacher', employeeCode: 'EMP-2022-124', designation: 'PRT Junior', department: 'Primary', phone: '+91 98290 55023', assignedClassId: 'class-01-b', assignedClassLabel: 'Class 01-B', status: 'deactivated', createdAt: '2023-01-01T00:00:00Z' },
 ];
 
 // ============================================================================

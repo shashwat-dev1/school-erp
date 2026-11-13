@@ -118,22 +118,19 @@ export const DailyAttendanceRegister: React.FC = () => {
     };
   }, [provider]);
 
-  // Section clearance check: Class Teacher marks their section; Principal has read-only oversight
+  // Section clearance check: Admin Office marks all sections; Principal has read-only oversight
   const isPrincipal = currentUser?.role === 'principal';
-  const isClassTeacher = currentUser?.role === 'class_teacher' && currentUser.assignedClassId === selectedClassId;
+  const isAdmin = currentUser?.role === 'admin' || currentUser?.role === 'developer';
   const canMark = Permissions.canMarkAttendance(currentUser, selectedClassId);
-  const canView = isPrincipal || isClassTeacher;
+  const canView = Permissions.canAccessSection(currentUser, selectedClassId);
 
   const availableClasses = useMemo(() => {
     if (!currentUser) return [];
-    if (currentUser.role === 'principal') {
+    if (isPrincipal || isAdmin) {
       return classes;
     }
-    if (currentUser.role === 'class_teacher' && currentUser.assignedClassId) {
-      return classes.filter(c => c.id === currentUser.assignedClassId);
-    }
     return [];
-  }, [classes, currentUser]);
+  }, [classes, currentUser, isPrincipal, isAdmin]);
 
   // 1. Load Students & existing session for Single-Day Register
   useEffect(() => {
@@ -516,7 +513,7 @@ export const DailyAttendanceRegister: React.FC = () => {
     return (
       <AccessDenied
         title="Attendance Access Restricted"
-        message="Only the assigned Class Teacher can mark attendance. Principals hold oversight."
+        message="Only the Admin Office is authorized to enter attendance registers. Principal has read-only oversight."
       />
     );
   }
@@ -528,7 +525,7 @@ export const DailyAttendanceRegister: React.FC = () => {
       {/* Page Header */}
       <PageHeader
         title={`Attendance Register — ${classDisplayName}`}
-        subtitle={activeClass?.classTeacherName ? `Class Teacher: ${activeClass.classTeacherName}` : undefined}
+        subtitle={activeClass?.roomNumber ? `Classroom: ${activeClass.roomNumber}` : undefined}
         breadcrumbs={[
           { label: 'Attendance', to: '/attendance' },
           { label: activeClass?.label || 'Register' },
@@ -750,7 +747,6 @@ export const DailyAttendanceRegister: React.FC = () => {
                 }}
                 className="hhs-select"
                 style={{ width: '100%', height: '40px', borderRadius: '8px' }}
-                disabled={currentUser.role === 'class_teacher'}
               >
                 {availableClasses.map(c => (
                   <option key={c.id} value={c.id}>
@@ -968,7 +964,7 @@ export const DailyAttendanceRegister: React.FC = () => {
                         TERM AVG
                       </th>
                       <th style={{ minWidth: '220px', padding: '0 16px', fontSize: '0.70rem', fontWeight: 700, color: '#64748B', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
-                        TEACHER REMARKS
+                        REMARKS
                       </th>
                     </tr>
                   </thead>

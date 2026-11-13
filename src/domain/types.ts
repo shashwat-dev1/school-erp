@@ -10,8 +10,14 @@
 // ============================================================================
 export type StaffRole =
   | 'principal'
+  | 'admin'
+  | 'developer'
   | 'class_teacher'
   | 'subject_teacher';
+
+export type ActiveStaffRole = 'principal' | 'admin';
+
+export const ACTIVE_ROLES: StaffRole[] = ['principal', 'admin'];
 
 export interface StaffUser {
   id: string; // Firebase Auth UID or Synthetic Demo ID
@@ -30,7 +36,7 @@ export interface StaffUser {
   assignedSubjects?: string[];    // Array of subject IDs
   assignedSubjectIds?: string[];  // Convenient alias
   assignedClasses?: string[];     // Array of class IDs where teacher teaches
-  status: 'active' | 'on_leave' | 'suspended';
+  status: 'active' | 'on_leave' | 'suspended' | 'deactivated';
   createdAt: string;
   lastLoginAt?: string;
 }

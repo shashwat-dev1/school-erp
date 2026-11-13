@@ -22,7 +22,6 @@ export const Sidebar: React.FC<SidebarProps> = ({ isMobileOpen = false, onClose 
   const { currentUser, logout } = useAuth();
   const navigate = useNavigate();
   const role = currentUser?.role;
-  const assignedClassId = currentUser?.assignedClassId || 'class-10-a';
 
   React.useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
@@ -48,11 +47,10 @@ export const Sidebar: React.FC<SidebarProps> = ({ isMobileOpen = false, onClose 
   const getRoleLabel = () => {
     switch (role) {
       case 'principal':
-        return 'Principal / Administrator';
-      case 'class_teacher':
-        return `Class Teacher (${assignedClassId.replace('class-', '').toUpperCase()})`;
-      case 'subject_teacher':
-        return 'Subject Faculty';
+        return 'Principal';
+      case 'admin':
+      case 'developer':
+        return 'Admin Office';
       default:
         return 'Staff Member';
     }
@@ -216,35 +214,23 @@ export const Sidebar: React.FC<SidebarProps> = ({ isMobileOpen = false, onClose 
               </>
             )}
 
-            {/* 2. CLASS TEACHER WORKSPACE */}
-            {role === 'class_teacher' && (
+            {/* 2. ADMIN OFFICE WORKSPACE */}
+            {(role === 'admin' || role === 'developer') && (
               <>
                 <li>
-                  <SidebarItem to="/" icon={<LayoutDashboard size={18} />} label="Class Dashboard" end onClick={onClose} />
+                  <SidebarItem to="/" icon={<LayoutDashboard size={18} />} label="Home Dashboard" end onClick={onClose} />
                 </li>
                 <li>
-                  <SidebarItem
-                    to={`/attendance/register/${assignedClassId}`}
-                    icon={<CalendarCheck size={18} />}
-                    label="Daily Register"
-                    onClick={onClose}
-                  />
+                  <SidebarItem to="/attendance/register" icon={<CalendarCheck size={18} />} label="Daily Attendance Register" onClick={onClose} />
                 </li>
                 <li>
-                  <SidebarItem
-                    to="/students"
-                    icon={<Users size={18} />}
-                    label="Class Roster"
-                    onClick={onClose}
-                  />
+                  <SidebarItem to="/students" icon={<Users size={18} />} label="Student Directory" onClick={onClose} />
                 </li>
                 <li>
-                  <SidebarItem
-                    to="/reports/attendance"
-                    icon={<FileSpreadsheet size={18} />}
-                    label="Attendance Records & Export"
-                    onClick={onClose}
-                  />
+                  <SidebarItem to="/reports/attendance" icon={<FileSpreadsheet size={18} />} label="Attendance Records & Export" onClick={onClose} />
+                </li>
+                <li>
+                  <SidebarItem to="/classes" icon={<GraduationCap size={18} />} label="Classes & Sections" onClick={onClose} />
                 </li>
               </>
             )}
