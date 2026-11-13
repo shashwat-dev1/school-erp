@@ -64,31 +64,16 @@ export const StudentDirectory: React.FC = () => {
       setIsLoading(true);
       setError(null);
       try {
-        const isClassTeacher = currentUser?.role === 'class_teacher';
-        const defaultClass = isClassTeacher
-          ? (currentUser.assignedClassId || '')
-          : 'all';
-        setSelectedClass(defaultClass);
-
-        // Pre-query authorization scoping
-        const scopedStudentRequest = isClassTeacher && currentUser.assignedClassId
-          ? provider.getStudents({ classId: currentUser.assignedClassId, limit: 100 })
-          : provider.getStudents({ limit: 1000 });
+        setSelectedClass('all');
 
         const [studentRes, classRes] = await Promise.all([
-          scopedStudentRequest,
+          provider.getStudents({ limit: 1000 }),
           provider.getClasses(),
         ]);
         if (!isMounted) return;
 
-        // Scope classes dropdown to authorized sections
-        let availableClasses = classRes;
-        if (isClassTeacher && currentUser.assignedClassId) {
-          availableClasses = classRes.filter(c => c.id === currentUser.assignedClassId);
-        }
-
         setStudents(studentRes.items);
-        setClasses(availableClasses);
+        setClasses(classRes);
       } catch (err: unknown) {
         if (!isMounted) return;
         const msg = err instanceof Error ? err.message : 'Failed to retrieve students.';
@@ -413,24 +398,14 @@ export const StudentDirectory: React.FC = () => {
               className="hhs-select"
               style={{ width: '100%' }}
             >
-              {currentUser?.role !== 'class_teacher' && (
-                <option value="all">
-                  All 20 Classes
+              <option value="all">
+                All 20 Classes
+              </option>
+              {classes.map(c => (
+                <option key={c.id} value={c.id}>
+                  {c.label}
                 </option>
-              )}
-              {classes
-                .filter(c => {
-                  if (!currentUser) return true;
-                  if (currentUser.role === 'class_teacher') {
-                    return c.id === currentUser.assignedClassId;
-                  }
-                  return true;
-                })
-                .map(c => (
-                  <option key={c.id} value={c.id}>
-                    {c.label}
-                  </option>
-                ))}
+              ))}
             </select>
           </div>
 
@@ -518,7 +493,7 @@ export const StudentDirectory: React.FC = () => {
                 <div className="tnum">{activeStudent.enrollmentDate}</div>
               </div>
               <div>
-                <span className="hhs-label">Current Academic Standing</span>
+                <span className="hhs-label">Enrollment Status</span>
                 <StatusBadge status={activeStudent.status} />
               </div>
               <div>
@@ -535,8 +510,8 @@ export const StudentDirectory: React.FC = () => {
               </div>
             </div>
 
-            {/* Guardian & Emergency Contact (Restricted Access) */}
-            {(currentUser?.role === 'principal' || (currentUser?.role === 'class_teacher' && currentUser.assignedClassId === activeStudent.classId)) ? (
+            {/* Guardian & Emergency Contact */}
+            {(currentUser?.role === 'principal' || currentUser?.role === 'admin' || currentUser?.role === 'developer') ? (
               <div className="hhs-card" style={{ padding: '16px' }}>
                 <h4 className="hhs-headline-sm" style={{ fontSize: '0.86rem', marginBottom: '12px' }}>
                   Guardian & Residence

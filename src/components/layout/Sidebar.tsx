@@ -7,7 +7,6 @@ import {
   GraduationCap,
   CalendarCheck,
   FileSpreadsheet,
-  Settings,
   LogOut,
   X,
 } from 'lucide-react';
@@ -194,22 +193,16 @@ export const Sidebar: React.FC<SidebarProps> = ({ isMobileOpen = false, onClose 
                   <SidebarItem to="/" icon={<LayoutDashboard size={18} />} label="Home Dashboard" end onClick={onClose} />
                 </li>
                 <li>
-                  <SidebarItem to="/students" icon={<Users size={18} />} label="Student Directory" onClick={onClose} />
+                  <SidebarItem to="/attendance" icon={<CalendarCheck size={18} />} label="Daily Attendance Registers" onClick={onClose} />
                 </li>
                 <li>
-                  <SidebarItem to="/attendance" icon={<CalendarCheck size={18} />} label="Attendance Overview" onClick={onClose} />
+                  <SidebarItem to="/students" icon={<Users size={18} />} label="Student Directory" onClick={onClose} />
                 </li>
                 <li>
                   <SidebarItem to="/reports/attendance" icon={<FileSpreadsheet size={18} />} label="Attendance Records & Export" onClick={onClose} />
                 </li>
                 <li>
                   <SidebarItem to="/classes" icon={<GraduationCap size={18} />} label="Classes & Sections" onClick={onClose} />
-                </li>
-                <li>
-                  <SidebarItem to="/staff" icon={<Users size={18} />} label="Faculty & Staff" onClick={onClose} />
-                </li>
-                <li>
-                  <SidebarItem to="/settings/system-config" icon={<Settings size={18} />} label="System Settings" onClick={onClose} />
                 </li>
               </>
             )}

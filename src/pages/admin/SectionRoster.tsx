@@ -163,10 +163,12 @@ export const SectionRoster: React.FC = () => {
               {activeClass?.label} — Academic Session 2025–26
             </h3>
             <div style={{ fontSize: '0.82rem', color: 'var(--hhs-text-secondary)', display: 'flex', gap: '12px', marginTop: '3px' }}>
-              <span>Room: <strong>{activeClass?.roomNumber}</strong></span>
-              <span>•</span>
-              <span>Educator: <strong>{activeClass?.classTeacherName}</strong></span>
-              <span>•</span>
+              {activeClass?.roomNumber && (
+                <>
+                  <span>Room: <strong>{activeClass.roomNumber}</strong></span>
+                  <span>•</span>
+                </>
+              )}
               <span>Wing: <strong>Senior Secondary</strong></span>
             </div>
           </div>

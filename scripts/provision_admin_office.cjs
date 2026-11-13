@@ -100,3 +100,4 @@ provisionAdminAndDeactivateTeachers().catch(err => {
   console.error('Fatal error during provisioning:', err);
   process.exit(1);
 });
+

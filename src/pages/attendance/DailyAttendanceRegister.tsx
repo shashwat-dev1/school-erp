@@ -16,7 +16,6 @@ import type { WhatsAppNotificationJob } from '../../services/whatsapp/types';
 import { PHASE_CONFIG } from '../../config/phase';
 import {
   Search,
-  Lock,
   Users,
   CheckCircle2,
   Save,
@@ -25,7 +24,6 @@ import {
   AlertTriangle,
   FileSpreadsheet,
   Send,
-  MessageSquare,
   Check,
   X as XIcon,
   ShieldCheck,
@@ -234,14 +232,6 @@ export const DailyAttendanceRegister: React.FC = () => {
     setValidationError(null);
     setAttendanceRows(prev =>
       prev.map(r => (r.studentId === studentId ? { ...r, state: newState } : r))
-    );
-  };
-
-  // Remarks change
-  const handleRemarksChange = (studentId: string, remarks: string) => {
-    if (!canMark) return;
-    setAttendanceRows(prev =>
-      prev.map(r => (r.studentId === studentId ? { ...r, remarks } : r))
     );
   };
 
@@ -942,7 +932,7 @@ export const DailyAttendanceRegister: React.FC = () => {
             </div>
           </div>
 
-          {/* 4. Roster Table: Alphabetically Sorted Roll Numbers (screen3.png) */}
+          {/* 4. Roster Table: Roll No., Student Name, Attendance Status */}
           {isLoading ? (
             <LoadingState message="Loading class attendance roster..." />
           ) : (
@@ -951,27 +941,21 @@ export const DailyAttendanceRegister: React.FC = () => {
                 <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left', fontSize: '0.86rem' }}>
                   <thead>
                     <tr style={{ backgroundColor: '#F8FAFC', borderBottom: '1px solid #E2E8F0', height: '44px' }}>
-                      <th style={{ width: '70px', padding: '0 16px', fontSize: '0.70rem', fontWeight: 700, color: '#64748B', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
-                        ROLL
+                      <th style={{ width: '80px', padding: '0 18px', fontSize: '0.72rem', fontWeight: 700, color: '#64748B', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+                        ROLL NO.
                       </th>
-                      <th style={{ minWidth: '220px', padding: '0 16px', fontSize: '0.70rem', fontWeight: 700, color: '#64748B', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
-                        STUDENT DOSSIER
+                      <th style={{ minWidth: '240px', padding: '0 18px', fontSize: '0.72rem', fontWeight: 700, color: '#64748B', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+                        STUDENT NAME
                       </th>
-                      <th style={{ minWidth: '220px', padding: '0 16px', fontSize: '0.70rem', fontWeight: 700, color: '#64748B', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
-                        DAILY ATTENDANCE STATUS
-                      </th>
-                      <th style={{ width: '120px', padding: '0 16px', fontSize: '0.70rem', fontWeight: 700, color: '#64748B', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
-                        TERM AVG
-                      </th>
-                      <th style={{ minWidth: '220px', padding: '0 16px', fontSize: '0.70rem', fontWeight: 700, color: '#64748B', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
-                        REMARKS
+                      <th style={{ width: '260px', padding: '0 18px', fontSize: '0.72rem', fontWeight: 700, color: '#64748B', textTransform: 'uppercase', letterSpacing: '0.05em', textAlign: 'center' }}>
+                        ATTENDANCE STATUS
                       </th>
                     </tr>
                   </thead>
                   <tbody>
                     {displayedRows.length === 0 ? (
                       <tr>
-                        <td colSpan={5} style={{ padding: '36px', textAlign: 'center', color: '#64748B' }}>
+                        <td colSpan={3} style={{ padding: '36px', textAlign: 'center', color: '#64748B' }}>
                           No students match the selected filter.
                         </td>
                       </tr>
@@ -980,7 +964,7 @@ export const DailyAttendanceRegister: React.FC = () => {
                         const isPresent = row.state === 'present';
                         const isAbsent = row.state === 'absent';
                         const rollFormatted = String(row.rollNumber).padStart(2, '0');
-                        const termAvg = 92 + ((row.rollNumber * 7) % 7); // Realistic stable mock avg (92-98%)
+                        const displayName = row.name || `${row.firstName} ${row.lastName}`.trim();
 
                         return (
                           <tr
@@ -992,8 +976,8 @@ export const DailyAttendanceRegister: React.FC = () => {
                               height: '56px',
                             }}
                           >
-                            {/* ROLL */}
-                            <td style={{ padding: '12px 16px' }}>
+                            {/* ROLL NO. */}
+                            <td style={{ padding: '12px 18px' }}>
                               <span
                                 className="tnum"
                                 style={{
@@ -1013,46 +997,22 @@ export const DailyAttendanceRegister: React.FC = () => {
                               </span>
                             </td>
 
-                            {/* STUDENT DOSSIER */}
-                            <td style={{ padding: '12px 16px' }}>
-                              <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-                                <div
-                                  style={{
-                                    width: '34px',
-                                    height: '34px',
-                                    borderRadius: '50%',
-                                    backgroundColor: isPresent ? '#ECFDF5' : isAbsent ? '#FEF2F2' : '#EEF2FF',
-                                    color: isPresent ? '#065F46' : isAbsent ? '#991B1B' : '#4F46E5',
-                                    display: 'flex',
-                                    alignItems: 'center',
-                                    justifyContent: 'center',
-                                    fontWeight: 700,
-                                    fontSize: '0.82rem',
-                                    flexShrink: 0,
-                                  }}
-                                >
-                                  {row.firstName?.[0] || 'S'}
-                                </div>
-                                <div>
-                                  <strong style={{ color: '#0A1931', fontSize: '0.90rem', display: 'block' }}>
-                                    {row.firstName} {row.lastName}
-                                  </strong>
-                                  <span style={{ fontSize: '0.72rem', color: '#64748B' }}>
-                                    Tagore House • Class 10-A
-                                  </span>
-                                </div>
-                              </div>
+                            {/* STUDENT NAME — Full student name visible, NO decorative circle initials/avatar */}
+                            <td style={{ padding: '12px 18px' }}>
+                              <span style={{ color: '#0A1931', fontWeight: 700, fontSize: '0.92rem' }}>
+                                {displayName}
+                              </span>
                             </td>
 
-                            {/* DAILY ATTENDANCE STATUS SEGMENTED TOGGLE (screen3.png) */}
-                            <td style={{ padding: '10px 16px' }}>
-                              <div style={{ display: 'inline-flex', gap: '8px' }}>
+                            {/* ATTENDANCE STATUS — Segmented Present vs Absent */}
+                            <td style={{ padding: '10px 18px', textAlign: 'center' }}>
+                              <div style={{ display: 'inline-flex', gap: '8px', justifyContent: 'center' }}>
                                 <button
                                   type="button"
                                   onClick={() => canMark && handleStateChange(row.studentId, 'present')}
                                   disabled={!canMark}
                                   aria-pressed={isPresent}
-                                  aria-label={`Mark ${row.firstName} ${row.lastName} Present`}
+                                  aria-label={`Mark ${displayName} Present`}
                                   style={{
                                     minHeight: '40px',
                                     padding: '0 18px',
@@ -1085,7 +1045,7 @@ export const DailyAttendanceRegister: React.FC = () => {
                                   onClick={() => canMark && handleStateChange(row.studentId, 'absent')}
                                   disabled={!canMark}
                                   aria-pressed={isAbsent}
-                                  aria-label={`Mark ${row.firstName} ${row.lastName} Absent`}
+                                  aria-label={`Mark ${displayName} Absent`}
                                   style={{
                                     minHeight: '40px',
                                     padding: '0 18px',
@@ -1114,44 +1074,6 @@ export const DailyAttendanceRegister: React.FC = () => {
                                 </button>
                               </div>
                             </td>
-
-                            {/* TERM AVG */}
-                            <td style={{ padding: '12px 16px' }}>
-                              <span
-                                className="tnum"
-                                style={{
-                                  padding: '3px 8px',
-                                  borderRadius: '9999px',
-                                  fontSize: '0.75rem',
-                                  fontWeight: 700,
-                                  backgroundColor: termAvg >= 90 ? '#ECFDF5' : '#FEF3C7',
-                                  color: termAvg >= 90 ? '#065F46' : '#92400E',
-                                }}
-                              >
-                                {termAvg}%
-                              </span>
-                            </td>
-
-                            {/* TEACHER REMARKS */}
-                            <td style={{ padding: '12px 16px' }}>
-                              <input
-                                type="text"
-                                value={row.remarks}
-                                onChange={(e) => handleRemarksChange(row.studentId, e.target.value)}
-                                placeholder="Add specific remark..."
-                                disabled={!canMark}
-                                style={{
-                                  width: '100%',
-                                  height: '34px',
-                                  borderRadius: '6px',
-                                  border: '1px solid #CBD5E1',
-                                  padding: '0 10px',
-                                  fontSize: '0.80rem',
-                                  backgroundColor: canMark ? '#FFFFFF' : '#F8FAFC',
-                                  color: '#0F172A',
-                                }}
-                              />
-                            </td>
                           </tr>
                         );
                       })
@@ -1162,7 +1084,7 @@ export const DailyAttendanceRegister: React.FC = () => {
             </div>
           )}
 
-          {/* 5. Sticky Bottom Finalize Dock (screen3.png) */}
+          {/* 5. Sticky Bottom Finalize Dock */}
           <div
             style={{
               position: 'sticky',
@@ -1198,11 +1120,12 @@ export const DailyAttendanceRegister: React.FC = () => {
               </div>
               <div>
                 <strong style={{ fontSize: '0.90rem', color: '#0A1931', display: 'block' }}>
-                  {unmarkedCount === 0 ? `All ${totalCount} students marked` : `${presentCount + absentCount} of ${totalCount} marked (${unmarkedCount} pending)`}
+                  {unmarkedCount === 0
+                    ? `All ${totalCount} students marked`
+                    : `${presentCount + absentCount} of ${totalCount} students marked (${unmarkedCount} pending)`}
                 </strong>
-                <span style={{ fontSize: '0.76rem', color: '#64748B', display: 'inline-flex', alignItems: 'center', gap: '5px' }}>
-                  <MessageSquare size={13} color="#10B981" />
-                  <span>{absentCount} absentees flagged for automatic WhatsApp alert</span>
+                <span style={{ fontSize: '0.76rem', color: '#64748B' }}>
+                  {presentCount} Present • {absentCount} Absent
                 </span>
               </div>
             </div>
@@ -1238,7 +1161,7 @@ export const DailyAttendanceRegister: React.FC = () => {
                   border: 'none',
                   color: '#0A1931',
                   borderRadius: '8px',
-                  padding: '9px 22px',
+                  padding: '9px 24px',
                   minHeight: '42px',
                   fontSize: '0.86rem',
                   fontWeight: 800,
@@ -1256,8 +1179,8 @@ export const DailyAttendanceRegister: React.FC = () => {
                   if (canMark) (e.currentTarget.style.backgroundColor = '#F5A623');
                 }}
               >
-                <Lock size={15} />
-                <span>Submit Final Attendance</span>
+                <Save size={16} />
+                <span>Submit Attendance</span>
               </button>
             </div>
           </div>
