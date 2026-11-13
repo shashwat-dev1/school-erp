@@ -65,7 +65,7 @@ export const RiskEvidenceDrawer: React.FC<RiskEvidenceDrawerProps> = ({
   const attendanceRate = student.attendanceSummary?.overallPercentage ?? 85.0;
   const isAttendanceDeficit = attendanceRate < 75.0;
   const consecutiveAbsences = 3;
-  const hasAcademicDrop = student.careFlags?.some(f => f.code === '#ACAD-04') || false;
+  const hasAcademicDrop = false;
 
   const actionLabels: Record<FollowUpActionInput['actionType'], string> = {
     guardian_contacted: 'Guardian contacted',

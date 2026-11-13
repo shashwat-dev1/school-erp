@@ -672,7 +672,6 @@ export function generateAllHistoricalStudents(): StudentRecord[] {
             enrollmentDate = '2023-04-03'; // Long-standing student (all 3 years)
             flags = [
               { id: 'flag-01', code: 'ATT-01', type: 'attendance', severity: 'alert', title: '3 Consecutive Absences', reason: 'Absent on consecutive days in September without medical note.', triggeredAt: '2025-09-05T09:30:00Z', resolved: false },
-              { id: 'flag-02', code: 'ACAD-04', type: 'academic', severity: 'warning', title: 'Performance Decline in Mathematics', reason: 'Drop from 22/25 (88%) in UT 1 to 15/25 (60%) in UT 2 in Mathematics.', triggeredAt: '2025-09-16T14:15:00Z', resolved: false },
             ];
           } else if (roll === 2) { // Ananya Sharma (Topper - full attendance)
             fName = 'Ananya';

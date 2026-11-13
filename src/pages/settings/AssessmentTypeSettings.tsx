@@ -177,7 +177,7 @@ export const AssessmentTypeSettings: React.FC = () => {
                     <td>
                       <div style={{ fontSize: '0.8rem', color: isFail ? 'var(--hhs-danger-text)' : 'var(--hhs-text-secondary)' }}>
                         {isFail
-                          ? 'Triggers Rule #ACAD-04 remedial clinic referral & guardian notification'
+                          ? 'Academic shortfall referral & guardian notification'
                           : item.grade === 'A1'
                           ? 'Enrolls in academic honours roll & olympiad training'
                           : 'Satisfactory scholastic progression'}

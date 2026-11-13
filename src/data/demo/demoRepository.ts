@@ -1434,20 +1434,18 @@ class DemoRepository implements DataProvider {
         const flag0 = s.activeFlags[0];
         const primaryTrigger = flag0.title;
         let consecutiveAbsences = 0;
-        let academicDropPercent = 0;
 
         if (flag0.code === 'ATT-01') consecutiveAbsences = 3;
-        if (flag0.code === 'ACAD-04') academicDropPercent = 28;
 
         watchlist.push({
           student: s,
           primaryTrigger,
           consecutiveAbsences,
           attendanceRate: s.attendancePercentage,
-          academicDropPercent,
+          academicDropPercent: 0,
           flagCount: s.activeFlags.length,
-          mentorAssigned: s.classId === 'class-10-a' ? 'Shri Rajeshwar Choudhary' : 'Assigned Class Tutor',
-          followUpStatus: flag0.code === 'ATT-01' ? 'pending' : 'in_progress',
+          mentorAssigned: 'Admin Office',
+          followUpStatus: 'pending',
         });
       }
     });

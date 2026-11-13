@@ -61,7 +61,6 @@ export const SectionRoster: React.FC = () => {
       'Relation',
       'Primary Phone',
       'Attendance %',
-      'Care Flags',
     ];
 
     const rows = students.map(s => [
@@ -75,7 +74,6 @@ export const SectionRoster: React.FC = () => {
       s.guardianRelation,
       s.primaryPhone,
       s.attendanceSummary?.overallPercentage ?? 85,
-      `"${s.careFlags?.map(f => f.code).join(' ') || 'None'}"`,
     ]);
 
     const csvContent = 'data:text/csv;charset=utf-8,' + [headers.join(','), ...rows].join('\n');
@@ -224,7 +222,6 @@ export const SectionRoster: React.FC = () => {
                 <th>Primary Guardian</th>
                 <th style={{ width: '140px' }}>Emergency Contact</th>
                 <th className="numeric" style={{ width: '100px' }}>Attendance</th>
-                <th style={{ width: '100px' }}>Care Flag</th>
                 <th style={{ textAlign: 'right', width: '90px' }}>Dossier</th>
               </tr>
             </thead>
@@ -292,26 +289,6 @@ export const SectionRoster: React.FC = () => {
                         <div style={{ fontSize: '0.68rem', color: 'var(--hhs-danger-text)', fontWeight: 600 }}>
                           &lt; 75% CBSE
                         </div>
-                      )}
-                    </td>
-                    <td>
-                      {s.careFlags && s.careFlags.length > 0 ? (
-                        <span
-                          style={{
-                            display: 'inline-block',
-                            padding: '2px 6px',
-                            borderRadius: 'var(--hhs-radius-sm)',
-                            fontSize: '0.72rem',
-                            fontWeight: 700,
-                            fontFamily: 'monospace',
-                            backgroundColor: 'var(--hhs-danger-light)',
-                            color: 'var(--hhs-danger-text)',
-                          }}
-                        >
-                          {s.careFlags[0].code}
-                        </span>
-                      ) : (
-                        <span style={{ fontSize: '0.75rem', color: 'var(--hhs-text-muted)' }}>None</span>
                       )}
                     </td>
                     <td style={{ textAlign: 'right' }}>

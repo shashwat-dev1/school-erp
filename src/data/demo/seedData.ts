@@ -248,7 +248,6 @@ function generateSyntheticStudents(): StudentRecord[] {
   const baseline10A: Partial<StudentRecord>[] = [
     { id: 'STU-10A-01', rollNumber: 1, firstName: 'Aarav', lastName: 'Singhania', gender: 'M', attendancePercentage: 88.5, academicAverage: 81.0, guardianName: 'Shashwat', primaryPhone: '+91 90095 19718', activeFlags: [
       { id: 'flag-01', code: 'ATT-01', type: 'attendance', severity: 'alert', title: '3 Consecutive Absences', reason: 'Rule #ATT-01: Absent on consecutive operational days without parent medical note.', triggeredAt: '2026-10-20T09:30:00Z', resolved: false },
-      { id: 'flag-02', code: 'ACAD-04', type: 'academic', severity: 'warning', title: 'Performance Decline (-28% in Math)', reason: 'Rule #ACAD-04: Drop from 22/25 (88%) in UT 1 to 15/25 (60%) in UT 2 in Mathematics.', triggeredAt: '2026-10-18T14:15:00Z', resolved: false },
     ]},
     { id: 'STU-10A-02', rollNumber: 2, firstName: 'Ananya', lastName: 'Sharma', gender: 'F', attendancePercentage: 96.0, academicAverage: 92.5, guardianName: 'Nitin', primaryPhone: '+91 89520 31365', activeFlags: [] },
     { id: 'STU-10A-03', rollNumber: 3, firstName: 'Rohan', lastName: 'Mehta', gender: 'M', attendancePercentage: 91.5, academicAverage: 78.0, guardianName: 'Vijaya', primaryPhone: '+91 89479 03712', activeFlags: [] },
@@ -486,7 +485,7 @@ function generateMarksRegister(
     let marks: number | null = null;
     if (!isAbsent) {
       if (s.id === 'STU-10A-01' && assessmentId === 'assess-ut2-2025' && subjectId === 'sub-math-10') {
-        marks = 15; // Trigger for ACAD-04
+        marks = 15;
       } else if (s.id === 'STU-10A-01' && assessmentId === 'assess-ut1-2025' && subjectId === 'sub-math-10') {
         marks = 22;
       } else {

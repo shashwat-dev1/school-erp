@@ -81,7 +81,6 @@ export const PTMSlip: React.FC = () => {
   }
 
   const attendance = student.attendanceSummary?.overallPercentage ?? 85.0;
-  const isAarav = student.id === 'stu-10a-01';
 
   return (
     <div className="hhs-page-container">
@@ -192,18 +191,18 @@ export const PTMSlip: React.FC = () => {
             Conference Focus Areas &amp; Empirical Flags
           </h4>
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
-            {/* Box 1: Academic Trajectory */}
+            {/* Box 1: Enrolment & Attendance Record */}
             <div style={{ border: '1px solid var(--hhs-border)', padding: '10px 12px', borderRadius: 'var(--hhs-radius-base)' }}>
-              <div style={{ fontSize: '0.75rem', fontWeight: 700, color: isAarav ? 'var(--hhs-danger-text)' : 'var(--hhs-primary)' }}>
-                {isAarav ? 'Academic Drop Flag (#ACAD-04)' : 'Academic Progress'}
+              <div style={{ fontSize: '0.75rem', fontWeight: 700, color: 'var(--hhs-primary)' }}>
+                Enrolment &amp; Attendance Record
               </div>
               <div style={{ fontSize: '0.8rem', marginTop: '4px' }}>
-                Mathematics UT-1: <strong>{isAarav ? '22 / 25 (88%)' : '24 / 25'}</strong>
+                Admission Number: <strong>{student.admissionNumber}</strong>
                 <br />
-                Mathematics UT-2: <strong>{isAarav ? '15 / 25 (60%)' : '23 / 25'}</strong>
+                Enrolment Status: <strong>{student.status.toUpperCase()}</strong>
               </div>
               <div style={{ fontSize: '0.72rem', color: '#5d6b68', marginTop: '4px' }}>
-                {isAarav ? 'Drop exceeds 15% threshold; remedial required.' : 'Steady scholastic consistency.'}
+                Active attendance session tracking.
               </div>
             </div>
 

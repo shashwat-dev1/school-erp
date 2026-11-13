@@ -19,7 +19,6 @@ import {
   FileSpreadsheet,
   Phone,
   Home,
-  ShieldAlert,
 } from 'lucide-react';
 
 export const StudentDirectory: React.FC = () => {
@@ -35,7 +34,7 @@ export const StudentDirectory: React.FC = () => {
   // Filters
   const [searchQuery, setSearchQuery] = useState<string>('');
   const [selectedClass, setSelectedClass] = useState<string>('all');
-  const [attendanceFilter, setAttendanceFilter] = useState<'all' | 'flagged' | 'below75'>('all');
+  const [attendanceFilter, setAttendanceFilter] = useState<'all' | 'below75'>('all');
 
   // Detail Drawer
   const [activeStudent, setActiveStudent] = useState<StudentRecord | null>(null);
@@ -127,9 +126,7 @@ export const StudentDirectory: React.FC = () => {
       const matchesClass = selectedClass === 'all' || s.classId === selectedClass;
 
       let matchesAttendance = true;
-      if (attendanceFilter === 'flagged') {
-        matchesAttendance = Boolean(s.activeFlags && s.activeFlags.length > 0);
-      } else if (attendanceFilter === 'below75') {
+      if (attendanceFilter === 'below75') {
         matchesAttendance = s.attendancePercentage < 75;
       }
 
@@ -177,8 +174,8 @@ export const StudentDirectory: React.FC = () => {
   const columns: Column<StudentRecord>[] = [
     {
       key: 'rollNumber',
-      header: 'Roll #',
-      width: '70px',
+      header: 'Roll No.',
+      width: '75px',
       render: s => (
         <span
           className="numeric tnum"
@@ -186,13 +183,13 @@ export const StudentDirectory: React.FC = () => {
           onClick={() => navigate(`/students/${s.id}`)}
           title="View student profile"
         >
-          {s.rollNumber}
+          {s.rollNumber < 10 ? `0${s.rollNumber}` : s.rollNumber}
         </span>
       ),
     },
     {
       key: 'name',
-      header: 'Student Name & Admission',
+      header: 'Student Name & Admission Number',
       render: s => (
         <div>
           <button
@@ -225,13 +222,13 @@ export const StudentDirectory: React.FC = () => {
     },
     {
       key: 'classLabel',
-      header: 'Class & Section',
-      width: '120px',
+      header: 'Class and Section',
+      width: '130px',
       render: s => <span style={{ fontWeight: 500 }}>{s.classLabel}</span>,
     },
     {
       key: 'guardian',
-      header: 'Guardian & Contact',
+      header: 'Parent/Guardian & Contact',
       render: s => (
         <div style={{ fontSize: '0.8rem' }}>
           <div>{s.guardianName} ({s.guardianRelation})</div>
@@ -247,8 +244,8 @@ export const StudentDirectory: React.FC = () => {
     },
     {
       key: 'attendance',
-      header: 'Attendance (YTD)',
-      width: '130px',
+      header: 'Attendance Summary',
+      width: '150px',
       render: s => {
         const isBelow75 = s.attendancePercentage < 75;
         return (
@@ -268,7 +265,7 @@ export const StudentDirectory: React.FC = () => {
                 style={{ fontSize: '0.65rem', padding: '2px 4px' }}
                 title="Below 75% attendance threshold"
               >
-                &lt;75%
+                &lt;75% Shortfall
               </span>
             )}
           </div>
@@ -276,38 +273,15 @@ export const StudentDirectory: React.FC = () => {
       },
     },
     {
-      key: 'flags',
-      header: 'Care Flags',
-      render: s => {
-        if (!s.activeFlags || s.activeFlags.length === 0) {
-          return <span style={{ color: 'var(--hhs-text-muted)', fontSize: '0.74rem' }}>None</span>;
-        }
-        return (
-          <div style={{ display: 'flex', flexWrap: 'wrap', gap: '4px' }}>
-            {s.activeFlags.map((f, idx) => (
-              <span
-                key={idx}
-                className={f.severity === 'alert' ? 'hhs-badge hhs-badge-danger' : 'hhs-badge hhs-badge-accent'}
-                style={{ fontSize: '0.68rem', cursor: 'help' }}
-                title={f.reason}
-              >
-                #{f.code}
-              </span>
-            ))}
-          </div>
-        );
-      },
-    },
-    {
       key: 'status',
-      header: 'Status',
-      width: '90px',
+      header: 'Enrolment Status',
+      width: '120px',
       render: s => <StatusBadge status={s.status} />,
     },
     {
       key: 'actions',
       header: 'Actions',
-      width: '150px',
+      width: '210px',
       render: s => (
         <div style={{ display: 'flex', gap: '6px' }}>
           <button
@@ -316,15 +290,15 @@ export const StudentDirectory: React.FC = () => {
             style={{ fontSize: '0.74rem', padding: '4px 8px' }}
             title="View student profile"
           >
-            Profile
+            View Profile
           </button>
           <button
-            onClick={() => setActiveStudent(s)}
+            onClick={() => navigate(`/students/${s.id}/attendance`)}
             className="hhs-btn hhs-btn-secondary hhs-btn-sm"
             style={{ fontSize: '0.74rem', padding: '4px 8px' }}
-            title="Open quick-view preview drawer"
+            title="View student attendance log"
           >
-            Quick View
+            View Attendance
           </button>
         </div>
       ),
@@ -411,14 +385,13 @@ export const StudentDirectory: React.FC = () => {
 
           {/* Attendance Compliance Segmented Filter */}
           <div style={{ display: 'flex', alignItems: 'center', overflowX: 'auto', WebkitOverflowScrolling: 'touch', maxWidth: '100%' }}>
-            <SegmentedControl<'all' | 'flagged' | 'below75'>
+            <SegmentedControl<'all' | 'below75'>
               value={attendanceFilter}
               onChange={setAttendanceFilter}
               size="sm"
               options={[
-                { value: 'all', label: 'All Levels' },
-                { value: 'flagged', label: 'Care Flags' },
-                { value: 'below75', label: '< 75% Risk' },
+                { value: 'all', label: 'All Students' },
+                { value: 'below75', label: '< 75% Attendance' },
               ]}
               ariaLabel="Attendance compliance filter"
             />
@@ -541,47 +514,22 @@ export const StudentDirectory: React.FC = () => {
               </div>
             )}
 
-            {/* Explainable Care Rules */}
-            <div className="hhs-card" style={{ padding: '16px' }}>
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '12px' }}>
-                <h4 className="hhs-headline-sm" style={{ fontSize: '0.86rem' }}>
-                  Explainable Care Rules & Triggers
-                </h4>
-                <ShieldAlert size={16} color="var(--hhs-accent)" />
-              </div>
-
-              {activeStudent.activeFlags && activeStudent.activeFlags.length > 0 ? (
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
-                  {activeStudent.activeFlags.map((flag, idx) => (
-                    <div
-                      key={idx}
-                      style={{
-                        padding: '10px',
-                        borderRadius: 'var(--hhs-radius-base)',
-                        backgroundColor: 'var(--hhs-canvas)',
-                        border: '1px solid var(--hhs-border)',
-                      }}
-                    >
-                      <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-                        <span className="hhs-badge hhs-badge-accent">#{flag.code}</span>
-                        <span className="tnum" style={{ fontSize: '0.72rem', color: 'var(--hhs-text-muted)' }}>
-                          Triggered: {flag.triggeredAt.split('T')[0]}
-                        </span>
-                      </div>
-                      <div style={{ fontSize: '0.82rem', fontWeight: 600, marginTop: '4px' }}>
-                        {flag.title}
-                      </div>
-                      <div style={{ fontSize: '0.76rem', color: 'var(--hhs-text-secondary)', marginTop: '4px' }}>
-                        <strong>Trigger Reason:</strong> {flag.reason}
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              ) : (
-                <div style={{ fontSize: '0.8rem', color: 'var(--hhs-text-secondary)' }}>
-                  This student has no active alerts or disciplinary notices.
-                </div>
-              )}
+            {/* Quick Actions */}
+            <div className="hhs-card" style={{ padding: '16px', display: 'flex', flexDirection: 'column', gap: '10px' }}>
+              <button
+                onClick={() => navigate(`/students/${activeStudent.id}`)}
+                className="hhs-btn hhs-btn-primary"
+                style={{ width: '100%', justifyContent: 'center' }}
+              >
+                View Full Student Profile
+              </button>
+              <button
+                onClick={() => navigate(`/students/${activeStudent.id}/attendance`)}
+                className="hhs-btn hhs-btn-secondary"
+                style={{ width: '100%', justifyContent: 'center' }}
+              >
+                View Attendance Register &amp; History
+              </button>
             </div>
           </div>
         )}

@@ -76,13 +76,6 @@ export const INSTITUTIONAL_CONFIG = {
       description: 'Cumulative session attendance below statutory 75.0% minimum threshold.',
       recommendedAction: 'Schedule Parent-Teacher Conference (PTM) & formal shortfall notification.',
     },
-    'ACAD-04': {
-      code: 'ACAD-04',
-      title: 'Academic Score Drop (>20%)',
-      threshold: 20.0,
-      description: 'Performance decline exceeding 20% across comparable assessment cycles in core subjects.',
-      recommendedAction: 'Assign subject remedial tutorial and clinical diagnostics with faculty.',
-    },
   },
 } as const;
 

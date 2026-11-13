@@ -129,12 +129,10 @@ export class FirestoreRepository implements DataProvider {
         return seedMatch;
       }
 
-      // Resilient persona resolver for custom Firebase Auth accounts
-      let resolvedPersona = initialStaff[0]; // Principal default
-      if (userEmail.includes('rajeshwar') || userEmail.includes('choudhary') || userEmail.includes('10a')) {
-        resolvedPersona = initialStaff.find(s => s.id === 'staff-002') || initialStaff[1];
-      } else if (userEmail.includes('saxena') || userEmail.includes('math') || userEmail.includes('subject')) {
-        resolvedPersona = initialStaff.find(s => s.id === 'staff-003') || initialStaff[2];
+      // Resilient role resolver for custom Firebase Auth accounts (Principal & Admin Office only)
+      let resolvedPersona = initialStaff.find(s => s.role === 'admin' && s.status === 'active') || initialStaff[1];
+      if (userEmail.includes('principal') || userEmail.includes('director') || userEmail.includes('head')) {
+        resolvedPersona = initialStaff.find(s => s.role === 'principal' && s.status === 'active') || initialStaff[0];
       }
       const linkedUser: StaffUser = {
         ...resolvedPersona,

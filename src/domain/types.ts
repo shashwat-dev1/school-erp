@@ -190,8 +190,8 @@ export interface StudentRecord {
 
 export interface StudentFlag {
   id: string;
-  code: 'ATT-01' | 'ATT-03' | 'ACAD-04' | 'DISC-02' | 'FEE-01';
-  type: 'attendance' | 'academic' | 'behaviour' | 'administrative';
+  code: 'ATT-01' | 'ATT-03' | 'DISC-02' | 'FEE-01';
+  type: 'attendance' | 'behaviour' | 'administrative';
   severity: 'alert' | 'warning' | 'info';
   title: string;
   reason: string;

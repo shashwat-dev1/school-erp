@@ -3,27 +3,24 @@ import { useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import { useData } from '../../context/DataContext';
 import {
-  ChevronDown,
   Menu,
   Search,
   Clock,
   Bell,
   Shield,
-  Check,
 } from 'lucide-react';
-import type { StaffRole, StudentRecord } from '../../domain/types';
+import type { StudentRecord } from '../../domain/types';
 
 interface TopbarProps {
   onToggleSidebar?: () => void;
 }
 
 export const Topbar: React.FC<TopbarProps> = ({ onToggleSidebar }) => {
-  const { currentUser, switchDemoRole } = useAuth();
+  const { currentUser } = useAuth();
   const { provider } = useData();
   const location = useLocation();
   const navigate = useNavigate();
 
-  const [roleSwitcherOpen, setRoleSwitcherOpen] = useState(false);
   const [notificationsOpen, setNotificationsOpen] = useState(false);
 
   // Quick Search state
@@ -59,25 +56,6 @@ export const Topbar: React.FC<TopbarProps> = ({ onToggleSidebar }) => {
     }
   }, [searchQuery, allStudents]);
 
-  const roles: Array<{ key: StaffRole; label: string; badge: string }> = [
-    { key: 'principal', label: 'Principal (Executive View)', badge: 'Principal' },
-    { key: 'class_teacher', label: 'Class Teacher (Class 10-A)', badge: 'Class 10-A' },
-    { key: 'subject_teacher', label: 'Subject Teacher (Mathematics)', badge: 'Faculty' },
-  ];
-
-  const getRoleDisplayName = (r?: StaffRole) => {
-    switch (r) {
-      case 'principal':
-        return 'Principal View';
-      case 'class_teacher':
-        return 'Class Teacher (10-A)';
-      case 'subject_teacher':
-        return 'Subject Faculty';
-      default:
-        return 'Authorized Staff';
-    }
-  };
-
   const getBreadcrumbs = () => {
     const path = location.pathname;
     if (path === '/') return 'Dashboard';
@@ -86,9 +64,7 @@ export const Topbar: React.FC<TopbarProps> = ({ onToggleSidebar }) => {
     if (path.startsWith('/students/')) return 'Student Profile';
     if (path.startsWith('/students')) return 'Students';
     if (path.startsWith('/staff')) return 'Faculty & Staff';
-    if (path.startsWith('/academics') || path.startsWith('/assessments')) return 'Academics';
     if (path.startsWith('/reports')) return 'Reports';
-    if (path.startsWith('/admin/whatsapp') || path.startsWith('/whatsapp')) return 'WhatsApp';
     if (path.startsWith('/settings')) return 'Settings';
     return 'HanuJai ERP';
   };
@@ -113,7 +89,6 @@ export const Topbar: React.FC<TopbarProps> = ({ onToggleSidebar }) => {
     const handleClickOutside = (e: MouseEvent) => {
       const target = e.target as HTMLElement;
       if (!target.closest('.hhs-topbar-dropdown-container')) {
-        setRoleSwitcherOpen(false);
         setNotificationsOpen(false);
       }
       if (!target.closest('.hhs-topbar-search-container')) {
@@ -122,7 +97,6 @@ export const Topbar: React.FC<TopbarProps> = ({ onToggleSidebar }) => {
     };
     const handleKeyDown = (e: KeyboardEvent) => {
       if (e.key === 'Escape') {
-        setRoleSwitcherOpen(false);
         setNotificationsOpen(false);
         setIsSearching(false);
       }
@@ -325,105 +299,35 @@ export const Topbar: React.FC<TopbarProps> = ({ onToggleSidebar }) => {
           <span>{getLiveDateString()}</span>
         </div>
 
-        {/* Regal Gold Role Badge / Switcher */}
-        <div className="hhs-topbar-dropdown-container" style={{ position: 'relative' }}>
-          <button
-            onClick={() => {
-              setRoleSwitcherOpen(!roleSwitcherOpen);
-              setNotificationsOpen(false);
-            }}
+        {/* Authenticated Role Designation (Static, Non-interactive) */}
+        {currentUser && (
+          <div
             style={{
               display: 'flex',
               alignItems: 'center',
               gap: '6px',
-              height: '34px',
+              height: '32px',
               padding: '0 12px',
               borderRadius: '9999px',
-              backgroundColor: '#FEF3C7',
-              border: '1px solid #F5A623',
-              color: '#92400E',
+              backgroundColor: currentUser.role === 'principal' ? '#F3E8FF' : '#E0E7FF',
+              border: `1px solid ${currentUser.role === 'principal' ? '#D8B4FE' : '#C7D2FE'}`,
+              color: currentUser.role === 'principal' ? '#6B21A8' : '#3730A3',
               fontWeight: 700,
               fontSize: '0.78rem',
-              cursor: 'pointer',
-              transition: 'all 0.15s ease',
             }}
-            title="Switch Demo Persona"
           >
-            <Shield size={14} color="#92400E" />
-            <span style={{ whiteSpace: 'nowrap' }}>{getRoleDisplayName(currentUser?.role)}</span>
-            <ChevronDown size={13} color="#92400E" />
-          </button>
-
-          {roleSwitcherOpen && (
-            <div
-              style={{
-                position: 'absolute',
-                top: '100%',
-                right: 0,
-                marginTop: '6px',
-                width: '240px',
-                backgroundColor: '#FFFFFF',
-                border: '1px solid #E2E8F0',
-                borderRadius: '12px',
-                boxShadow: '0 10px 25px -5px rgba(10, 25, 49, 0.15)',
-                padding: '6px',
-                zIndex: 50,
-              }}
-            >
-              <div
-                style={{
-                  padding: '8px 10px',
-                  fontSize: '0.68rem',
-                  color: '#64748B',
-                  fontWeight: 700,
-                  textTransform: 'uppercase',
-                  letterSpacing: '0.05em',
-                  borderBottom: '1px solid #F1F5F9',
-                }}
-              >
-                Switch Authorized Persona
-              </div>
-              {roles.map((r) => {
-                const isSelected = currentUser?.role === r.key;
-                return (
-                  <button
-                    key={r.key}
-                    onClick={() => {
-                      switchDemoRole(r.key);
-                      setRoleSwitcherOpen(false);
-                    }}
-                    style={{
-                      width: '100%',
-                      textAlign: 'left',
-                      padding: '8px 10px',
-                      border: 'none',
-                      backgroundColor: isSelected ? '#FEF3C7' : 'transparent',
-                      color: isSelected ? '#92400E' : '#0F172A',
-                      fontSize: '0.82rem',
-                      fontWeight: isSelected ? 700 : 500,
-                      borderRadius: '8px',
-                      cursor: 'pointer',
-                      display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'space-between',
-                      marginTop: '2px',
-                    }}
-                  >
-                    <span>{r.label}</span>
-                    {isSelected && <Check size={14} color="#92400E" />}
-                  </button>
-                );
-              })}
-            </div>
-          )}
-        </div>
+            <Shield size={14} color={currentUser.role === 'principal' ? '#6B21A8' : '#3730A3'} />
+            <span style={{ whiteSpace: 'nowrap' }}>
+              {currentUser.role === 'principal' ? 'Principal' : 'Admin Office'}
+            </span>
+          </div>
+        )}
 
         {/* Notification Bell */}
         <div className="hhs-topbar-dropdown-container" style={{ position: 'relative' }}>
           <button
             onClick={() => {
               setNotificationsOpen(!notificationsOpen);
-              setRoleSwitcherOpen(false);
             }}
             style={{
               width: '36px',

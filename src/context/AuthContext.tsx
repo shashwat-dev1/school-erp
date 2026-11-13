@@ -8,7 +8,7 @@
  */
 
 import React, { createContext, useContext, useState, useEffect } from 'react';
-import type { StaffUser, StaffRole } from '../domain/types';
+import type { StaffUser } from '../domain/types';
 import { isDemoMode } from '../config/firebase';
 import { auth } from '../config/firebase';
 import { onAuthStateChanged, signOut as firebaseSignOut, signInWithEmailAndPassword } from 'firebase/auth';
@@ -22,7 +22,6 @@ interface AuthContextType {
   error: string | null;
   login: (email: string, pass: string) => Promise<void>;
   logout: () => Promise<void>;
-  switchDemoRole: (role: StaffRole) => void;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -42,11 +41,11 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
           setIsLoading(false);
           return;
         } catch {
-          // ignore invalid json
+          // ignore
         }
       }
       const savedUserId = localStorage.getItem('hanujai_demo_user_id') || 'staff-admin';
-      const user = initialStaff.find(s => s.id === savedUserId && s.status === 'active') || initialStaff[0];
+      const user = initialStaff.find(s => s.id === savedUserId) || initialStaff.find(s => s.role === 'admin' && s.status === 'active') || initialStaff[0];
       setCurrentUser(user);
       setIsLoading(false);
     } else if (auth) {
@@ -155,20 +154,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }
   };
 
-  const switchDemoRole = (role: StaffRole) => {
-    let target: StaffUser | undefined;
-    if (role === 'principal') {
-      target = initialStaff.find(s => s.role === 'principal' && s.status === 'active');
-    } else if (role === 'admin') {
-      target = initialStaff.find(s => s.role === 'admin' && s.status === 'active');
-    }
-
-    if (target) {
-      setCurrentUser(target);
-      localStorage.setItem('hanujai_demo_user_id', target.id);
-    }
-  };
-
   return (
     <AuthContext.Provider
       value={{
@@ -178,7 +163,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         error,
         login,
         logout,
-        switchDemoRole,
       }}
     >
       {children}
