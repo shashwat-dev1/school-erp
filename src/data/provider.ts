@@ -198,7 +198,8 @@ export interface DataProvider {
     documentType: StudentDocumentType,
     file: File | Blob,
     metadata: { originalFileName?: string; contentType?: string; fileSize?: number; notes?: string },
-    actor: StaffUser
+    actor: StaffUser,
+    onProgress?: (progressPercent: number) => void
   ): Promise<StudentDocumentRecord>;
   deleteStudentDocument(
     studentId: string,

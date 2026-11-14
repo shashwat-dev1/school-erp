@@ -1539,15 +1539,19 @@ class DemoRepository implements DataProvider {
     documentType: StudentDocumentType,
     file: File | Blob,
     metadata: { originalFileName?: string; contentType?: string; fileSize?: number; notes?: string },
-    actor: StaffUser
+    actor: StaffUser,
+    onProgress?: (progressPercent: number) => void
   ): Promise<StudentDocumentRecord> {
+    onProgress?.(25);
     const store = this.loadStore();
+    onProgress?.(50);
     if (!store.studentDocuments) {
       store.studentDocuments = {};
     }
     if (!store.studentDocuments[studentId]) {
       store.studentDocuments[studentId] = [];
     }
+    onProgress?.(75);
 
     const student = store.students.find(s => s.id === studentId);
     const existingIndex = store.studentDocuments[studentId].findIndex(d => d.documentType === documentType);
@@ -1620,6 +1624,7 @@ class DemoRepository implements DataProvider {
     });
 
     this.saveStore(store);
+    onProgress?.(100);
     return newRecord;
   }
 

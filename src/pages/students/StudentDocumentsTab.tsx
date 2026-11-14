@@ -64,6 +64,7 @@ export const StudentDocumentsTab: React.FC<StudentDocumentsTabProps> = ({
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [fileValidationError, setFileValidationError] = useState<string | null>(null);
   const [isUploading, setIsUploading] = useState<boolean>(false);
+  const [uploadProgress, setUploadProgress] = useState<number>(0);
   const [uploadError, setUploadError] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement | null>(null);
 
@@ -131,6 +132,7 @@ export const StudentDocumentsTab: React.FC<StudentDocumentsTabProps> = ({
   const handlePerformUpload = async () => {
     if (!selectedFile || !targetSlot || !currentUser) return;
     setIsUploading(true);
+    setUploadProgress(0);
     setUploadError(null);
     try {
       await provider.uploadStudentDocument(
@@ -142,13 +144,17 @@ export const StudentDocumentsTab: React.FC<StudentDocumentsTabProps> = ({
           contentType: selectedFile.type,
           fileSize: selectedFile.size,
         },
-        currentUser
+        currentUser,
+        (progressPercent: number) => {
+          setUploadProgress(progressPercent);
+        }
       );
       await loadDocuments();
       setIsUploadModalOpen(false);
       setSelectedFile(null);
     } catch (err: unknown) {
-      setUploadError(err instanceof Error ? err.message : 'Upload failed. Please check network and permissions.');
+      const errorMsg = err instanceof Error ? err.message : 'Upload failed. Please check network and permissions.';
+      setUploadError(errorMsg);
     } finally {
       setIsUploading(false);
     }
@@ -626,6 +632,43 @@ export const StudentDocumentsTab: React.FC<StudentDocumentsTabProps> = ({
               </div>
             </div>
 
+            {isUploading && (
+              <div
+                style={{
+                  padding: '12px 14px',
+                  backgroundColor: '#F0F9FF',
+                  border: '1px solid #BAE6FD',
+                  borderRadius: '6px',
+                  display: 'flex',
+                  flexDirection: 'column',
+                  gap: '6px',
+                }}
+              >
+                <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '12px', fontWeight: 600, color: '#0369A1' }}>
+                  <span>Uploading to Cloud Storage...</span>
+                  <span>{uploadProgress}%</span>
+                </div>
+                <div
+                  style={{
+                    width: '100%',
+                    height: '6px',
+                    backgroundColor: '#E0F2FE',
+                    borderRadius: '3px',
+                    overflow: 'hidden',
+                  }}
+                >
+                  <div
+                    style={{
+                      width: `${uploadProgress}%`,
+                      height: '100%',
+                      backgroundColor: '#0284C7',
+                      transition: 'width 0.2s ease',
+                    }}
+                  />
+                </div>
+              </div>
+            )}
+
             {fileValidationError && (
               <div
                 style={{
@@ -644,15 +687,17 @@ export const StudentDocumentsTab: React.FC<StudentDocumentsTabProps> = ({
             {uploadError && (
               <div
                 style={{
-                  padding: '10px 12px',
+                  padding: '12px 14px',
                   backgroundColor: '#FEF2F2',
                   border: '1px solid #FCA5A5',
                   borderRadius: '6px',
-                  color: '#B91C1C',
+                  color: '#991B1B',
                   fontSize: '13px',
+                  lineHeight: '1.4',
                 }}
               >
-                {uploadError}
+                <div style={{ fontWeight: 600, marginBottom: '4px' }}>Upload Notice</div>
+                <div>{uploadError}</div>
               </div>
             )}
 

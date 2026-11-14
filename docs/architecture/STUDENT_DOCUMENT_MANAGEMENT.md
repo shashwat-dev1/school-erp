@@ -230,12 +230,64 @@ The Firebase Project ID is **`hanujai-erp-demo`**. Cloud Storage can be provisio
    - **Recommended Region**: `asia-south1` (Mumbai, India) for data residency and lowest latency to Jaipur.
 5. Click **Done** to create the bucket.
 
-### Step 3: Deploy Security Rules
-Once the bucket is provisioned, deploy the rules using the Firebase CLI:
-```powershell
-firebase deploy --only storage
+### Step 3: Configure Cloud Storage CORS for Deployed Web Origin
+Google Cloud Storage buckets require an explicit CORS policy to allow browser uploads from the deployed Vercel domain (`https://hanujai-erp.vercel.app`).
+
+1. A `cors.json` file is present in the repository root:
+```json
+[
+  {
+    "origin": [
+      "https://hanujai-erp.vercel.app",
+      "http://localhost:5173",
+      "http://localhost:4173",
+      "http://localhost:3000"
+    ],
+    "method": ["GET", "POST", "PUT", "DELETE", "HEAD", "OPTIONS"],
+    "responseHeader": [
+      "Content-Type",
+      "Access-Control-Allow-Origin",
+      "Authorization",
+      "X-Requested-With",
+      "x-goog-resumable",
+      "x-firebase-storage-version"
+    ],
+    "maxAgeSeconds": 3600
+  }
+]
 ```
-And verify Firestore rules:
-```powershell
-firebase deploy --only firestore:rules
+
+2. In Google Cloud Shell or using the Google Cloud SDK:
+```bash
+# Using Google Cloud CLI:
+gcloud storage buckets update gs://hanujai-erp-demo.firebasestorage.app --cors-file=cors.json
+
+# OR using gsutil:
+gsutil cors set cors.json gs://hanujai-erp-demo.firebasestorage.app
 ```
+
+---
+
+## 9. Diagnostic Root Cause of Browser CORS Errors on Deployed Vercel
+
+When an upload fails on `https://hanujai-erp.vercel.app` with `Status: CORS error` and `Transferred: 0.0 kB`:
+
+### Anatomy of the Failure
+1. **Endpoint Called**: `https://firebasestorage.googleapis.com/v0/b/hanujai-erp-demo.firebasestorage.app/o?name=...`
+2. **Preflight Request**: The browser automatically issues an `OPTIONS` preflight request because cross-origin headers (`Authorization`, `x-goog-upload-protocol`) and file binaries are attached.
+3. **Server Response**: Because the default storage bucket has not yet been provisioned in the Firebase Console under the Blaze plan, the Google UploadServer responds with `HTTP 404 Not Found` (`The specified bucket does not exist`).
+4. **Browser Enforcement**: In compliance with the W3C CORS specification, any non-2xx status code on an `OPTIONS` preflight causes the browser to abort the request before transferring any file payload (`0.0 kB`). The browser logs `CORS error` in DevTools.
+5. **Resolution**:
+   - Provision the bucket in Firebase Console (Steps 1 & 2 above).
+   - Apply `cors.json` to the provisioned bucket (Step 3 above).
+   - The application handles preflight/unreachable errors gracefully, reporting the precise bucket status to the Admin Office rather than an ambiguous generic error.
+
+---
+
+## 10. Safe Testing Procedure
+
+1. **Test Entity**: Use a non-production test student record (e.g. `STU-01A-35` or a dedicated test admission).
+2. **Test Payload**: Use a synthetic disposable 1-page sample PDF (e.g. `< 50 KB` sample document text) or non-sensitive sample image.
+3. **Zero Aadhaar Exposure**: Real Aadhaar cards, government photo IDs, or genuine child identity scans must never be uploaded during diagnostic checks.
+
+

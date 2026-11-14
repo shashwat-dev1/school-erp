@@ -61,9 +61,11 @@ import {
 } from 'firebase/firestore';
 import {
   ref as storageRef,
-  uploadBytes,
+  uploadBytesResumable,
   getDownloadURL,
   deleteObject,
+  type StorageError,
+  type UploadTaskSnapshot,
 } from 'firebase/storage';
 
 function ensureFirebaseReady() {
@@ -877,7 +879,8 @@ export class FirestoreRepository implements DataProvider {
     documentType: StudentDocumentType,
     file: File | Blob,
     metadata: { originalFileName?: string; contentType?: string; fileSize?: number; notes?: string },
-    actor: StaffUser
+    actor: StaffUser,
+    onProgress?: (progressPercent: number) => void
   ): Promise<StudentDocumentRecord> {
     ensureFirebaseReady();
     if (!storage) {
@@ -886,6 +889,7 @@ export class FirestoreRepository implements DataProvider {
       );
     }
 
+    const bucketName = storage.app.options.storageBucket || 'hanujai-erp-demo.firebasestorage.app';
     const fileId = `${documentType}_${Date.now()}_${Math.random().toString(36).substring(2, 7)}`;
     const storagePath = `students/${studentId}/documents/${documentType}/${fileId}`;
     const sRef = storageRef(storage, storagePath);
@@ -894,27 +898,88 @@ export class FirestoreRepository implements DataProvider {
     const contentType = metadata.contentType || (file as File).type || 'application/octet-stream';
     const fileSize = metadata.fileSize || (file as File).size || 0;
 
+    // Step 1: Upload actual file binary to Firebase Storage via uploadBytesResumable
     let downloadUrl = '';
     try {
-      await uploadBytes(sRef, file, { contentType });
-      downloadUrl = await getDownloadURL(sRef);
-    } catch (err: unknown) {
-      const message = err instanceof Error ? err.message : String(err);
-      if (message.includes('bucket') || message.includes('404') || message.includes('project')) {
-        throw new Error(
-          'Firebase Cloud Storage bucket is not yet provisioned. The project requires the Blaze pay-as-you-go plan to activate Cloud Storage. Please follow the setup guide in docs/architecture/STUDENT_DOCUMENT_MANAGEMENT.md.'
+      downloadUrl = await new Promise<string>((resolve, reject) => {
+        const uploadTask = uploadBytesResumable(sRef, file, {
+          contentType,
+          customMetadata: {
+            studentId,
+            documentType,
+            uploadedBy: actor.id,
+          },
+        });
+
+        uploadTask.on(
+          'state_changed',
+          (snapshot: UploadTaskSnapshot) => {
+            if (snapshot.totalBytes > 0) {
+              const progress = Math.round((snapshot.bytesTransferred / snapshot.totalBytes) * 100);
+              onProgress?.(progress);
+            }
+          },
+          (storageErr: StorageError) => {
+            console.error('[Firebase Storage Upload Error Details]', {
+              code: storageErr.code,
+              message: storageErr.message,
+              serverResponse: storageErr.serverResponse,
+              bucket: bucketName,
+              path: storagePath,
+            });
+
+            // Specific diagnosis for CORS preflight failure / bucket not found
+            if (
+              storageErr.code === 'storage/bucket-not-found' ||
+              storageErr.code === 'storage/no-default-bucket' ||
+              ((storageErr.code === 'storage/unknown' || storageErr.code === 'storage/retry-limit-exceeded') &&
+                !storageErr.serverResponse)
+            ) {
+              reject(
+                new Error(
+                  `Firebase Storage upload failed due to a CORS/preflight error on bucket '${bucketName}'. ` +
+                    `The bucket is either not yet provisioned in Firebase Console (requires Blaze plan activation) ` +
+                    `or is missing the CORS origin policy for https://hanujai-erp.vercel.app.`
+                )
+              );
+            } else if (storageErr.code === 'storage/unauthenticated') {
+              reject(new Error('User session is not authenticated. Please log in again before uploading documents.'));
+            } else if (storageErr.code === 'storage/unauthorized') {
+              reject(new Error(`Access denied by Storage security rules for ${documentType}. Admin Office credentials required.`));
+            } else if (storageErr.code === 'storage/canceled') {
+              reject(new Error('Upload operation was canceled.'));
+            } else {
+              reject(new Error(`Storage upload error [${storageErr.code}]: ${storageErr.message}`));
+            }
+          },
+          async () => {
+            try {
+              const url = await getDownloadURL(uploadTask.snapshot.ref);
+              onProgress?.(100);
+              resolve(url);
+            } catch (urlErr) {
+              reject(urlErr);
+            }
+          }
         );
-      }
-      throw err;
+      });
+    } catch (uploadFailure) {
+      throw uploadFailure;
     }
 
-    // Firestore Metadata doc
+    // Step 2: Storage upload succeeded. Now prepare and write Firestore metadata.
     const docRef = doc(db!, 'students', studentId, 'documents', documentType);
-    const existingSnap = await getDoc(docRef);
+    let existingSnap;
+    try {
+      existingSnap = await getDoc(docRef);
+    } catch (getDocErr) {
+      console.warn('Could not read existing doc metadata; treating as new slot:', getDocErr);
+    }
+
     const nowIso = new Date().toISOString();
-    const isReplace = existingSnap.exists() && existingSnap.data()?.isPresent !== false;
-    const version = existingSnap.exists() ? ((existingSnap.data().version || 1) + 1) : 1;
-    const oldStoragePath = existingSnap.exists() ? existingSnap.data().storagePath : null;
+    const isReplace = Boolean(existingSnap && existingSnap.exists() && existingSnap.data()?.isPresent !== false);
+    const version = existingSnap && existingSnap.exists() ? ((existingSnap.data().version || 1) + 1) : 1;
+    const oldStoragePath = existingSnap && existingSnap.exists() ? existingSnap.data().storagePath : null;
 
     const record: StudentDocumentRecord = {
       id: documentType,
@@ -924,9 +989,9 @@ export class FirestoreRepository implements DataProvider {
       originalFileName,
       contentType,
       fileSize,
-      uploadedAt: existingSnap.exists() ? (existingSnap.data().uploadedAt || nowIso) : nowIso,
-      uploadedBy: existingSnap.exists() ? (existingSnap.data().uploadedBy || actor.id) : actor.id,
-      uploadedByName: existingSnap.exists() ? (existingSnap.data().uploadedByName || (actor.displayName || actor.name)) : (actor.displayName || actor.name),
+      uploadedAt: existingSnap && existingSnap.exists() ? (existingSnap.data().uploadedAt || nowIso) : nowIso,
+      uploadedBy: existingSnap && existingSnap.exists() ? (existingSnap.data().uploadedBy || actor.id) : actor.id,
+      uploadedByName: existingSnap && existingSnap.exists() ? (existingSnap.data().uploadedByName || (actor.displayName || actor.name)) : (actor.displayName || actor.name),
       updatedAt: nowIso,
       updatedBy: actor.id,
       updatedByName: actor.displayName || actor.name,
@@ -935,19 +1000,32 @@ export class FirestoreRepository implements DataProvider {
       downloadUrl,
     };
 
-    await setDoc(docRef, record);
+    // Step 3: Write metadata to Firestore with safety rollback if Firestore fails
+    try {
+      await setDoc(docRef, record);
+    } catch (firestoreWriteErr) {
+      console.error('Firestore metadata write failed after storage upload. Rolling back orphaned storage object...', firestoreWriteErr);
+      try {
+        await deleteObject(sRef);
+      } catch (cleanupErr) {
+        console.warn('Failed to cleanup orphaned storage file:', cleanupErr);
+      }
+      throw new Error(
+        'File uploaded to storage but saving document metadata to Firestore failed. Orphaned file was removed. Please retry.'
+      );
+    }
 
-    // Clean up old storage blob if replacing
+    // Step 4: If replacing, safely clean up old storage blob now that metadata is committed
     if (oldStoragePath && oldStoragePath !== storagePath) {
       try {
         const oldRef = storageRef(storage, oldStoragePath);
         await deleteObject(oldRef);
-      } catch {
-        // Non-blocking cleanup
+      } catch (oldCleanupErr) {
+        console.warn('Non-blocking: could not delete old document binary:', oldCleanupErr);
       }
     }
 
-    // Record audit event
+    // Step 5: Append immutable audit record
     try {
       const auditRef = collection(db!, 'auditEvents');
       await addDoc(auditRef, {
