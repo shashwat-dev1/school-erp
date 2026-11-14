@@ -10,7 +10,6 @@ import type { StorageUploadOptions } from '../services/storage/storageProvider';
 // Mock @vercel/blob/client
 vi.mock('@vercel/blob/client', () => ({
   upload: vi.fn().mockImplementation(async (pathname, _file, options) => {
-    // Simulate upload progress
     options?.onUploadProgress?.({ loaded: 50, total: 100, percentage: 50 });
     options?.onUploadProgress?.({ loaded: 100, total: 100, percentage: 100 });
     return {
@@ -62,26 +61,40 @@ describe('VercelBlobStorageProvider Unit Tests', () => {
     expect(progressReports).toContain(100);
   });
 
-  it('generates secure authenticated delivery URLs for preview and download', async () => {
+  it('generates clean canonical delivery URLs without tokens in query parameters', async () => {
     const pathname = 'students/STU-01A-35/documents/student_photo/photo.jpg';
-    const idToken = 'verified-firebase-jwt-123';
 
-    // Preview URL
-    const previewUrl = await provider.getFileDownloadUrl(pathname, idToken, false);
-    expect(previewUrl).toContain('/api/documents/file?');
-    expect(previewUrl).toContain(`pathname=${encodeURIComponent(pathname)}`);
-    expect(previewUrl).toContain(`token=${encodeURIComponent(idToken)}`);
-    expect(previewUrl).not.toContain('download=1');
-
-    // Download URL
-    const downloadUrl = await provider.getFileDownloadUrl(pathname, idToken, true);
-    expect(downloadUrl).toContain('/api/documents/file?');
-    expect(downloadUrl).toContain(`pathname=${encodeURIComponent(pathname)}`);
-    expect(downloadUrl).toContain(`token=${encodeURIComponent(idToken)}`);
-    expect(downloadUrl).toContain('download=1');
+    const url = await provider.getFileDownloadUrl(pathname);
+    expect(url).toBe(`/api/documents/file?pathname=${encodeURIComponent(pathname)}`);
+    expect(url).not.toContain('token=');
+    expect(url).not.toContain('Bearer');
   });
 
-  it('calls authenticated /api/documents/delete endpoint with Authorization token', async () => {
+  it('fetches private document binary with Authorization: Bearer header', async () => {
+    const pathname = 'students/STU-01A-35/documents/birth_certificate/bc.pdf';
+    const idToken = 'mock-bearer-token-123';
+    const mockBlob = new Blob(['pdf-binary-data'], { type: 'application/pdf' });
+
+    let fetchedUrl = '';
+    let fetchedOpts: any = null;
+
+    global.fetch = vi.fn().mockImplementation(async (url, opts) => {
+      fetchedUrl = url.toString();
+      fetchedOpts = opts;
+      return {
+        ok: true,
+        blob: async () => mockBlob,
+      };
+    });
+
+    const resultBlob = await provider.fetchFileBinary(pathname, idToken);
+
+    expect(fetchedUrl).toBe(`/api/documents/file?pathname=${encodeURIComponent(pathname)}`);
+    expect(fetchedOpts.headers['Authorization']).toBe(`Bearer ${idToken}`);
+    expect(resultBlob).toBe(mockBlob);
+  });
+
+  it('calls authenticated /api/documents/delete endpoint with Authorization Bearer header', async () => {
     const pathname = 'students/STU-01A-35/documents/transfer_certificate/tc.pdf';
     const idToken = 'admin-jwt-token';
 

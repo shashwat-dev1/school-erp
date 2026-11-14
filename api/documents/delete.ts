@@ -3,19 +3,26 @@
  * Endpoint: POST /api/documents/delete
  * Campus: HanuJai High School, Jaipur, Rajasthan, India
  *
- * Implements secure deletion from Vercel Private Blob:
- * 1. Authenticates staff credentials (Admin Office only; Principal is strictly read-only).
- * 2. Validates and sanitizes storage path.
- * 3. Deletes private blob using @vercel/blob's `del(pathname)`.
+ * Cross-Account Storage Architecture:
+ * - Hosted on Account A (Website & Functions)
+ * - Targets Account B's Private Blob Store using Account B's BLOB_READ_WRITE_TOKEN
+ *
+ * Security:
+ * - Accepts tokens strictly via Authorization: Bearer <idToken> headers
+ * - Enforces Admin Office credentials (Principal is strictly read-only and blocked with 403)
+ * - Validates storage path against canonical pattern
+ * - Sensitive tokens and document URLs are NEVER logged
  */
 
 import type { IncomingMessage, ServerResponse } from 'http';
 import { del } from '@vercel/blob';
 import { verifyStaffAuth } from './_auth';
 
+const CANONICAL_PATH_REGEX = /^students\/[A-Za-z0-9_-]+\/documents\/[A-Za-z0-9_-]+\/[A-Za-z0-9._-]+$/;
+
 export default async function handler(
-  req: IncomingMessage & { body?: any; query?: Record<string, string | string[]> },
-  res: ServerResponse & { status?: (code: number) => any; json?: (data: any) => any }
+  req: IncomingMessage & { body?: any },
+  res: ServerResponse
 ) {
   const sendJson = (status: number, data: any) => {
     res.statusCode = status;
@@ -26,6 +33,17 @@ export default async function handler(
   if (req.method !== 'POST' && req.method !== 'DELETE') {
     res.setHeader('Allow', 'POST, DELETE');
     return sendJson(405, { error: 'Method Not Allowed. Use POST or DELETE to remove documents.' });
+  }
+
+  // Cross-account token check (Account B Blob Store Token)
+  const blobToken = process.env.BLOB_READ_WRITE_TOKEN;
+  if (!blobToken) {
+    console.error('[HanuJai Storage] BLOB_READ_WRITE_TOKEN is not configured on server.');
+    return sendJson(503, {
+      error:
+        'Vercel Private Blob store is not connected. Missing BLOB_READ_WRITE_TOKEN. ' +
+        'Please follow VERCEL_BLOB_SETUP_GUIDE.md to add Account B store token to project settings.',
+    });
   }
 
   // Parse body if not already parsed
@@ -47,10 +65,6 @@ export default async function handler(
   }
 
   let pathname = body.pathname;
-  if (!pathname && req.query && typeof req.query.pathname === 'string') {
-    pathname = req.query.pathname;
-  }
-
   if (!pathname) {
     return sendJson(400, { error: 'Missing required field: pathname' });
   }
@@ -65,35 +79,33 @@ export default async function handler(
     }
   }
 
-  if (pathname.includes('..') || pathname.includes('\0')) {
-    return sendJson(400, { error: 'Invalid pathname traversal detected.' });
-  }
-
-  // Check BLOB_READ_WRITE_TOKEN
-  if (!process.env.BLOB_READ_WRITE_TOKEN) {
-    console.error('[HanuJai Storage] Missing BLOB_READ_WRITE_TOKEN environment variable.');
-    return sendJson(503, {
-      error:
-        'Vercel Private Blob store is not connected. Missing BLOB_READ_WRITE_TOKEN environment variable. ' +
-        'Please follow VERCEL_BLOB_SETUP_GUIDE.md to link store "hanujai-student-documents" to your Vercel project.',
+  if (pathname.includes('..') || pathname.includes('\0') || !CANONICAL_PATH_REGEX.test(pathname)) {
+    return sendJson(400, {
+      error: 'Invalid document path format. Must match canonical student document structure.',
     });
   }
 
-  // Verify staff authorization (Admin Office only)
+  // Verify staff authorization (Header-only Bearer token; Admin Office only)
   const authResult = await verifyStaffAuth(req, 'manage');
   if (!authResult.valid) {
     return sendJson(authResult.status, { error: authResult.error });
   }
 
   try {
-    await del(pathname);
+    await del(pathname, {
+      token: blobToken,
+    });
+
+    const sanitizedPath = pathname.replace(/^students\/([^/]+)\/documents\/([^/]+)\/.*$/, 'students/$1/documents/$2/[FILE]');
+    console.info(`[HanuJai Storage] Private document deleted successfully: ${sanitizedPath}`);
+
     return sendJson(200, {
       success: true,
-      message: `Document at path "${pathname}" successfully deleted from Vercel Private Blob store.`,
+      message: 'Document successfully removed from private cloud storage.',
     });
   } catch (error: unknown) {
     const message = error instanceof Error ? error.message : 'Deletion failed.';
-    console.error('[HanuJai Storage] Deletion error:', error);
-    return sendJson(500, { error: `Failed to delete blob: ${message}` });
+    console.error('[HanuJai Storage] Deletion error:', message);
+    return sendJson(500, { error: `Failed to delete document from storage: ${message}` });
   }
 }

@@ -2,8 +2,13 @@
  * HanuJai High School ERP — Serverless Document API Authentication Helper
  * Campus: HanuJai High School, Jaipur, Rajasthan, India
  *
- * Verifies Firebase Auth ID tokens without requiring Firebase Admin private keys
- * by calling Google Identity Toolkit's official REST endpoint.
+ * Security Architecture:
+ * - ID tokens are accepted ONLY via the standard HTTP Authorization header ('Bearer <idToken>').
+ * - URL query parameter authentication is STRICTLY PROHIBITED to prevent token leakage in
+ *   browser history, proxy logs, referrer headers, and server access logs.
+ * - ID tokens are verified server-side against Google Identity Toolkit.
+ * - Authoritative roles and account status are verified against Cloud Firestore ('staffUsers').
+ * - Sensitive tokens and document URLs are NEVER logged.
  */
 
 import type { IncomingMessage } from 'http';
@@ -23,41 +28,27 @@ export interface AuthResult {
 }
 
 /**
- * Extracts Bearer token from HTTP request Authorization header or query parameter
+ * Extracts Bearer token strictly from the HTTP Authorization header.
+ * Rejects any tokens passed via URL parameters or query strings.
  */
-export function extractToken(req: IncomingMessage & { query?: Record<string, string | string[]> }): string | null {
+export function extractToken(req: IncomingMessage): string | null {
   const authHeader = req.headers['authorization'] || req.headers['Authorization'];
   if (typeof authHeader === 'string' && authHeader.toLowerCase().startsWith('bearer ')) {
-    return authHeader.substring(7).trim();
+    const token = authHeader.substring(7).trim();
+    return token.length > 0 ? token : null;
   }
-
-  // Fallback to query parameter (e.g. for direct file streaming in <img> or <iframe>)
-  if (req.query && typeof req.query.token === 'string') {
-    return req.query.token.trim();
-  }
-
-  // In Node IncomingMessage url parsing fallback
-  if (req.url) {
-    try {
-      const parsedUrl = new URL(req.url, 'http://localhost');
-      const tokenParam = parsedUrl.searchParams.get('token');
-      if (tokenParam) return tokenParam.trim();
-    } catch {
-      // Ignore URL parse failure
-    }
-  }
-
   return null;
 }
 
 /**
- * Validates staff authentication and evaluates Phase 1 role permissions.
+ * Validates staff authentication and evaluates authoritative Phase 1 role permissions.
  * Allowed roles:
  * - 'admin': Can upload, replace, and delete documents. Can view/download documents.
- * - 'principal': Can view and download documents (strictly read-only). Cannot upload or delete.
+ * - 'principal': Can view and download documents (strictly read-only). CANNOT upload, replace, or delete.
+ * - Teachers: Completely deactivated from document access.
  */
 export async function verifyStaffAuth(
-  req: IncomingMessage & { query?: Record<string, string | string[]> },
+  req: IncomingMessage,
   requiredPermission: 'view' | 'manage' = 'view'
 ): Promise<AuthResult> {
   const token = extractToken(req);
@@ -66,12 +57,12 @@ export async function verifyStaffAuth(
     return {
       valid: false,
       status: 401,
-      error: 'Authentication required. Missing Authorization Bearer token or token parameter.',
+      error: 'Authentication required. Missing Authorization: Bearer <idToken> header.',
     };
   }
 
-  // Demo bypass for local developer testing if explicitly authorized
-  if (process.env.NODE_ENV !== 'production' && (token === 'demo-admin-token' || token === 'demo-principal-token')) {
+  // Demo bypass for isolated developer unit testing environments only
+  if (process.env.NODE_ENV === 'test' && (token === 'demo-admin-token' || token === 'demo-principal-token')) {
     const isPrincipal = token === 'demo-principal-token';
     const role = isPrincipal ? 'principal' : 'admin';
     if (requiredPermission === 'manage' && role !== 'admin') {
@@ -98,10 +89,6 @@ export async function verifyStaffAuth(
     process.env.FIREBASE_API_KEY ||
     process.env.NEXT_PUBLIC_FIREBASE_API_KEY;
 
-  if (!apiKey) {
-    console.warn('[HanuJai Auth] Missing VITE_FIREBASE_API_KEY on server. Checking token format...');
-  }
-
   try {
     const verifyUrl = `https://identitytoolkit.googleapis.com/v1/accounts:lookup?key=${apiKey || ''}`;
     const response = await fetch(verifyUrl, {
@@ -116,7 +103,7 @@ export async function verifyStaffAuth(
       return {
         valid: false,
         status: 401,
-        error: 'Invalid, expired or revoked authentication token. Please log in again.',
+        error: 'Invalid, expired, or revoked authentication token. Please log in again.',
       };
     }
 
@@ -125,54 +112,73 @@ export async function verifyStaffAuth(
     const uid = authUser.localId;
     const displayName = authUser.displayName || email.split('@')[0];
 
-    // Determine role from verified identity
-    let role: 'principal' | 'admin' | 'developer' = 'admin';
+    // Query Cloud Firestore REST API for authoritative staff role and account status
+    let role: 'principal' | 'admin' | 'developer' | 'unauthorized' = 'unauthorized';
+    let status: 'active' | 'deactivated' = 'active';
 
-    if (email.includes('principal') || email === 'principal@hanujai.edu.in') {
-      role = 'principal';
-    } else if (email.includes('admin') || email === 'admin@hanujai.edu.in') {
-      role = 'admin';
-    } else {
-      // Query Firestore REST API to check staff role
-      const projectId = process.env.VITE_FIREBASE_PROJECT_ID || process.env.FIREBASE_PROJECT_ID;
-      if (projectId) {
-        try {
-          const fsRes = await fetch(
-            `https://firestore.googleapis.com/v1/projects/${projectId}/databases/(default)/documents/staffUsers/${uid}`,
-            {
-              headers: { Authorization: `Bearer ${token}` },
-            }
-          );
-          if (fsRes.ok) {
-            const fsData = await fsRes.json();
-            const staffRole = fsData.fields?.role?.stringValue;
-            const staffStatus = fsData.fields?.status?.stringValue;
-
-            if (staffStatus === 'deactivated' || staffRole === 'class_teacher' || staffRole === 'subject_teacher') {
-              return {
-                valid: false,
-                status: 403,
-                error: 'Teacher accounts are deactivated in this operating phase. Only Principal and Admin Office are authorized.',
-              };
-            }
-
-            if (staffRole === 'principal') role = 'principal';
-            else if (staffRole === 'admin') role = 'admin';
-            else if (staffRole === 'developer') role = 'developer';
+    const projectId = process.env.VITE_FIREBASE_PROJECT_ID || process.env.FIREBASE_PROJECT_ID;
+    if (projectId) {
+      try {
+        const fsRes = await fetch(
+          `https://firestore.googleapis.com/v1/projects/${projectId}/databases/(default)/documents/staffUsers/${uid}`,
+          {
+            headers: { Authorization: `Bearer ${token}` },
           }
-        } catch (fsErr) {
-          console.warn('[HanuJai Auth] Non-fatal Firestore role lookup error:', fsErr);
+        );
+        if (fsRes.ok) {
+          const fsData = await fsRes.json();
+          const staffRole = fsData.fields?.role?.stringValue;
+          const staffStatus = fsData.fields?.status?.stringValue;
+
+          if (staffStatus === 'deactivated') {
+            status = 'deactivated';
+          }
+
+          if (staffRole === 'principal') role = 'principal';
+          else if (staffRole === 'admin') role = 'admin';
+          else if (staffRole === 'developer') role = 'developer';
+          else if (staffRole === 'class_teacher' || staffRole === 'subject_teacher') {
+            role = 'unauthorized';
+          }
         }
+      } catch {
+        // Fallback to verified email identity if Firestore REST check is temporarily unreachable
       }
     }
 
-    // Role-based access validation:
-    // 'manage' requires admin or developer
+    // Email-based fallback if Firestore document read is unconfigured
+    if (role === 'unauthorized') {
+      if (email === 'principal@hanujai.edu.in' || email.startsWith('principal.')) {
+        role = 'principal';
+      } else if (email === 'admin@hanujai.edu.in' || email.startsWith('admin.')) {
+        role = 'admin';
+      }
+    }
+
+    // Enforce active status
+    if (status === 'deactivated') {
+      return {
+        valid: false,
+        status: 403,
+        error: 'Account is deactivated. Access to school documents is suspended.',
+      };
+    }
+
+    // Reject teacher or unauthorized accounts
+    if (role === 'unauthorized') {
+      return {
+        valid: false,
+        status: 403,
+        error: 'Teacher accounts are deactivated in this operating phase. Only Principal and Admin Office are authorized.',
+      };
+    }
+
+    // Role-based permission validation
     if (requiredPermission === 'manage' && role === 'principal') {
       return {
         valid: false,
         status: 403,
-        error: 'Permission Denied: Principal view is strictly read-only. Only Admin Office accounts can upload or delete student documents.',
+        error: 'Permission Denied: Principal view is strictly read-only. Only Admin Office accounts can upload, replace, or delete student documents.',
       };
     }
 
@@ -187,11 +193,11 @@ export async function verifyStaffAuth(
       },
     };
   } catch (verifyError: unknown) {
-    const message = verifyError instanceof Error ? verifyError.message : 'Authentication verification failure';
+    const message = verifyError instanceof Error ? verifyError.message : 'Authentication verification error';
     return {
       valid: false,
       status: 500,
-      error: `Token verification service error: ${message}`,
+      error: `Identity verification service error: ${message}`,
     };
   }
 }

@@ -3,11 +3,16 @@
  * Endpoint: POST /api/documents/upload
  * Campus: HanuJai High School, Jaipur, Rajasthan, India
  *
- * Implements Vercel Blob's handleUpload pattern:
- * 1. Authenticates staff credentials (Admin Office only; Principal is strictly read-only).
- * 2. Enforces 10MB size limits and allowed MIME types (JPEG, PNG, WebP, PDF).
- * 3. Enforces 9 approved student document slot categories.
- * 4. Generates a signed client upload token allowing direct streaming to Vercel Private Blob.
+ * Cross-Account Storage Architecture:
+ * - Hosted on Account A (Website & Serverless Functions)
+ * - Targets Private Blob Store on Account B (The School's Store & Storage Billing)
+ * - Uses Account B's BLOB_READ_WRITE_TOKEN explicitly passed to handleUpload
+ *
+ * Security:
+ * - ID tokens are verified strictly via Authorization: Bearer <idToken> headers
+ * - Authoritative Admin Office role verified on every request
+ * - Canonical destination path, MIME type, and size limits enforced server-side
+ * - Sensitive URLs and tokens are NEVER logged
  */
 
 import type { IncomingMessage, ServerResponse } from 'http';
@@ -33,13 +38,19 @@ const ALLOWED_CONTENT_TYPES = [
   'application/pdf',
 ];
 
-const MAX_FILE_SIZE = 10 * 1024 * 1024; // 10 Megabytes
+const PHOTO_CONTENT_TYPES = [
+  'image/jpeg',
+  'image/png',
+  'image/webp',
+];
+
+const MAX_DOCUMENT_SIZE = 10 * 1024 * 1024; // 10 Megabytes
+const MAX_PHOTO_SIZE = 5 * 1024 * 1024;      // 5 Megabytes for portrait photo
 
 export default async function handler(
-  req: IncomingMessage & { body?: any; query?: Record<string, string | string[]> },
-  res: ServerResponse & { status?: (code: number) => any; json?: (data: any) => any }
+  req: IncomingMessage & { body?: any },
+  res: ServerResponse
 ) {
-  // Helper for JSON response in Node environment
   const sendJson = (status: number, data: any) => {
     res.statusCode = status;
     res.setHeader('Content-Type', 'application/json');
@@ -48,16 +59,17 @@ export default async function handler(
 
   if (req.method !== 'POST') {
     res.setHeader('Allow', 'POST');
-    return sendJson(405, { error: 'Method Not Allowed. Use POST for document upload token generation.' });
+    return sendJson(405, { error: 'Method Not Allowed. Use POST for document upload authorization.' });
   }
 
-  // Check BLOB_READ_WRITE_TOKEN
-  if (!process.env.BLOB_READ_WRITE_TOKEN) {
-    console.error('[HanuJai Storage] Missing BLOB_READ_WRITE_TOKEN environment variable.');
+  // Cross-account token check (Account B Blob Store Token)
+  const blobToken = process.env.BLOB_READ_WRITE_TOKEN;
+  if (!blobToken) {
+    console.error('[HanuJai Storage] BLOB_READ_WRITE_TOKEN is not configured on server.');
     return sendJson(503, {
       error:
-        'Vercel Private Blob store is not connected. Missing BLOB_READ_WRITE_TOKEN environment variable. ' +
-        'Please follow VERCEL_BLOB_SETUP_GUIDE.md to link store "hanujai-student-documents" to your Vercel project.',
+        'Vercel Private Blob store is not connected. Missing BLOB_READ_WRITE_TOKEN. ' +
+        'Please follow VERCEL_BLOB_SETUP_GUIDE.md to add Account B store token to project settings.',
     });
   }
 
@@ -75,7 +87,7 @@ export default async function handler(
       });
       body = JSON.parse(rawBody || '{}') as HandleUploadBody;
     }
-  } catch (parseErr) {
+  } catch {
     return sendJson(400, { error: 'Invalid JSON request body.' });
   }
 
@@ -87,49 +99,71 @@ export default async function handler(
 
   try {
     const jsonResponse = await handleUpload({
+      token: blobToken,
       body,
       request: req,
       onBeforeGenerateToken: async (pathname, clientPayload) => {
-        let payload: { studentId?: string; documentType?: string; originalFileName?: string } = {};
+        let payload: {
+          studentId?: string;
+          documentType?: string;
+          originalFileName?: string;
+          contentType?: string;
+        } = {};
+
         if (clientPayload) {
           try {
             payload = JSON.parse(clientPayload);
           } catch {
-            // Treat as raw string
+            // Ignore
           }
         }
 
-        const documentType = payload.documentType;
-        if (documentType && !ALLOWED_DOCUMENT_SLOTS.has(documentType)) {
+        const studentId = (payload.studentId || '').trim();
+        if (!studentId || !/^[A-Za-z0-9_-]+$/.test(studentId)) {
+          throw new Error('Invalid student ID format. Must contain only alphanumeric characters, dashes, or underscores.');
+        }
+
+        const documentType = (payload.documentType || '').trim();
+        if (!documentType || !ALLOWED_DOCUMENT_SLOTS.has(documentType)) {
           throw new Error(
             `Invalid document slot "${documentType}". Must be one of the 9 official HanuJai ERP document categories.`
           );
         }
 
-        // Return token parameters for client upload
+        // Server-side path enforcement: prevent cross-student or cross-slot writing
+        const canonicalPrefix = `students/${studentId}/documents/${documentType}/`;
+        if (!pathname.startsWith(canonicalPrefix)) {
+          throw new Error(`Unauthorized upload path. Must start strictly with ${canonicalPrefix}`);
+        }
+
+        // Enforce document type specific MIME types and size constraints
+        const isPhoto = documentType === 'student_photo';
+        const allowedTypes = isPhoto ? PHOTO_CONTENT_TYPES : ALLOWED_CONTENT_TYPES;
+        const maximumSizeInBytes = isPhoto ? MAX_PHOTO_SIZE : MAX_DOCUMENT_SIZE;
+
         return {
-          allowedContentTypes: ALLOWED_CONTENT_TYPES,
-          maximumSizeInBytes: MAX_FILE_SIZE,
+          allowedContentTypes: allowedTypes,
+          maximumSizeInBytes,
           tokenPayload: JSON.stringify({
-            studentId: payload.studentId || 'unknown',
-            documentType: documentType || 'document',
-            uploaderId: authResult.user?.uid,
+            studentId,
+            documentType,
+            uploaderUid: authResult.user?.uid,
             uploaderRole: authResult.user?.role,
             timestamp: new Date().toISOString(),
           }),
         };
       },
-      onUploadCompleted: async ({ blob, tokenPayload }) => {
-        console.info(
-          `[HanuJai ERP] Private blob uploaded: ${blob.pathname} (${blob.contentType}) tokenPayload: ${tokenPayload}`
-        );
+      onUploadCompleted: async ({ blob }) => {
+        // Redact full URLs and tokens from logs
+        const sanitizedPath = blob.pathname.replace(/^students\/([^/]+)\/documents\/([^/]+)\/.*$/, 'students/$1/documents/$2/[FILE]');
+        console.info(`[HanuJai Storage] Private upload completed successfully: ${sanitizedPath}`);
       },
     });
 
     return sendJson(200, jsonResponse);
   } catch (error: unknown) {
     const message = error instanceof Error ? error.message : 'Upload initialization failed.';
-    console.error('[HanuJai Storage] handleUpload error:', error);
+    console.error('[HanuJai Storage] handleUpload error:', message);
     return sendJson(400, { error: message });
   }
 }

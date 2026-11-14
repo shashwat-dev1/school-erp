@@ -3,11 +3,11 @@
  * Campus: HanuJai High School, Jaipur, Rajasthan, India
  *
  * Decouples the application UI and domain logic from specific cloud storage providers
- * (e.g. Vercel Private Blob, Firebase Storage, AWS S3).
+ * (e.g. Vercel Private Blob, AWS S3).
  *
- * Future migrations (e.g. to AWS S3 when the school's document volume exceeds Vercel limits)
- * only require implementing this interface without altering student records, metadata,
- * or UI components.
+ * Security Requirements:
+ * - Tokens are strictly passed via HTTP Authorization: Bearer <idToken> headers.
+ * - Sensitive tokens are NEVER embedded in URLs, query strings, or client logs.
  */
 
 export interface StorageUploadProgress {
@@ -24,7 +24,7 @@ export interface StorageUploadOptions {
   fileSize: number;
   actorId: string;
   actorRole: string;
-  idToken?: string;
+  idToken: string;
   onProgress?: (progress: StorageUploadProgress) => void;
 }
 
@@ -44,12 +44,18 @@ export interface StorageProvider {
   uploadFile(file: File | Blob, options: StorageUploadOptions): Promise<StorageUploadResult>;
 
   /**
-   * Generates or resolves the authenticated URL for streaming or downloading a private document.
+   * Returns the clean canonical serverless endpoint path for the document.
+   * Note: NEVER appends authentication tokens to URL query parameters.
    */
-  getFileDownloadUrl(pathname: string, idToken?: string, isDownload?: boolean): Promise<string>;
+  getFileDownloadUrl(pathname: string): Promise<string>;
+
+  /**
+   * Fetches the private document binary using Bearer token authentication.
+   */
+  fetchFileBinary(pathname: string, idToken: string): Promise<Blob>;
 
   /**
    * Deletes a student document binary from private cloud storage.
    */
-  deleteFile(pathname: string, idToken?: string): Promise<void>;
+  deleteFile(pathname: string, idToken: string): Promise<void>;
 }

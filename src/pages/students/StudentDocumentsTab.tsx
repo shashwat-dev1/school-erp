@@ -161,9 +161,25 @@ export const StudentDocumentsTab: React.FC<StudentDocumentsTabProps> = ({
     }
   };
 
+  const handleClosePreview = () => {
+    if (previewDoc?.url && previewDoc.url.startsWith('blob:')) {
+      try {
+        URL.revokeObjectURL(previewDoc.url);
+      } catch {
+        // Ignore
+      }
+    }
+    setPreviewDoc(null);
+  };
+
   const handlePreview = async (docRecord: StudentDocumentRecord) => {
     try {
-      let url = docRecord.downloadUrl;
+      // In demo mode or if already a direct URL
+      if (docRecord.downloadUrl && !docRecord.downloadUrl.startsWith('/api/')) {
+        setPreviewDoc({ record: docRecord, url: docRecord.downloadUrl });
+        return;
+      }
+
       let idToken = '';
       if (auth?.currentUser) {
         try {
@@ -172,17 +188,26 @@ export const StudentDocumentsTab: React.FC<StudentDocumentsTabProps> = ({
           // Non-blocking
         }
       }
-      if (!url && provider.getDocumentDownloadUrl) {
-        url = await provider.getDocumentDownloadUrl(docRecord.storagePath);
+
+      const headers: Record<string, string> = {};
+      if (idToken) {
+        headers['Authorization'] = `Bearer ${idToken}`;
       }
-      if (url) {
-        if (idToken && !url.includes('token=') && url.startsWith('/api/')) {
-          url += (url.includes('?') ? '&' : '?') + 'token=' + encodeURIComponent(idToken);
-        }
-        setPreviewDoc({ record: docRecord, url });
-      } else {
-        alert('Could not resolve preview URL for this document.');
+
+      const endpoint = `/api/documents/file?pathname=${encodeURIComponent(docRecord.storagePath)}`;
+      const res = await fetch(endpoint, {
+        method: 'GET',
+        headers,
+      });
+
+      if (!res.ok) {
+        const errData = await res.json().catch(() => ({}));
+        throw new Error(errData.error || `Failed to fetch document (HTTP ${res.status})`);
       }
+
+      const blob = await res.blob();
+      const objectUrl = URL.createObjectURL(blob);
+      setPreviewDoc({ record: docRecord, url: objectUrl });
     } catch (err: unknown) {
       alert(err instanceof Error ? err.message : 'Failed to retrieve preview.');
     }
@@ -190,37 +215,51 @@ export const StudentDocumentsTab: React.FC<StudentDocumentsTabProps> = ({
 
   const handleDownload = async (docRecord: StudentDocumentRecord) => {
     try {
-      let url = docRecord.downloadUrl;
-      let idToken = '';
-      if (auth?.currentUser) {
-        try {
-          idToken = await auth.currentUser.getIdToken();
-        } catch {
-          // Non-blocking
+      let objectUrl = '';
+      if (docRecord.downloadUrl && !docRecord.downloadUrl.startsWith('/api/')) {
+        objectUrl = docRecord.downloadUrl;
+      } else {
+        let idToken = '';
+        if (auth?.currentUser) {
+          try {
+            idToken = await auth.currentUser.getIdToken();
+          } catch {
+            // Non-blocking
+          }
         }
-      }
-      if (!url && provider.getDocumentDownloadUrl) {
-        url = await provider.getDocumentDownloadUrl(docRecord.storagePath);
-      }
-      if (!url) {
-        alert('Could not resolve download URL.');
-        return;
-      }
-      if (idToken && !url.includes('token=') && url.startsWith('/api/')) {
-        url += (url.includes('?') ? '&' : '?') + 'token=' + encodeURIComponent(idToken);
-      }
-      if (url.startsWith('/api/') && !url.includes('download=')) {
-        url += (url.includes('?') ? '&' : '?') + 'download=1';
+
+        const headers: Record<string, string> = {};
+        if (idToken) {
+          headers['Authorization'] = `Bearer ${idToken}`;
+        }
+
+        const endpoint = `/api/documents/file?pathname=${encodeURIComponent(docRecord.storagePath)}&download=1`;
+        const res = await fetch(endpoint, {
+          method: 'GET',
+          headers,
+        });
+
+        if (!res.ok) {
+          const errData = await res.json().catch(() => ({}));
+          throw new Error(errData.error || `Failed to download document (HTTP ${res.status})`);
+        }
+
+        const blob = await res.blob();
+        objectUrl = URL.createObjectURL(blob);
       }
 
       const link = document.createElement('a');
-      link.href = url;
+      link.href = objectUrl;
       link.download = docRecord.originalFileName || `${docRecord.documentType}.pdf`;
       link.target = '_blank';
       link.rel = 'noopener noreferrer';
       document.body.appendChild(link);
       link.click();
       document.body.removeChild(link);
+
+      if (objectUrl.startsWith('blob:')) {
+        setTimeout(() => URL.revokeObjectURL(objectUrl), 1000);
+      }
     } catch (err: unknown) {
       alert(err instanceof Error ? err.message : 'Download failed.');
     }
@@ -753,7 +792,7 @@ export const StudentDocumentsTab: React.FC<StudentDocumentsTabProps> = ({
       {previewDoc && (
         <Modal
           isOpen={Boolean(previewDoc)}
-          onClose={() => setPreviewDoc(null)}
+          onClose={handleClosePreview}
           title={`Document Preview: ${DOCUMENT_SLOT_DEFINITIONS[previewDoc.record.documentType]?.title || previewDoc.record.documentType}`}
           subtitle={`${previewDoc.record.originalFileName} (${formatFileSize(previewDoc.record.fileSize)})`}
           maxWidth="780px"
@@ -772,7 +811,7 @@ export const StudentDocumentsTab: React.FC<StudentDocumentsTabProps> = ({
               <button
                 type="button"
                 className="hhs-btn hhs-btn-secondary"
-                onClick={() => setPreviewDoc(null)}
+                onClick={handleClosePreview}
               >
                 Close
               </button>

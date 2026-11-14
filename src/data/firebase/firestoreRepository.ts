@@ -877,13 +877,17 @@ export class FirestoreRepository implements DataProvider {
   ): Promise<StudentDocumentRecord> {
     ensureFirebaseReady();
 
-    let idToken: string | undefined;
+    let idToken = '';
     if (auth?.currentUser) {
       try {
         idToken = await auth.currentUser.getIdToken();
       } catch (tokenErr) {
         console.warn('[HanuJai Storage] Could not retrieve Firebase ID token:', tokenErr);
       }
+    }
+
+    if (!idToken) {
+      throw new Error('User session is not authenticated. Please log in before managing documents.');
     }
 
     const originalFileName = metadata.originalFileName || (file as File).name || `${documentType}.pdf`;
@@ -910,7 +914,7 @@ export class FirestoreRepository implements DataProvider {
     }
 
     const storagePath = uploadResult.pathname;
-    const downloadUrl = await vercelBlobStorage.getFileDownloadUrl(storagePath, idToken);
+    const downloadUrl = await vercelBlobStorage.getFileDownloadUrl(storagePath);
 
     // Step 2: Storage upload succeeded. Now prepare and write Firestore metadata.
     const docRef = doc(db!, 'students', studentId, 'documents', documentType);
@@ -1009,13 +1013,17 @@ export class FirestoreRepository implements DataProvider {
 
     const data = snap.data() as StudentDocumentRecord;
 
-    let idToken: string | undefined;
+    let idToken = '';
     if (auth?.currentUser) {
       try {
         idToken = await auth.currentUser.getIdToken();
       } catch {
         // Ignore
       }
+    }
+
+    if (!idToken) {
+      throw new Error('User session is not authenticated. Please log in before deleting documents.');
     }
 
     // Delete storage object from Vercel Private Blob
@@ -1055,15 +1063,7 @@ export class FirestoreRepository implements DataProvider {
   }
 
   public async getDocumentDownloadUrl(storagePath: string): Promise<string> {
-    let idToken: string | undefined;
-    if (auth?.currentUser) {
-      try {
-        idToken = await auth.currentUser.getIdToken();
-      } catch {
-        // Ignore
-      }
-    }
-    return await vercelBlobStorage.getFileDownloadUrl(storagePath, idToken);
+    return await vercelBlobStorage.getFileDownloadUrl(storagePath);
   }
 }
 

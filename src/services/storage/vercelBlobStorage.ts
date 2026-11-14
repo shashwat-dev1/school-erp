@@ -3,8 +3,11 @@
  * Campus: HanuJai High School, Jaipur, Rajasthan, India
  *
  * Implements client-side direct-to-blob upload with server-verified client tokens.
- * All blobs are strictly stored with private access (no public bucket URLs).
- * Access is routed exclusively through authenticated serverless endpoints.
+ * All blobs are strictly stored with private access in the school's Account B store.
+ *
+ * Security:
+ * - All server requests send Authorization: Bearer <idToken> headers.
+ * - Sensitive tokens are NEVER passed in query parameters or exposed to logs.
  */
 
 import { upload } from '@vercel/blob/client';
@@ -19,7 +22,8 @@ export class VercelBlobStorageProvider implements StorageProvider {
 
   /**
    * Uploads file binary directly to Vercel Private Blob using client upload token.
-   * Bypasses the 4.5MB Vercel Serverless Function body limit to support up to 10MB documents.
+   * Direct streaming to blob.vercel-storage.com bypasses the 4.5MB serverless body limit,
+   * supporting up to 10MB per document.
    */
   public async uploadFile(
     file: File | Blob,
@@ -30,10 +34,9 @@ export class VercelBlobStorageProvider implements StorageProvider {
     const timestamp = Date.now();
     const pathname = `students/${options.studentId}/documents/${options.documentType}/${timestamp}_${safeName}`;
 
-    const headers: Record<string, string> = {};
-    if (options.idToken) {
-      headers['Authorization'] = `Bearer ${options.idToken}`;
-    }
+    const headers: Record<string, string> = {
+      Authorization: `Bearer ${options.idToken}`,
+    };
 
     try {
       const blobResult = await upload(pathname, file, {
@@ -43,6 +46,7 @@ export class VercelBlobStorageProvider implements StorageProvider {
           studentId: options.studentId,
           documentType: options.documentType,
           originalFileName: rawName,
+          contentType: options.contentType,
           actorId: options.actorId,
           actorRole: options.actorRole,
         }),
@@ -65,11 +69,11 @@ export class VercelBlobStorageProvider implements StorageProvider {
       };
     } catch (uploadErr: unknown) {
       const message = uploadErr instanceof Error ? uploadErr.message : 'Unknown upload error';
-      console.error('[VercelBlobStorageProvider] Upload failed:', uploadErr);
+      console.error('[VercelBlobStorageProvider] Upload failed:', message);
 
       if (message.includes('503') || message.includes('BLOB_READ_WRITE_TOKEN')) {
         throw new Error(
-          'Vercel Private Blob store is not connected. Missing BLOB_READ_WRITE_TOKEN in Vercel project settings. ' +
+          'Vercel Private Blob store is not connected. Missing BLOB_READ_WRITE_TOKEN in project settings. ' +
             'Please refer to VERCEL_BLOB_SETUP_GUIDE.md.'
         );
       }
@@ -78,38 +82,43 @@ export class VercelBlobStorageProvider implements StorageProvider {
   }
 
   /**
-   * Resolves the authenticated private delivery endpoint URL.
+   * Returns the canonical serverless endpoint path for document streaming.
+   * Tokens are NEVER appended to query strings.
    */
-  public async getFileDownloadUrl(
-    pathname: string,
-    idToken?: string,
-    isDownload: boolean = false
-  ): Promise<string> {
-    const params = new URLSearchParams();
-    params.set('pathname', pathname);
-    if (idToken) {
-      params.set('token', idToken);
+  public async getFileDownloadUrl(pathname: string): Promise<string> {
+    return `/api/documents/file?pathname=${encodeURIComponent(pathname)}`;
+  }
+
+  /**
+   * Fetches the private document binary using Bearer token authentication.
+   */
+  public async fetchFileBinary(pathname: string, idToken: string): Promise<Blob> {
+    const url = await this.getFileDownloadUrl(pathname);
+    const res = await fetch(url, {
+      method: 'GET',
+      headers: {
+        Authorization: `Bearer ${idToken}`,
+      },
+    });
+
+    if (!res.ok) {
+      const errData = await res.json().catch(() => ({}));
+      throw new Error(errData.error || `Failed to fetch document from private storage (HTTP ${res.status})`);
     }
-    if (isDownload) {
-      params.set('download', '1');
-    }
-    return `/api/documents/file?${params.toString()}`;
+
+    return await res.blob();
   }
 
   /**
    * Requests deletion of the private document blob via authenticated serverless endpoint.
    */
-  public async deleteFile(pathname: string, idToken?: string): Promise<void> {
-    const headers: Record<string, string> = {
-      'Content-Type': 'application/json',
-    };
-    if (idToken) {
-      headers['Authorization'] = `Bearer ${idToken}`;
-    }
-
+  public async deleteFile(pathname: string, idToken: string): Promise<void> {
     const res = await fetch('/api/documents/delete', {
       method: 'POST',
-      headers,
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${idToken}`,
+      },
       body: JSON.stringify({ pathname }),
     });
 

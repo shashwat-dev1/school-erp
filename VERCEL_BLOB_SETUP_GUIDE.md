@@ -1,18 +1,27 @@
-# HanuJai High School ERP — Vercel Private Blob Setup & Client Ownership Guide
+# HanuJai High School ERP — Two-Account Vercel Private Blob Architecture & Setup Guide
 
 **Campus:** HanuJai High School, Jaipur, Rajasthan, India  
-**Target Storage:** Vercel Private Blob (`hanujai-student-documents`)  
-**Database:** Google Cloud Firestore (Metadata & Roles)  
-**Authentication:** Firebase Authentication (Principal & Admin Office)  
-**Security Level:** High — Private access only, zero public bucket exposure  
+**Document Repository:** 9-Slot Mandatory Student & Parent Identification  
+**Target Store:** `hanujai-student-documents` (Private Access Mode)  
+**Security Level:** High — Strictly private blobs, zero public URLs, Authorization Bearer header only  
 
 ---
 
-## 1. Executive Summary & Why Vercel Private Blob
+## 1. Two-Account Architecture & Responsibility Separation
 
-To eliminate personal developer billing, credit card dependencies, and complex Cloudflare CORS configurations, HanuJai High School ERP stores all 9 mandatory student identity and enrollment documents directly in **Vercel Private Blob**, attached to the school's own Vercel project and billed directly to the school.
+To preserve existing deployments while ensuring the school retains complete ownership and direct billing for all stored files, the system operates across two separate accounts:
 
-### System Architecture
+| Component | Owner | Role & Responsibility |
+|---|---|---|
+| **Account A** | **Developer Account** | • Hosts and executes `hanujai-erp` web application & serverless API functions (`/api/documents/*`).<br>• Hosts source code and CI/CD pipelines.<br>• Incurs standard Vercel serverless compute execution billing. |
+| **Account B** | **School / Client Account** | • Owns the Private Blob Store (`hanujai-student-documents`).<br>• Controls data ownership, retention, and access credentials.<br>• Incurs all storage, bandwidth, and Blob operation billing directly. |
+
+> [!IMPORTANT]
+> **No Website Transfer:** The existing website and its GitHub repository remain in Account A. The school does NOT take over website hosting or developer infrastructure. Cross-account access is handled securely via the store's read-write token.
+
+---
+
+## 2. Infrastructure Flow Diagram
 
 ```
 ┌────────────────────────────────────────────────────────────────────────┐
@@ -22,131 +31,169 @@ To eliminate personal developer billing, credit card dependencies, and complex C
                                    │
          ┌─────────────────────────┴─────────────────────────┐
          │                                                   │
-         ▼                                                   ▼
+         ▼ (Firebase JWT)                                    ▼ (Direct Metadata)
 ┌─────────────────────────────────┐         ┌─────────────────────────────────┐
 │     Firebase Authentication     │         │      Google Cloud Firestore     │
 │   • Principal (Read-Only)       │         │   • Student Records             │
 │   • Admin Office (Full Access)  │         │   • 9-Slot Document Metadata    │
-│   • Issues Verified JWT Tokens  │         │   • Immutable Audit Events      │
+│   • Evaluates Staff Status      │         │   • Immutable Audit Events      │
 └────────────────┬────────────────┘         └─────────────────────────────────┘
                  │
-                 ▼ (Bearer JWT Auth)
+                 ▼ (Authorization: Bearer <idToken> — NO query params)
 ┌────────────────────────────────────────────────────────────────────────┐
-│                    Vercel Serverless API Functions                     │
-│  • POST /api/documents/upload  (Generates client token via handleUpload)│
-│  • GET  /api/documents/file    (Streams private blobs via get())       │
-│  • POST /api/documents/delete  (Removes private blobs via del())       │
+│                  ACCOUNT A: Vercel Serverless Functions                │
+│                     (Hosted on Developer Account)                      │
+│                                                                        │
+│  • POST /api/documents/upload                                          │
+│    Verifies Admin Office role, validates slot/size/type, and calls:    │
+│    handleUpload({ token: BLOB_READ_WRITE_TOKEN })                      │
+│                                                                        │
+│  • GET  /api/documents/file                                            │
+│    Verifies Principal/Admin role, streams private blob via:            │
+│    get(pathname, { access: 'private', token: BLOB_READ_WRITE_TOKEN })  │
+│                                                                        │
+│  • POST /api/documents/delete                                          │
+│    Verifies Admin Office role, deletes private blob via:               │
+│    del(pathname, { token: BLOB_READ_WRITE_TOKEN })                     │
 └──────────────────────────────────┬─────────────────────────────────────┘
                                    │
-                                   ▼
+                                   ▼ (BLOB_READ_WRITE_TOKEN Authentication)
 ┌────────────────────────────────────────────────────────────────────────┐
-│                       Vercel Private Blob Store                        │
-│                     (hanujai-student-documents)                        │
-│   • Strictly Private Mode (HTTP 403 on direct URL access)              │
-│   • 10MB per file maximum size limit                                   │
-│   • Path: students/{studentId}/documents/{docType}/{id}-{filename}     │
+│                  ACCOUNT B: Vercel Private Blob Store                  │
+│                     (Owned by School / Client)                         │
+│                                                                        │
+│  • Store Name: hanujai-student-documents                               │
+│  • Access Mode: Strictly Private (HTTP 403 on direct URL access)       │
+│  • Storage Billing: Incurred directly by Account B                     │
 └────────────────────────────────────────────────────────────────────────┘
 ```
 
 ---
 
-## 2. Step-by-Step Setup Guide (Client / School Administrator)
+## 3. Client-Side Setup Instructions (Account B)
 
-Follow these exact steps in the Vercel dashboard to provision the private storage store under the school's account:
+These steps are executed by the school administrator in **Account B**:
 
-### Step 1: Open Vercel Project
-1. Log into your Vercel account at [https://vercel.com](https://vercel.com).
-2. Open the project: **`hanujai-erp`** (or the production team project).
+### Step 1: Log in to Account B
+Log into the school's official Vercel account at [https://vercel.com](https://vercel.com).
 
 ### Step 2: Create the Private Blob Store
-1. Click the **Storage** tab in the top navigation bar of your Vercel dashboard.
+1. In the top navigation bar, click **Storage**.
 2. Click **Create Database** (or **Create Store**).
 3. Select **Blob (File Storage)** and click **Continue**.
 4. Configure store parameters:
    - **Store Name:** `hanujai-student-documents`
    - **Access:** Select **`Private`** *(CRITICAL: Never choose Public. All student identity documents contain sensitive Aadhaar cards and birth certificates and must be Private).*
-   - **Region:** Select **Washington, D.C. (iad1)** or nearest available server region.
+   - **Region:** Choose the closest region (e.g. Washington, D.C. `iad1`).
 5. Click **Create Store**.
 
-### Step 3: Connect Store to Project
-1. Once the store is created, navigate to its **Settings** or **Projects** tab.
-2. Click **Connect Project**.
-3. Select **`hanujai-erp`**.
-4. Select all environments:
-   - [x] Production
-   - [x] Preview
-   - [x] Development
-5. Click **Connect**.
-6. Vercel will automatically inject the required environment variable:
-   - `BLOB_READ_WRITE_TOKEN`
+### Step 3: Retrieve the Store Token
+1. In Account B, click on the newly created `hanujai-student-documents` store.
+2. Go to **Settings** (or the **Environment Variables / Connection Strings** panel).
+3. Locate the **Read/Write Token** (format: `vercel_blob_rw_...`).
+4. Copy the token string.
 
-### Step 4: Verify Environment Variables
-Ensure the following variables are present in **Settings → Environment Variables**:
+### Step 4: Securely Transfer the Token
+> [!CAUTION]
+> **Security Protocol:**
+> Do NOT send this token via public chat channels, unencrypted email, or AI prompts (such as ChatGPT).
+> Transfer it using a secure, zero-knowledge tool:
+> - **Bitwarden Send** or **1Password Share** (one-time encrypted link with 1-hour expiration)
+> - **Signal / WhatsApp encrypted direct message** directly to the designated developer.
 
-| Variable Name | Required By | Description |
-|---|---|---|
-| `BLOB_READ_WRITE_TOKEN` | Vercel Blob Functions | Injected automatically by Vercel when store is linked |
-| `VITE_FIREBASE_API_KEY` | Serverless Token Verifier | Firebase Web API key for server token validation |
-| `VITE_FIREBASE_PROJECT_ID` | Firestore Repository | Firebase Project ID (`hanujai-erp-demo`) |
-| `VITE_FIREBASE_AUTH_DOMAIN` | Firebase Authentication | Domain for Firebase Auth session |
+---
 
-### Step 5: Redeploy Project
+## 4. Developer-Side Configuration Instructions (Account A)
+
+These steps are executed by the developer in **Account A**:
+
+### Step 1: Log in to Account A
+Log into Account A at [https://vercel.com](https://vercel.com) and navigate to the **`hanujai-erp`** project.
+
+### Step 2: Add Environment Variable
+1. Go to **Settings → Environment Variables**.
+2. Click **Add Variable**:
+   - **Key:** `BLOB_READ_WRITE_TOKEN`
+   - **Value:** Paste the token provided by Account B (`vercel_blob_rw_...`).
+   - **Environments:** Check **Production**, **Preview**, and **Development**.
+3. Click **Save**.
+
+### Step 3: Redeploy the Website
 1. Navigate to the **Deployments** tab.
-2. Click **Redeploy** on the latest production deployment so the new `BLOB_READ_WRITE_TOKEN` is loaded into the serverless functions.
-3. Test document upload in the web app under any student profile: `https://hanujai-erp.vercel.app/students/STU-01A-35`.
+2. Select the latest deployment and click **Redeploy**.
+3. Once deployed, the serverless functions in Account A will use Account B's store token for all document operations.
+
+### Step 4: Verification
+1. Log in to `https://hanujai-erp.vercel.app` using Admin Office credentials.
+2. Open any student profile (e.g. `STU-01A-35`).
+3. Click **Documents** tab and upload a test document (e.g. Student Photograph or Birth Certificate).
+4. Verify that:
+   - Upload succeeds with real-time percentage progress.
+   - Preview opens the image/PDF inside the modal.
+   - Download saves the original file to disk.
+   - Deletion removes the file cleanly.
+   - Principal account view has upload and delete actions disabled.
 
 ---
 
-## 3. Storage Sizing, Limits & Pricing
+## 5. Billing & Pricing Realities
 
-### HanuJai High School Profile
-- **Current Student Capacity:** ~1,000 students
-- **Document Slots:** 9 mandatory slots per student
-- **Total Possible Slots:** 9,000 documents
-- **Average Compressed File Size:** 300 KB – 500 KB per document
-- **Total Storage Estimate at 100% Completion:** ~4.0 GB to ~4.5 GB
+### Cost Allocation
+- **Blob Storage & Operations:** Billed to **Account B** (the school).
+- **Website & Serverless Function Invocations:** Billed to **Account A** (the developer).
+- Infrastructure billing is split by domain: file storage is owned and paid by the client; web hosting compute is run by the developer.
 
-### Vercel Blob Plan Comparison
+### Official Vercel Blob Pricing (Verified)
 
-| Feature | Vercel Hobby (Free) | Vercel Pro ($20 / month) |
-|---|---|---|
-| **Storage Included** | 250 MB | 500 GB |
-| **Additional Storage** | N/A (Hard Cap) | \$0.023 / GB / month |
-| **Max File Size** | 500 MB (API limit 10MB) | 5 TB (API limit 10MB) |
-| **Read Operations** | 50,000 / month | 100,000,000 / month |
-| **Write Operations** | 10,000 / month | 10,000,000 / month |
-| **Bandwidth Included** | 1 GB / month | 1 TB / month |
-| **Fit for HanuJai ERP** | Pilot / Testing (~50 students) | **Full School Deployment (~1,000 students)** |
+| Plan Tier | Storage Rate | Operations Rate | Included Allowances | Fit for HanuJai ERP |
+|---|---|---|---|---|
+| **Hobby (Free)** | Free up to 1 GB / month | • Reads: 10,000 / month<br>• Writes/Lists: 2,000 / month | 1 GB total storage | **Pilot / Trial Phase** (~50 students) |
+| **Pro ($20/mo base)** | ~$0.023 / GB / month | • Reads: ~$0.40 per 1M ops<br>• Writes: ~$5.00 per 1M ops | Uses plan credits, then on-demand pay-as-you-go | **Full Institutional Rollout** (~1,000 students) |
 
-> [!TIP]
-> **Recommended Plan:**
-> During initial testing and trial rollout (Class 10-A, ~40 students), the **Hobby (Free)** plan is completely sufficient.
-> When rolling out to all 1,000 students across Nursery through Class 12, upgrade the project to **Vercel Pro ($20/month)**. The $20/month plan includes 500 GB, which easily accommodates 100× the school's 4.5 GB storage requirement for decades.
+### Sizing Estimate for HanuJai High School (~1,000 Students)
+- 1,000 students × 9 document slots = 9,000 total documents.
+- Average compressed scan size: ~400 KB to ~500 KB per document.
+- **Total Storage Required:** ~4.0 GB to ~4.5 GB.
+- **Estimated Monthly Cost on Vercel Pro:**
+  - 4.5 GB × \$0.023/GB ≈ **\$0.10 / month** in storage!
+  - 9,000 uploads once per year ≈ negligible fraction of a cent.
 
 ---
 
-## 4. Future AWS S3 Migration Path
+## 6. Security & Permission Architecture
 
-The HanuJai ERP codebase incorporates a strict **Storage Provider Abstraction Layer**:
+1. **Strictly Header-Only Authentication:**
+   - All serverless endpoints (`/api/documents/*`) accept Firebase ID tokens **exclusively through `Authorization: Bearer <idToken>` headers**.
+   - URL query parameter tokens (`?token=...`) are explicitly blocked (returning HTTP 401).
+   - This eliminates token leakage in browser history, server access logs, and HTTP referrers.
+
+2. **Role-Based Server Enforcement:**
+   - **Admin Office (`admin`):** Full authorization to upload, replace, preview, download, and delete documents.
+   - **Principal (`principal`):** Strictly read-only oversight. Authorized to preview and download; upload and delete attempts are blocked on the server with HTTP 403 Forbidden.
+   - **Teachers:** Deactivated in Phase 1; blocked on both client and server with HTTP 403 Forbidden.
+
+3. **Server-Side Path Generation & Anti-Traversal:**
+   - Canonical path pattern: `students/{studentId}/documents/{documentType}/{timestamp}_{filename}`.
+   - The server validates student IDs (`/^[A-Za-z0-9_-]+$/`), document types (9 allowed categories), MIME types, and file sizes (10 MB for documents, 5 MB for student photos).
+   - Path traversal attempts (`..`, null bytes, slashes) are rejected with HTTP 400 Bad Request.
+
+4. **Private Storage Protection:**
+   - The Blob Store access mode is **Private**.
+   - Direct requests to public URLs return HTTP 403 Forbidden.
+   - Files are served only through the authenticated `/api/documents/file` proxy with security headers (`X-Content-Type-Options: nosniff`, `Cache-Control: private, no-cache, no-store`).
+
+5. **Log Hygiene:**
+   - Authorization headers, raw tokens, and full document URLs are stripped from all console outputs and server logs.
+
+---
+
+## 7. Future AWS S3 Transition Path
+
+The application utilizes a clean **Storage Provider Abstraction Layer**:
 - Interface: `src/services/storage/storageProvider.ts`
 - Implementation: `src/services/storage/vercelBlobStorage.ts`
 
-### Why This Protects the School
-1. **Zero UI Changes:** The student profile, 9 document cards, progress bars, and modals only talk to `StorageProvider`.
-2. **Zero Database Changes:** Firestore stores canonical storage paths (`students/{studentId}/documents/{docType}/{fileId}`) and standard download URLs.
-3. **Seamless Switch:** If the school ever decides to move storage to an AWS S3 bucket in Mumbai (`ap-south-1`):
-   - Implement `AwsS3StorageProvider implements StorageProvider`.
-   - Swap the provider in `firestoreRepository.ts`.
-   - All student profiles and history continue operating without disruption.
-
----
-
-## 5. Security & Privacy Safeguards
-
-1. **Private Blobs Exclusively:** Documents cannot be viewed by scraping or guessing URLs. Direct requests return HTTP 403 Forbidden.
-2. **Role Enforcement:**
-   - **Principal:** Strictly read-only oversight. Can preview and download documents; upload and delete buttons are hidden and blocked on the server with HTTP 403.
-   - **Admin Office:** Can upload, replace, and delete documents.
-   - **Teachers:** Deactivated in Phase 1; blocked on both client and server.
-3. **Anti-Sniffing & Cache Control:** All documents served via `/api/documents/file` send `X-Content-Type-Options: nosniff` and `Cache-Control: private, no-cache, no-store`.
-4. **Audit Trail:** Every upload, replacement, and deletion logs an immutable audit event to the Firestore `auditEvents` collection with timestamp, uploader UID, student ID, and file metadata.
+If the school's requirements expand in future phases (e.g. multi-gigabyte video archives or compliance mandates requiring storage in AWS Mumbai `ap-south-1`):
+1. An `AwsS3StorageProvider implements StorageProvider` class can be implemented.
+2. The provider is swapped in `firestoreRepository.ts`.
+3. **Zero changes** are needed in student profiles, Cloud Firestore schemas, or UI components.
