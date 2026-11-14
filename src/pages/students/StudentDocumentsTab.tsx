@@ -11,6 +11,7 @@
  */
 
 import React, { useState, useEffect, useRef } from 'react';
+import { auth } from '../../config/firebase';
 import { useData } from '../../context/DataContext';
 import { Permissions } from '../../domain/permissions';
 import {
@@ -163,10 +164,21 @@ export const StudentDocumentsTab: React.FC<StudentDocumentsTabProps> = ({
   const handlePreview = async (docRecord: StudentDocumentRecord) => {
     try {
       let url = docRecord.downloadUrl;
+      let idToken = '';
+      if (auth?.currentUser) {
+        try {
+          idToken = await auth.currentUser.getIdToken();
+        } catch {
+          // Non-blocking
+        }
+      }
       if (!url && provider.getDocumentDownloadUrl) {
         url = await provider.getDocumentDownloadUrl(docRecord.storagePath);
       }
       if (url) {
+        if (idToken && !url.includes('token=') && url.startsWith('/api/')) {
+          url += (url.includes('?') ? '&' : '?') + 'token=' + encodeURIComponent(idToken);
+        }
         setPreviewDoc({ record: docRecord, url });
       } else {
         alert('Could not resolve preview URL for this document.');
@@ -179,6 +191,14 @@ export const StudentDocumentsTab: React.FC<StudentDocumentsTabProps> = ({
   const handleDownload = async (docRecord: StudentDocumentRecord) => {
     try {
       let url = docRecord.downloadUrl;
+      let idToken = '';
+      if (auth?.currentUser) {
+        try {
+          idToken = await auth.currentUser.getIdToken();
+        } catch {
+          // Non-blocking
+        }
+      }
       if (!url && provider.getDocumentDownloadUrl) {
         url = await provider.getDocumentDownloadUrl(docRecord.storagePath);
       }
@@ -186,6 +206,13 @@ export const StudentDocumentsTab: React.FC<StudentDocumentsTabProps> = ({
         alert('Could not resolve download URL.');
         return;
       }
+      if (idToken && !url.includes('token=') && url.startsWith('/api/')) {
+        url += (url.includes('?') ? '&' : '?') + 'token=' + encodeURIComponent(idToken);
+      }
+      if (url.startsWith('/api/') && !url.includes('download=')) {
+        url += (url.includes('?') ? '&' : '?') + 'download=1';
+      }
+
       const link = document.createElement('a');
       link.href = url;
       link.download = docRecord.originalFileName || `${docRecord.documentType}.pdf`;

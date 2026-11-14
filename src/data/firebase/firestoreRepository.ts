@@ -43,7 +43,8 @@ import type {
 import { getSchoolLocalDate } from '../../domain/policy';
 import { initialStaff } from '../demo/seedData';
 
-import { db, auth, storage, isFirebaseConfigured } from '../../config/firebase';
+import { db, auth, isFirebaseConfigured } from '../../config/firebase';
+import { vercelBlobStorage } from '../../services/storage/vercelBlobStorage';
 import {
   collection,
   doc,
@@ -59,14 +60,6 @@ import {
   orderBy,
   limit as firestoreLimit,
 } from 'firebase/firestore';
-import {
-  ref as storageRef,
-  uploadBytesResumable,
-  getDownloadURL,
-  deleteObject,
-  type StorageError,
-  type UploadTaskSnapshot,
-} from 'firebase/storage';
 
 function ensureFirebaseReady() {
   if (!db || !isFirebaseConfigured()) {
@@ -883,89 +876,41 @@ export class FirestoreRepository implements DataProvider {
     onProgress?: (progressPercent: number) => void
   ): Promise<StudentDocumentRecord> {
     ensureFirebaseReady();
-    if (!storage) {
-      throw new Error(
-        'Firebase Cloud Storage is not initialized. Please verify VITE_FIREBASE_STORAGE_BUCKET and Firebase console setup.'
-      );
-    }
 
-    const bucketName = storage.app.options.storageBucket || 'hanujai-erp-demo.firebasestorage.app';
-    const fileId = `${documentType}_${Date.now()}_${Math.random().toString(36).substring(2, 7)}`;
-    const storagePath = `students/${studentId}/documents/${documentType}/${fileId}`;
-    const sRef = storageRef(storage, storagePath);
+    let idToken: string | undefined;
+    if (auth?.currentUser) {
+      try {
+        idToken = await auth.currentUser.getIdToken();
+      } catch (tokenErr) {
+        console.warn('[HanuJai Storage] Could not retrieve Firebase ID token:', tokenErr);
+      }
+    }
 
     const originalFileName = metadata.originalFileName || (file as File).name || `${documentType}.pdf`;
     const contentType = metadata.contentType || (file as File).type || 'application/octet-stream';
     const fileSize = metadata.fileSize || (file as File).size || 0;
 
-    // Step 1: Upload actual file binary to Firebase Storage via uploadBytesResumable
-    let downloadUrl = '';
+    // Step 1: Upload binary directly to Vercel Private Blob store via client authorization
+    let uploadResult;
     try {
-      downloadUrl = await new Promise<string>((resolve, reject) => {
-        const uploadTask = uploadBytesResumable(sRef, file, {
-          contentType,
-          customMetadata: {
-            studentId,
-            documentType,
-            uploadedBy: actor.id,
-          },
-        });
-
-        uploadTask.on(
-          'state_changed',
-          (snapshot: UploadTaskSnapshot) => {
-            if (snapshot.totalBytes > 0) {
-              const progress = Math.round((snapshot.bytesTransferred / snapshot.totalBytes) * 100);
-              onProgress?.(progress);
-            }
-          },
-          (storageErr: StorageError) => {
-            console.error('[Firebase Storage Upload Error Details]', {
-              code: storageErr.code,
-              message: storageErr.message,
-              serverResponse: storageErr.serverResponse,
-              bucket: bucketName,
-              path: storagePath,
-            });
-
-            // Specific diagnosis for CORS preflight failure / bucket not found
-            if (
-              storageErr.code === 'storage/bucket-not-found' ||
-              storageErr.code === 'storage/no-default-bucket' ||
-              ((storageErr.code === 'storage/unknown' || storageErr.code === 'storage/retry-limit-exceeded') &&
-                !storageErr.serverResponse)
-            ) {
-              reject(
-                new Error(
-                  `Firebase Storage upload failed due to a CORS/preflight error on bucket '${bucketName}'. ` +
-                    `The bucket is either not yet provisioned in Firebase Console (requires Blaze plan activation) ` +
-                    `or is missing the CORS origin policy for https://hanujai-erp.vercel.app.`
-                )
-              );
-            } else if (storageErr.code === 'storage/unauthenticated') {
-              reject(new Error('User session is not authenticated. Please log in again before uploading documents.'));
-            } else if (storageErr.code === 'storage/unauthorized') {
-              reject(new Error(`Access denied by Storage security rules for ${documentType}. Admin Office credentials required.`));
-            } else if (storageErr.code === 'storage/canceled') {
-              reject(new Error('Upload operation was canceled.'));
-            } else {
-              reject(new Error(`Storage upload error [${storageErr.code}]: ${storageErr.message}`));
-            }
-          },
-          async () => {
-            try {
-              const url = await getDownloadURL(uploadTask.snapshot.ref);
-              onProgress?.(100);
-              resolve(url);
-            } catch (urlErr) {
-              reject(urlErr);
-            }
-          }
-        );
+      uploadResult = await vercelBlobStorage.uploadFile(file, {
+        studentId,
+        documentType,
+        originalFileName,
+        contentType,
+        fileSize,
+        actorId: actor.id,
+        actorRole: actor.role,
+        idToken,
+        onProgress: (p) => onProgress?.(p.percentage),
       });
     } catch (uploadFailure) {
+      console.error('[HanuJai Storage] Vercel Blob upload failed:', uploadFailure);
       throw uploadFailure;
     }
+
+    const storagePath = uploadResult.pathname;
+    const downloadUrl = await vercelBlobStorage.getFileDownloadUrl(storagePath, idToken);
 
     // Step 2: Storage upload succeeded. Now prepare and write Firestore metadata.
     const docRef = doc(db!, 'students', studentId, 'documents', documentType);
@@ -1006,7 +951,7 @@ export class FirestoreRepository implements DataProvider {
     } catch (firestoreWriteErr) {
       console.error('Firestore metadata write failed after storage upload. Rolling back orphaned storage object...', firestoreWriteErr);
       try {
-        await deleteObject(sRef);
+        await vercelBlobStorage.deleteFile(storagePath, idToken);
       } catch (cleanupErr) {
         console.warn('Failed to cleanup orphaned storage file:', cleanupErr);
       }
@@ -1018,8 +963,7 @@ export class FirestoreRepository implements DataProvider {
     // Step 4: If replacing, safely clean up old storage blob now that metadata is committed
     if (oldStoragePath && oldStoragePath !== storagePath) {
       try {
-        const oldRef = storageRef(storage, oldStoragePath);
-        await deleteObject(oldRef);
+        await vercelBlobStorage.deleteFile(oldStoragePath, idToken);
       } catch (oldCleanupErr) {
         console.warn('Non-blocking: could not delete old document binary:', oldCleanupErr);
       }
@@ -1065,11 +1009,19 @@ export class FirestoreRepository implements DataProvider {
 
     const data = snap.data() as StudentDocumentRecord;
 
-    // Delete storage object
-    if (storage && data.storagePath) {
+    let idToken: string | undefined;
+    if (auth?.currentUser) {
       try {
-        const sRef = storageRef(storage, data.storagePath);
-        await deleteObject(sRef);
+        idToken = await auth.currentUser.getIdToken();
+      } catch {
+        // Ignore
+      }
+    }
+
+    // Delete storage object from Vercel Private Blob
+    if (data.storagePath) {
+      try {
+        await vercelBlobStorage.deleteFile(data.storagePath, idToken);
       } catch {
         // Non-fatal if already deleted
       }
@@ -1103,11 +1055,15 @@ export class FirestoreRepository implements DataProvider {
   }
 
   public async getDocumentDownloadUrl(storagePath: string): Promise<string> {
-    if (!storage) {
-      throw new Error('Firebase Cloud Storage is not initialized.');
+    let idToken: string | undefined;
+    if (auth?.currentUser) {
+      try {
+        idToken = await auth.currentUser.getIdToken();
+      } catch {
+        // Ignore
+      }
     }
-    const sRef = storageRef(storage, storagePath);
-    return await getDownloadURL(sRef);
+    return await vercelBlobStorage.getFileDownloadUrl(storagePath, idToken);
   }
 }
 

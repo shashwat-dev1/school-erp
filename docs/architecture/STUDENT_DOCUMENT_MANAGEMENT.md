@@ -30,16 +30,23 @@ Each student profile supports exactly nine standardized document slots categoriz
 
 The module enforces strict separation between **binary media storage** and **document metadata storage**:
 
-1. **Binary Storage (Firebase Cloud Storage)**:
-   - **Path Pattern**: `students/{studentId}/documents/{documentType}/{fileId}`
-   - Where `{fileId}` is generated as `${documentType}_${timestamp}_${randomId}.${ext}`.
+1. **Binary Storage (Vercel Private Blob)**:
+   - **Store Name:** `hanujai-student-documents` (Owned directly by the school's Vercel account).
+   - **Access Level:** Strictly **Private** (HTTP 403 on direct URL access).
+   - **Path Pattern**: `students/{studentId}/documents/{documentType}/{timestamp}_{safeName}`
    - Files are stored encrypted at rest with private permissions.
-   - No permanent public download URLs are generated or stored.
+   - Uploads bypass serverless body limits via `@vercel/blob/client`'s `upload()` and `handleUpload`.
+   - Streaming is mediated exclusively through authenticated serverless endpoint `/api/documents/file`.
 
-2. **Metadata Storage (Cloud Firestore)**:
+2. **Serverless Functions Layer (`/api/documents/*`)**:
+   - `POST /api/documents/upload`: Validates Firebase Auth token and Admin role, verifies file size/type constraints, and issues short-lived client tokens for direct streaming to Vercel Private Blob.
+   - `GET /api/documents/file`: Authenticates staff (Principal & Admin Office authorized), streams private blobs with anti-sniffing, private cache control, and content disposition.
+   - `POST /api/documents/delete`: Authenticates Admin Office role and deletes private blobs via `del()`.
+
+3. **Metadata Storage (Cloud Firestore)**:
    - **Subcollection Path**: `students/{studentId}/documents/{documentType}`
    - Document ID matches the slot identifier (`documentType`), ensuring O(1) slot resolution and preventing duplicate documents in the same slot.
-   - Stores version number, original file name, MIME type, file size, upload timestamp, uploaded by staff ID and name, and ephemeral preview URL.
+   - Stores version number, original file name, MIME type, file size, upload timestamp, uploaded by staff ID and name, and storage pathname.
 
 ### System Architecture Diagram
 
@@ -50,14 +57,36 @@ flowchart TD
     MobileClient["Mobile Application (Expo / React Native)"]
 
     subgraph SecurityBoundary["Security & Access Layer"]
-        FirebaseAuth["Firebase Auth (Role Verified)"]
-        StorageRules["Firebase Storage Security Rules"]
+        FirebaseAuth["Firebase Auth (Role Verified JWT)"]
+        ServerlessAuth["Serverless Token Verifier (/api/documents/_auth.ts)"]
         FirestoreRules["Cloud Firestore Security Rules"]
     end
 
+    subgraph ServerlessFunctions["Vercel Serverless Functions"]
+        UploadFn["POST /api/documents/upload\n(handleUpload client tokens)"]
+        FileFn["GET /api/documents/file\n(Authenticated streaming)"]
+        DeleteFn["POST /api/documents/delete\n(Authenticated del)"]
+    end
+
     subgraph DataStorage["Encrypted Cloud Storage"]
-        CloudStorage["Firebase Cloud Storage\nstudents/{studentId}/documents/{documentType}/{fileId}"]
+        VercelBlob["Vercel Private Blob\nhanujai-student-documents\nstudents/{studentId}/documents/{type}/{id}_{name}"]
         Firestore["Cloud Firestore Subcollection\nstudents/{studentId}/documents/{documentType}"]
+        AuditLogs["Firestore Audit Collection\nauditEvents (Immutable append)"]
+    end
+
+    User --> WebClient
+    User --> MobileClient
+    WebClient & MobileClient --> FirebaseAuth
+    FirebaseAuth --> ServerlessAuth
+    ServerlessAuth --> UploadFn
+    ServerlessAuth --> FileFn
+    ServerlessAuth --> DeleteFn
+    UploadFn --> VercelBlob
+    FileFn --> VercelBlob
+    DeleteFn --> VercelBlob
+    WebClient & MobileClient --> Firestore
+    WebClient & MobileClient --> AuditLogs
+```
         AuditLog["Audit Ledger\nauditEvents/{eventId}"]
     end
 
