@@ -12,6 +12,8 @@
  */
 
 import type { IncomingMessage } from 'http';
+import fs from 'fs';
+import path from 'path';
 
 export interface VerifiedStaff {
   uid: string;
@@ -38,6 +40,42 @@ export function extractToken(req: IncomingMessage): string | null {
     return token.length > 0 ? token : null;
   }
   return null;
+}
+
+/**
+ * Resolves Firebase project credentials from runtime environment, falling back
+ * to production configuration file on disk if environment variables were not passed.
+ */
+export function getFirebaseConfig(): { apiKey?: string; projectId?: string } {
+  let apiKey =
+    process.env.VITE_FIREBASE_API_KEY ||
+    process.env.FIREBASE_API_KEY ||
+    process.env.NEXT_PUBLIC_FIREBASE_API_KEY;
+
+  let projectId =
+    process.env.VITE_FIREBASE_PROJECT_ID ||
+    process.env.FIREBASE_PROJECT_ID;
+
+  if (!apiKey || !projectId) {
+    try {
+      const envPath = path.resolve(process.cwd(), '.env.production');
+      if (fs.existsSync(envPath)) {
+        const content = fs.readFileSync(envPath, 'utf8');
+        if (!apiKey) {
+          const mKey = content.match(/^VITE_FIREBASE_API_KEY=(.+)$/m);
+          if (mKey) apiKey = mKey[1].trim();
+        }
+        if (!projectId) {
+          const mPid = content.match(/^VITE_FIREBASE_PROJECT_ID=(.+)$/m);
+          if (mPid) projectId = mPid[1].trim();
+        }
+      }
+    } catch {
+      // Ignore file reading errors in sandboxed runtimes
+    }
+  }
+
+  return { apiKey, projectId };
 }
 
 /**
@@ -84,10 +122,7 @@ export async function verifyStaffAuth(
     };
   }
 
-  const apiKey =
-    process.env.VITE_FIREBASE_API_KEY ||
-    process.env.FIREBASE_API_KEY ||
-    process.env.NEXT_PUBLIC_FIREBASE_API_KEY;
+  const { apiKey, projectId } = getFirebaseConfig();
 
   try {
     const verifyUrl = `https://identitytoolkit.googleapis.com/v1/accounts:lookup?key=${apiKey || ''}`;
@@ -97,9 +132,10 @@ export async function verifyStaffAuth(
       body: JSON.stringify({ idToken: token }),
     });
 
-    const data = await response.json();
+    const data = await response.json().catch(() => ({}));
 
     if (!response.ok || !data.users || data.users.length === 0) {
+      console.warn('[HanuJai Storage Auth] Identity verification failed. HTTP', response.status);
       return {
         valid: false,
         status: 401,
@@ -116,7 +152,6 @@ export async function verifyStaffAuth(
     let role: 'principal' | 'admin' | 'developer' | 'unauthorized' = 'unauthorized';
     let status: 'active' | 'deactivated' = 'active';
 
-    const projectId = process.env.VITE_FIREBASE_PROJECT_ID || process.env.FIREBASE_PROJECT_ID;
     if (projectId) {
       try {
         const fsRes = await fetch(
@@ -126,7 +161,7 @@ export async function verifyStaffAuth(
           }
         );
         if (fsRes.ok) {
-          const fsData = await fsRes.json();
+          const fsData = await fsRes.json().catch(() => ({}));
           const staffRole = fsData.fields?.role?.stringValue;
           const staffStatus = fsData.fields?.status?.stringValue;
 
@@ -194,6 +229,7 @@ export async function verifyStaffAuth(
     };
   } catch (verifyError: unknown) {
     const message = verifyError instanceof Error ? verifyError.message : 'Authentication verification error';
+    console.error('[HanuJai Storage Auth] Verification service error:', message);
     return {
       valid: false,
       status: 500,

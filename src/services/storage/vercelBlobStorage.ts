@@ -68,8 +68,39 @@ export class VercelBlobStorageProvider implements StorageProvider {
         size: options.fileSize || (file instanceof File ? file.size : 0),
       };
     } catch (uploadErr: unknown) {
-      const message = uploadErr instanceof Error ? uploadErr.message : 'Unknown upload error';
+      let message = uploadErr instanceof Error ? uploadErr.message : 'Unknown upload error';
       console.error('[VercelBlobStorageProvider] Upload failed:', message);
+
+      // If the SDK threw the generic client token error, extract the underlying server error
+      if (message.toLowerCase().includes('client token')) {
+        try {
+          const probeRes = await fetch('/api/documents/upload', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              Authorization: `Bearer ${options.idToken}`,
+            },
+            body: JSON.stringify({
+              type: 'blob.generate-client-token',
+              payload: {
+                pathname,
+                clientPayload: JSON.stringify({
+                  studentId: options.studentId,
+                  documentType: options.documentType,
+                }),
+              },
+            }),
+          });
+
+          if (!probeRes.ok) {
+            const probeData = await probeRes.json().catch(() => ({}));
+            const serverDetail = probeData.error || `HTTP ${probeRes.status}`;
+            message = `${serverDetail} (HTTP ${probeRes.status})`;
+          }
+        } catch {
+          // Keep original error message if network probe is unreachable
+        }
+      }
 
       if (message.includes('503') || message.includes('BLOB_READ_WRITE_TOKEN')) {
         throw new Error(

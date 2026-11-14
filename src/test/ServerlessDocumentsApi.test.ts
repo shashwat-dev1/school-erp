@@ -3,12 +3,14 @@
  * Campus: HanuJai High School, Jaipur, Rajasthan, India
  *
  * Verifies:
- * 1. Unauthenticated requests return 401.
- * 2. Query parameter tokens are rejected (returns 401).
- * 3. Principal account upload/delete attempts return 403 (read-only oversight).
- * 4. Admin Office account upload/delete attempts succeed (200).
- * 5. Path validation rejects traversal, invalid formats, or cross-student writes (400).
- * 6. Missing BLOB_READ_WRITE_TOKEN returns 503.
+ * 1. Missing environment variable (BLOB_READ_WRITE_TOKEN) returns 503.
+ * 2. Unauthenticated requests return 401.
+ * 3. Query parameter tokens are rejected with 401.
+ * 4. Principal account upload/delete attempts return 403 (read-only oversight).
+ * 5. Admin Office account upload/delete attempts succeed (200).
+ * 6. Successful client-token generation returns correct JSON structure.
+ * 7. Invalid student ID, slot name, or path mismatch returns 400.
+ * 8. Path traversal attempts return 400.
  */
 
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
@@ -18,15 +20,19 @@ import deleteHandler from '../../api/documents/delete';
 
 // Mock @vercel/blob and @vercel/blob/client
 vi.mock('@vercel/blob/client', () => ({
-  handleUpload: vi.fn().mockImplementation(async ({ onBeforeGenerateToken }) => {
-    const tokenConfig = await onBeforeGenerateToken('students/STU-01A-35/documents/student_photo/test.jpg', JSON.stringify({
-      studentId: 'STU-01A-35',
-      documentType: 'student_photo',
-      originalFileName: 'test.jpg',
-    }));
+  handleUpload: vi.fn().mockImplementation(async ({ onBeforeGenerateToken, body }) => {
+    const payload = body?.payload || {};
+    const tokenConfig = await onBeforeGenerateToken(
+      payload.pathname || 'students/STU-01A-35/documents/student_photo/test.jpg',
+      payload.clientPayload || JSON.stringify({
+        studentId: 'STU-01A-35',
+        documentType: 'student_photo',
+        originalFileName: 'test.jpg',
+      })
+    );
     return {
       type: 'blob.generate-client-token',
-      clientToken: 'mock-client-token',
+      clientToken: 'mock-client-token-12345',
       tokenConfig,
     };
   }),
@@ -61,6 +67,7 @@ function createMockReq(options: {
     headers: options.headers || {},
     body: options.body || {},
     query: options.query || {},
+    readableEnded: true,
     on: vi.fn((event, cb) => {
       if (event === 'end') cb();
     }),
@@ -157,7 +164,17 @@ describe('Serverless Documents API Security & RBAC Suite', () => {
       const req = createMockReq({
         method: 'POST',
         headers: { authorization: 'Bearer demo-admin-token' },
-        body: { type: 'blob.generate-client-token' },
+        body: {
+          type: 'blob.generate-client-token',
+          payload: {
+            pathname: 'students/STU-01A-35/documents/student_photo/1794000_photo.jpg',
+            clientPayload: JSON.stringify({
+              studentId: 'STU-01A-35',
+              documentType: 'student_photo',
+              originalFileName: 'photo.jpg',
+            }),
+          },
+        },
       });
       const res = createMockRes();
 
@@ -166,7 +183,7 @@ describe('Serverless Documents API Security & RBAC Suite', () => {
       expect(res.statusCode).toBe(200);
       const parsed = JSON.parse(res.body);
       expect(parsed.type).toBe('blob.generate-client-token');
-      expect(parsed.clientToken).toBe('mock-client-token');
+      expect(parsed.clientToken).toBe('mock-client-token-12345');
     });
 
     it('allows Admin Office to delete documents (200 OK)', async () => {
@@ -240,6 +257,54 @@ describe('Serverless Documents API Security & RBAC Suite', () => {
       expect(res.statusCode).toBe(503);
       const parsed = JSON.parse(res.body);
       expect(parsed.error).toContain('Missing BLOB_READ_WRITE_TOKEN');
+    });
+
+    it('rejects upload authorization with invalid student ID format (400)', async () => {
+      const req = createMockReq({
+        method: 'POST',
+        headers: { authorization: 'Bearer demo-admin-token' },
+        body: {
+          type: 'blob.generate-client-token',
+          payload: {
+            pathname: 'students/../../documents/student_photo/test.jpg',
+            clientPayload: JSON.stringify({
+              studentId: '../../invalid',
+              documentType: 'student_photo',
+            }),
+          },
+        },
+      });
+      const res = createMockRes();
+
+      await uploadHandler(req, res);
+
+      expect(res.statusCode).toBe(400);
+      const parsed = JSON.parse(res.body);
+      expect(parsed.error).toContain('Invalid student ID format');
+    });
+
+    it('rejects upload authorization with invalid document category slot (400)', async () => {
+      const req = createMockReq({
+        method: 'POST',
+        headers: { authorization: 'Bearer demo-admin-token' },
+        body: {
+          type: 'blob.generate-client-token',
+          payload: {
+            pathname: 'students/STU-01A-35/documents/unauthorized_category/test.jpg',
+            clientPayload: JSON.stringify({
+              studentId: 'STU-01A-35',
+              documentType: 'unauthorized_category',
+            }),
+          },
+        },
+      });
+      const res = createMockRes();
+
+      await uploadHandler(req, res);
+
+      expect(res.statusCode).toBe(400);
+      const parsed = JSON.parse(res.body);
+      expect(parsed.error).toContain('Invalid document slot');
     });
   });
 });
