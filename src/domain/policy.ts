@@ -9,7 +9,7 @@
  * for pilot evaluation and do not represent confirmed institutional board policy.
  */
 
-import type { AttendancePolicy } from './types';
+import type { AttendancePolicy, StudentDocumentType, DocumentCategory, DocumentSlotDefinition, DocumentCompletenessSummary } from './types';
 
 export const INSTITUTIONAL_CONFIG = {
   // Campus Identity (Configurable Demo Defaults)
@@ -152,4 +152,202 @@ export function formatSchoolDisplayDate(dateStr?: string): string {
     return dateStr;
   }
 }
+
+// ============================================================================
+// Student Document Slot Configuration (9 Required Slots)
+// ============================================================================
+
+export const DOCUMENT_SLOT_DEFINITIONS: Record<StudentDocumentType, DocumentSlotDefinition> = {
+  student_aadhaar_front: {
+    type: 'student_aadhaar_front',
+    title: 'Student Aadhaar Card (Front)',
+    category: 'student',
+    categoryLabel: 'Student Documents',
+    required: true,
+    acceptedMimeTypes: ['image/jpeg', 'image/png', 'image/webp', 'application/pdf'],
+    maxSizeInBytes: 10 * 1024 * 1024, // 10 MB
+    fileTypeDescription: 'JPEG, PNG, WEBP, or PDF up to 10 MB',
+  },
+  student_aadhaar_back: {
+    type: 'student_aadhaar_back',
+    title: 'Student Aadhaar Card (Back)',
+    category: 'student',
+    categoryLabel: 'Student Documents',
+    required: true,
+    acceptedMimeTypes: ['image/jpeg', 'image/png', 'image/webp', 'application/pdf'],
+    maxSizeInBytes: 10 * 1024 * 1024,
+    fileTypeDescription: 'JPEG, PNG, WEBP, or PDF up to 10 MB',
+  },
+  birth_certificate: {
+    type: 'birth_certificate',
+    title: 'Birth Certificate',
+    category: 'student',
+    categoryLabel: 'Student Documents',
+    required: true,
+    acceptedMimeTypes: ['image/jpeg', 'image/png', 'image/webp', 'application/pdf'],
+    maxSizeInBytes: 10 * 1024 * 1024,
+    fileTypeDescription: 'JPEG, PNG, WEBP, or PDF up to 10 MB',
+  },
+  transfer_certificate: {
+    type: 'transfer_certificate',
+    title: 'Transfer Certificate (TC)',
+    category: 'student',
+    categoryLabel: 'Student Documents',
+    required: true,
+    acceptedMimeTypes: ['image/jpeg', 'image/png', 'image/webp', 'application/pdf'],
+    maxSizeInBytes: 10 * 1024 * 1024,
+    fileTypeDescription: 'JPEG, PNG, WEBP, or PDF up to 10 MB',
+  },
+  student_photo: {
+    type: 'student_photo',
+    title: 'Student Photograph',
+    category: 'student',
+    categoryLabel: 'Student Documents',
+    required: true,
+    acceptedMimeTypes: ['image/jpeg', 'image/png', 'image/webp'],
+    maxSizeInBytes: 5 * 1024 * 1024, // 5 MB
+    fileTypeDescription: 'Passport photo (JPEG, PNG, WEBP up to 5 MB)',
+  },
+  father_aadhaar_front: {
+    type: 'father_aadhaar_front',
+    title: "Father's Aadhaar Card (Front)",
+    category: 'father',
+    categoryLabel: "Father's Documents",
+    required: true,
+    acceptedMimeTypes: ['image/jpeg', 'image/png', 'image/webp', 'application/pdf'],
+    maxSizeInBytes: 10 * 1024 * 1024,
+    fileTypeDescription: 'JPEG, PNG, WEBP, or PDF up to 10 MB',
+  },
+  father_aadhaar_back: {
+    type: 'father_aadhaar_back',
+    title: "Father's Aadhaar Card (Back)",
+    category: 'father',
+    categoryLabel: "Father's Documents",
+    required: true,
+    acceptedMimeTypes: ['image/jpeg', 'image/png', 'image/webp', 'application/pdf'],
+    maxSizeInBytes: 10 * 1024 * 1024,
+    fileTypeDescription: 'JPEG, PNG, WEBP, or PDF up to 10 MB',
+  },
+  mother_aadhaar_front: {
+    type: 'mother_aadhaar_front',
+    title: "Mother's Aadhaar Card (Front)",
+    category: 'mother',
+    categoryLabel: "Mother's Documents",
+    required: true,
+    acceptedMimeTypes: ['image/jpeg', 'image/png', 'image/webp', 'application/pdf'],
+    maxSizeInBytes: 10 * 1024 * 1024,
+    fileTypeDescription: 'JPEG, PNG, WEBP, or PDF up to 10 MB',
+  },
+  mother_aadhaar_back: {
+    type: 'mother_aadhaar_back',
+    title: "Mother's Aadhaar Card (Back)",
+    category: 'mother',
+    categoryLabel: "Mother's Documents",
+    required: true,
+    acceptedMimeTypes: ['image/jpeg', 'image/png', 'image/webp', 'application/pdf'],
+    maxSizeInBytes: 10 * 1024 * 1024,
+    fileTypeDescription: 'JPEG, PNG, WEBP, or PDF up to 10 MB',
+  },
+};
+
+export const ORDERED_DOCUMENT_TYPES: StudentDocumentType[] = [
+  'student_aadhaar_front',
+  'student_aadhaar_back',
+  'birth_certificate',
+  'transfer_certificate',
+  'student_photo',
+  'father_aadhaar_front',
+  'father_aadhaar_back',
+  'mother_aadhaar_front',
+  'mother_aadhaar_back',
+];
+
+export const DOCUMENT_CATEGORIES: { id: DocumentCategory; label: string; types: StudentDocumentType[] }[] = [
+  {
+    id: 'student',
+    label: 'Student Documents',
+    types: ['student_aadhaar_front', 'student_aadhaar_back', 'birth_certificate', 'transfer_certificate', 'student_photo'],
+  },
+  {
+    id: 'father',
+    label: "Father's Documents",
+    types: ['father_aadhaar_front', 'father_aadhaar_back'],
+  },
+  {
+    id: 'mother',
+    label: "Mother's Documents",
+    types: ['mother_aadhaar_front', 'mother_aadhaar_back'],
+  },
+];
+
+/**
+ * Calculates document completeness summary across the 9 mandatory slots.
+ */
+export function calculateDocumentCompleteness(
+  documents: Array<{ documentType: StudentDocumentType; isPresent?: boolean }>
+): DocumentCompletenessSummary {
+  const totalRequired = 9;
+  const presentTypes = new Set<StudentDocumentType>();
+  
+  for (const doc of documents) {
+    if (doc.isPresent !== false && ORDERED_DOCUMENT_TYPES.includes(doc.documentType)) {
+      presentTypes.add(doc.documentType);
+    }
+  }
+
+  const uploadedCount = presentTypes.size;
+  const missingCount = Math.max(0, totalRequired - uploadedCount);
+  const completionPercentage = Math.round((uploadedCount / totalRequired) * 100);
+
+  return {
+    totalRequired,
+    uploadedCount,
+    missingCount,
+    completionPercentage,
+  };
+}
+
+/**
+ * Validates a file against slot constraints (size and MIME type).
+ */
+export function validateDocumentFile(
+  documentType: StudentDocumentType,
+  file: { size: number; type?: string; name?: string }
+): { valid: boolean; error?: string } {
+  const slot = DOCUMENT_SLOT_DEFINITIONS[documentType];
+  if (!slot) {
+    return { valid: false, error: 'Unknown document slot' };
+  }
+
+  if (file.size > slot.maxSizeInBytes) {
+    const maxMb = slot.maxSizeInBytes / (1024 * 1024);
+    return { valid: false, error: `File exceeds maximum allowed size of ${maxMb} MB.` };
+  }
+
+  const ext = file.name ? file.name.split('.').pop()?.toLowerCase() : '';
+  const allowedExtensions: Record<string, string[]> = {
+    'image/jpeg': ['jpg', 'jpeg'],
+    'image/png': ['png'],
+    'image/webp': ['webp'],
+    'application/pdf': ['pdf'],
+  };
+
+  const fileMime = file.type?.toLowerCase();
+  if (fileMime && slot.acceptedMimeTypes.includes(fileMime)) {
+    return { valid: true };
+  }
+
+  // Fallback check by extension if mime type is generic or missing (e.g. application/octet-stream)
+  if (ext) {
+    const isExtensionAllowed = slot.acceptedMimeTypes.some(mime => 
+      allowedExtensions[mime]?.includes(ext)
+    );
+    if (isExtensionAllowed) {
+      return { valid: true };
+    }
+  }
+
+  return { valid: false, error: `Invalid file format. Allowed formats: ${slot.fileTypeDescription}` };
+}
+
 

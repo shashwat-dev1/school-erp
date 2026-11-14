@@ -14,24 +14,49 @@ service firebase.storage {
       return firestore.get(/databases/(default)/documents/staff/$(request.auth.uid)).data;
     }
 
-    function isStaffAuthorized() {
-      return isAuthenticated() && (
-        getUserData().role == 'principal' ||
-        getUserData().role == 'admin' ||
-        getUserData().role == 'office_admin' ||
-        getUserData().role == 'office_staff' ||
-        getUserData().role == 'class_teacher'
-      );
+    function isPrincipal() {
+      return isAuthenticated() && getUserData().role == 'principal';
     }
 
-    // Student identity scans and medical records (Max 5MB, PDF/JPEG/PNG only)
-    // Restricted to administrative staff and homeroom tutors only
-    match /students/{studentId}/{documentName} {
-      allow read: if isStaffAuthorized();
-      allow write: if isStaffAuthorized() && (
-        request.resource.size < 5 * 1024 * 1024 &&
-        request.resource.contentType.matches('image/(jpeg|png)|application/pdf')
-      );
+    function isAdmin() {
+      return isAuthenticated() && (getUserData().role == 'admin' || getUserData().role == 'developer');
+    }
+
+    function isValidDocumentType(documentType) {
+      return documentType in [
+        'student_aadhaar_front',
+        'student_aadhaar_back',
+        'birth_certificate',
+        'transfer_certificate',
+        'student_photo',
+        'father_aadhaar_front',
+        'father_aadhaar_back',
+        'mother_aadhaar_front',
+        'mother_aadhaar_back'
+      ];
+    }
+
+    // Student Document Storage (9 Required Slots)
+    // Path: students/{studentId}/documents/{documentType}/{fileId}
+    // Principal: Read-only oversight (preview/download)
+    // Admin Office: Upload, Replace, Delete
+    match /students/{studentId}/documents/{documentType}/{fileId} {
+      allow read: if isPrincipal() || isAdmin();
+
+      // Student photograph: Image only, max 5MB
+      // Other documents: Image or PDF, max 10MB
+      allow create, update: if isAdmin() &&
+        isValidDocumentType(documentType) &&
+        (
+          (documentType == 'student_photo' &&
+            request.resource.size <= 5 * 1024 * 1024 &&
+            request.resource.contentType.matches('image/(jpeg|png|webp)')) ||
+          (documentType != 'student_photo' &&
+            request.resource.size <= 10 * 1024 * 1024 &&
+            request.resource.contentType.matches('image/(jpeg|png|webp)|application/pdf'))
+        );
+
+      allow delete: if isAdmin() && isValidDocumentType(documentType);
     }
   }
 }

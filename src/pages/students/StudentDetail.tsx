@@ -25,8 +25,10 @@ import {
   Phone,
   Home,
   Edit,
+  FileText,
 } from 'lucide-react';
 import { downloadStudentAttendanceXlsx } from '../../utils/exportUtils';
+import { StudentDocumentsTab } from './StudentDocumentsTab';
 
 export const StudentDetail: React.FC = () => {
   const { id } = useParams<{ id: string }>();
@@ -148,6 +150,7 @@ export const StudentDetail: React.FC = () => {
 
   const canEdit = Permissions.canEditStudentContact(currentUser, student);
   const canViewAttendance = Permissions.canViewIndividualAttendance(currentUser, student.classId);
+  const canViewDocuments = Permissions.canViewStudentDocuments(currentUser);
 
   // Compile individual attendance log
   const studentLogs = attendanceSessions
@@ -226,6 +229,9 @@ export const StudentDetail: React.FC = () => {
 
   const tabs = [
     { id: 'profile', label: 'Student Information', icon: <User size={15} /> },
+    ...(canViewDocuments
+      ? [{ id: 'documents', label: 'Documents', icon: <FileText size={15} /> }]
+      : []),
     ...(canViewAttendance
       ? [{ id: 'attendance', label: 'Attendance Profile & History', icon: <CalendarCheck size={15} /> }]
       : []),
@@ -439,6 +445,11 @@ export const StudentDetail: React.FC = () => {
             </div>
           </div>
         </div>
+      )}
+
+      {/* TAB: Student Documents (9 Mandatory Slots) */}
+      {activeTab === 'documents' && canViewDocuments && (
+        <StudentDocumentsTab student={student} currentUser={currentUser} />
       )}
 
       {/* TAB 2: Attendance Profile & History */}

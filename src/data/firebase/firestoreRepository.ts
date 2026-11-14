@@ -37,11 +37,13 @@ import type {
   AuditEvent,
   AuditFilter,
   StudentMarkEntry,
+  StudentDocumentType,
+  StudentDocumentRecord,
 } from '../../domain/types';
 import { getSchoolLocalDate } from '../../domain/policy';
 import { initialStaff } from '../demo/seedData';
 
-import { db, auth, isFirebaseConfigured } from '../../config/firebase';
+import { db, auth, storage, isFirebaseConfigured } from '../../config/firebase';
 import {
   collection,
   doc,
@@ -50,12 +52,19 @@ import {
   setDoc,
   addDoc,
   updateDoc,
+  deleteDoc,
   writeBatch,
   query,
   where,
   orderBy,
   limit as firestoreLimit,
 } from 'firebase/firestore';
+import {
+  ref as storageRef,
+  uploadBytes,
+  getDownloadURL,
+  deleteObject,
+} from 'firebase/storage';
 
 function ensureFirebaseReady() {
   if (!db || !isFirebaseConfigured()) {
@@ -846,6 +855,181 @@ export class FirestoreRepository implements DataProvider {
       actorRole: actor.role,
       createdAt: new Date().toISOString(),
     };
+  }
+
+  // Student Document Management (9 Required Slots)
+  public async getStudentDocuments(studentId: string): Promise<StudentDocumentRecord[]> {
+    ensureFirebaseReady();
+    const docsColl = collection(db!, 'students', studentId, 'documents');
+    const snap = await getDocs(docsColl);
+    const records: StudentDocumentRecord[] = [];
+    snap.forEach(d => {
+      const data = d.data() as StudentDocumentRecord;
+      if (data && data.isPresent !== false) {
+        records.push(data);
+      }
+    });
+    return records;
+  }
+
+  public async uploadStudentDocument(
+    studentId: string,
+    documentType: StudentDocumentType,
+    file: File | Blob,
+    metadata: { originalFileName?: string; contentType?: string; fileSize?: number; notes?: string },
+    actor: StaffUser
+  ): Promise<StudentDocumentRecord> {
+    ensureFirebaseReady();
+    if (!storage) {
+      throw new Error(
+        'Firebase Cloud Storage is not initialized. Please verify VITE_FIREBASE_STORAGE_BUCKET and Firebase console setup.'
+      );
+    }
+
+    const fileId = `${documentType}_${Date.now()}_${Math.random().toString(36).substring(2, 7)}`;
+    const storagePath = `students/${studentId}/documents/${documentType}/${fileId}`;
+    const sRef = storageRef(storage, storagePath);
+
+    const originalFileName = metadata.originalFileName || (file as File).name || `${documentType}.pdf`;
+    const contentType = metadata.contentType || (file as File).type || 'application/octet-stream';
+    const fileSize = metadata.fileSize || (file as File).size || 0;
+
+    let downloadUrl = '';
+    try {
+      await uploadBytes(sRef, file, { contentType });
+      downloadUrl = await getDownloadURL(sRef);
+    } catch (err: unknown) {
+      const message = err instanceof Error ? err.message : String(err);
+      if (message.includes('bucket') || message.includes('404') || message.includes('project')) {
+        throw new Error(
+          'Firebase Cloud Storage bucket is not yet provisioned. The project requires the Blaze pay-as-you-go plan to activate Cloud Storage. Please follow the setup guide in docs/architecture/STUDENT_DOCUMENT_MANAGEMENT.md.'
+        );
+      }
+      throw err;
+    }
+
+    // Firestore Metadata doc
+    const docRef = doc(db!, 'students', studentId, 'documents', documentType);
+    const existingSnap = await getDoc(docRef);
+    const nowIso = new Date().toISOString();
+    const isReplace = existingSnap.exists() && existingSnap.data()?.isPresent !== false;
+    const version = existingSnap.exists() ? ((existingSnap.data().version || 1) + 1) : 1;
+    const oldStoragePath = existingSnap.exists() ? existingSnap.data().storagePath : null;
+
+    const record: StudentDocumentRecord = {
+      id: documentType,
+      documentType,
+      studentId,
+      storagePath,
+      originalFileName,
+      contentType,
+      fileSize,
+      uploadedAt: existingSnap.exists() ? (existingSnap.data().uploadedAt || nowIso) : nowIso,
+      uploadedBy: existingSnap.exists() ? (existingSnap.data().uploadedBy || actor.id) : actor.id,
+      uploadedByName: existingSnap.exists() ? (existingSnap.data().uploadedByName || (actor.displayName || actor.name)) : (actor.displayName || actor.name),
+      updatedAt: nowIso,
+      updatedBy: actor.id,
+      updatedByName: actor.displayName || actor.name,
+      version,
+      isPresent: true,
+      downloadUrl,
+    };
+
+    await setDoc(docRef, record);
+
+    // Clean up old storage blob if replacing
+    if (oldStoragePath && oldStoragePath !== storagePath) {
+      try {
+        const oldRef = storageRef(storage, oldStoragePath);
+        await deleteObject(oldRef);
+      } catch {
+        // Non-blocking cleanup
+      }
+    }
+
+    // Record audit event
+    try {
+      const auditRef = collection(db!, 'auditEvents');
+      await addDoc(auditRef, {
+        timestamp: nowIso,
+        actorId: actor.id,
+        actorName: actor.displayName || actor.name,
+        actorRole: actor.role,
+        action: isReplace ? 'document_replaced' : 'document_uploaded',
+        resource: 'student_documents',
+        targetId: `${studentId}/${documentType}`,
+        summary: `${isReplace ? 'Replaced' : 'Uploaded'} ${documentType} for student ${studentId} (${originalFileName})`,
+        details: {
+          documentType,
+          originalFileName,
+          fileSize,
+          version,
+          storagePath,
+        },
+        clientIp: '192.168.1.1',
+      });
+    } catch {
+      // Non-blocking audit recording
+    }
+
+    return record;
+  }
+
+  public async deleteStudentDocument(
+    studentId: string,
+    documentType: StudentDocumentType,
+    actor: StaffUser
+  ): Promise<void> {
+    ensureFirebaseReady();
+    const docRef = doc(db!, 'students', studentId, 'documents', documentType);
+    const snap = await getDoc(docRef);
+    if (!snap.exists()) return;
+
+    const data = snap.data() as StudentDocumentRecord;
+
+    // Delete storage object
+    if (storage && data.storagePath) {
+      try {
+        const sRef = storageRef(storage, data.storagePath);
+        await deleteObject(sRef);
+      } catch {
+        // Non-fatal if already deleted
+      }
+    }
+
+    // Delete Firestore document
+    await deleteDoc(docRef);
+
+    // Audit event
+    try {
+      const auditRef = collection(db!, 'auditEvents');
+      await addDoc(auditRef, {
+        timestamp: new Date().toISOString(),
+        actorId: actor.id,
+        actorName: actor.displayName || actor.name,
+        actorRole: actor.role,
+        action: 'document_deleted',
+        resource: 'student_documents',
+        targetId: `${studentId}/${documentType}`,
+        summary: `Deleted document ${documentType} for student ${studentId} (was ${data.originalFileName})`,
+        details: {
+          documentType,
+          originalFileName: data.originalFileName,
+          storagePath: data.storagePath,
+        },
+        clientIp: '192.168.1.1',
+      });
+    } catch {
+      // Non-blocking
+    }
+  }
+
+  public async getDocumentDownloadUrl(storagePath: string): Promise<string> {
+    if (!storage) {
+      throw new Error('Firebase Cloud Storage is not initialized.');
+    }
+    const sRef = storageRef(storage, storagePath);
+    return await getDownloadURL(sRef);
   }
 }
 

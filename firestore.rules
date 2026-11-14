@@ -58,6 +58,12 @@ service cloud.firestore {
       allow read: if isAuthenticated() && (isPrincipal() || isAdmin());
       allow create, update: if isAuthenticated() && isAdmin();
       allow delete: if false;
+
+      // Student Document Metadata (9 Required Slots)
+      match /documents/{documentType} {
+        allow read: if isAuthenticated() && (isPrincipal() || isAdmin());
+        allow create, update, delete: if isAuthenticated() && isAdmin();
+      }
     }
 
     // Attendance Sessions & Daily Registers:

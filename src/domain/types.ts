@@ -359,7 +359,10 @@ export type AuditAction =
   | 'marks_submitted'
   | 'incident_recorded'
   | 'followup_recorded'
-  | 'policy_updated';
+  | 'policy_updated'
+  | 'document_uploaded'
+  | 'document_replaced'
+  | 'document_deleted';
 
 export interface AuditEvent {
   id: string;
@@ -417,4 +420,58 @@ export interface AuditFilter {
   fromDate?: string;
   toDate?: string;
   limit?: number;
+}
+
+// ============================================================================
+// 12. Student Document Management (9 Required Slots)
+// ============================================================================
+
+export type StudentDocumentType =
+  | 'student_aadhaar_front'
+  | 'student_aadhaar_back'
+  | 'birth_certificate'
+  | 'transfer_certificate'
+  | 'student_photo'
+  | 'father_aadhaar_front'
+  | 'father_aadhaar_back'
+  | 'mother_aadhaar_front'
+  | 'mother_aadhaar_back';
+
+export type DocumentCategory = 'student' | 'father' | 'mother';
+
+export interface DocumentSlotDefinition {
+  type: StudentDocumentType;
+  title: string;
+  category: DocumentCategory;
+  categoryLabel: string;
+  required: boolean;
+  acceptedMimeTypes: string[];
+  maxSizeInBytes: number;
+  fileTypeDescription: string;
+}
+
+export interface StudentDocumentRecord {
+  id: string; // matches documentType, e.g. "student_aadhaar_front"
+  documentType: StudentDocumentType;
+  studentId: string;
+  storagePath: string; // "students/{studentId}/documents/{documentType}/{fileId}"
+  originalFileName: string;
+  contentType: string; // e.g. "image/jpeg", "application/pdf"
+  fileSize: number; // in bytes
+  uploadedAt: string; // ISO 8601 string
+  uploadedBy: string; // Staff ID, e.g. "staff-admin"
+  uploadedByName: string; // Staff Name, e.g. "Admin Office"
+  updatedAt: string;
+  updatedBy: string;
+  updatedByName?: string;
+  version: number;
+  isPresent: boolean;
+  downloadUrl?: string; // Ephemeral preview/download URL
+}
+
+export interface DocumentCompletenessSummary {
+  totalRequired: number; // 9
+  uploadedCount: number;
+  missingCount: number;
+  completionPercentage: number;
 }

@@ -35,6 +35,8 @@ import type {
   IncidentFilter,
   AuditEvent,
   AuditFilter,
+  StudentDocumentType,
+  StudentDocumentRecord,
 } from '../../domain/types';
 
 import {
@@ -105,6 +107,7 @@ interface DemoStore {
   auditEvents: AuditEvent[];
   followUps?: StudentFollowUpRecord[];
   userSavedRegisterIds?: string[];
+  studentDocuments?: Record<string, StudentDocumentRecord[]>;
 }
 
 function getInitialStore(): DemoStore {
@@ -130,6 +133,7 @@ function getInitialStore(): DemoStore {
     auditEvents: [...initialAuditEvents],
     followUps: [],
     userSavedRegisterIds: [],
+    studentDocuments: {},
   };
 }
 
@@ -1521,6 +1525,144 @@ class DemoRepository implements DataProvider {
     if (filter.resource) res = res.filter(a => a.resource === filter.resource);
     if (filter.limit) res = res.slice(0, filter.limit);
     return res;
+  }
+
+  // Student Document Management (9 Required Slots)
+  public async getStudentDocuments(studentId: string): Promise<StudentDocumentRecord[]> {
+    const store = this.loadStore();
+    const docs = store.studentDocuments?.[studentId] || [];
+    return docs.filter(d => d.isPresent !== false);
+  }
+
+  public async uploadStudentDocument(
+    studentId: string,
+    documentType: StudentDocumentType,
+    file: File | Blob,
+    metadata: { originalFileName?: string; contentType?: string; fileSize?: number; notes?: string },
+    actor: StaffUser
+  ): Promise<StudentDocumentRecord> {
+    const store = this.loadStore();
+    if (!store.studentDocuments) {
+      store.studentDocuments = {};
+    }
+    if (!store.studentDocuments[studentId]) {
+      store.studentDocuments[studentId] = [];
+    }
+
+    const student = store.students.find(s => s.id === studentId);
+    const existingIndex = store.studentDocuments[studentId].findIndex(d => d.documentType === documentType);
+    const existingDoc = existingIndex >= 0 ? store.studentDocuments[studentId][existingIndex] : null;
+    const isReplace = !!existingDoc && existingDoc.isPresent !== false;
+    const version = existingDoc ? existingDoc.version + 1 : 1;
+
+    const fileId = `${documentType}_${Date.now()}_${Math.random().toString(36).substring(2, 7)}`;
+    const storagePath = `students/${studentId}/documents/${documentType}/${fileId}`;
+    const originalFileName = metadata.originalFileName || (file as File).name || `${documentType}.pdf`;
+    const contentType = metadata.contentType || (file as File).type || 'application/pdf';
+    const fileSize = metadata.fileSize || (file as File).size || 0;
+
+    let downloadUrl: string | undefined;
+    if (typeof URL !== 'undefined' && typeof URL.createObjectURL === 'function') {
+      try {
+        downloadUrl = URL.createObjectURL(file);
+      } catch {
+        // Fallback for non-browser/mock test runners
+        downloadUrl = `blob:demo/${storagePath}`;
+      }
+    } else {
+      downloadUrl = `blob:demo/${storagePath}`;
+    }
+
+    const nowIso = new Date().toISOString();
+    const newRecord: StudentDocumentRecord = {
+      id: documentType,
+      documentType,
+      studentId,
+      storagePath,
+      originalFileName,
+      contentType,
+      fileSize,
+      uploadedAt: existingDoc ? existingDoc.uploadedAt : nowIso,
+      uploadedBy: existingDoc ? existingDoc.uploadedBy : actor.id,
+      uploadedByName: existingDoc ? existingDoc.uploadedByName : actor.name,
+      updatedAt: nowIso,
+      updatedBy: actor.id,
+      updatedByName: actor.name,
+      version,
+      isPresent: true,
+      downloadUrl,
+    };
+
+    if (existingIndex >= 0) {
+      store.studentDocuments[studentId][existingIndex] = newRecord;
+    } else {
+      store.studentDocuments[studentId].push(newRecord);
+    }
+
+    store.auditEvents.unshift({
+      id: `audit-${Date.now()}-${Math.random().toString(36).substring(2, 7)}`,
+      timestamp: nowIso,
+      actorId: actor.id,
+      actorName: actor.name,
+      actorRole: actor.role,
+      action: isReplace ? 'document_replaced' : 'document_uploaded',
+      resource: 'student_documents',
+      targetId: `${studentId}/${documentType}`,
+      summary: `${isReplace ? 'Replaced' : 'Uploaded'} ${documentType} for student ${student?.fullName || studentId} (${originalFileName})`,
+      details: {
+        documentType,
+        originalFileName,
+        fileSize,
+        version,
+        storagePath,
+      },
+      clientIp: '192.168.1.1',
+    });
+
+    this.saveStore(store);
+    return newRecord;
+  }
+
+  public async deleteStudentDocument(
+    studentId: string,
+    documentType: StudentDocumentType,
+    actor: StaffUser
+  ): Promise<void> {
+    const store = this.loadStore();
+    if (!store.studentDocuments || !store.studentDocuments[studentId]) return;
+
+    const student = store.students.find(s => s.id === studentId);
+    const existingIndex = store.studentDocuments[studentId].findIndex(d => d.documentType === documentType);
+    if (existingIndex < 0) return;
+
+    const existingDoc = store.studentDocuments[studentId][existingIndex];
+    // Remove or soft-delete
+    store.studentDocuments[studentId].splice(existingIndex, 1);
+
+    store.auditEvents.unshift({
+      id: `audit-${Date.now()}-${Math.random().toString(36).substring(2, 7)}`,
+      timestamp: new Date().toISOString(),
+      actorId: actor.id,
+      actorName: actor.name,
+      actorRole: actor.role,
+      action: 'document_deleted',
+      resource: 'student_documents',
+      targetId: `${studentId}/${documentType}`,
+      summary: `Deleted document ${documentType} for student ${student?.fullName || studentId} (was ${existingDoc.originalFileName})`,
+      details: {
+        documentType,
+        originalFileName: existingDoc.originalFileName,
+        storagePath: existingDoc.storagePath,
+      },
+      clientIp: '192.168.1.1',
+    });
+
+    this.saveStore(store);
+  }
+
+  public async getDocumentDownloadUrl(storagePath: string): Promise<string> {
+    // In demo mode, if an in-memory object URL exists, return it; otherwise return a mock URL
+    return `https://demo-storage.hanujai.local/${storagePath}`;
   }
 
   // Reset to original deterministic seed data

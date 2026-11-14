@@ -140,6 +140,33 @@ export const Permissions = {
     return Boolean(user && user.status === 'active' && user.role === 'developer');
   },
 
+  /**
+   * Student Documents Management:
+   * - Principal: Read-only access (canViewStudentDocuments, canDownloadStudentDocument)
+   * - Admin Office: Full access (upload, replace, delete, download, view)
+   */
+  canViewStudentDocuments(user: StaffUser | null): boolean {
+    if (!user || user.status !== 'active') return false;
+    return user.role === 'principal' || user.role === 'admin' || user.role === 'developer';
+  },
+
+  canDownloadStudentDocument(user: StaffUser | null): boolean {
+    if (!user || user.status !== 'active') return false;
+    return user.role === 'principal' || user.role === 'admin' || user.role === 'developer';
+  },
+
+  canUploadStudentDocument(user: StaffUser | null): boolean {
+    if (!user || user.status !== 'active') return false;
+    if (user.role === 'principal') return false;
+    return user.role === 'admin' || user.role === 'developer';
+  },
+
+  canDeleteStudentDocument(user: StaffUser | null): boolean {
+    if (!user || user.status !== 'active') return false;
+    if (user.role === 'principal') return false;
+    return user.role === 'admin' || user.role === 'developer';
+  },
+
   // Legacy stubs kept for interface compatibility with any existing tests
   canAccessSubjectMarks(user: StaffUser | null, _classId?: string, _subjectId?: string): boolean {
     return user?.role === 'principal' || user?.role === 'admin';

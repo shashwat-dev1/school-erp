@@ -25,6 +25,8 @@ import type {
   AuditEvent,
   AuditFilter,
   AttendanceState,
+  StudentDocumentType,
+  StudentDocumentRecord,
 } from '../domain/types';
 
 export interface AttendanceSubmissionInput {
@@ -188,6 +190,22 @@ export interface DataProvider {
 
   // Audit Ledger
   getAuditEvents(filter?: AuditFilter): Promise<AuditEvent[]>;
+
+  // Student Document Management (9 Required Slots)
+  getStudentDocuments(studentId: string): Promise<StudentDocumentRecord[]>;
+  uploadStudentDocument(
+    studentId: string,
+    documentType: StudentDocumentType,
+    file: File | Blob,
+    metadata: { originalFileName?: string; contentType?: string; fileSize?: number; notes?: string },
+    actor: StaffUser
+  ): Promise<StudentDocumentRecord>;
+  deleteStudentDocument(
+    studentId: string,
+    documentType: StudentDocumentType,
+    actor: StaffUser
+  ): Promise<void>;
+  getDocumentDownloadUrl(storagePath: string): Promise<string>;
 
   // Reset Demo Repository (Demo mode only)
   resetDemoData?(): Promise<void>;
