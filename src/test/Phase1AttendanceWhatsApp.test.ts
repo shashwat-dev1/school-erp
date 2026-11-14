@@ -173,4 +173,20 @@ describe('HanuJai ERP — Phase 1: Attendance & WhatsApp Notifications', () => {
     expect(retried.retryCount).toBe(1);
     expect(retried.deliveryStatus).toBe('sent');
   });
+
+  it('renders "Dear Parent" / "अभिभावक महोदय" when parentName is omitted or generic', () => {
+    const presentMsg = PHASE_CONFIG.whatsapp.templates.present('Aarav Sharma', '14 Nov 2026');
+    expect(presentMsg).toContain('Dear Parent,');
+    expect(presentMsg).toContain('अभिभावक महोदय,');
+    expect(presentMsg).not.toContain('Mr./Mrs. [Parent Name]');
+    expect(presentMsg).not.toContain('[अभिभावक का नाम]');
+
+    const absentMsg = PHASE_CONFIG.whatsapp.templates.absent('Diya Patel', '14 Nov 2026');
+    expect(absentMsg).toContain('Dear Parent,');
+    expect(absentMsg).toContain('अभिभावक महोदय,');
+
+    const customPresentMsg = PHASE_CONFIG.whatsapp.templates.present('Aarav Sharma', '14 Nov 2026', 'Ramesh Sharma');
+    expect(customPresentMsg).toContain('Mr./Mrs. Ramesh Sharma,');
+    expect(customPresentMsg).toContain('श्री/श्रीमती Ramesh Sharma,');
+  });
 });

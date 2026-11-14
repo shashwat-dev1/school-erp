@@ -30,8 +30,9 @@ export const RoleDashboardRouter: React.FC = () => {
     case 'principal':
       return <PrincipalDashboard />;
     case 'admin':
-    case 'developer':
       return <AdminDashboard />;
+    case 'developer':
+      return <Navigate to="/developer" replace />;
     case 'class_teacher':
     case 'subject_teacher':
       return (

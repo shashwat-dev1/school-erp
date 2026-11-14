@@ -27,8 +27,12 @@ import type {
   StudentDocumentRecord,
   StudentDocumentType,
   DocumentSlotDefinition,
+  ParentDocumentInvitation,
 } from '../../domain/types';
 import { Modal } from '../../components/ui/Modal';
+import {
+  ParentDocumentService,
+} from '../../services/documents/parentDocumentService';
 import {
   FileText,
   Upload,
@@ -42,6 +46,11 @@ import {
   ShieldCheck,
   ExternalLink,
   Loader2,
+  Phone,
+  Send,
+  Copy,
+  Check,
+  X,
 } from 'lucide-react';
 
 interface StudentDocumentsTabProps {
@@ -76,6 +85,22 @@ export const StudentDocumentsTab: React.FC<StudentDocumentsTabProps> = ({
   const [deleteTarget, setDeleteTarget] = useState<StudentDocumentRecord | null>(null);
   const [isDeleting, setIsDeleting] = useState<boolean>(false);
 
+  // Parent Document Request State
+  const [isRequestModalOpen, setIsRequestModalOpen] = useState<boolean>(false);
+  const [selectedRequestSlots, setSelectedRequestSlots] = useState<StudentDocumentType[]>([]);
+  const [isGeneratingInvitation, setIsGeneratingInvitation] = useState<boolean>(false);
+  const [generatedInvitationUrl, setGeneratedInvitationUrl] = useState<string | null>(null);
+  const [isSendingWhatsApp, setIsSendingWhatsApp] = useState<boolean>(false);
+  const [whatsAppSuccessMessage, setWhatsAppSuccessMessage] = useState<string | null>(null);
+  const [invitations, setInvitations] = useState<ParentDocumentInvitation[]>([]);
+  const [isLoadingInvitations, setIsLoadingInvitations] = useState<boolean>(false);
+  const [copiedLink, setCopiedLink] = useState<boolean>(false);
+
+  // Document Review / Reject modal state
+  const [rejectSlot, setRejectSlot] = useState<StudentDocumentType | null>(null);
+  const [rejectionReason, setRejectionReason] = useState<string>('');
+  const [isReviewing, setIsReviewing] = useState<boolean>(false);
+
   const canUpload = Permissions.canUploadStudentDocument(currentUser);
   const canDelete = Permissions.canDeleteStudentDocument(currentUser);
 
@@ -103,6 +128,110 @@ export const StudentDocumentsTab: React.FC<StudentDocumentsTabProps> = ({
       docsByType.set(d.documentType, d);
     }
   });
+
+  const loadInvitations = async () => {
+    setIsLoadingInvitations(true);
+    try {
+      const items = await ParentDocumentService.getInvitationsForStudent(student.id);
+      setInvitations(items);
+    } catch {
+      // Ignored
+    } finally {
+      setIsLoadingInvitations(false);
+    }
+  };
+
+  const handleOpenRequestModal = () => {
+    const missing: StudentDocumentType[] = [];
+    Object.values(DOCUMENT_SLOT_DEFINITIONS).forEach(def => {
+      if (!docsByType.has(def.type)) {
+        missing.push(def.type);
+      }
+    });
+    setSelectedRequestSlots(missing.length > 0 ? missing : Object.values(DOCUMENT_SLOT_DEFINITIONS).map(d => d.type));
+    setGeneratedInvitationUrl(null);
+    setWhatsAppSuccessMessage(null);
+    setCopiedLink(false);
+    loadInvitations();
+    setIsRequestModalOpen(true);
+  };
+
+  const handleGenerateInvitation = async () => {
+    if (!currentUser || selectedRequestSlots.length === 0) return;
+    setIsGeneratingInvitation(true);
+    setWhatsAppSuccessMessage(null);
+    try {
+      const res = await ParentDocumentService.createInvitation(
+        student,
+        selectedRequestSlots,
+        currentUser
+      );
+      setGeneratedInvitationUrl(res.uploadUrl);
+      loadInvitations();
+    } catch (err) {
+      alert(err instanceof Error ? err.message : 'Failed to generate invitation link.');
+    } finally {
+      setIsGeneratingInvitation(false);
+    }
+  };
+
+  const handleSendWhatsApp = async () => {
+    if (!currentUser || selectedRequestSlots.length === 0) return;
+    setIsSendingWhatsApp(true);
+    setWhatsAppSuccessMessage(null);
+    try {
+      let url = generatedInvitationUrl;
+      let inv: ParentDocumentInvitation;
+      if (!url) {
+        const created = await ParentDocumentService.createInvitation(
+          student,
+          selectedRequestSlots,
+          currentUser
+        );
+        url = created.uploadUrl;
+        inv = created.invitation;
+        setGeneratedInvitationUrl(url);
+      } else {
+        const list = await ParentDocumentService.getInvitationsForStudent(student.id);
+        inv = list[0];
+      }
+
+      const sendRes = await ParentDocumentService.sendInvitationWhatsApp(inv, url);
+      if (sendRes.success) {
+        setWhatsAppSuccessMessage(`✓ Document request dispatched to ${student.guardianName} (${student.primaryPhone})`);
+        loadInvitations();
+      }
+    } catch (err) {
+      alert(err instanceof Error ? err.message : 'Failed to dispatch WhatsApp message.');
+    } finally {
+      setIsSendingWhatsApp(false);
+    }
+  };
+
+  const handleRevokeInvitation = async (tokenHash: string) => {
+    if (!currentUser) return;
+    try {
+      await ParentDocumentService.revokeInvitation(tokenHash, currentUser);
+      loadInvitations();
+    } catch (err) {
+      alert(err instanceof Error ? err.message : 'Failed to revoke link.');
+    }
+  };
+
+  const handleReviewDocument = async (slotType: StudentDocumentType, action: 'accept' | 'reject', reason?: string) => {
+    if (!currentUser) return;
+    setIsReviewing(true);
+    try {
+      await provider.reviewStudentDocument(student.id, slotType, action, currentUser, reason);
+      await loadDocuments();
+      setRejectSlot(null);
+      setRejectionReason('');
+    } catch (err) {
+      alert(err instanceof Error ? err.message : 'Failed to submit document review.');
+    } finally {
+      setIsReviewing(false);
+    }
+  };
 
   const handleOpenUpload = (slot: DocumentSlotDefinition) => {
     setTargetSlot(slot);
@@ -321,7 +450,20 @@ export const StudentDocumentsTab: React.FC<StudentDocumentsTabProps> = ({
             </p>
           </div>
 
-          <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '12px', flexWrap: 'wrap' }}>
+            {canUpload && (
+              <button
+                type="button"
+                onClick={handleOpenRequestModal}
+                className="hhs-btn hhs-btn-primary"
+                style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '13px', padding: '6px 14px' }}
+                title="Send document upload invitation via WhatsApp to parent"
+              >
+                <Phone size={15} />
+                <span>Request Documents from Parent</span>
+              </button>
+            )}
+
             {completeness.uploadedCount === 9 ? (
               <span
                 style={{
@@ -480,19 +622,49 @@ export const StudentDocumentsTab: React.FC<StudentDocumentsTabProps> = ({
                       </div>
 
                       {isUploaded && docRecord ? (
-                        <span
-                          style={{
-                            fontSize: '11px',
-                            fontWeight: 600,
-                            color: '#15803D',
-                            backgroundColor: '#DCFCE7',
-                            padding: '3px 8px',
-                            borderRadius: '12px',
-                            whiteSpace: 'nowrap',
-                          }}
-                        >
-                          Uploaded v{docRecord.version}
-                        </span>
+                        docRecord.reviewStatus === 'pending' ? (
+                          <span
+                            style={{
+                              fontSize: '11px',
+                              fontWeight: 600,
+                              color: '#92400E',
+                              backgroundColor: '#FEF3C7',
+                              padding: '3px 8px',
+                              borderRadius: '12px',
+                              whiteSpace: 'nowrap',
+                            }}
+                          >
+                            Under Review
+                          </span>
+                        ) : docRecord.reviewStatus === 'rejected' ? (
+                          <span
+                            style={{
+                              fontSize: '11px',
+                              fontWeight: 600,
+                              color: '#991B1B',
+                              backgroundColor: '#FEE2E2',
+                              padding: '3px 8px',
+                              borderRadius: '12px',
+                              whiteSpace: 'nowrap',
+                            }}
+                          >
+                            Rejected
+                          </span>
+                        ) : (
+                          <span
+                            style={{
+                              fontSize: '11px',
+                              fontWeight: 600,
+                              color: '#15803D',
+                              backgroundColor: '#DCFCE7',
+                              padding: '3px 8px',
+                              borderRadius: '12px',
+                              whiteSpace: 'nowrap',
+                            }}
+                          >
+                            Verified v{docRecord.version}
+                          </span>
+                        )
                       ) : (
                         <span
                           style={{
@@ -516,13 +688,14 @@ export const StudentDocumentsTab: React.FC<StudentDocumentsTabProps> = ({
                         style={{
                           margin: '10px 0',
                           padding: '8px 10px',
-                          backgroundColor: '#F8FAFC',
+                          backgroundColor: docRecord.reviewStatus === 'pending' ? '#FEFCE8' : docRecord.reviewStatus === 'rejected' ? '#FEF2F2' : '#F8FAFC',
                           borderRadius: '6px',
                           fontSize: '12px',
                           color: '#334155',
                           display: 'flex',
                           flexDirection: 'column',
                           gap: '3px',
+                          border: docRecord.reviewStatus === 'pending' ? '1px solid #FEF08A' : docRecord.reviewStatus === 'rejected' ? '1px solid #FECACA' : 'none',
                         }}
                       >
                         <div style={{ fontWeight: 500, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
@@ -534,6 +707,11 @@ export const StudentDocumentsTab: React.FC<StudentDocumentsTabProps> = ({
                         {docRecord.uploadedByName && (
                           <div style={{ fontSize: '11px', color: '#64748B' }}>
                             By: {docRecord.uploadedByName}
+                          </div>
+                        )}
+                        {docRecord.rejectionReason && (
+                          <div style={{ fontSize: '11px', color: '#DC2626', fontWeight: 600, marginTop: '2px' }}>
+                            ⚠ Rejection Reason: {docRecord.rejectionReason}
                           </div>
                         )}
                       </div>
@@ -577,6 +755,36 @@ export const StudentDocumentsTab: React.FC<StudentDocumentsTabProps> = ({
                             <span>Download</span>
                           </button>
                         </div>
+
+                        {docRecord.reviewStatus === 'pending' && canUpload && (
+                          <div style={{ display: 'flex', gap: '6px' }}>
+                            <button
+                              type="button"
+                              disabled={isReviewing}
+                              onClick={() => handleReviewDocument(docRecord.documentType, 'accept')}
+                              className="hhs-btn hhs-btn-primary"
+                              style={{ padding: '6px 10px', fontSize: '12px', backgroundColor: '#16A34A', borderColor: '#16A34A', display: 'flex', alignItems: 'center', gap: '4px' }}
+                              title="Approve and accept document"
+                            >
+                              <Check size={13} />
+                              <span>Accept</span>
+                            </button>
+                            <button
+                              type="button"
+                              disabled={isReviewing}
+                              onClick={() => {
+                                setRejectSlot(docRecord.documentType);
+                                setRejectionReason('');
+                              }}
+                              className="hhs-btn hhs-btn-secondary"
+                              style={{ padding: '6px 10px', fontSize: '12px', color: '#DC2626', borderColor: '#FECACA', display: 'flex', alignItems: 'center', gap: '4px' }}
+                              title="Reject document with reason"
+                            >
+                              <X size={13} />
+                              <span>Reject</span>
+                            </button>
+                          </div>
+                        )}
 
                         {canUpload && (
                           <div style={{ display: 'flex', gap: '6px' }}>
@@ -903,6 +1111,352 @@ export const StudentDocumentsTab: React.FC<StudentDocumentsTabProps> = ({
               File: {deleteTarget.originalFileName} ({formatFileSize(deleteTarget.fileSize)})
               <br />
               This will remove the file from secure cloud storage and clear the slot in the student dossier. An entry will be logged in the system audit trail.
+            </div>
+          </div>
+        </Modal>
+      )}
+
+      {/* Reject Reason Modal */}
+      {rejectSlot && (
+        <Modal
+          isOpen={Boolean(rejectSlot)}
+          onClose={() => !isReviewing && setRejectSlot(null)}
+          title={`Reject Document: ${DOCUMENT_SLOT_DEFINITIONS[rejectSlot]?.title || rejectSlot}`}
+          maxWidth="460px"
+          footer={
+            <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '8px' }}>
+              <button
+                type="button"
+                className="hhs-btn hhs-btn-secondary"
+                onClick={() => setRejectSlot(null)}
+                disabled={isReviewing}
+              >
+                Cancel
+              </button>
+              <button
+                type="button"
+                className="hhs-btn hhs-btn-primary"
+                disabled={isReviewing || !rejectionReason.trim()}
+                onClick={() => handleReviewDocument(rejectSlot, 'reject', rejectionReason.trim())}
+                style={{ backgroundColor: '#DC2626', borderColor: '#DC2626' }}
+              >
+                {isReviewing ? 'Saving...' : 'Confirm Rejection'}
+              </button>
+            </div>
+          }
+        >
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
+            <p style={{ margin: 0, fontSize: '13px', color: '#475569', lineHeight: 1.5 }}>
+              Please specify why this document is being rejected. This explanation will be recorded in the student dossier and communicated to the parent for re-submission.
+            </p>
+            <div>
+              <label style={{ display: 'block', fontSize: '12px', fontWeight: 600, color: '#0F172A', marginBottom: '6px' }}>
+                Rejection Reason *
+              </label>
+              <textarea
+                className="hhs-input"
+                rows={3}
+                placeholder="e.g. Scanned image is blurred and unreadable. Please upload a clear photo or PDF."
+                value={rejectionReason}
+                onChange={e => setRejectionReason(e.target.value)}
+                style={{ width: '100%', resize: 'vertical' }}
+                autoFocus
+              />
+            </div>
+          </div>
+        </Modal>
+      )}
+
+      {/* Request Documents from Parent Modal */}
+      {isRequestModalOpen && (
+        <Modal
+          isOpen={isRequestModalOpen}
+          onClose={() => setIsRequestModalOpen(false)}
+          title="Request Documents from Parent"
+          subtitle={`${student.fullName} (${student.classLabel}) • Registered Mobile: ${student.primaryPhone || 'No phone'}`}
+          maxWidth="640px"
+          footer={
+            <div style={{ display: 'flex', justifyContent: 'space-between', width: '100%', alignItems: 'center' }}>
+              <button
+                type="button"
+                className="hhs-btn hhs-btn-secondary"
+                onClick={() => setIsRequestModalOpen(false)}
+              >
+                Close
+              </button>
+              <div style={{ display: 'flex', gap: '8px' }}>
+                <button
+                  type="button"
+                  disabled={isGeneratingInvitation || selectedRequestSlots.length === 0}
+                  onClick={handleGenerateInvitation}
+                  className="hhs-btn hhs-btn-secondary"
+                  style={{ display: 'flex', alignItems: 'center', gap: '6px' }}
+                >
+                  <Copy size={14} />
+                  <span>{isGeneratingInvitation ? 'Generating...' : 'Generate Link'}</span>
+                </button>
+                <button
+                  type="button"
+                  disabled={isSendingWhatsApp || selectedRequestSlots.length === 0 || !student.primaryPhone}
+                  onClick={handleSendWhatsApp}
+                  className="hhs-btn hhs-btn-primary"
+                  style={{ display: 'flex', alignItems: 'center', gap: '6px', backgroundColor: '#16A34A', borderColor: '#16A34A' }}
+                >
+                  <Send size={14} />
+                  <span>{isSendingWhatsApp ? 'Sending WhatsApp...' : 'Send via WhatsApp'}</span>
+                </button>
+              </div>
+            </div>
+          }
+        >
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
+            {/* Guardian & Phone Callout */}
+            <div
+              style={{
+                backgroundColor: '#F8FAFC',
+                border: '1px solid #E2E8F0',
+                borderRadius: '10px',
+                padding: '12px 14px',
+                display: 'flex',
+                justifyContent: 'space-between',
+                alignItems: 'center',
+              }}
+            >
+              <div>
+                <div style={{ fontSize: '11px', color: '#64748B', fontWeight: 600 }}>RECIPIENT GUARDIAN</div>
+                <div style={{ fontWeight: 600, fontSize: '14px', color: '#0F172A' }}>
+                  {student.guardianName} ({student.guardianRelation})
+                </div>
+              </div>
+              <div style={{ textAlign: 'right' }}>
+                <div style={{ fontSize: '11px', color: '#64748B', fontWeight: 600 }}>WHATSAPP NUMBER</div>
+                <div style={{ fontWeight: 700, fontSize: '14px', color: '#16A34A' }}>
+                  {student.primaryPhone || 'Not recorded'}
+                </div>
+              </div>
+            </div>
+
+            {/* Select Required Slots */}
+            <div>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
+                <label style={{ fontSize: '13px', fontWeight: 600, color: '#0F172A' }}>
+                  Select Document Slots to Request ({selectedRequestSlots.length} selected):
+                </label>
+                <div style={{ display: 'flex', gap: '8px', fontSize: '11px' }}>
+                  <button
+                    type="button"
+                    onClick={() => setSelectedRequestSlots(Object.values(DOCUMENT_SLOT_DEFINITIONS).map(d => d.type))}
+                    style={{ background: 'none', border: 'none', color: 'var(--hhs-primary)', cursor: 'pointer', padding: 0 }}
+                  >
+                    Select All 9
+                  </button>
+                  <span style={{ color: '#CBD5E1' }}>|</span>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      const missing: StudentDocumentType[] = [];
+                      Object.values(DOCUMENT_SLOT_DEFINITIONS).forEach(def => {
+                        if (!docsByType.has(def.type)) missing.push(def.type);
+                      });
+                      setSelectedRequestSlots(missing);
+                    }}
+                    style={{ background: 'none', border: 'none', color: 'var(--hhs-primary)', cursor: 'pointer', padding: 0 }}
+                  >
+                    Missing Only
+                  </button>
+                </div>
+              </div>
+
+              <div
+                style={{
+                  display: 'grid',
+                  gridTemplateColumns: 'repeat(auto-fit, minmax(260px, 1fr))',
+                  gap: '8px',
+                  maxHeight: '200px',
+                  overflowY: 'auto',
+                  border: '1px solid #E2E8F0',
+                  borderRadius: '8px',
+                  padding: '10px',
+                }}
+              >
+                {Object.values(DOCUMENT_SLOT_DEFINITIONS).map(slot => {
+                  const isChecked = selectedRequestSlots.includes(slot.type);
+                  const isAlreadyPresent = docsByType.has(slot.type);
+
+                  return (
+                    <label
+                      key={slot.type}
+                      style={{
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: '8px',
+                        padding: '6px 8px',
+                        borderRadius: '6px',
+                        cursor: 'pointer',
+                        backgroundColor: isChecked ? '#EFF6FF' : 'transparent',
+                        fontSize: '12px',
+                      }}
+                    >
+                      <input
+                        type="checkbox"
+                        checked={isChecked}
+                        onChange={e => {
+                          if (e.target.checked) {
+                            setSelectedRequestSlots(prev => [...prev, slot.type]);
+                          } else {
+                            setSelectedRequestSlots(prev => prev.filter(t => t !== slot.type));
+                          }
+                        }}
+                      />
+                      <span style={{ fontWeight: isChecked ? 600 : 400, color: '#0F172A', flex: 1 }}>
+                        {slot.title}
+                      </span>
+                      {isAlreadyPresent && (
+                        <span style={{ fontSize: '10px', color: '#16A34A', fontWeight: 600 }}>
+                          ✓ On file
+                        </span>
+                      )}
+                    </label>
+                  );
+                })}
+              </div>
+            </div>
+
+            {/* Generated Link Display */}
+            {generatedInvitationUrl && (
+              <div
+                style={{
+                  backgroundColor: '#F0FDF4',
+                  border: '1px solid #BBF7D0',
+                  borderRadius: '10px',
+                  padding: '12px 14px',
+                }}
+              >
+                <div style={{ fontSize: '11px', color: '#166534', fontWeight: 600, marginBottom: '6px' }}>
+                  ACTIVE SECURE UPLOAD LINK (SINGLE-STUDENT ENCRYPTED)
+                </div>
+                <div style={{ display: 'flex', gap: '8px' }}>
+                  <input
+                    type="text"
+                    readOnly
+                    value={generatedInvitationUrl}
+                    className="hhs-input"
+                    style={{ fontSize: '12px', flex: 1, backgroundColor: '#FFFFFF' }}
+                  />
+                  <button
+                    type="button"
+                    onClick={() => {
+                      navigator.clipboard.writeText(generatedInvitationUrl);
+                      setCopiedLink(true);
+                      setTimeout(() => setCopiedLink(false), 2000);
+                    }}
+                    className="hhs-btn hhs-btn-secondary"
+                    style={{ padding: '6px 12px', fontSize: '12px', display: 'flex', alignItems: 'center', gap: '4px' }}
+                  >
+                    {copiedLink ? <Check size={14} color="#16A34A" /> : <Copy size={14} />}
+                    <span>{copiedLink ? 'Copied!' : 'Copy'}</span>
+                  </button>
+                </div>
+              </div>
+            )}
+
+            {whatsAppSuccessMessage && (
+              <div
+                style={{
+                  backgroundColor: '#DCFCE7',
+                  border: '1px solid #86EFAC',
+                  borderRadius: '8px',
+                  padding: '10px 12px',
+                  fontSize: '12px',
+                  color: '#15803D',
+                  fontWeight: 600,
+                }}
+              >
+                {whatsAppSuccessMessage}
+              </div>
+            )}
+
+            {/* Past Invitations History */}
+            <div>
+              <h5 style={{ margin: '0 0 8px 0', fontSize: '12px', fontWeight: 600, color: '#334155' }}>
+                Invitation History for this Student:
+              </h5>
+              {isLoadingInvitations ? (
+                <div style={{ fontSize: '12px', color: '#64748B' }}>Loading invitations...</div>
+              ) : invitations.length === 0 ? (
+                <div style={{ fontSize: '12px', color: '#94A3B8', fontStyle: 'italic' }}>
+                  No previous invitations recorded for {student.fullName}.
+                </div>
+              ) : (
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '6px', maxHeight: '140px', overflowY: 'auto' }}>
+                  {invitations.map(inv => (
+                    <div
+                      key={inv.id}
+                      style={{
+                        padding: '8px 10px',
+                        border: '1px solid #E2E8F0',
+                        borderRadius: '6px',
+                        display: 'flex',
+                        justifyContent: 'space-between',
+                        alignItems: 'center',
+                        fontSize: '11px',
+                        backgroundColor: '#F8FAFC',
+                      }}
+                    >
+                      <div>
+                        <div style={{ fontWeight: 600, color: '#0F172A' }}>
+                          {inv.requestedSlots.length} slots requested • Sent {new Date(inv.createdAt).toLocaleDateString('en-IN')}
+                        </div>
+                        <div style={{ color: '#64748B' }}>
+                          By: {inv.createdByName} • Expires: {new Date(inv.expiresAt).toLocaleDateString('en-IN')}
+                        </div>
+                      </div>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                        <span
+                          style={{
+                            fontSize: '10px',
+                            fontWeight: 700,
+                            padding: '2px 6px',
+                            borderRadius: '4px',
+                            backgroundColor:
+                              inv.status === 'active'
+                                ? '#DCFCE7'
+                                : inv.status === 'revoked'
+                                ? '#FEE2E2'
+                                : '#F1F5F9',
+                            color:
+                              inv.status === 'active'
+                                ? '#166534'
+                                : inv.status === 'revoked'
+                                ? '#991B1B'
+                                : '#475569',
+                          }}
+                        >
+                          {inv.status.toUpperCase()}
+                        </span>
+                        {inv.status === 'active' && (
+                          <button
+                            type="button"
+                            onClick={() => handleRevokeInvitation(inv.tokenHash)}
+                            style={{
+                              background: 'none',
+                              border: 'none',
+                              color: '#DC2626',
+                              cursor: 'pointer',
+                              padding: '2px',
+                              fontSize: '10px',
+                              fontWeight: 600,
+                            }}
+                            title="Revoke Link"
+                          >
+                            Revoke
+                          </button>
+                        )}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
             </div>
           </div>
         </Modal>

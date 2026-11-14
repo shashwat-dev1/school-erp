@@ -39,11 +39,20 @@ import { AuditLogDirectory } from './pages/audit/AuditLogDirectory';
 import { AccessDenied } from './pages/error/AccessDenied';
 import { NotFound } from './pages/error/NotFound';
 
+// Developer Console
+import { DeveloperConsole } from './pages/developer/DeveloperConsole';
+
+// Public Parent Document Upload Portal
+import { ParentDocumentUpload } from './pages/parent/ParentDocumentUpload';
+
 export const App: React.FC = () => {
   return (
     <Routes>
       {/* Public Authentication */}
       <Route path="/login" element={<StaffLogin />} />
+
+      {/* Public Parent Document Upload Portal (Direct Token & OTP Protected) */}
+      <Route path="/parent-upload" element={<ParentDocumentUpload />} />
 
       {/* Authenticated Institutional Shell */}
       <Route
@@ -143,7 +152,7 @@ export const App: React.FC = () => {
         <Route
           path="staff"
           element={
-            <RoleGuard allowedRoles={['principal']}>
+            <RoleGuard allowedRoles={['principal', 'developer']}>
               <StaffDirectory />
             </RoleGuard>
           }
@@ -151,7 +160,7 @@ export const App: React.FC = () => {
         <Route
           path="admin/staff"
           element={
-            <RoleGuard allowedRoles={['principal']}>
+            <RoleGuard allowedRoles={['principal', 'developer']}>
               <StaffDirectory />
             </RoleGuard>
           }
@@ -213,11 +222,29 @@ export const App: React.FC = () => {
           }
         />
 
-        {/* Security Audit Log (Principal Only) */}
+        {/* Developer Console (Developer Only) */}
+        <Route
+          path="developer"
+          element={
+            <RoleGuard allowedRoles={['developer']}>
+              <DeveloperConsole />
+            </RoleGuard>
+          }
+        />
+        <Route
+          path="developer/*"
+          element={
+            <RoleGuard allowedRoles={['developer']}>
+              <DeveloperConsole />
+            </RoleGuard>
+          }
+        />
+
+        {/* Security Audit Log (Principal & Developer) */}
         <Route
           path="audit-log"
           element={
-            <RoleGuard allowedRoles={['principal']}>
+            <RoleGuard allowedRoles={['principal', 'developer']}>
               <AuditLogDirectory />
             </RoleGuard>
           }
@@ -225,7 +252,7 @@ export const App: React.FC = () => {
         <Route
           path="admin/audit-log"
           element={
-            <RoleGuard allowedRoles={['principal']}>
+            <RoleGuard allowedRoles={['principal', 'developer']}>
               <AuditLogDirectory />
             </RoleGuard>
           }

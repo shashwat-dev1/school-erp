@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import { useData } from '../../context/DataContext';
@@ -12,13 +12,18 @@ import { LoadingState } from '../../components/feedback/LoadingState';
 import { ErrorBanner } from '../../components/feedback/ErrorBanner';
 import type { StudentRecord, ClassSection } from '../../domain/types';
 import type { NewStudentInput } from '../../data/provider';
+import { Permissions } from '../../domain/permissions';
+import { StudentImportModal } from '../../features/students/StudentImportModal';
+import { BulkRequestDocumentsModal } from '../../features/students/BulkRequestDocumentsModal';
 import { downloadCsv } from '../../utils/exportUtils';
 import {
   Users,
   Search,
   FileSpreadsheet,
+  UploadCloud,
   Phone,
   Home,
+  MessageSquare,
 } from 'lucide-react';
 
 export const StudentDirectory: React.FC = () => {
@@ -30,6 +35,13 @@ export const StudentDirectory: React.FC = () => {
   const [classes, setClasses] = useState<ClassSection[]>([]);
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
+
+  // Import Modal
+  const [isImportModalOpen, setIsImportModalOpen] = useState<boolean>(false);
+
+  // Multi-Student Selection for Bulk Operations
+  const [selectedStudentIds, setSelectedStudentIds] = useState<Set<string>>(new Set());
+  const [isBulkRequestModalOpen, setIsBulkRequestModalOpen] = useState<boolean>(false);
 
   // Filters
   const [searchQuery, setSearchQuery] = useState<string>('');
@@ -57,36 +69,30 @@ export const StudentDirectory: React.FC = () => {
   });
   const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
 
-  useEffect(() => {
-    let isMounted = true;
-    async function loadData() {
-      setIsLoading(true);
-      setError(null);
-      try {
-        setSelectedClass('all');
+  const loadData = useCallback(async () => {
+    setIsLoading(true);
+    setError(null);
+    try {
+      setSelectedClass('all');
 
-        const [studentRes, classRes] = await Promise.all([
-          provider.getStudents({ limit: 1000 }),
-          provider.getClasses(),
-        ]);
-        if (!isMounted) return;
+      const [studentRes, classRes] = await Promise.all([
+        provider.getStudents({ limit: 1000 }),
+        provider.getClasses(),
+      ]);
 
-        setStudents(studentRes.items);
-        setClasses(classRes);
-      } catch (err: unknown) {
-        if (!isMounted) return;
-        const msg = err instanceof Error ? err.message : 'Failed to retrieve students.';
-        setError(msg);
-      } finally {
-        if (isMounted) setIsLoading(false);
-      }
+      setStudents(studentRes.items);
+      setClasses(classRes);
+    } catch (err: unknown) {
+      const msg = err instanceof Error ? err.message : 'Failed to retrieve students.';
+      setError(msg);
+    } finally {
+      setIsLoading(false);
     }
+  }, [provider]);
 
+  useEffect(() => {
     loadData();
-    return () => {
-      isMounted = false;
-    };
-  }, [provider, currentUser]);
+  }, [loadData, currentUser]);
 
   const handleExportCSV = () => {
     const headers = [
@@ -171,7 +177,59 @@ export const StudentDirectory: React.FC = () => {
     }
   };
 
-  const columns: Column<StudentRecord>[] = [
+  const handleToggleSelectStudent = (id: string) => {
+    setSelectedStudentIds(prev => {
+      const next = new Set(prev);
+      if (next.has(id)) {
+        next.delete(id);
+      } else {
+        next.add(id);
+      }
+      return next;
+    });
+  };
+
+  const handleToggleSelectAll = () => {
+    const isAllSelected = filteredStudents.length > 0 && filteredStudents.every(s => selectedStudentIds.has(s.id));
+    if (isAllSelected) {
+      setSelectedStudentIds(new Set());
+    } else {
+      setSelectedStudentIds(new Set(filteredStudents.map(s => s.id)));
+    }
+  };
+
+  const handleClearSelection = () => {
+    setSelectedStudentIds(new Set());
+  };
+
+  const columns: Column<StudentRecord>[] = useMemo(() => [
+    {
+      key: 'select',
+      header: (
+        <div style={{ display: 'flex', justifyContent: 'center' }}>
+          <input
+            type="checkbox"
+            checked={filteredStudents.length > 0 && filteredStudents.every(s => selectedStudentIds.has(s.id))}
+            onChange={handleToggleSelectAll}
+            aria-label="Select all students in current view"
+            style={{ cursor: 'pointer' }}
+          />
+        </div>
+      ),
+      width: '45px',
+      align: 'center',
+      render: s => (
+        <div onClick={e => e.stopPropagation()} style={{ display: 'flex', justifyContent: 'center' }}>
+          <input
+            type="checkbox"
+            checked={selectedStudentIds.has(s.id)}
+            onChange={() => handleToggleSelectStudent(s.id)}
+            aria-label={`Select ${s.fullName}`}
+            style={{ cursor: 'pointer' }}
+          />
+        </div>
+      ),
+    },
     {
       key: 'rollNumber',
       header: 'Roll No.',
@@ -303,7 +361,7 @@ export const StudentDirectory: React.FC = () => {
         </div>
       ),
     },
-  ];
+  ], [filteredStudents, selectedStudentIds, navigate]);
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
@@ -323,6 +381,17 @@ export const StudentDirectory: React.FC = () => {
               <FileSpreadsheet size={15} />
               <span>Export CSV</span>
             </button>
+            {Permissions.canImportStudents(currentUser) && (
+              <button
+                onClick={() => setIsImportModalOpen(true)}
+                className="hhs-btn hhs-btn-primary"
+                style={{ display: 'flex', alignItems: 'center', gap: '6px' }}
+                title="Import student records from Excel spreadsheet"
+              >
+                <UploadCloud size={15} />
+                <span>Import Data</span>
+              </button>
+            )}
           </div>
         }
       />
@@ -415,6 +484,84 @@ export const StudentDirectory: React.FC = () => {
           emptyMessage="No students match the current filters or search term."
           onRowClick={student => navigate(`/students/${student.id}`)}
         />
+      )}
+
+      {/* Sticky Bulk Action Bar for Selected Students */}
+      {selectedStudentIds.size > 0 && (
+        <div
+          style={{
+            position: 'fixed',
+            bottom: '24px',
+            left: '50%',
+            transform: 'translateX(-50%)',
+            zIndex: 1000,
+            backgroundColor: '#0F172A',
+            color: '#FFFFFF',
+            padding: '10px 18px',
+            borderRadius: '12px',
+            boxShadow: '0 10px 25px -5px rgba(0, 0, 0, 0.4), 0 8px 10px -6px rgba(0, 0, 0, 0.3)',
+            display: 'flex',
+            alignItems: 'center',
+            gap: '16px',
+            border: '1px solid #334155',
+          }}
+        >
+          <div style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '0.86rem' }}>
+            <span
+              style={{
+                backgroundColor: 'var(--hhs-primary)',
+                color: '#FFFFFF',
+                fontWeight: 700,
+                padding: '2px 8px',
+                borderRadius: '6px',
+                fontSize: '0.78rem',
+              }}
+            >
+              {selectedStudentIds.size}
+            </span>
+            <span style={{ fontWeight: 500 }}>
+              student{selectedStudentIds.size !== 1 ? 's' : ''} selected
+            </span>
+          </div>
+
+          <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+            {Permissions.canUploadStudentDocument(currentUser) && (
+              <button
+                type="button"
+                onClick={() => setIsBulkRequestModalOpen(true)}
+                className="hhs-btn hhs-btn-primary"
+                style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '6px',
+                  backgroundColor: '#16A34A',
+                  borderColor: '#15803D',
+                  fontSize: '0.8rem',
+                  padding: '6px 12px',
+                }}
+                title="Send WhatsApp document request links to parents of selected students"
+              >
+                <MessageSquare size={14} />
+                <span>Request Pending Documents</span>
+              </button>
+            )}
+
+            <button
+              type="button"
+              onClick={handleClearSelection}
+              className="hhs-btn hhs-btn-secondary"
+              style={{
+                fontSize: '0.8rem',
+                padding: '6px 12px',
+                color: '#CBD5E1',
+                borderColor: '#475569',
+                backgroundColor: 'transparent',
+              }}
+            >
+              Clear Selection
+            </button>
+          </div>
+        </div>
       )}
 
       {/* Student Dossier Drawer */}
@@ -705,6 +852,32 @@ export const StudentDirectory: React.FC = () => {
           </div>
         </form>
       </Modal>
+
+      {/* Bulk Excel Student Import Modal */}
+      {currentUser && (
+        <StudentImportModal
+          isOpen={isImportModalOpen}
+          onClose={() => setIsImportModalOpen(false)}
+          currentUser={currentUser}
+          provider={provider}
+          existingStudents={students}
+          classes={classes}
+          onImportSuccess={loadData}
+        />
+      )}
+
+      {/* Bulk Request Documents Modal */}
+      {currentUser && (
+        <BulkRequestDocumentsModal
+          isOpen={isBulkRequestModalOpen}
+          onClose={() => setIsBulkRequestModalOpen(false)}
+          selectedStudents={students.filter(s => selectedStudentIds.has(s.id))}
+          currentUser={currentUser}
+          onSuccess={() => {
+            // Success handler
+          }}
+        />
+      )}
     </div>
   );
 };

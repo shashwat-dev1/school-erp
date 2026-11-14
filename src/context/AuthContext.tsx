@@ -13,7 +13,7 @@ import { isDemoMode } from '../config/firebase';
 import { auth } from '../config/firebase';
 import { onAuthStateChanged, signOut as firebaseSignOut, signInWithEmailAndPassword } from 'firebase/auth';
 import { getDataProvider } from '../data';
-import { initialStaff } from '../data/demo/seedData';
+import { initialStaff, defaultDeveloperUser } from '../data/demo/seedData';
 
 interface AuthContextType {
   currentUser: StaffUser | null;
@@ -45,7 +45,9 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         }
       }
       const savedUserId = localStorage.getItem('hanujai_demo_user_id') || 'staff-admin';
-      const user = initialStaff.find(s => s.id === savedUserId) || initialStaff.find(s => s.role === 'admin' && s.status === 'active') || initialStaff[0];
+      const user = savedUserId === 'staff-dev'
+        ? defaultDeveloperUser
+        : (initialStaff.find(s => s.id === savedUserId) || initialStaff.find(s => s.role === 'admin' && s.status === 'active') || initialStaff[0]);
       setCurrentUser(user);
       setIsLoading(false);
     } else if (auth) {
@@ -105,6 +107,11 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       }
 
       if (isDemoMode()) {
+        if (cleanEmail === 'developer@hanujai.edu.in') {
+          setCurrentUser(defaultDeveloperUser);
+          localStorage.setItem('hanujai_demo_user_id', defaultDeveloperUser.id);
+          return;
+        }
         const found = initialStaff.find(
           s => s.email.toLowerCase() === cleanEmail
         );

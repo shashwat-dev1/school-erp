@@ -9,6 +9,7 @@ import {
   FileSpreadsheet,
   LogOut,
   X,
+  Terminal,
 } from 'lucide-react';
 import hanujaiLogo from '../../assets/hanujai_logo.png';
 
@@ -47,8 +48,9 @@ export const Sidebar: React.FC<SidebarProps> = ({ isMobileOpen = false, onClose 
     switch (role) {
       case 'principal':
         return 'Principal';
-      case 'admin':
       case 'developer':
+        return 'Developer (System Admin)';
+      case 'admin':
         return 'Admin Office';
       default:
         return 'Staff Member';
@@ -207,8 +209,37 @@ export const Sidebar: React.FC<SidebarProps> = ({ isMobileOpen = false, onClose 
               </>
             )}
 
-            {/* 2. ADMIN OFFICE WORKSPACE */}
-            {(role === 'admin' || role === 'developer') && (
+            {/* 2. DEVELOPER WORKSPACE */}
+            {role === 'developer' && (
+              <>
+                <li style={{ marginBottom: '6px' }}>
+                  <SidebarItem
+                    to="/developer"
+                    icon={<Terminal size={18} color="#F5A623" />}
+                    label="Developer Console"
+                    onClick={onClose}
+                  />
+                </li>
+                <li>
+                  <SidebarItem to="/" icon={<LayoutDashboard size={18} />} label="Home Dashboard" end onClick={onClose} />
+                </li>
+                <li>
+                  <SidebarItem to="/attendance/register" icon={<CalendarCheck size={18} />} label="Daily Attendance Register" onClick={onClose} />
+                </li>
+                <li>
+                  <SidebarItem to="/students" icon={<Users size={18} />} label="Student Directory" onClick={onClose} />
+                </li>
+                <li>
+                  <SidebarItem to="/reports/attendance" icon={<FileSpreadsheet size={18} />} label="Attendance Records & Export" onClick={onClose} />
+                </li>
+                <li>
+                  <SidebarItem to="/classes" icon={<GraduationCap size={18} />} label="Classes & Sections" onClick={onClose} />
+                </li>
+              </>
+            )}
+
+            {/* 3. ADMIN OFFICE WORKSPACE */}
+            {role === 'admin' && (
               <>
                 <li>
                   <SidebarItem to="/" icon={<LayoutDashboard size={18} />} label="Home Dashboard" end onClick={onClose} />

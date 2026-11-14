@@ -4,7 +4,7 @@ import { Button } from '../ui/Button';
 
 export interface Column<T> {
   key: string;
-  header: string;
+  header: React.ReactNode;
   render?: (item: T, index: number) => React.ReactNode;
   align?: 'left' | 'center' | 'right';
   width?: string;

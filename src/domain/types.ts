@@ -15,9 +15,9 @@ export type StaffRole =
   | 'class_teacher'
   | 'subject_teacher';
 
-export type ActiveStaffRole = 'principal' | 'admin';
+export type ActiveStaffRole = 'principal' | 'admin' | 'developer';
 
-export const ACTIVE_ROLES: StaffRole[] = ['principal', 'admin'];
+export const ACTIVE_ROLES: StaffRole[] = ['principal', 'admin', 'developer'];
 
 export interface StaffUser {
   id: string; // Firebase Auth UID or Synthetic Demo ID
@@ -170,6 +170,8 @@ export interface StudentRecord {
   // Guardian & Contact
   guardianName: string;
   guardianRelation: 'Father' | 'Mother' | 'Guardian';
+  fatherName?: string;
+  motherName?: string;
   primaryPhone: string;
   alternatePhone?: string;
   residentialAddress: string;
@@ -362,7 +364,9 @@ export type AuditAction =
   | 'policy_updated'
   | 'document_uploaded'
   | 'document_replaced'
-  | 'document_deleted';
+  | 'document_deleted'
+  | 'document_approved'
+  | 'document_rejected';
 
 export interface AuditEvent {
   id: string;
@@ -467,6 +471,11 @@ export interface StudentDocumentRecord {
   version: number;
   isPresent: boolean;
   downloadUrl?: string; // Ephemeral preview/download URL
+  reviewStatus?: 'pending' | 'accepted' | 'rejected';
+  rejectionReason?: string;
+  verifiedBy?: string;
+  verifiedByName?: string;
+  verifiedAt?: string;
 }
 
 export interface DocumentCompletenessSummary {
@@ -474,4 +483,50 @@ export interface DocumentCompletenessSummary {
   uploadedCount: number;
   missingCount: number;
   completionPercentage: number;
+}
+
+// ============================================================================
+// 13. Secure Parent Document Collection & Invitations
+// ============================================================================
+
+export type ParentInvitationStatus = 'active' | 'used' | 'expired' | 'revoked';
+
+export interface ParentDocumentInvitation {
+  id: string; // document id (typically tokenHash)
+  tokenHash: string; // SHA-256 of raw invitation token
+  studentId: string;
+  studentName: string;
+  admissionNumber: string;
+  classId: string;
+  classLabel: string;
+  guardianPhone: string;
+  guardianName: string;
+  requestedSlots: StudentDocumentType[];
+  status: ParentInvitationStatus;
+  createdAt: string;
+  expiresAt: string;
+  usedAt?: string;
+  revokedAt?: string;
+  createdBy: string;
+  createdByName: string;
+  whatsappMessageId?: string;
+  otpHash?: string;
+  otpExpiresAt?: string;
+  otpAttempts?: number;
+  lastOtpSentAt?: string;
+}
+
+export interface ParentUploadSession {
+  sessionId: string;
+  tokenHash: string;
+  studentId: string;
+  studentName: string;
+  admissionNumber: string;
+  classId: string;
+  classLabel: string;
+  guardianPhone: string;
+  requestedSlots: StudentDocumentType[];
+  authorizedSlots?: StudentDocumentType[];
+  expiresAt: string;
+  createdAt: string;
 }

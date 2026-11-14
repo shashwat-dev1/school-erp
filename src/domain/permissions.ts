@@ -129,14 +129,34 @@ export const Permissions = {
   },
 
   /**
-   * System Settings Management:
-   * - Denied across all regular operational accounts.
+   * System Settings Management & Developer Console:
+   * - Restricted exclusively to active Developer accounts.
    */
+  canAccessDeveloperConsole(user: StaffUser | null): boolean {
+    return Boolean(user && user.status === 'active' && user.role === 'developer');
+  },
+
   canManageSettings(user: StaffUser | null): boolean {
     return Boolean(user && user.status === 'active' && user.role === 'developer');
   },
 
   canManageStaff(user: StaffUser | null): boolean {
+    return Boolean(user && user.status === 'active' && user.role === 'developer');
+  },
+
+  /**
+   * Bulk Student Data Import:
+   * - Developer: Full import access.
+   * - Admin Office: Full import access.
+   * - Principal: Strictly FORBIDDEN (Read-Only).
+   */
+  canImportStudents(user: StaffUser | null): boolean {
+    if (!user || user.status !== 'active') return false;
+    if (user.role === 'principal') return false;
+    return user.role === 'developer' || user.role === 'admin';
+  },
+
+  canManageDatabase(user: StaffUser | null): boolean {
     return Boolean(user && user.status === 'active' && user.role === 'developer');
   },
 

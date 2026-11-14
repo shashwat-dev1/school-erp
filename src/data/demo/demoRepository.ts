@@ -42,6 +42,7 @@ import type {
 import {
   initialSettings,
   initialStaff,
+  defaultDeveloperUser,
   initialAttendanceSessions,
   initialAttendanceCorrections,
   initialAuditEvents,
@@ -333,10 +334,17 @@ class DemoRepository implements DataProvider {
 
   // Staff Management
   public async getStaffMembers(): Promise<StaffUser[]> {
-    return this.loadStore().staff;
+    const list = this.loadStore().staff;
+    if (!list.some(s => s.role === 'developer')) {
+      return [...list, defaultDeveloperUser];
+    }
+    return list;
   }
 
   public async getStaffMemberById(staffId: string): Promise<StaffUser | null> {
+    if (staffId === 'staff-dev') {
+      return defaultDeveloperUser;
+    }
     const found = this.loadStore().staff.find(s => s.id === staffId);
     return found || null;
   }
@@ -414,6 +422,9 @@ class DemoRepository implements DataProvider {
   }
 
   public async getCurrentStaffUser(userId: string): Promise<StaffUser | null> {
+    if (userId === 'staff-dev') {
+      return defaultDeveloperUser;
+    }
     const staff = this.loadStore().staff;
     return staff.find(s => s.id === userId) || staff[0] || null;
   }
@@ -670,6 +681,8 @@ class DemoRepository implements DataProvider {
       status: 'enrolled',
       guardianName: input.guardianName,
       guardianRelation: input.guardianRelation,
+      fatherName: input.fatherName,
+      motherName: input.motherName,
       primaryPhone: input.primaryPhone,
       residentialAddress: input.residentialAddress,
       city: 'Jaipur',
@@ -1663,6 +1676,80 @@ class DemoRepository implements DataProvider {
     });
 
     this.saveStore(store);
+  }
+
+  public async reviewStudentDocument(
+    studentId: string,
+    documentType: StudentDocumentType,
+    action: 'accept' | 'reject',
+    actor: StaffUser,
+    reason?: string
+  ): Promise<StudentDocumentRecord> {
+    if (!actor || actor.role === 'principal') {
+      throw new Error('Unauthorized: Principal is strictly read-only and cannot approve or reject documents.');
+    }
+    if (action === 'reject' && (!reason || !reason.trim())) {
+      throw new Error('A rejection reason is required when rejecting a student document.');
+    }
+    const store = this.loadStore();
+    if (!store.studentDocuments) {
+      store.studentDocuments = {};
+    }
+    if (!store.studentDocuments[studentId]) {
+      store.studentDocuments[studentId] = [];
+    }
+    let docRecord = store.studentDocuments[studentId].find(d => d.documentType === documentType);
+    const nowIso = new Date().toISOString();
+
+    if (!docRecord) {
+      docRecord = {
+        id: documentType,
+        documentType,
+        studentId,
+        storagePath: `students/${studentId}/documents/${documentType}/file_${Date.now()}`,
+        originalFileName: `${documentType}.pdf`,
+        contentType: 'application/pdf',
+        fileSize: 1024,
+        uploadedAt: nowIso,
+        uploadedBy: 'parent',
+        uploadedByName: 'Parent Upload Portal',
+        updatedAt: nowIso,
+        updatedBy: actor.id,
+        updatedByName: actor.name,
+        version: 1,
+        isPresent: true,
+        reviewStatus: 'pending',
+      };
+      store.studentDocuments[studentId].push(docRecord);
+    }
+
+    docRecord.reviewStatus = action === 'accept' ? 'accepted' : 'rejected';
+    docRecord.verifiedBy = actor.id;
+    docRecord.verifiedByName = actor.name;
+    docRecord.verifiedAt = nowIso;
+    if (action === 'reject') {
+      docRecord.rejectionReason = reason!.trim();
+      docRecord.isPresent = false;
+    } else {
+      docRecord.rejectionReason = undefined;
+      docRecord.isPresent = true;
+    }
+
+    store.auditEvents.unshift({
+      id: `audit-${Date.now()}-${Math.random().toString(36).substring(2, 7)}`,
+      timestamp: nowIso,
+      actorId: actor.id,
+      actorName: actor.name,
+      actorRole: actor.role,
+      action: action === 'accept' ? 'document_approved' : 'document_rejected',
+      resource: 'student_documents',
+      targetId: `${studentId}/${documentType}`,
+      summary: `${action === 'accept' ? 'Approved' : 'Rejected'} ${documentType} for student ${studentId}${reason ? ': ' + reason : ''}`,
+      clientIp: '192.168.1.1',
+    });
+
+    this.saveStore(store);
+    return docRecord;
   }
 
   public async getDocumentDownloadUrl(storagePath: string): Promise<string> {

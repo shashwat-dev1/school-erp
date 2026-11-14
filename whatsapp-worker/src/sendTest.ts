@@ -74,8 +74,9 @@ async function runTestSend() {
   }
 
   student = student || 'Aarav Singhania';
-  parent = parent || 'Parent/Guardian';
-  const parentHindi = parent === 'Parent/Guardian' ? 'अभिभावक' : parent;
+  const hasParent = parent && parent !== 'Parent/Guardian' && parent !== '[Parent Name]';
+  const salutationEn = hasParent ? `Mr./Mrs. ${parent}` : 'Dear Parent';
+  const salutationHi = hasParent ? `श्री/श्रीमती ${parent}` : 'अभिभावक महोदय';
 
   console.log('================================================================================');
   console.log('  HANUJAI HIGH SCHOOL ERP — WHATSAPP MANUAL DISPATCH TEST');
@@ -96,8 +97,8 @@ async function runTestSend() {
   });
 
   const messageText = state === 'present'
-    ? `Mr./Mrs. ${parent},\n\nThis is to inform you that ${student} has been marked PRESENT at HanuJai High School on ${todayStr}.\n\nIf you believe this record is incorrect, please contact the school.\n\nRegards,\nHanuJai High School\n\n---\n\nश्री/श्रीमती ${parentHindi},\n\nआपको सूचित किया जाता है कि आपकी संतान ${student} को दिनांक ${todayStr} को हनुजाई हाई स्कूल में उपस्थित (PRESENT) दर्ज किया गया है।\n\nयदि आपको लगता है कि उपस्थिति का यह रिकॉर्ड गलत है, तो कृपया विद्यालय से संपर्क करें।\n\n सादर,\nहनुजाई हाई स्कूल`
-    : `Mr./Mrs. ${parent},\n\nThis is to inform you that ${student} has been marked ABSENT at HanuJai High School on ${todayStr}.\n\nIf you believe this record is incorrect, please contact the school.\n\nRegards,\nHanuJai High School\n\n---\n\nश्री/श्रीमती ${parentHindi},\n\nआपको सूचित किया जाता है कि आपकी संतान ${student} को दिनांक ${todayStr} को हनुजाई हाई स्कूल में अनुपस्थित (ABSENT) दर्ज किया गया है।\n\nयदि आपको लगता है कि उपस्थिति का यह रिकॉर्ड गलत है, तो कृपया विद्यालय से संपर्क करें।\n\n सादर,\nहनुजाई हाई स्कूल`;
+    ? `${salutationEn},\n\nThis is to inform you that ${student} has been marked PRESENT at HanuJai High School on ${todayStr}.\n\nIf you believe this record is incorrect, please contact the school.\n\nRegards,\nHanuJai High School\n\n---\n\n${salutationHi},\n\nआपको सूचित किया जाता है कि आपकी संतान ${student} को दिनांक ${todayStr} को हनुजाई हाई स्कूल में उपस्थित (PRESENT) दर्ज किया गया है।\n\nयदि आपको लगता है कि उपस्थिति का यह रिकॉर्ड गलत है, तो कृपया विद्यालय से संपर्क करें।\n\nसादर,\nहनुजाई हाई स्कूल`
+    : `${salutationEn},\n\nThis is to inform you that ${student} has been marked ABSENT at HanuJai High School on ${todayStr}.\n\nIf you believe this record is incorrect, please contact the school.\n\nRegards,\nHanuJai High School\n\n---\n\n${salutationHi},\n\nआपको सूचित किया जाता है कि आपकी संतान ${student} को दिनांक ${todayStr} को हनुजाई हाई स्कूल में अनुपस्थित (ABSENT) दर्ज किया गया है।\n\nयदि आपको लगता है कि उपस्थिति का यह रिकॉर्ड गलत है, तो कृपया विद्यालय से संपर्क करें।\n\nसादर,\nहनुजाई हाई स्कूल`;
 
   console.log(`📍 Recipient Mobile : ${to}`);
   console.log(`📍 Status Type      : ${state.toUpperCase()}`);

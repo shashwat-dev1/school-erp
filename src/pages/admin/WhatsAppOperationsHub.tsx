@@ -400,8 +400,8 @@ export const WhatsAppOperationsHub: React.FC = () => {
             }}
           >
             {activeTemplateTab === 'present'
-              ? PHASE_CONFIG.whatsapp.templates.present('[Student Name]', '02 Nov 2026', '[Parent Name]')
-              : PHASE_CONFIG.whatsapp.templates.absent('[Student Name]', '02 Nov 2026', '[Parent Name]')}
+              ? PHASE_CONFIG.whatsapp.templates.present('[Student Name]', '02 Nov 2026')
+              : PHASE_CONFIG.whatsapp.templates.absent('[Student Name]', '02 Nov 2026')}
           </div>
         </div>
 

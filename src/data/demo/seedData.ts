@@ -762,3 +762,19 @@ export const initialAuditEvents: AuditEvent[] = [
     clientIp: '192.168.1.10',
   },
 ];
+
+// Provisioned Root Developer User for privileged administrative workflows
+export const defaultDeveloperUser: StaffUser = {
+  id: 'staff-dev',
+  email: 'developer@hanujai.edu.in',
+  name: 'System Administrator',
+  displayName: 'System Administrator (Developer)',
+  fullName: 'System Administrator (Developer)',
+  role: 'developer',
+  employeeCode: 'DEV-ROOT-01',
+  designation: 'ERP System Administrator',
+  department: 'Systems & Infrastructure',
+  phone: '+91 98290 11000',
+  status: 'active',
+  createdAt: '2026-11-14T00:00:00Z',
+};

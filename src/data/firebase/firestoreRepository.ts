@@ -1062,6 +1062,63 @@ export class FirestoreRepository implements DataProvider {
     }
   }
 
+  public async reviewStudentDocument(
+    studentId: string,
+    documentType: StudentDocumentType,
+    action: 'accept' | 'reject',
+    actor: StaffUser,
+    reason?: string
+  ): Promise<StudentDocumentRecord> {
+    ensureFirebaseReady();
+    if (!actor || actor.role === 'principal') {
+      throw new Error('Unauthorized: Principal is strictly read-only and cannot approve or reject documents.');
+    }
+    if (action === 'reject' && (!reason || !reason.trim())) {
+      throw new Error('A rejection reason is required when rejecting a student document.');
+    }
+
+    const docRef = doc(db!, 'students', studentId, 'documents', documentType);
+    const snap = await getDoc(docRef);
+    if (!snap.exists()) {
+      throw new Error(`Document ${documentType} not found for student ${studentId}`);
+    }
+
+    const nowIso = new Date().toISOString();
+    const updates: Partial<StudentDocumentRecord> = {
+      reviewStatus: action === 'accept' ? 'accepted' : 'rejected',
+      verifiedBy: actor.id,
+      verifiedByName: actor.displayName || actor.name,
+      verifiedAt: nowIso,
+      rejectionReason: action === 'reject' ? (reason || 'Document rejected by school administration') : undefined,
+      isPresent: action === 'accept',
+      updatedAt: nowIso,
+      updatedBy: actor.id,
+      updatedByName: actor.displayName || actor.name,
+    };
+
+    await updateDoc(docRef, updates);
+
+    try {
+      const auditRef = collection(db!, 'auditEvents');
+      await addDoc(auditRef, {
+        timestamp: nowIso,
+        actorId: actor.id,
+        actorName: actor.displayName || actor.name,
+        actorRole: actor.role,
+        action: action === 'accept' ? 'document_approved' : 'document_rejected',
+        resource: 'student_documents',
+        targetId: `${studentId}/${documentType}`,
+        summary: `${action === 'accept' ? 'Approved' : 'Rejected'} ${documentType} for student ${studentId}${reason ? ': ' + reason : ''}`,
+        clientIp: '192.168.1.1',
+      });
+    } catch {
+      // Non-blocking
+    }
+
+    const updated = await getDoc(docRef);
+    return updated.data() as StudentDocumentRecord;
+  }
+
   public async getDocumentDownloadUrl(storagePath: string): Promise<string> {
     return await vercelBlobStorage.getFileDownloadUrl(storagePath);
   }

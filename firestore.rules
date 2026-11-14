@@ -40,16 +40,17 @@ service cloud.firestore {
       allow write: if false;
     }
 
-    // Classes & Sections: Read by authenticated staff
+    // Classes & Sections: Read by authenticated staff; Developer can manage classes
     match /classes/{classId} {
       allow read: if isAuthenticated() && (isPrincipal() || isAdmin());
-      allow write: if false;
+      allow create, update: if isAuthenticated() && hasRole('developer');
+      allow delete: if false;
     }
 
-    // Staff Accounts: Read by authenticated staff; allow authenticated user to link their own document
+    // Staff Accounts: Read by authenticated staff; allow authenticated user to link their own document, Developer can manage accounts
     match /staff/{staffId} {
       allow read: if isAuthenticated() && (isPrincipal() || isAdmin());
-      allow create, update: if isAuthenticated() && request.auth.uid == staffId;
+      allow create, update: if isAuthenticated() && (request.auth.uid == staffId || hasRole('developer'));
       allow delete: if false;
     }
 
@@ -102,6 +103,25 @@ service cloud.firestore {
       allow read: if isAuthenticated() && (isPrincipal() || isAdmin());
       allow create: if isAuthenticated() && request.resource.data.actorId == request.auth.uid;
       allow update, delete: if false;
+    }
+
+    // Developer Snapshots: For rollback and database restoration
+    match /developerSnapshots/{snapshotId} {
+      allow read, create, update, delete: if isAuthenticated() && hasRole('developer');
+    }
+
+    // Parent Document Invitations: Token hashes and status
+    match /parentDocumentInvitations/{invitationId} {
+      allow read: if isAuthenticated() && (isPrincipal() || isAdmin());
+      allow create, update: if isAuthenticated() && isAdmin();
+      allow delete: if false;
+    }
+
+    // Parent Upload Sessions: Active verification sessions
+    match /parentUploadSessions/{sessionId} {
+      allow read: if isAuthenticated() && (isPrincipal() || isAdmin());
+      allow create, update: if isAuthenticated() && isAdmin();
+      allow delete: if false;
     }
   }
 }

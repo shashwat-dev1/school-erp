@@ -72,6 +72,8 @@ export interface NewStudentInput {
   classId: string;
   guardianName: string;
   guardianRelation: 'Father' | 'Mother' | 'Guardian';
+  fatherName?: string;
+  motherName?: string;
   primaryPhone: string;
   residentialAddress: string;
 }
@@ -206,6 +208,13 @@ export interface DataProvider {
     documentType: StudentDocumentType,
     actor: StaffUser
   ): Promise<void>;
+  reviewStudentDocument(
+    studentId: string,
+    documentType: StudentDocumentType,
+    action: 'accept' | 'reject',
+    actor: StaffUser,
+    reason?: string
+  ): Promise<StudentDocumentRecord>;
   getDocumentDownloadUrl(storagePath: string): Promise<string>;
 
   // Reset Demo Repository (Demo mode only)
