@@ -24,7 +24,12 @@ import type {
   StudentRecord,
   ClassSection,
   AuditEvent,
+  PermissionModule,
+  PermissionAction,
+  RolePermissions,
+  PermissionPreset,
 } from '../../domain/types';
+import { Permissions, applyPermissionPreset } from '../../domain/permissions';
 import {
   Terminal,
   ShieldCheck,
@@ -54,6 +59,7 @@ type ConsoleTab =
   | 'overview'
   | 'import'
   | 'users'
+  | 'permissions'
   | 'classes'
   | 'quality'
   | 'database'
@@ -121,6 +127,20 @@ export const DeveloperConsole: React.FC = () => {
     phone: '',
   });
 
+  // Granular Permissions Matrix State
+  const [rolePermissions, setRolePermissions] = useState<RolePermissions>(Permissions.getRolePermissions());
+  const [selectedPermissionRole, setSelectedPermissionRole] = useState<'admin' | 'principal'>('admin');
+  const [isSavingPermissions, setIsSavingPermissions] = useState<boolean>(false);
+
+  // Password Recovery Result Modal State
+  const [recoveryModal, setRecoveryModal] = useState<{
+    isOpen: boolean;
+    staffName: string;
+    email: string;
+    tempToken: string;
+    message: string;
+  } | null>(null);
+
   // 3. Database & Rollback State
   const [showRollbackModal, setShowRollbackModal] = useState<boolean>(false);
   const [selectedSnapshotId, setSelectedSnapshotId] = useState<string>('');
@@ -140,17 +160,21 @@ export const DeveloperConsole: React.FC = () => {
     setIsLoading(true);
     setGlobalError(null);
     try {
-      const [stuRes, staffRes, clsRes, auditRes] = await Promise.all([
+      const [stuRes, staffRes, clsRes, auditRes, permsRes] = await Promise.all([
         provider.getStudents({ limit: 5000 }),
         provider.getStaffMembers(),
         provider.getClasses(),
         provider.getAuditEvents ? provider.getAuditEvents({ limit: 50 }) : Promise.resolve([]),
+        provider.getRolePermissions ? provider.getRolePermissions() : Promise.resolve(Permissions.getRolePermissions()),
       ]);
 
       setStudents(stuRes?.items || (stuRes as any)?.data || []);
       setStaffList(staffRes || []);
       setClassesList(clsRes || []);
       setAuditEvents(auditRes || []);
+      if (permsRes) {
+        setRolePermissions(permsRes);
+      }
       setSnapshots(DeveloperService.getSnapshots());
 
       // Initial diagnostics
@@ -339,6 +363,97 @@ export const DeveloperConsole: React.FC = () => {
       await refreshAllData();
     } catch (err) {
       setGlobalError(err instanceof Error ? err.message : 'Failed to provision staff account.');
+    }
+  };
+
+  const handleRevokeStaffSession = async (staff: StaffUser) => {
+    if (!currentUser) return;
+    const confirm = window.confirm(`Are you sure you want to revoke all active sessions for ${staff.name}?`);
+    if (!confirm) return;
+
+    try {
+      if (provider.revokeStaffSessions) {
+        await provider.revokeStaffSessions(staff.id, currentUser);
+      }
+      setGlobalSuccess(`Successfully revoked all active sessions for ${staff.name}.`);
+      await refreshAllData();
+    } catch (err) {
+      setGlobalError(err instanceof Error ? err.message : 'Failed to revoke staff session.');
+    }
+  };
+
+  const handleInitiatePasswordRecovery = async (staff: StaffUser) => {
+    if (!currentUser) return;
+    try {
+      if (provider.initiatePasswordRecovery) {
+        const res = await provider.initiatePasswordRecovery(staff.id, currentUser);
+        setRecoveryModal({
+          isOpen: true,
+          staffName: staff.name,
+          email: staff.email,
+          tempToken: res.tempToken || 'N/A',
+          message: res.message,
+        });
+      }
+      await refreshAllData();
+    } catch (err) {
+      setGlobalError(err instanceof Error ? err.message : 'Failed to initiate password recovery.');
+    }
+  };
+
+  const handleTogglePermission = (module: PermissionModule, action: PermissionAction) => {
+    setRolePermissions(prev => {
+      const currentRolePerms = prev[selectedPermissionRole] || {};
+      const currentModulePerms = currentRolePerms[module] || {};
+      const currentVal = Boolean(currentModulePerms[action]);
+
+      return {
+        ...prev,
+        [selectedPermissionRole]: {
+          ...currentRolePerms,
+          [module]: {
+            ...currentModulePerms,
+            [action]: !currentVal,
+          },
+        },
+      };
+    });
+  };
+
+  const handleApplyPreset = (module: PermissionModule, preset: PermissionPreset) => {
+    const presetPerms = applyPermissionPreset(preset, module);
+    setRolePermissions(prev => {
+      const currentRolePerms = prev[selectedPermissionRole] || {};
+      return {
+        ...prev,
+        [selectedPermissionRole]: {
+          ...currentRolePerms,
+          [module]: { ...presetPerms },
+        },
+      };
+    });
+  };
+
+  const handleSaveRolePermissions = async () => {
+    if (!currentUser) return;
+    setIsSavingPermissions(true);
+    try {
+      if (provider.updateRolePermissions) {
+        const updated = await provider.updateRolePermissions(
+          selectedPermissionRole,
+          rolePermissions[selectedPermissionRole],
+          currentUser
+        );
+        setRolePermissions(updated);
+      } else {
+        Permissions.setRolePermissions(rolePermissions, true);
+      }
+      setGlobalSuccess(`Successfully saved and applied granular permissions for ${selectedPermissionRole === 'admin' ? 'Admin Office' : 'Principal'}!`);
+      await refreshAllData();
+    } catch (err) {
+      setGlobalError(err instanceof Error ? err.message : 'Failed to save role permissions.');
+    } finally {
+      setIsSavingPermissions(false);
     }
   };
 
@@ -839,7 +954,7 @@ export const DeveloperConsole: React.FC = () => {
               }}
             >
               <Download size={15} />
-              <span>Download 10-Column Template</span>
+              <span>Download 7-Column Template</span>
             </button>
           </div>
 

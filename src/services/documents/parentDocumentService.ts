@@ -22,6 +22,7 @@ import {
   where,
 } from 'firebase/firestore';
 import { db, isFirebaseConfigured, isDemoMode } from '../../config/firebase';
+import * as XLSX from 'xlsx';
 import type {
   StudentRecord,
   StaffUser,
@@ -98,7 +99,7 @@ export class ParentDocumentService {
   /**
    * Load invitations from local storage (Demo / Cache).
    */
-  private static getLocalInvitations(): ParentDocumentInvitation[] {
+  public static getLocalInvitations(): ParentDocumentInvitation[] {
     try {
       const raw = localStorage.getItem(INVITATIONS_STORAGE_KEY);
       return raw ? JSON.parse(raw) : [];
@@ -210,6 +211,56 @@ export class ParentDocumentService {
   }
 
   /**
+   * Export confidential 7-column Parent Links Excel workbook.
+   * Required 7 columns:
+   * 1. Student Name
+   * 2. Admission Number
+   * 3. Class
+   * 4. Section
+   * 5. Parent/Guardian Mobile Number
+   * 6. List of Pending Documents
+   * 7. Secure Document Upload Link
+   */
+  public static exportParentLinksExcel(
+    rows: Array<{
+      studentName: string;
+      admissionNumber: string;
+      classLabel: string;
+      section: string;
+      guardianPhone: string;
+      pendingDocuments: string;
+      uploadUrl: string;
+    }>,
+    filename?: string
+  ): void {
+    const data = rows.map(r => ({
+      'Student Name': r.studentName,
+      'Admission Number': r.admissionNumber,
+      'Class': r.classLabel,
+      'Section': r.section,
+      'Parent/Guardian Mobile Number': r.guardianPhone,
+      'List of Pending Documents': r.pendingDocuments,
+      'Secure Document Upload Link': r.uploadUrl,
+    }));
+
+    const ws = XLSX.utils.json_to_sheet(data);
+    ws['!cols'] = [
+      { wch: 24 }, // Student Name
+      { wch: 18 }, // Admission Number
+      { wch: 12 }, // Class
+      { wch: 10 }, // Section
+      { wch: 22 }, // Parent/Guardian Mobile Number
+      { wch: 38 }, // List of Pending Documents
+      { wch: 65 }, // Secure Document Upload Link
+    ];
+
+    const wb = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb, ws, 'Parent Upload Links');
+    const outName = filename || `HanuJai_Parent_Upload_Links_${new Date().toISOString().split('T')[0]}.xlsx`;
+    XLSX.writeFile(wb, outName);
+  }
+
+  /**
    * Retrieve all active and past invitations for a specific student.
    */
   public static async getInvitationsForStudent(studentId: string): Promise<ParentDocumentInvitation[]> {
@@ -234,6 +285,7 @@ export class ParentDocumentService {
 
   /**
    * Revoke an active parent invitation link.
+   * Immediately invalidates both the invitation and any active sessions derived from it.
    */
   public static async revokeInvitation(tokenHash: string, actor: StaffUser): Promise<void> {
     const nowIso = new Date().toISOString();
@@ -259,6 +311,144 @@ export class ParentDocumentService {
       target.revokedAt = nowIso;
       this.saveLocalInvitations(local);
     }
+
+    // Invalidate any active sessions derived from this revoked invitation
+    try {
+      if (typeof window !== 'undefined') {
+        const activeRaw = window.sessionStorage?.getItem('hanujai_parent_active_session');
+        if (activeRaw) {
+          const active = JSON.parse(activeRaw);
+          if (active.tokenHash === tokenHash) {
+            window.sessionStorage.removeItem('hanujai_parent_active_session');
+          }
+        }
+        const sessionsRaw = window.localStorage?.getItem(SESSIONS_STORAGE_KEY);
+        if (sessionsRaw) {
+          const sessions: ParentUploadSession[] = JSON.parse(sessionsRaw);
+          const filtered = sessions.filter(s => s.tokenHash !== tokenHash);
+          window.localStorage.setItem(SESSIONS_STORAGE_KEY, JSON.stringify(filtered));
+        }
+      }
+    } catch {
+      // Ignored
+    }
+  }
+
+  /**
+   * Direct Bearer Token Exchange (NO OTP):
+   * Parent opens URL `/parent-upload#t=TOKEN`.
+   * Evaluates token hash, validates status & expiry, and immediately issues a scoped
+   * short-lived ParentUploadSession without any OTP, SMS, or secondary login screen.
+   */
+  public static async exchangeTokenForUploadSession(rawToken: string): Promise<{
+    valid: boolean;
+    session?: ParentUploadSession;
+    error?: string;
+  }> {
+    if (!rawToken || rawToken.trim().length < 16) {
+      return { valid: false, error: 'Invalid or missing document upload invitation token.' };
+    }
+
+    const tokenHash = await sha256(rawToken.trim());
+    let invitation: ParentDocumentInvitation | null = null;
+
+    if (!isDemoMode() && db && isFirebaseConfigured()) {
+      try {
+        const docRef = doc(db, 'parentDocumentInvitations', tokenHash);
+        const docSnap = await getDoc(docRef);
+        if (docSnap.exists()) {
+          invitation = docSnap.data() as ParentDocumentInvitation;
+        }
+      } catch (err) {
+        console.warn('Firestore invitation lookup failed:', err);
+      }
+    }
+
+    if (!invitation) {
+      const local = this.getLocalInvitations();
+      invitation = local.find(i => i.tokenHash === tokenHash) || null;
+    }
+
+    if (!invitation) {
+      return { valid: false, error: 'Document upload link is invalid, does not exist, or has been revoked.' };
+    }
+
+    if (invitation.status === 'revoked') {
+      return { valid: false, error: 'This document upload link has been revoked by the school office.' };
+    }
+
+    if (new Date(invitation.expiresAt).getTime() < Date.now()) {
+      invitation.status = 'expired';
+      this.saveInvitation(invitation);
+      return { valid: false, error: 'This document upload link has expired. Please contact the school office to request a new link.' };
+    }
+
+    // Direct token exchange without OTP: Create short-lived 1-hour session
+    const sessionId = `sess_${generateSecureToken()}`;
+    const expiresAt = new Date(Date.now() + 60 * 60 * 1000).toISOString();
+
+    const session: ParentUploadSession = {
+      sessionId,
+      tokenHash,
+      studentId: invitation.studentId,
+      studentName: invitation.studentName,
+      admissionNumber: invitation.admissionNumber,
+      classId: invitation.classId,
+      classLabel: invitation.classLabel,
+      guardianPhone: invitation.guardianPhone,
+      requestedSlots: invitation.requestedSlots,
+      authorizedSlots: invitation.requestedSlots,
+      expiresAt,
+      createdAt: new Date().toISOString(),
+    };
+
+    try {
+      if (typeof window !== 'undefined') {
+        window.sessionStorage?.setItem('hanujai_parent_active_session', JSON.stringify(session));
+        const sessionsRaw = window.localStorage?.getItem(SESSIONS_STORAGE_KEY);
+        const sessions = sessionsRaw ? JSON.parse(sessionsRaw) : [];
+        sessions.unshift(session);
+        window.localStorage?.setItem(SESSIONS_STORAGE_KEY, JSON.stringify(sessions.slice(0, 50)));
+      }
+    } catch {
+      // Ignored
+    }
+
+    return { valid: true, session };
+  }
+
+  /**
+   * Authoritatively verify if a parent upload session is valid and active.
+   * Ensures the session has not expired AND its underlying invitation has not been revoked.
+   */
+  public static async isSessionValid(session: ParentUploadSession | null): Promise<boolean> {
+    if (!session || !session.sessionId || !session.tokenHash) return false;
+    if (new Date(session.expiresAt).getTime() < Date.now()) return false;
+
+    // Check underlying invitation status
+    let invitation: ParentDocumentInvitation | null = null;
+    if (!isDemoMode() && db && isFirebaseConfigured()) {
+      try {
+        const docRef = doc(db, 'parentDocumentInvitations', session.tokenHash);
+        const docSnap = await getDoc(docRef);
+        if (docSnap.exists()) {
+          invitation = docSnap.data() as ParentDocumentInvitation;
+        }
+      } catch (err) {
+        console.warn('Firestore session check failed:', err);
+      }
+    }
+
+    if (!invitation) {
+      const local = this.getLocalInvitations();
+      invitation = local.find(i => i.tokenHash === session.tokenHash) || null;
+    }
+
+    if (!invitation || invitation.status !== 'active') {
+      return false;
+    }
+
+    return true;
   }
 
   /**
@@ -283,10 +473,10 @@ export class ParentDocumentService {
 HanuJai High School requests you to securely upload the following required documents for official student records:
 ${slotTitles}
 
-Please tap the secure link below to upload:
+Please tap the secure link below to upload directly from your mobile phone:
 ${uploadUrl}
 
-Note: For student safety and identity verification, an OTP will be sent to this WhatsApp number upon opening the link.
+Note: This is a secure, confidential link generated specifically for your child. No login or password is required.
 
 Regards,
 HanuJai High School, Jaipur
@@ -298,10 +488,10 @@ HanuJai High School, Jaipur
 हनुजाई हाई स्कूल द्वारा ${invitation.studentName} (${invitation.classLabel}) के निम्नलिखित आवश्यक दस्तावेज़ सुरक्षित रूप से अपलोड करने का अनुरोध किया गया है:
 ${slotTitlesHindi}
 
-दस्तावेज़ अपलोड करने के लिए कृपया नीचे दिए गए लिंक पर जाएं:
+दस्तावेज़ अपलोड करने के लिए कृपया नीचे दिए गए सुरक्षित लिंक पर जाएं:
 ${uploadUrl}
 
-नोट: छात्र की सुरक्षा और सत्यापन के लिए, लिंक खोलने पर आपके इस व्हाट्सएप नंबर पर एक OTP भेजा जाएगा।
+नोट: यह लिंक केवल आपके बच्चे के लिए सुरक्षित रूप से तैयार किया गया है। किसी पासवर्ड या लॉगिन की आवश्यकता नहीं है।
 
 सादर,
 हनुजाई हाई स्कूल, जयपुर`;

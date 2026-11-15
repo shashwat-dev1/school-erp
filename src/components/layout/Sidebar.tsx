@@ -10,6 +10,8 @@ import {
   LogOut,
   X,
   Terminal,
+  Files,
+  ShieldCheck,
 } from 'lucide-react';
 import hanujaiLogo from '../../assets/hanujai_logo.png';
 
@@ -198,7 +200,13 @@ export const Sidebar: React.FC<SidebarProps> = ({ isMobileOpen = false, onClose 
                   <SidebarItem to="/attendance" icon={<CalendarCheck size={18} />} label="Daily Attendance Registers" onClick={onClose} />
                 </li>
                 <li>
+                  <SidebarItem to="/attendance/corrections" icon={<ShieldCheck size={18} />} label="Attendance Approvals" onClick={onClose} />
+                </li>
+                <li>
                   <SidebarItem to="/students" icon={<Users size={18} />} label="Student Directory" onClick={onClose} />
+                </li>
+                <li>
+                  <SidebarItem to="/documents" icon={<Files size={18} />} label="Student Documents" onClick={onClose} />
                 </li>
                 <li>
                   <SidebarItem to="/reports/attendance" icon={<FileSpreadsheet size={18} />} label="Attendance Records & Export" onClick={onClose} />
@@ -227,7 +235,13 @@ export const Sidebar: React.FC<SidebarProps> = ({ isMobileOpen = false, onClose 
                   <SidebarItem to="/attendance/register" icon={<CalendarCheck size={18} />} label="Daily Attendance Register" onClick={onClose} />
                 </li>
                 <li>
+                  <SidebarItem to="/attendance/corrections" icon={<ShieldCheck size={18} />} label="Attendance Corrections" onClick={onClose} />
+                </li>
+                <li>
                   <SidebarItem to="/students" icon={<Users size={18} />} label="Student Directory" onClick={onClose} />
+                </li>
+                <li>
+                  <SidebarItem to="/documents" icon={<Files size={18} />} label="Student Documents" onClick={onClose} />
                 </li>
                 <li>
                   <SidebarItem to="/reports/attendance" icon={<FileSpreadsheet size={18} />} label="Attendance Records & Export" onClick={onClose} />
@@ -248,7 +262,13 @@ export const Sidebar: React.FC<SidebarProps> = ({ isMobileOpen = false, onClose 
                   <SidebarItem to="/attendance/register" icon={<CalendarCheck size={18} />} label="Daily Attendance Register" onClick={onClose} />
                 </li>
                 <li>
+                  <SidebarItem to="/attendance/corrections" icon={<ShieldCheck size={18} />} label="Attendance Corrections" onClick={onClose} />
+                </li>
+                <li>
                   <SidebarItem to="/students" icon={<Users size={18} />} label="Student Directory" onClick={onClose} />
+                </li>
+                <li>
+                  <SidebarItem to="/documents" icon={<Files size={18} />} label="Student Documents" onClick={onClose} />
                 </li>
                 <li>
                   <SidebarItem to="/reports/attendance" icon={<FileSpreadsheet size={18} />} label="Attendance Records & Export" onClick={onClose} />

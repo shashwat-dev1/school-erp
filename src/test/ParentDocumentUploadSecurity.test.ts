@@ -234,6 +234,48 @@ describe('Parent Document Collection Security & Review Workflow Suite', () => {
       expect(result.valid).toBe(false);
       expect(result.error).toContain('expired');
     });
+
+    it('directly exchanges raw token for a scoped upload session with NO OTP', async () => {
+      const { rawToken } = await ParentDocumentService.createInvitation(
+        mockStudentA,
+        ['student_photo', 'student_aadhaar_front'],
+        adminActor
+      );
+
+      const exchange = await ParentDocumentService.exchangeTokenForUploadSession(rawToken);
+      expect(exchange.valid).toBe(true);
+      expect(exchange.session).toBeDefined();
+      expect(exchange.session?.studentId).toBe(mockStudentA.id);
+      expect(exchange.session?.studentName).toBe(mockStudentA.fullName);
+      expect(exchange.session?.requestedSlots).toEqual(['student_photo', 'student_aadhaar_front']);
+
+      // Session is valid
+      const isValid = await ParentDocumentService.isSessionValid(exchange.session!);
+      expect(isValid).toBe(true);
+    });
+
+    it('immediately invalidates active upload session when invitation is revoked', async () => {
+      const { rawToken, invitation } = await ParentDocumentService.createInvitation(
+        mockStudentA,
+        ['student_photo'],
+        adminActor
+      );
+
+      const exchange = await ParentDocumentService.exchangeTokenForUploadSession(rawToken);
+      expect(exchange.valid).toBe(true);
+      expect(await ParentDocumentService.isSessionValid(exchange.session!)).toBe(true);
+
+      // School revokes invitation
+      await ParentDocumentService.revokeInvitation(invitation.tokenHash, adminActor);
+
+      // Now session is immediately invalid
+      expect(await ParentDocumentService.isSessionValid(exchange.session!)).toBe(false);
+
+      // New token exchange is rejected
+      const retry = await ParentDocumentService.exchangeTokenForUploadSession(rawToken);
+      expect(retry.valid).toBe(false);
+      expect(retry.error).toContain('revoked');
+    });
   });
 
   describe('3. WhatsApp OTP Verification & Rate Limiting Safeguards', () => {
@@ -436,13 +478,13 @@ describe('Parent Document Collection Security & Review Workflow Suite', () => {
       expect(message).toContain(`Dear Parent/Guardian of ${mockStudentA.fullName}`);
       expect(message).toContain(uploadUrl);
       expect(message).toContain('HanuJai High School requests you to securely upload');
-      expect(message).toContain('OTP will be sent to this WhatsApp number');
+      expect(message).toContain('No login or password is required');
 
       // Hindi section
       expect(message).toContain('आदरणीय अभिभावक');
       expect(message).toContain('हनुजाई हाई स्कूल');
       expect(message).toContain('सुरक्षित रूप से अपलोड');
-      expect(message).toContain('OTP भेजा जाएगा');
+      expect(message).toContain('किसी पासवर्ड या लॉगिन की आवश्यकता नहीं है');
     });
 
     it('records simulated WhatsApp dispatch in dry-run mode with deterministic messageId', async () => {

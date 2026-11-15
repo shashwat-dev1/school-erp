@@ -66,7 +66,44 @@ export interface SchoolSettings {
   cbseAffiliationNumber?: string;
   cbseSchoolCode?: string;
   timezone?: string;
+  rolePermissions?: RolePermissions;
 }
+
+// ============================================================================
+// Granular Permission Management Types
+// ============================================================================
+export type PermissionModule =
+  | 'students'
+  | 'attendance'
+  | 'documents'
+  | 'parent_requests'
+  | 'whatsapp'
+  | 'excel_import'
+  | 'data_export'
+  | 'classes'
+  | 'users'
+  | 'database'
+  | 'audit'
+  | 'settings';
+
+export type PermissionAction =
+  | 'view'
+  | 'create'
+  | 'edit'
+  | 'delete'
+  | 'upload'
+  | 'download'
+  | 'export'
+  | 'approve'
+  | 'reject'
+  | 'revoke'
+  | 'send_whatsapp'
+  | 'manage';
+
+export type ModulePermissions = Partial<Record<PermissionAction, boolean>>;
+export type RolePermissions = Record<ActiveStaffRole, Record<PermissionModule, ModulePermissions>>;
+
+export type PermissionPreset = 'read_only' | 'read_write' | 'full' | 'custom';
 
 export interface AttendancePolicy {
   dailyMarkingWindowStart: string; // '07:45' (24h IST)
@@ -256,9 +293,11 @@ export interface AttendanceCorrection {
   sessionId: string;
   classId: string;
   classLabel: string;
+  section?: string;
   date: string;
   studentId: string;
   studentName: string;
+  admissionNumber?: string;
   previousState: AttendanceState;
   requestedState: AttendanceState;
   mandatoryReason: string;
@@ -270,6 +309,9 @@ export interface AttendanceCorrection {
   reviewedByStaffName?: string;
   reviewedAt?: string;
   reviewRemarks?: string;
+  notificationJobId?: string;
+  notificationStatus?: 'pending' | 'processing' | 'sent' | 'failed' | 'skipped';
+  notificationError?: string;
 }
 
 // ============================================================================
@@ -357,6 +399,8 @@ export type AuditAction =
   | 'student_updated'
   | 'attendance_submitted' 
   | 'attendance_corrected' 
+  | 'attendance_correction_requested'
+  | 'attendance_correction_rejected'
   | 'marks_saved' 
   | 'marks_submitted'
   | 'incident_recorded'
@@ -366,7 +410,14 @@ export type AuditAction =
   | 'document_replaced'
   | 'document_deleted'
   | 'document_approved'
-  | 'document_rejected';
+  | 'document_rejected'
+  | 'user_created'
+  | 'user_updated'
+  | 'user_status_changed'
+  | 'user_role_changed'
+  | 'user_session_revoked'
+  | 'password_recovery_initiated'
+  | 'permissions_updated';
 
 export interface AuditEvent {
   id: string;

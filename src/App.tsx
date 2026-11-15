@@ -45,6 +45,9 @@ import { DeveloperConsole } from './pages/developer/DeveloperConsole';
 // Public Parent Document Upload Portal
 import { ParentDocumentUpload } from './pages/parent/ParentDocumentUpload';
 
+// Centralized Student Documents Dashboard
+import { DocumentsDashboard } from './pages/documents/DocumentsDashboard';
+
 export const App: React.FC = () => {
   return (
     <Routes>
@@ -71,6 +74,16 @@ export const App: React.FC = () => {
         <Route path="students/:id" element={<StudentDetail />} />
         <Route path="students/:id/attendance" element={<StudentAttendanceHistory />} />
         <Route path="students/:studentId/attendance" element={<StudentAttendanceHistory />} />
+
+        {/* Centralized Student Document Management Dashboard */}
+        <Route
+          path="documents"
+          element={
+            <RoleGuard allowedRoles={['principal', 'admin', 'developer']}>
+              <DocumentsDashboard />
+            </RoleGuard>
+          }
+        />
 
         {/* Whole-School Attendance (Principal oversight) */}
         <Route
@@ -100,11 +113,11 @@ export const App: React.FC = () => {
           }
         />
 
-        {/* Attendance Corrections (Admin Office Operations) */}
+        {/* Attendance Corrections (Principal Approvals & Admin Requests) */}
         <Route
           path="attendance/corrections"
           element={
-            <RoleGuard allowedRoles={['admin', 'developer']}>
+            <RoleGuard allowedRoles={['principal', 'admin', 'developer']}>
               <AttendanceCorrections />
             </RoleGuard>
           }

@@ -138,7 +138,7 @@ describe('HanuJai ERP Foundation — Phase 1 Core Workflows (Student & Attendanc
     setupUserSession(adminStaff.id);
 
     render(
-      <MemoryRouter initialEntries={['/attendance/register/class-10-a']}>
+      <MemoryRouter initialEntries={['/attendance/register/class-10-b']}>
         <AuthProvider>
           <DataContextProvider>
             <App />
@@ -150,7 +150,7 @@ describe('HanuJai ERP Foundation — Phase 1 Core Workflows (Student & Attendanc
     await waitFor(() => {
       expect(screen.getAllByText(/Attendance Register/i).length).toBeGreaterThan(0);
       expect(screen.getByText(/Mark All Present/i)).toBeInTheDocument();
-      expect(screen.getByText(/Save & Submit/i)).toBeInTheDocument();
+      expect(screen.getAllByText(/Save & Submit/i).length).toBeGreaterThan(0);
     });
   });
 

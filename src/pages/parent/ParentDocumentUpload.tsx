@@ -6,7 +6,6 @@ import {
   CheckCircle2,
   AlertCircle,
   RefreshCw,
-  Phone,
   Check,
   Lock,
 } from 'lucide-react';
@@ -24,22 +23,11 @@ import { useData } from '../../context/DataContext';
 export const ParentDocumentUpload: React.FC = () => {
   const { provider } = useData();
 
-  const [rawToken, setRawToken] = useState<string>('');
-  const [phase, setPhase] = useState<'verifying_link' | 'otp_required' | 'upload_ready' | 'success_complete' | 'error'>('verifying_link');
+  const [phase, setPhase] = useState<'verifying_link' | 'upload_ready' | 'success_complete' | 'error'>('verifying_link');
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
   // Student & Invitation metadata
-  const [studentName, setStudentName] = useState<string>('');
-  const [classLabel, setClassLabel] = useState<string>('');
-  const [maskedPhone, setMaskedPhone] = useState<string>('');
   const [requestedSlots, setRequestedSlots] = useState<StudentDocumentType[]>([]);
-  const [demoOtpHint, setDemoOtpHint] = useState<string | null>(null);
-
-  // OTP State
-  const [otpValue, setOtpValue] = useState<string>('');
-  const [isVerifyingOtp, setIsVerifyingOtp] = useState<boolean>(false);
-  const [otpError, setOtpError] = useState<string | null>(null);
-  const [cooldownSeconds, setCooldownSeconds] = useState<number>(0);
 
   // Active Upload Session
   const [session, setSession] = useState<ParentUploadSession | null>(null);
@@ -71,79 +59,24 @@ export const ParentDocumentUpload: React.FC = () => {
       return;
     }
 
-    setRawToken(token);
     initiateVerification(token);
   }, []);
-
-  // Cooldown countdown timer for OTP resend
-  useEffect(() => {
-    if (cooldownSeconds <= 0) return;
-    const interval = setInterval(() => {
-      setCooldownSeconds(prev => Math.max(0, prev - 1));
-    }, 1000);
-    return () => clearInterval(interval);
-  }, [cooldownSeconds]);
 
   const initiateVerification = async (token: string) => {
     setPhase('verifying_link');
     setErrorMessage(null);
 
     try {
-      const res = await ParentDocumentService.verifyTokenAndSendOtp(token);
-      if (!res.valid) {
-        setErrorMessage(res.error || 'Upload link is invalid or has expired.');
+      const res = await ParentDocumentService.exchangeTokenForUploadSession(token);
+      if (!res.valid || !res.session) {
+        setErrorMessage(res.error || 'Upload link is invalid, expired, or revoked.');
         setPhase('error');
         return;
       }
 
-      setStudentName(res.studentName || 'Student');
-      setClassLabel(res.classLabel || '');
-      setMaskedPhone(res.maskedPhone || '');
-      setRequestedSlots(res.requestedSlots || []);
-      if (res.generatedOtpForDemo) {
-        setDemoOtpHint(res.generatedOtpForDemo);
-      }
-      setCooldownSeconds(30);
-      setPhase('otp_required');
-    } catch (err) {
-      setErrorMessage(err instanceof Error ? err.message : 'Failed to verify link.');
-      setPhase('error');
-    }
-  };
-
-  const handleResendOtp = async () => {
-    if (cooldownSeconds > 0 || !rawToken) return;
-    setOtpError(null);
-    try {
-      const res = await ParentDocumentService.verifyTokenAndSendOtp(rawToken);
-      if (res.generatedOtpForDemo) {
-        setDemoOtpHint(res.generatedOtpForDemo);
-      }
-      setCooldownSeconds(30);
-    } catch (err) {
-      setOtpError(err instanceof Error ? err.message : 'Failed to resend code.');
-    }
-  };
-
-  const handleVerifyOtp = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!otpValue || otpValue.trim().length !== 6) {
-      setOtpError('Please enter the 6-digit verification code.');
-      return;
-    }
-
-    setIsVerifyingOtp(true);
-    setOtpError(null);
-
-    try {
-      const res = await ParentDocumentService.verifyOtpAndCreateSession(rawToken, otpValue.trim());
-      if (!res.valid || !res.session) {
-        setOtpError(res.error || 'Invalid verification code.');
-        setIsVerifyingOtp(false);
-        return;
-      }
-
       setSession(res.session);
+      setRequestedSlots(res.session.requestedSlots || []);
+
       // Initialize slot upload status
       const initialStatus: Record<string, { status: 'idle' | 'uploading' | 'completed' | 'error'; progress: number; filename?: string; error?: string }> = {};
       res.session.requestedSlots.forEach(slot => {
@@ -152,9 +85,8 @@ export const ParentDocumentUpload: React.FC = () => {
       setUploadedSlots(initialStatus);
       setPhase('upload_ready');
     } catch (err) {
-      setOtpError(err instanceof Error ? err.message : 'Verification failed.');
-    } finally {
-      setIsVerifyingOtp(false);
+      setErrorMessage(err instanceof Error ? err.message : 'Failed to verify upload link.');
+      setPhase('error');
     }
   };
 
@@ -365,172 +297,7 @@ export const ParentDocumentUpload: React.FC = () => {
           </div>
         )}
 
-        {/* PHASE 3: OTP Verification */}
-        {phase === 'otp_required' && (
-          <div>
-            {/* Student badge */}
-            <div
-              style={{
-                backgroundColor: '#EFF6FF',
-                border: '1px solid #BFDBFE',
-                borderRadius: '12px',
-                padding: '14px 16px',
-                marginBottom: '20px',
-                display: 'flex',
-                alignItems: 'center',
-                gap: '12px',
-              }}
-            >
-              <div
-                style={{
-                  width: '36px',
-                  height: '36px',
-                  borderRadius: '8px',
-                  backgroundColor: '#DBEAFE',
-                  color: '#2563EB',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  fontWeight: 700,
-                  fontSize: '0.9rem',
-                }}
-              >
-                {studentName.charAt(0)}
-              </div>
-              <div>
-                <div style={{ fontWeight: 700, fontSize: '0.95rem', color: '#1E40AF' }}>
-                  {studentName}
-                </div>
-                <div style={{ fontSize: '0.78rem', color: '#3B82F6' }}>
-                  {classLabel} • Official Student Record
-                </div>
-              </div>
-            </div>
-
-            <div style={{ textAlign: 'center', marginBottom: '24px' }}>
-              <div
-                style={{
-                  width: '48px',
-                  height: '48px',
-                  borderRadius: '50%',
-                  backgroundColor: '#DCFCE7',
-                  color: '#16A34A',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  margin: '0 auto 12px auto',
-                }}
-              >
-                <Phone size={24} />
-              </div>
-              <h3 style={{ fontSize: '1.15rem', fontWeight: 700, color: '#0F172A', margin: '0 0 6px 0' }}>
-                WhatsApp Verification Code
-              </h3>
-              <p style={{ fontSize: '0.85rem', color: '#64748B', margin: 0, lineHeight: 1.5 }}>
-                We sent a 6-digit code to your registered mobile number:
-                <br />
-                <strong style={{ color: '#0F172A', fontSize: '0.95rem' }}>{maskedPhone}</strong>
-              </p>
-            </div>
-
-            {demoOtpHint && (
-              <div
-                style={{
-                  backgroundColor: '#FEF3C7',
-                  border: '1px solid #FCD34D',
-                  borderRadius: '8px',
-                  padding: '8px 12px',
-                  fontSize: '0.8rem',
-                  color: '#92400E',
-                  textAlign: 'center',
-                  marginBottom: '16px',
-                }}
-              >
-                <strong>[Demo Mode Active]</strong> Verification Code: <code>{demoOtpHint}</code>
-              </div>
-            )}
-
-            <form onSubmit={handleVerifyOtp}>
-              <div style={{ marginBottom: '20px' }}>
-                <input
-                  type="text"
-                  maxLength={6}
-                  placeholder="• • • • • •"
-                  value={otpValue}
-                  onChange={e => setOtpValue(e.target.value.replace(/[^0-9]/g, ''))}
-                  autoFocus
-                  style={{
-                    width: '100%',
-                    textAlign: 'center',
-                    fontSize: '1.75rem',
-                    letterSpacing: '0.3em',
-                    fontWeight: 700,
-                    padding: '12px 16px',
-                    borderRadius: '12px',
-                    border: otpError ? '2px solid #EF4444' : '2px solid #CBD5E1',
-                    outline: 'none',
-                    backgroundColor: '#F8FAFC',
-                    boxSizing: 'border-box',
-                  }}
-                />
-                {otpError && (
-                  <div style={{ color: '#DC2626', fontSize: '0.8rem', marginTop: '6px', textAlign: 'center' }}>
-                    {otpError}
-                  </div>
-                )}
-              </div>
-
-              <button
-                type="submit"
-                disabled={isVerifyingOtp || otpValue.length !== 6}
-                className="hhs-btn hhs-btn-primary"
-                style={{
-                  width: '100%',
-                  padding: '12px',
-                  fontSize: '0.95rem',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  gap: '8px',
-                }}
-              >
-                {isVerifyingOtp ? (
-                  <>
-                    <RefreshCw size={18} className="animate-spin" />
-                    <span>Verifying Code...</span>
-                  </>
-                ) : (
-                  <>
-                    <ShieldCheck size={18} />
-                    <span>Verify Code & Enter Portal</span>
-                  </>
-                )}
-              </button>
-            </form>
-
-            <div style={{ marginTop: '20px', textAlign: 'center', fontSize: '0.82rem', color: '#64748B' }}>
-              Didn't receive the WhatsApp message?{' '}
-              <button
-                type="button"
-                onClick={handleResendOtp}
-                disabled={cooldownSeconds > 0}
-                style={{
-                  background: 'none',
-                  border: 'none',
-                  color: cooldownSeconds > 0 ? '#94A3B8' : 'var(--hhs-primary)',
-                  fontWeight: 600,
-                  cursor: cooldownSeconds > 0 ? 'not-allowed' : 'pointer',
-                  padding: 0,
-                  textDecoration: cooldownSeconds > 0 ? 'none' : 'underline',
-                }}
-              >
-                {cooldownSeconds > 0 ? `Resend code in ${cooldownSeconds}s` : 'Resend code via WhatsApp'}
-              </button>
-            </div>
-          </div>
-        )}
-
-        {/* PHASE 4: Document Upload Form */}
+        {/* PHASE 3: Document Upload Form */}
         {phase === 'upload_ready' && session && (
           <div>
             {/* Header info */}
@@ -745,7 +512,7 @@ export const ParentDocumentUpload: React.FC = () => {
               दस्तावेज़ सफलतापूर्वक प्राप्त हुए!
             </div>
             <p style={{ color: '#475569', fontSize: '0.88rem', lineHeight: 1.6, marginBottom: '24px' }}>
-              Your uploaded documents for <strong>{studentName}</strong> ({classLabel}) have been securely encrypted and transmitted to the HanuJai High School Administrative Office.
+              Your uploaded documents for <strong>{session?.studentName || 'Student'}</strong> ({session?.classLabel || 'Official Record'}) have been securely encrypted and transmitted to the HanuJai High School Administrative Office.
               <br />
               The office will review and verify them shortly.
             </p>

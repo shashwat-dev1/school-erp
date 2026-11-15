@@ -267,24 +267,21 @@ describe('HANUJAI ERP — Student Data Import & Migration Engine', () => {
     });
   });
 
-  describe('5. Approved 10-Column Schema & Header Verification Suite', () => {
-    it('generates the official 10-column template with sample data and guidelines sheet', () => {
+  describe('5. Approved 7-Column Schema & Header Verification Suite', () => {
+    it('generates the official 7-column template with sample data and guidelines sheet', () => {
       const wb = DeveloperService.generateStudentTemplateWorkbook();
-      expect(wb.SheetNames).toContain('Student Data');
-      expect(wb.SheetNames).toContain('Instructions & Field Rules');
+      expect(wb.SheetNames).toContain('Student Records');
+      expect(wb.SheetNames).toContain('Sample Reference');
 
-      expect(DeveloperService.OFFICIAL_TEMPLATE_COLUMNS).toHaveLength(10);
+      expect(DeveloperService.OFFICIAL_TEMPLATE_COLUMNS).toHaveLength(7);
       expect(DeveloperService.OFFICIAL_TEMPLATE_COLUMNS).toEqual([
-        "Student's Full Name",
-        "Father's Full Name",
-        "Mother's Name / Guardian Name",
-        "Class",
-        "Section",
-        "Parent/Guardian Mobile Number",
-        "Date of Birth",
-        "Admission Number",
-        "Roll Number",
-        "Complete Residential Address",
+        'Admission Number (SR No.)',
+        'Roll Number',
+        'Student Full Name',
+        'Class',
+        'Section',
+        'Gender',
+        'WhatsApp Mobile Number',
       ]);
     });
 
@@ -298,16 +295,13 @@ describe('HANUJAI ERP — Student Data Import & Migration Engine', () => {
 
     it('strictly checks required columns during header verification', () => {
       const validHeaders = [
-        "Student's Full Name",
-        "Father's Full Name",
-        "Mother's Name / Guardian Name",
-        "Class",
-        "Section",
-        "Parent/Guardian Mobile Number",
-        "Date of Birth",
-        "Admission Number",
-        "Roll Number",
-        "Complete Residential Address",
+        'Admission Number (SR No.)',
+        'Roll Number',
+        'Student Full Name',
+        'Class',
+        'Section',
+        'Gender',
+        'WhatsApp Mobile Number',
       ];
 
       const res = DeveloperService.verifySpreadsheetHeaders(validHeaders);
@@ -316,15 +310,15 @@ describe('HANUJAI ERP — Student Data Import & Migration Engine', () => {
 
       // Missing required admission number & mobile
       const incompleteHeaders = [
-        "Student's Full Name",
-        "Class",
-        "Section",
+        'Student Full Name',
+        'Class',
+        'Section',
       ];
 
       const incompleteRes = DeveloperService.verifySpreadsheetHeaders(incompleteHeaders);
       expect(incompleteRes.isValid).toBe(false);
       expect(incompleteRes.missingRequiredColumns).toContain('Admission Number (SR No.)');
-      expect(incompleteRes.missingRequiredColumns).toContain('Parent/Guardian Mobile Number');
+      expect(incompleteRes.missingRequiredColumns).toContain('WhatsApp Mobile Number');
     });
 
     it('allows Admin Office and Developer to import students while forbidding Principal', () => {

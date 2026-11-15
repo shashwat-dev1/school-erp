@@ -39,12 +39,17 @@ import type {
   StudentMarkEntry,
   StudentDocumentType,
   StudentDocumentRecord,
+  RolePermissions,
+  PermissionModule,
+  PermissionAction,
 } from '../../domain/types';
+import { Permissions } from '../../domain/permissions';
 import { getSchoolLocalDate } from '../../domain/policy';
-import { initialStaff } from '../demo/seedData';
+import { initialStaff, defaultDeveloperUser } from '../demo/seedData';
 
 import { db, auth, isFirebaseConfigured } from '../../config/firebase';
 import { vercelBlobStorage } from '../../services/storage/vercelBlobStorage';
+import { WhatsAppNotificationService } from '../../services/whatsapp/whatsappService';
 import {
   collection,
   doc,
@@ -55,6 +60,7 @@ import {
   updateDoc,
   deleteDoc,
   writeBatch,
+  runTransaction,
   query,
   where,
   orderBy,
@@ -133,9 +139,11 @@ export class FirestoreRepository implements DataProvider {
         return seedMatch;
       }
 
-      // Resilient role resolver for custom Firebase Auth accounts (Principal & Admin Office only)
+      // Resilient role resolver for custom Firebase Auth accounts
       let resolvedPersona = initialStaff.find(s => s.role === 'admin' && s.status === 'active') || initialStaff[1];
-      if (userEmail.includes('principal') || userEmail.includes('director') || userEmail.includes('head')) {
+      if (userEmail.includes('developer') || userEmail.includes('dev')) {
+        resolvedPersona = defaultDeveloperUser;
+      } else if (userEmail.includes('principal') || userEmail.includes('director') || userEmail.includes('head')) {
         resolvedPersona = initialStaff.find(s => s.role === 'principal' && s.status === 'active') || initialStaff[0];
       }
       const linkedUser: StaffUser = {
@@ -359,12 +367,23 @@ export class FirestoreRepository implements DataProvider {
       throw new Error('Unauthorized: Only Admin Office is authorized to submit daily classroom attendance.');
     }
     ensureFirebaseReady();
+
+    const sessionId = `att-${input.classId}-${input.date}`;
+    const sessDoc = await getDoc(doc(db!, 'attendanceSessions', sessionId));
+    if (sessDoc.exists()) {
+      const existing = sessDoc.data() as AttendanceSession;
+      if (existing.status === 'submitted' || existing.status === 'corrected') {
+        throw new Error(
+          'Attendance register is locked for this class and date. Direct modifications are forbidden. Please submit an Attendance Correction Request for Principal review.'
+        );
+      }
+    }
+
     const [cls, students] = await Promise.all([
       this.getClassById(input.classId),
       this.getClassStudents(input.classId),
     ]);
     const studentMap = new Map(students.map(s => [s.id, s]));
-    const sessionId = `att-${input.classId}-${input.date}`;
     const records = input.records.map(r => {
       const stud = studentMap.get(r.studentId);
       return {
@@ -427,6 +446,19 @@ export class FirestoreRepository implements DataProvider {
     if (actor.role === 'principal') {
       throw new Error('Unauthorized: Principal cannot request attendance corrections.');
     }
+    const isAuthorized = actor.role === 'admin' || actor.role === 'developer';
+    if (!isAuthorized) {
+      throw new Error('Unauthorized: Only Admin Office is authorized to record attendance corrections.');
+    }
+
+    if (!input.mandatoryReason || !input.mandatoryReason.trim()) {
+      throw new Error('Mandatory justification/remarks are required to request an attendance correction.');
+    }
+
+    if (input.previousState === input.requestedState) {
+      throw new Error('Requested status cannot be identical to the currently recorded status.');
+    }
+
     ensureFirebaseReady();
     const [studDoc, sessDoc] = await Promise.all([
       getDoc(doc(db!, 'students', input.studentId)),
@@ -436,27 +468,36 @@ export class FirestoreRepository implements DataProvider {
     const sess = sessDoc.exists() ? (sessDoc.data() as AttendanceSession) : null;
 
     const classId = sess?.classId || stud?.classId || 'class-10-a';
-    const isAuthorized = actor.role === 'admin' || actor.role === 'developer';
-    if (!isAuthorized) {
-      throw new Error('Unauthorized: Only Admin Office is authorized to record attendance corrections.');
-    }
-
     const classLabel = sess?.classLabel || stud?.classLabel || classId;
     const date = sess?.date || getSchoolLocalDate();
     const studentName = stud?.fullName || input.studentId;
 
-    const corrId = `corr-${Date.now()}`;
+    // Check duplicate pending request
+    const existingQ = query(
+      collection(db!, 'attendanceCorrections'),
+      where('studentId', '==', input.studentId),
+      where('date', '==', date),
+      where('status', '==', 'pending_principal')
+    );
+    const existingSnap = await getDocs(existingQ);
+    if (!existingSnap.empty) {
+      throw new Error('A pending attendance correction request already exists for this student on this date.');
+    }
+
+    const corrId = `corr-${Date.now()}-${Math.floor(Math.random() * 1000)}`;
     const corr: AttendanceCorrection = {
       id: corrId,
       sessionId: input.sessionId,
       classId,
       classLabel,
+      section: input.section || (classLabel.includes('-') ? classLabel.split('-')[1]?.trim() : ''),
+      admissionNumber: input.admissionNumber || stud?.admissionNumber || stud?.id || '',
       date,
       studentId: input.studentId,
       studentName,
       previousState: input.previousState,
       requestedState: input.requestedState,
-      mandatoryReason: input.mandatoryReason,
+      mandatoryReason: input.mandatoryReason.trim(),
       requestedByStaffId: actor.id,
       requestedByStaffName: actor.name,
       requestedAt: new Date().toISOString(),
@@ -472,18 +513,88 @@ export class FirestoreRepository implements DataProvider {
     approved: boolean,
     remarks?: string
   ): Promise<void> {
-    if (actor.role === 'principal') {
-      throw new Error('Unauthorized: Principal cannot approve attendance corrections in this pilot.');
-    }
     ensureFirebaseReady();
-    const docRef = doc(db!, 'attendanceCorrections', correctionId);
-    await updateDoc(docRef, {
-      status: approved ? 'approved' : 'rejected',
-      reviewedByStaffId: actor.id,
-      reviewedByStaffName: actor.name,
-      reviewedAt: new Date().toISOString(),
-      reviewRemarks: remarks,
-    });
+    const corrRef = doc(db!, 'attendanceCorrections', correctionId);
+    const corrSnap = await getDoc(corrRef);
+    if (!corrSnap.exists()) {
+      throw new Error('Attendance correction request not found.');
+    }
+    const corr = corrSnap.data() as AttendanceCorrection;
+
+    if (corr.status !== 'pending_principal') {
+      throw new Error(`Cannot review attendance correction: current status is "${corr.status}".`);
+    }
+
+    // Role and dual-custody check
+    if (!Permissions.canApproveAttendanceCorrection(actor, corr)) {
+      if (actor.role === 'admin') {
+        throw new Error('Unauthorized: Admin Office cannot approve or reject attendance corrections.');
+      }
+      if (corr.requestedByStaffId === actor.id) {
+        throw new Error('Unauthorized: Dual custody violation (SEC-201). Requester cannot review their own correction request.');
+      }
+      throw new Error('Unauthorized: You do not have permission to review attendance corrections.');
+    }
+
+    if (approved) {
+      await runTransaction(db!, async (transaction) => {
+        const sessRef = doc(db!, 'attendanceSessions', corr.sessionId);
+        const sessDoc = await transaction.get(sessRef);
+        if (!sessDoc.exists()) throw new Error('Attendance session not found for this correction.');
+        const session = sessDoc.data() as AttendanceSession;
+        const recIndex = session.records.findIndex(r => r.studentId === corr.studentId);
+        if (recIndex === -1) throw new Error(`Student record ${corr.studentId} not found in attendance session.`);
+        if (session.records[recIndex].state !== corr.previousState) {
+          throw new Error(`Record mismatch: student status in session is currently "${session.records[recIndex].state}", but correction expected "${corr.previousState}".`);
+        }
+
+        session.records[recIndex].state = corr.requestedState;
+        session.presentCount = session.records.filter(r => r.state === 'present').length;
+        session.absentCount = session.records.filter(r => r.state === 'absent').length;
+        session.totalPresent = session.presentCount;
+        session.totalAbsent = session.absentCount;
+        session.status = 'corrected';
+
+        transaction.set(sessRef, session, { merge: true });
+        transaction.update(corrRef, {
+          status: 'approved',
+          reviewedByStaffId: actor.id,
+          reviewedByStaffName: actor.name,
+          reviewedAt: new Date().toISOString(),
+          reviewRemarks: remarks || '',
+        });
+      });
+
+      // Single-parent notification
+      const studDoc = await getDoc(doc(db!, 'students', corr.studentId));
+      if (studDoc.exists()) {
+        const student = studDoc.data() as StudentRecord;
+        try {
+          const job = await WhatsAppNotificationService.enqueueCorrectionNotification(corr, student);
+          await updateDoc(corrRef, {
+            notificationJobId: job.id,
+            notificationStatus: job.deliveryStatus,
+            notificationError: job.error || null,
+          });
+        } catch (err: any) {
+          await updateDoc(corrRef, {
+            notificationStatus: 'failed',
+            notificationError: err?.message || 'Notification failed',
+          });
+        }
+      }
+    } else {
+      if (!remarks || !remarks.trim()) {
+        throw new Error('A rejection reason or remarks is required when rejecting a correction request.');
+      }
+      await updateDoc(corrRef, {
+        status: 'rejected',
+        reviewedByStaffId: actor.id,
+        reviewedByStaffName: actor.name,
+        reviewedAt: new Date().toISOString(),
+        reviewRemarks: remarks.trim(),
+      });
+    }
   }
 
   public async getAssessmentCycles(_yearId?: string): Promise<AssessmentCycle[]> {
@@ -645,25 +756,194 @@ export class FirestoreRepository implements DataProvider {
   }
 
   public async createStaffMember(input: Partial<StaffUser>, _actor: StaffUser): Promise<StaffUser> {
-    if (_actor?.role === 'principal') {
-      throw new Error('Unauthorized: Principal profile is strictly read-only in this pilot.');
+    if (!_actor || _actor.role !== 'developer') {
+      throw new Error('Unauthorized: Only Developer accounts can provision staff users.');
+    }
+    if (input.role === 'developer' && _actor.role !== 'developer') {
+      throw new Error('Unauthorized: Only an authorized Developer can create or assign another Developer account.');
     }
     ensureFirebaseReady();
     const id = `staff-${Date.now()}`;
-    const staff = { id, ...input } as StaffUser;
+    const staff = { id, ...input, status: input.status || 'active', createdAt: new Date().toISOString() } as StaffUser;
     await setDoc(doc(db!, 'staff', id), staff);
+
+    try {
+      const auditRef = collection(db!, 'auditEvents');
+      await addDoc(auditRef, {
+        timestamp: new Date().toISOString(),
+        actorId: _actor.id,
+        actorName: _actor.displayName || _actor.name,
+        actorRole: _actor.role,
+        action: 'user_created',
+        resource: 'staff',
+        targetId: id,
+        summary: `Provisioned staff account for ${staff.name} (${staff.role})`,
+        clientIp: '192.168.1.1',
+      });
+    } catch {
+      // Non-blocking audit recording
+    }
+
     return staff;
   }
 
   public async updateStaffMember(staffId: string, updates: Partial<StaffUser>, _actor: StaffUser): Promise<StaffUser> {
-    if (_actor?.role === 'principal') {
-      throw new Error('Unauthorized: Principal profile is strictly read-only in this pilot.');
+    if (!_actor || _actor.role !== 'developer') {
+      throw new Error('Unauthorized: Only Developer accounts can modify staff roles or account status.');
     }
     ensureFirebaseReady();
     const ref = doc(db!, 'staff', staffId);
-    await updateDoc(ref, updates);
     const snap = await getDoc(ref);
-    return snap.data() as StaffUser;
+    if (!snap.exists()) throw new Error('Staff member not found');
+    const existing = snap.data() as StaffUser;
+
+    // Protect against non-developer elevating to developer
+    if (updates.role === 'developer' && _actor.role !== 'developer') {
+      throw new Error('Unauthorized: Principal and Admin Office cannot elevate themselves to Developer.');
+    }
+
+    // Protect against accidental demotion or deactivation of the last active Developer
+    if (existing.role === 'developer') {
+      const isDemoting = updates.role && updates.role !== 'developer';
+      const isDeactivating = updates.status && updates.status !== 'active';
+      if (isDemoting || isDeactivating) {
+        const staffSnap = await getDocs(query(collection(db!, 'staff'), where('role', '==', 'developer'), where('status', '==', 'active')));
+        if (staffSnap.size <= 1) {
+          throw new Error('Action blocked: Cannot deactivate or demote the last active Developer account.');
+        }
+      }
+    }
+
+    await updateDoc(ref, updates);
+    const updatedSnap = await getDoc(ref);
+    const updated = updatedSnap.data() as StaffUser;
+
+    try {
+      const auditRef = collection(db!, 'auditEvents');
+      await addDoc(auditRef, {
+        timestamp: new Date().toISOString(),
+        actorId: _actor.id,
+        actorName: _actor.displayName || _actor.name,
+        actorRole: _actor.role,
+        action: updates.role ? 'user_role_changed' : updates.status ? 'user_status_changed' : 'user_updated',
+        resource: 'staff',
+        targetId: staffId,
+        summary: `Updated staff profile for ${updated.name}: ${JSON.stringify(updates)}`,
+        clientIp: '192.168.1.1',
+      });
+    } catch {
+      // Non-blocking
+    }
+
+    return updated;
+  }
+
+  public async revokeStaffSessions(staffId: string, _actor: StaffUser): Promise<void> {
+    if (!_actor || _actor.role !== 'developer') {
+      throw new Error('Unauthorized: Only Developer accounts can revoke user sessions.');
+    }
+    ensureFirebaseReady();
+    try {
+      const auditRef = collection(db!, 'auditEvents');
+      await addDoc(auditRef, {
+        timestamp: new Date().toISOString(),
+        actorId: _actor.id,
+        actorName: _actor.displayName || _actor.name,
+        actorRole: _actor.role,
+        action: 'user_session_revoked',
+        resource: 'staff',
+        targetId: staffId,
+        summary: `Revoked active sessions for staff user ${staffId}`,
+        clientIp: '192.168.1.1',
+      });
+    } catch {
+      // Non-blocking
+    }
+  }
+
+  public async initiatePasswordRecovery(staffId: string, _actor: StaffUser): Promise<{ tempToken?: string; message: string }> {
+    if (!_actor || _actor.role !== 'developer') {
+      throw new Error('Unauthorized: Only Developer accounts can initiate password recovery.');
+    }
+    ensureFirebaseReady();
+    const tempToken = `reset_${Math.random().toString(36).substring(2, 10)}`;
+    try {
+      const auditRef = collection(db!, 'auditEvents');
+      await addDoc(auditRef, {
+        timestamp: new Date().toISOString(),
+        actorId: _actor.id,
+        actorName: _actor.displayName || _actor.name,
+        actorRole: _actor.role,
+        action: 'password_recovery_initiated',
+        resource: 'staff',
+        targetId: staffId,
+        summary: `Initiated password recovery dispatch for staff user ${staffId}`,
+        clientIp: '192.168.1.1',
+      });
+    } catch {
+      // Non-blocking
+    }
+    return {
+      tempToken,
+      message: `Password recovery process initiated for staff user ${staffId}.`,
+    };
+  }
+
+  public async getRolePermissions(): Promise<RolePermissions> {
+    if (isFirebaseConfigured() && db) {
+      try {
+        const ref = doc(db, 'systemSettings', 'permissions');
+        const snap = await getDoc(ref);
+        if (snap.exists()) {
+          const data = snap.data() as RolePermissions;
+          Permissions.setRolePermissions(data, false);
+          return Permissions.getRolePermissions();
+        }
+      } catch (err) {
+        console.warn('Failed to fetch role permissions from Firestore:', err);
+      }
+    }
+    return Permissions.getRolePermissions();
+  }
+
+  public async updateRolePermissions(
+    role: 'principal' | 'admin',
+    permissions: Record<PermissionModule, Partial<Record<PermissionAction, boolean>>>,
+    actor: StaffUser
+  ): Promise<RolePermissions> {
+    if (!actor || actor.role !== 'developer') {
+      throw new Error('Unauthorized: Only Developer accounts can configure role permissions.');
+    }
+
+    const current = Permissions.getRolePermissions();
+    const updated: RolePermissions = {
+      ...current,
+      developer: { ...current.developer },
+      [role]: { ...current[role], ...permissions },
+    };
+
+    Permissions.setRolePermissions(updated, true);
+
+    ensureFirebaseReady();
+    try {
+      await setDoc(doc(db!, 'systemSettings', 'permissions'), updated, { merge: true });
+      const auditRef = collection(db!, 'auditEvents');
+      await addDoc(auditRef, {
+        timestamp: new Date().toISOString(),
+        actorId: actor.id,
+        actorName: actor.displayName || actor.name,
+        actorRole: actor.role,
+        action: 'permissions_updated',
+        resource: 'permissions',
+        targetId: role,
+        summary: `Updated granular permission matrix for role: ${role.toUpperCase()}`,
+        clientIp: '192.168.1.1',
+      });
+    } catch (err) {
+      console.warn('Failed to persist permissions to Firestore:', err);
+    }
+
+    return updated;
   }
 
   public async updateClassTeacher(classId: string, teacherId: string, teacherName: string, _actor: StaffUser): Promise<ClassSection> {

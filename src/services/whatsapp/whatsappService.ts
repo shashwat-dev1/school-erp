@@ -9,6 +9,7 @@
 import {
   collection,
   doc,
+  getDoc,
   getDocs,
   query,
   where,
@@ -16,7 +17,7 @@ import {
 } from 'firebase/firestore';
 import { db, isFirebaseConfigured, isDemoMode } from '../../config/firebase';
 import { PHASE_CONFIG } from '../../config/phase';
-import type { AttendanceSession, StudentRecord } from '../../domain/types';
+import type { AttendanceSession, StudentRecord, AttendanceCorrection } from '../../domain/types';
 import type {
   WhatsAppNotificationJob,
   WhatsAppStats,
@@ -173,6 +174,137 @@ export class WhatsAppNotificationService {
   }
 
   /**
+   * Enqueues and dispatches an attendance correction notification for the affected student ONLY.
+   * - Never sends to the entire class or register.
+   * - Supersedes and cancels any pending original notification for that student.
+   * - Uses a deterministic idempotency key tied to the correction request.
+   */
+  public static async enqueueCorrectionNotification(
+    correction: AttendanceCorrection,
+    student: StudentRecord
+  ): Promise<WhatsAppNotificationJob> {
+    const formattedDate = formatLocalSchoolDate(correction.date);
+    const studentName = student.fullName || correction.studentName;
+    const guardianName = student.guardianName || 'Parent/Guardian';
+    const rawPhone = student.primaryPhone || '';
+    const cleanPhone = rawPhone.trim();
+    const isMissingPhone = !cleanPhone || cleanPhone === '+91' || cleanPhone.length < 10;
+    const classAndSection = correction.classLabel + (correction.section ? ` - ${correction.section}` : '');
+
+    // 1. Cancel / supersede any pending original notification for this student in this session
+    const originalJobId = `att_${correction.sessionId}_${correction.studentId}`;
+    try {
+      const allJobs = this.loadAllFromLocalStorage();
+      if (allJobs[originalJobId] && allJobs[originalJobId].deliveryStatus === 'pending') {
+        allJobs[originalJobId].deliveryStatus = 'skipped';
+        allJobs[originalJobId].skipReason = 'not_in_test_allowlist';
+        allJobs[originalJobId].error = `Superseded by attendance correction ${correction.id}`;
+        this.saveAllToLocalStorage(allJobs);
+      }
+    } catch {
+      // Ignored
+    }
+
+    // 2. Deterministic idempotency key tied to the correction request
+    const jobId = `att_corr_${correction.id}`;
+
+    // 3. Generate bilingual message using dedicated correction template
+    const messageText = PHASE_CONFIG.whatsapp.templates.correction(
+      studentName,
+      classAndSection,
+      formattedDate,
+      correction.previousState as 'present' | 'absent',
+      correction.requestedState as 'present' | 'absent',
+      guardianName
+    );
+
+    const nowIso = new Date().toISOString();
+    const job: WhatsAppNotificationJob = {
+      id: jobId,
+      sessionId: correction.sessionId,
+      classId: correction.classId,
+      classLabel: correction.classLabel,
+      date: correction.date,
+      studentId: correction.studentId,
+      studentName,
+      guardianName,
+      recipientPhone: cleanPhone,
+      attendanceState: correction.requestedState,
+      messageText,
+      provider: PHASE_CONFIG.whatsapp.provider,
+      deliveryStatus: isMissingPhone ? 'skipped' : 'pending',
+      skipReason: isMissingPhone ? 'missing_phone' : undefined,
+      retryCount: 0,
+      createdAt: nowIso,
+    };
+
+    // 4. Persist to Cloud Firestore or local storage
+    if (!isDemoMode() && db && isFirebaseConfigured()) {
+      try {
+        const batch = writeBatch(db);
+        const docRef = doc(db, 'attendanceNotifications', job.id);
+        batch.set(docRef, job, { merge: true });
+
+        // Update original job if pending in Firestore
+        const origDocRef = doc(db, 'attendanceNotifications', originalJobId);
+        batch.set(origDocRef, {
+          deliveryStatus: 'skipped',
+          skipReason: 'not_in_test_allowlist',
+          error: `Superseded by attendance correction ${correction.id}`,
+        }, { merge: true });
+
+        await batch.commit();
+      } catch (err) {
+        console.warn('Firestore correction notification save fallback to local:', err);
+        this.saveToLocalStorage([job]);
+      }
+    } else {
+      this.saveToLocalStorage([job]);
+    }
+
+    // 5. If provider is dry_run, dispatch immediately
+    if (this.provider && this.provider.name === 'dry_run') {
+      if (job.deliveryStatus === 'pending') {
+        const res = await this.provider.send(job);
+        if (res.success) {
+          job.deliveryStatus = 'sent';
+          job.externalId = res.externalId;
+          job.sentAt = new Date().toISOString();
+        } else if (res.skipReason) {
+          job.deliveryStatus = 'skipped';
+          job.skipReason = res.skipReason;
+          job.error = res.error;
+        } else {
+          job.deliveryStatus = 'failed';
+          job.error = res.error || 'Transmission failed';
+        }
+        await this.updateJobsState([job]);
+      }
+    }
+
+    return job;
+  }
+
+  /**
+   * Retrieves a single notification job by ID.
+   */
+  public static async getNotificationJob(jobId: string): Promise<WhatsAppNotificationJob | null> {
+    if (!isDemoMode() && db && isFirebaseConfigured()) {
+      try {
+        const docRef = doc(db, 'attendanceNotifications', jobId);
+        const snap = await getDoc(docRef);
+        if (snap.exists()) {
+          return snap.data() as WhatsAppNotificationJob;
+        }
+      } catch {
+        // Fallback to local
+      }
+    }
+    const all = this.loadAllFromLocalStorage();
+    return all[jobId] || null;
+  }
+
+  /**
    * Retrieves all notification records for an attendance session.
    */
   public static async getSessionNotifications(sessionId: string): Promise<{
@@ -255,6 +387,24 @@ export class WhatsAppNotificationService {
       }
     }
     this.saveToLocalStorage(jobs);
+  }
+
+  private static loadAllFromLocalStorage(): Record<string, WhatsAppNotificationJob> {
+    try {
+      const raw = localStorage.getItem(LOCAL_STORAGE_KEY);
+      if (!raw) return {};
+      return JSON.parse(raw);
+    } catch {
+      return {};
+    }
+  }
+
+  private static saveAllToLocalStorage(allJobs: Record<string, WhatsAppNotificationJob>): void {
+    try {
+      localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(allJobs));
+    } catch {
+      // Storage unavailable or quota exceeded
+    }
   }
 
   private static saveToLocalStorage(newJobs: WhatsAppNotificationJob[]): void {

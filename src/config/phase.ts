@@ -37,6 +37,14 @@ export interface PhaseConfig {
     templates: {
       present: (studentName: string, dateStr: string, parentName?: string) => string;
       absent: (studentName: string, dateStr: string, parentName?: string) => string;
+      correction: (
+        studentName: string,
+        classAndSection: string,
+        dateStr: string,
+        previousState: 'present' | 'absent',
+        correctedState: 'present' | 'absent',
+        parentName?: string
+      ) => string;
     };
   };
 }
@@ -83,6 +91,26 @@ export const PHASE_CONFIG: PhaseConfig = {
         const salutationEn = hasParent ? `Mr./Mrs. ${trimmed}` : 'Dear Parent';
         const salutationHi = hasParent ? `श्री/श्रीमती ${trimmed}` : 'अभिभावक महोदय';
         return `${salutationEn},\n\nThis is to inform you that ${studentName} has been marked ABSENT at HanuJai High School on ${dateStr}.\n\nIf you believe this record is incorrect, please contact the school.\n\nRegards,\nHanuJai High School\n\n---\n\n${salutationHi},\n\nआपको सूचित किया जाता है कि आपकी संतान ${studentName} को दिनांक ${dateStr} को हनुजाई हाई स्कूल में अनुपस्थित (ABSENT) दर्ज किया गया है।\n\nयदि आपको लगता है कि उपस्थिति का यह रिकॉर्ड गलत है, तो कृपया विद्यालय से संपर्क करें।\n\nसादर,\nहनुजाई हाई स्कूल`;
+      },
+      correction: (
+        studentName: string,
+        classAndSection: string,
+        dateStr: string,
+        previousState: 'present' | 'absent',
+        correctedState: 'present' | 'absent',
+        parentName?: string
+      ) => {
+        const trimmed = parentName?.trim();
+        const hasParent = trimmed && trimmed !== 'Parent/Guardian' && trimmed !== '[Parent Name]';
+        const salutationEn = hasParent ? `Dear Mr./Mrs. ${trimmed}` : 'Dear Parent/Guardian';
+        const salutationHi = hasParent ? `आदरणीय अभिभावक श्री/श्रीमती ${trimmed}` : 'आदरणीय अभिभावक';
+
+        const prevEn = previousState === 'present' ? 'Present' : 'Absent';
+        const corrEn = correctedState === 'present' ? 'Present' : 'Absent';
+        const prevHi = previousState === 'present' ? 'उपस्थित (Present)' : 'अनुपस्थित (Absent)';
+        const corrHi = correctedState === 'present' ? 'उपस्थित (Present)' : 'अनुपस्थित (Absent)';
+
+        return `${salutationEn},\n\nThis is to inform you that your child's attendance record for ${dateStr} has been corrected after verification by the school.\n\nStudent Name: ${studentName}\nClass: ${classAndSection}\n\nPrevious Attendance: ${prevEn}\nCorrected Attendance: ${corrEn}\n\nThe earlier entry was recorded incorrectly and has now been reviewed and corrected with the school's approval.\n\nThe updated attendance has been saved in the school records.\n\nRegards,\nHanuJai High School\n\n---\n\n${salutationHi},\n\nआपको सूचित किया जाता है कि विद्यालय द्वारा सत्यापन के उपरांत दिनांक ${dateStr} के लिए आपके बच्चे का उपस्थिति रिकॉर्ड संशोधित कर दिया गया है।\n\nविद्यार्थी का नाम: ${studentName}\nकक्षा: ${classAndSection}\n\nपूर्व दर्ज उपस्थिति: ${prevHi}\nसंशोधित उपस्थिति: ${corrHi}\n\nपूर्व में दर्ज प्रविष्टि त्रुटिवश हो गई थी, जिसे अब विद्यालय के अनुमोदन से जांचकर सही कर दिया गया है।\n\nअद्यतन उपस्थिति विद्यालय अभिलेखों में दर्ज कर दी गई है।\n\nसादर,\nहनुजाई हाई स्कूल, जयपुर`;
       },
     },
   },

@@ -81,7 +81,9 @@ describe('HANUJAI ERP — Role Model, Student Dossier & Permission Test Matrix',
       expect(Permissions.canViewIndividualAttendance(principal)).toBe(true);
       expect(Permissions.canMarkAttendance(principal, 'class-10-a')).toBe(false);
       expect(Permissions.canMarkAttendance(principal, 'class-01-a')).toBe(false);
-      expect(Permissions.canApproveAttendanceCorrection(principal, 'staff-003')).toBe(false);
+      // Principal CAN approve corrections requested by others, but NOT self
+      expect(Permissions.canApproveAttendanceCorrection(principal, 'staff-003')).toBe(true);
+      expect(Permissions.canApproveAttendanceCorrection(principal, principal.id)).toBe(false);
     });
 
     it('Data Layer Guard: Principal cannot mutate attendance, students, marks, notes, staff, or settings', async () => {

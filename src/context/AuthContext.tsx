@@ -24,6 +24,26 @@ interface AuthContextType {
   logout: () => Promise<void>;
 }
 
+/**
+ * Normalizes user role and status to prevent casing or legacy string mismatches.
+ */
+function normalizeStaffUser(staff: StaffUser): StaffUser {
+  let normalizedRole = staff.role;
+  const rawRole = (String(staff.role) || '').toLowerCase().trim();
+  if (rawRole === 'developer' || rawRole === 'dev' || rawRole === 'system_admin' || rawRole === 'sysadmin') {
+    normalizedRole = 'developer';
+  } else if (rawRole === 'principal' || rawRole === 'head' || rawRole === 'director') {
+    normalizedRole = 'principal';
+  } else if (rawRole === 'admin' || rawRole === 'admin_office') {
+    normalizedRole = 'admin';
+  }
+  return {
+    ...staff,
+    role: normalizedRole,
+    status: staff.status || 'active',
+  };
+}
+
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
@@ -37,7 +57,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       if (override) {
         try {
           const parsed = JSON.parse(override);
-          setCurrentUser(parsed);
+          setCurrentUser(normalizeStaffUser(parsed));
           setIsLoading(false);
           return;
         } catch {
@@ -48,7 +68,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       const user = savedUserId === 'staff-dev'
         ? defaultDeveloperUser
         : (initialStaff.find(s => s.id === savedUserId) || initialStaff.find(s => s.role === 'admin' && s.status === 'active') || initialStaff[0]);
-      setCurrentUser(user);
+      setCurrentUser(normalizeStaffUser(user));
       setIsLoading(false);
     } else if (auth) {
       const unsubscribe = onAuthStateChanged(auth, async user => {
@@ -65,7 +85,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
                   await firebaseSignOut(auth);
                 }
               } else {
-                setCurrentUser(staffDoc);
+                setCurrentUser(normalizeStaffUser(staffDoc));
               }
             } else {
               setCurrentUser(null);
@@ -108,7 +128,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
       if (isDemoMode()) {
         if (cleanEmail === 'developer@hanujai.edu.in') {
-          setCurrentUser(defaultDeveloperUser);
+          setCurrentUser(normalizeStaffUser(defaultDeveloperUser));
           localStorage.setItem('hanujai_demo_user_id', defaultDeveloperUser.id);
           return;
         }
@@ -119,7 +139,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
           if (found.status === 'deactivated' || found.role === 'class_teacher' || found.role === 'subject_teacher') {
             throw new Error('Classroom teacher accounts are deactivated in this operating phase. Only Principal and Admin Office accounts are authorized.');
           }
-          setCurrentUser(found);
+          setCurrentUser(normalizeStaffUser(found));
           localStorage.setItem('hanujai_demo_user_id', found.id);
         } else {
           throw new Error('Staff account not found with this email address. Please verify credentials.');
@@ -135,7 +155,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
           await firebaseSignOut(auth);
           throw new Error('Classroom teacher accounts are deactivated in this operating phase. Only Principal and Admin Office accounts are authorized.');
         }
-        setCurrentUser(staffDoc);
+        setCurrentUser(normalizeStaffUser(staffDoc));
       } else {
         throw new Error('Firebase Authentication services are offline or unconfigured.');
       }

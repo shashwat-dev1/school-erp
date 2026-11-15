@@ -183,116 +183,54 @@ export class DeveloperService {
   }
 
   /**
-   * Official 10-Column Schema approved for HanuJai High School ERP Phase 1.
+   * Official 7-Column Schema approved for HanuJai High School ERP Phase 1.
+   * Single Source of Truth for Student Data Import.
    */
   public static readonly OFFICIAL_TEMPLATE_COLUMNS = [
-    "Student's Full Name",
-    "Father's Full Name",
-    "Mother's Name / Guardian Name",
-    "Class",
-    "Section",
-    "Parent/Guardian Mobile Number",
-    "Date of Birth",
-    "Admission Number",
-    "Roll Number",
-    "Complete Residential Address",
+    'Admission Number (SR No.)',
+    'Roll Number',
+    'Student Full Name',
+    'Class',
+    'Section',
+    'Gender',
+    'WhatsApp Mobile Number',
   ] as const;
 
   /**
-   * Generate official 10-column Excel workbook with sample data and strict field instructions.
+   * Generate official 7-column Excel workbook matching the exact project template.
    */
   public static generateStudentTemplateWorkbook(): XLSX.WorkBook {
-    const sampleRows = [
-      {
-        "Student's Full Name": 'Aarav Sharma',
-        "Father's Full Name": 'Ramesh Sharma',
-        "Mother's Name / Guardian Name": 'Sunita Sharma',
-        'Class': '10',
-        'Section': 'A',
-        'Parent/Guardian Mobile Number': '9829012345',
-        'Date of Birth': '2010-08-14',
-        'Admission Number': 'ADM/2026/101',
-        'Roll Number': 1,
-        'Complete Residential Address': '12, Malviya Nagar, Jaipur, Rajasthan',
-      },
-      {
-        "Student's Full Name": 'Diya Patel',
-        "Father's Full Name": 'Vikram Patel',
-        "Mother's Name / Guardian Name": 'Meena Patel',
-        'Class': '10',
-        'Section': 'A',
-        'Parent/Guardian Mobile Number': '9829054321',
-        'Date of Birth': '2010-11-22',
-        'Admission Number': 'ADM/2026/102',
-        'Roll Number': 2,
-        'Complete Residential Address': '45, Vaishali Nagar, Jaipur, Rajasthan',
-      },
-    ];
-
-    const instructionsRows = [
-      {
-        'Column Name': "Student's Full Name",
-        'Required': 'MANDATORY',
-        'Format / Guidelines': "Student's complete legal name (e.g. Aarav Sharma).",
-      },
-      {
-        'Column Name': "Father's Full Name",
-        'Required': 'Recommended',
-        'Format / Guidelines': "Father's legal name for official school registers.",
-      },
-      {
-        'Column Name': "Mother's Name / Guardian Name",
-        'Required': 'Recommended',
-        'Format / Guidelines': "Mother's or primary guardian's name.",
-      },
-      {
-        'Column Name': 'Class',
-        'Required': 'MANDATORY',
-        'Format / Guidelines': 'Class/Grade number: 1 to 10 (e.g. 10).',
-      },
-      {
-        'Column Name': 'Section',
-        'Required': 'MANDATORY',
-        'Format / Guidelines': 'Section letter: A or B (e.g. A).',
-      },
-      {
-        'Column Name': 'Parent/Guardian Mobile Number',
-        'Required': 'MANDATORY',
-        'Format / Guidelines': '10-digit Indian mobile number for WhatsApp alerts (e.g. 9829012345).',
-      },
-      {
-        'Column Name': 'Date of Birth',
-        'Required': 'Recommended',
-        'Format / Guidelines': 'Format: YYYY-MM-DD or DD/MM/YYYY (e.g. 2010-08-14).',
-      },
-      {
-        'Column Name': 'Admission Number',
-        'Required': 'MANDATORY & UNIQUE',
-        'Format / Guidelines': 'Unique institutional admission/SR number (e.g. ADM/2026/101). Primary identifier.',
-      },
-      {
-        'Column Name': 'Roll Number',
-        'Required': 'Optional',
-        'Format / Guidelines': 'Class attendance register roll number (e.g. 1).',
-      },
-      {
-        'Column Name': 'Complete Residential Address',
-        'Required': 'Optional',
-        'Format / Guidelines': 'Full residential address with locality/city.',
-      },
-    ];
-
     const wb = XLSX.utils.book_new();
-    const wsData = XLSX.utils.json_to_sheet(sampleRows, { header: [...this.OFFICIAL_TEMPLATE_COLUMNS] });
-    const wsInstructions = XLSX.utils.json_to_sheet(instructionsRows);
 
-    XLSX.utils.book_append_sheet(wb, wsData, 'Student Data');
-    XLSX.utils.book_append_sheet(wb, wsInstructions, 'Instructions & Field Rules');
+    // Sheet 1: Empty ready-to-use template with headers
+    const wsRecords = XLSX.utils.aoa_to_sheet([[...this.OFFICIAL_TEMPLATE_COLUMNS]]);
+    wsRecords['!cols'] = [
+      { wch: 26 }, // Admission Number (SR No.)
+      { wch: 14 }, // Roll Number
+      { wch: 24 }, // Student Full Name
+      { wch: 14 }, // Class
+      { wch: 12 }, // Section
+      { wch: 14 }, // Gender
+      { wch: 26 }, // WhatsApp Mobile Number
+    ];
+
+    // Sheet 2: Sample Reference with realistic demonstration records
+    const sampleRows = [
+      [...this.OFFICIAL_TEMPLATE_COLUMNS],
+      ['2024/0101', 1, 'Aarav Sharma', 'Class 10', 'A', 'Male', '9829012345'],
+      ['2024/0102', 2, 'Diya Patel', 'Class 10', 'A', 'Female', '9829054321'],
+      ['2024/0103', 3, 'Kabir Mehta', 'Class 10', 'A', 'Male', '9829098765'],
+    ];
+    const wsSample = XLSX.utils.aoa_to_sheet(sampleRows);
+    wsSample['!cols'] = wsRecords['!cols'];
+
+    XLSX.utils.book_append_sheet(wb, wsRecords, 'Student Records');
+    XLSX.utils.book_append_sheet(wb, wsSample, 'Sample Reference');
     return wb;
   }
 
   /**
-   * Trigger browser download of the approved 10-column Excel student template.
+   * Trigger browser download of the approved 7-column Excel student template.
    */
   public static downloadStudentTemplate(): void {
     const wb = this.generateStudentTemplateWorkbook();
@@ -374,8 +312,11 @@ export class DeveloperService {
     if (!detectedMap.admissionNumber) {
       missingRequiredColumns.push('Admission Number (SR No.)');
     }
+    if (!detectedMap.rollNumber) {
+      missingRequiredColumns.push('Roll Number');
+    }
     if (!detectedMap.fullName) {
-      missingRequiredColumns.push("Student's Full Name");
+      missingRequiredColumns.push('Student Full Name');
     }
     if (!detectedMap.class) {
       missingRequiredColumns.push('Class');
@@ -383,8 +324,11 @@ export class DeveloperService {
     if (!detectedMap.section) {
       missingRequiredColumns.push('Section');
     }
+    if (!detectedMap.gender) {
+      missingRequiredColumns.push('Gender');
+    }
     if (!detectedMap.mobile) {
-      missingRequiredColumns.push('Parent/Guardian Mobile Number');
+      missingRequiredColumns.push('WhatsApp Mobile Number');
     }
 
     const mappedHeaderValues = new Set(
@@ -393,7 +337,7 @@ export class DeveloperService {
     const unexpectedColumns = headers.filter(h => !mappedHeaderValues.has(h));
 
     return {
-      isValid: missingRequiredColumns.length === 0,
+      isValid: missingRequiredColumns.length === 0 && unexpectedColumns.length === 0,
       missingRequiredColumns,
       unexpectedColumns,
       detectedMap,

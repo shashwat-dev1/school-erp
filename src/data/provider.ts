@@ -27,6 +27,9 @@ import type {
   AttendanceState,
   StudentDocumentType,
   StudentDocumentRecord,
+  RolePermissions,
+  PermissionModule,
+  PermissionAction,
 } from '../domain/types';
 
 export interface AttendanceSubmissionInput {
@@ -46,6 +49,8 @@ export interface AttendanceCorrectionInput {
   previousState: AttendanceState;
   requestedState: AttendanceState;
   mandatoryReason: string;
+  admissionNumber?: string;
+  section?: string;
 }
 
 export interface MarksSubmissionInput {
@@ -141,6 +146,10 @@ export interface DataProvider {
   createStaffMember(input: Partial<StaffUser>, actor: StaffUser): Promise<StaffUser>;
   updateStaffMember(staffId: string, updates: Partial<StaffUser>, actor: StaffUser): Promise<StaffUser>;
   getCurrentStaffUser(userId: string): Promise<StaffUser | null>;
+  revokeStaffSessions(staffId: string, actor: StaffUser): Promise<void>;
+  initiatePasswordRecovery(staffId: string, actor: StaffUser): Promise<{ tempToken?: string; message: string }>;
+  getRolePermissions(): Promise<RolePermissions>;
+  updateRolePermissions(role: 'principal' | 'admin', permissions: Record<PermissionModule, Partial<Record<PermissionAction, boolean>>>, actor: StaffUser): Promise<RolePermissions>;
 
   // Classes & Section Roster
   getClasses(yearId?: string): Promise<ClassSection[]>;

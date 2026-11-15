@@ -35,9 +35,15 @@ import type {
   IncidentFilter,
   AuditEvent,
   AuditFilter,
+  AuditAction,
   StudentDocumentType,
   StudentDocumentRecord,
+  RolePermissions,
+  PermissionModule,
+  PermissionAction,
 } from '../../domain/types';
+import { Permissions } from '../../domain/permissions';
+import { WhatsAppNotificationService } from '../../services/whatsapp/whatsappService';
 
 import {
   initialSettings,
@@ -350,23 +356,22 @@ class DemoRepository implements DataProvider {
   }
 
   public async createStaffMember(input: Partial<StaffUser>, actor: StaffUser): Promise<StaffUser> {
-    if (actor.role === 'principal') {
-      throw new Error('Unauthorized: Principal has strictly read-only access in this pilot.');
+    if (!actor || actor.role !== 'developer') {
+      throw new Error('Unauthorized: Only Developer accounts can provision staff users.');
+    }
+    if (input.role === 'developer' && actor.role !== 'developer') {
+      throw new Error('Unauthorized: Only an authorized Developer can create or assign another Developer account.');
     }
     const store = this.loadStore();
     const newStaff: StaffUser = {
       id: `staff-${Date.now()}`,
       email: input.email || `staff.${Date.now()}@hanujai.edu.in`,
-      name: input.name || 'New Faculty',
-      role: input.role || 'subject_teacher',
+      name: input.name || 'New Staff',
+      role: input.role || 'admin',
       employeeCode: input.employeeCode || `EMP-${new Date().getFullYear()}-${Math.floor(Math.random() * 800 + 100)}`,
-      designation: input.designation || 'Faculty Member',
-      department: input.department || 'Academics',
+      designation: input.designation || 'Administrative Staff',
+      department: input.department || 'Administration',
       phone: input.phone || '+91 98290 00000',
-      assignedClassId: input.assignedClassId,
-      assignedClassLabel: input.assignedClassLabel,
-      assignedSubjects: input.assignedSubjects || [],
-      assignedClasses: input.assignedClasses || [],
       status: 'active',
       createdAt: new Date().toISOString(),
     };
@@ -379,10 +384,10 @@ class DemoRepository implements DataProvider {
       actorId: actor.id,
       actorName: actor.name,
       actorRole: actor.role,
-      action: 'student_created',
+      action: 'user_created',
       resource: 'staff',
       targetId: newStaff.id,
-      summary: `Provisioned new staff account for ${newStaff.name} (${newStaff.role})`,
+      summary: `Provisioned new staff account for ${newStaff.name} with role (${newStaff.role})`,
       clientIp: '192.168.1.1',
     });
 
@@ -395,14 +400,40 @@ class DemoRepository implements DataProvider {
     updates: Partial<StaffUser>,
     actor: StaffUser
   ): Promise<StaffUser> {
-    if (actor.role === 'principal') {
-      throw new Error('Unauthorized: Principal has strictly read-only access in this pilot.');
+    if (!actor || actor.role !== 'developer') {
+      throw new Error('Unauthorized: Only Developer accounts can modify staff roles or account status.');
     }
     const store = this.loadStore();
     const idx = store.staff.findIndex(s => s.id === staffId);
     if (idx === -1) throw new Error('Staff member not found');
 
-    store.staff[idx] = { ...store.staff[idx], ...updates };
+    const targetStaff = store.staff[idx];
+
+    // Protect against non-developer elevating to developer
+    if (updates.role === 'developer' && actor.role !== 'developer') {
+      throw new Error('Unauthorized: Principal and Admin Office cannot elevate themselves to Developer.');
+    }
+
+    // Protect against accidental demotion or deactivation of the last active Developer
+    if (targetStaff.role === 'developer') {
+      const isDemoting = updates.role && updates.role !== 'developer';
+      const isDeactivating = updates.status && updates.status !== 'active';
+      if (isDemoting || isDeactivating) {
+        const activeDevs = store.staff.filter(s => s.role === 'developer' && s.status === 'active');
+        if (activeDevs.length <= 1 && activeDevs.some(s => s.id === staffId)) {
+          throw new Error('Action blocked: Cannot deactivate or demote the last active Developer account.');
+        }
+      }
+    }
+
+    store.staff[idx] = { ...targetStaff, ...updates };
+
+    let action: AuditAction = 'user_updated';
+    if (updates.role && updates.role !== targetStaff.role) {
+      action = 'user_role_changed';
+    } else if (updates.status && updates.status !== targetStaff.status) {
+      action = 'user_status_changed';
+    }
 
     store.auditEvents.unshift({
       id: `aud-${Date.now()}`,
@@ -410,15 +441,109 @@ class DemoRepository implements DataProvider {
       actorId: actor.id,
       actorName: actor.name,
       actorRole: actor.role,
-      action: 'student_updated',
+      action,
       resource: 'staff',
       targetId: staffId,
-      summary: `Updated faculty assignment profile for ${store.staff[idx].name}`,
+      summary: `Updated account ${targetStaff.name}: ${JSON.stringify(updates)}`,
       clientIp: '192.168.1.1',
     });
 
     this.saveStore(store);
     return store.staff[idx];
+  }
+
+  public async revokeStaffSessions(staffId: string, actor: StaffUser): Promise<void> {
+    if (!actor || actor.role !== 'developer') {
+      throw new Error('Unauthorized: Only Developer accounts can revoke user sessions.');
+    }
+    const store = this.loadStore();
+    const staff = store.staff.find(s => s.id === staffId);
+    if (!staff) throw new Error('Staff member not found');
+
+    store.auditEvents.unshift({
+      id: `aud-${Date.now()}`,
+      timestamp: new Date().toISOString(),
+      actorId: actor.id,
+      actorName: actor.name,
+      actorRole: actor.role,
+      action: 'user_session_revoked',
+      resource: 'staff',
+      targetId: staffId,
+      summary: `Revoked all active sessions for ${staff.name} (${staff.email})`,
+      clientIp: '192.168.1.1',
+    });
+
+    this.saveStore(store);
+  }
+
+  public async initiatePasswordRecovery(staffId: string, actor: StaffUser): Promise<{ tempToken?: string; message: string }> {
+    if (!actor || actor.role !== 'developer') {
+      throw new Error('Unauthorized: Only Developer accounts can initiate password recovery.');
+    }
+    const store = this.loadStore();
+    const staff = store.staff.find(s => s.id === staffId);
+    if (!staff) throw new Error('Staff member not found');
+
+    const tempToken = `reset_${Math.random().toString(36).substring(2, 10)}`;
+
+    store.auditEvents.unshift({
+      id: `aud-${Date.now()}`,
+      timestamp: new Date().toISOString(),
+      actorId: actor.id,
+      actorName: actor.name,
+      actorRole: actor.role,
+      action: 'password_recovery_initiated',
+      resource: 'staff',
+      targetId: staffId,
+      summary: `Initiated password recovery dispatch for ${staff.name} (${staff.email})`,
+      clientIp: '192.168.1.1',
+    });
+
+    this.saveStore(store);
+    return {
+      tempToken,
+      message: `Password reset dispatched to ${staff.email}. Temporary recovery token generated.`,
+    };
+  }
+
+  public async getRolePermissions(): Promise<RolePermissions> {
+    return Permissions.getRolePermissions();
+  }
+
+  public async updateRolePermissions(
+    role: 'principal' | 'admin',
+    permissions: Record<PermissionModule, Partial<Record<PermissionAction, boolean>>>,
+    actor: StaffUser
+  ): Promise<RolePermissions> {
+    if (!actor || actor.role !== 'developer') {
+      throw new Error('Unauthorized: Only Developer accounts can configure role permissions.');
+    }
+
+    const current = Permissions.getRolePermissions();
+    const updated: RolePermissions = {
+      ...current,
+      developer: { ...current.developer }, // Developer can never be restricted
+      [role]: { ...current[role], ...permissions },
+    };
+
+    Permissions.setRolePermissions(updated, true);
+
+    const store = this.loadStore();
+    store.auditEvents.unshift({
+      id: `aud-${Date.now()}`,
+      timestamp: new Date().toISOString(),
+      actorId: actor.id,
+      actorName: actor.name,
+      actorRole: actor.role,
+      action: 'permissions_updated',
+      resource: 'permissions',
+      targetId: role,
+      summary: `Updated granular permission matrix for role: ${role.toUpperCase()}`,
+      clientIp: '192.168.1.1',
+    });
+    this.saveStore(store);
+
+    return updated;
   }
 
   public async getCurrentStaffUser(userId: string): Promise<StaffUser | null> {
@@ -868,6 +993,18 @@ class DemoRepository implements DataProvider {
     }
 
     const store = this.loadStore();
+    const sessionId = `att-${input.classId}-${input.date}`;
+
+    // Prevent direct edits or overwriting once attendance has been submitted or corrected
+    const existingSession = store.attendanceSessions.find(
+      s => s.id === sessionId || (s.classId === input.classId && s.date === input.date)
+    );
+    if (existingSession && (existingSession.status === 'submitted' || existingSession.status === 'corrected')) {
+      throw new Error(
+        'Attendance register is locked for this class and date. Direct modifications are forbidden. Please submit an Attendance Correction Request for Principal review.'
+      );
+    }
+
     const cls = store.classes.find(c => c.id === input.classId);
 
     const recs = input.records || (input as any).entries || [];
@@ -877,7 +1014,7 @@ class DemoRepository implements DataProvider {
     const excusedCount = recs.filter((r: any) => r.state === 'excused').length;
 
     const session: AttendanceSession = {
-      id: `att-${input.classId}-${input.date}`,
+      id: sessionId,
       classId: input.classId,
       classLabel: cls ? cls.label : input.classId,
       date: input.date,
@@ -949,27 +1086,48 @@ class DemoRepository implements DataProvider {
       throw new Error('Unauthorized: Principal cannot request attendance corrections.');
     }
 
+    const isAuthorized = actor.role === 'admin' || actor.role === 'developer';
+    if (!isAuthorized) {
+      throw new Error('Unauthorized: Only Admin Office is authorized to request attendance corrections.');
+    }
+
+    if (!input.mandatoryReason || !input.mandatoryReason.trim()) {
+      throw new Error('Mandatory justification/remarks are required to request an attendance correction.');
+    }
+
+    if (input.previousState === input.requestedState) {
+      throw new Error('Requested status cannot be identical to the currently recorded status.');
+    }
+
     const store = this.loadStore();
     const session = store.attendanceSessions.find(s => s.id === input.sessionId);
     const student = store.students.find(s => s.id === input.studentId);
-    const classId = session ? session.classId : 'class-10-a';
+    const cls = store.classes.find(c => c.id === (session ? session.classId : 'class-10-a'));
 
-    const isAuthorized = actor.role === 'admin' || actor.role === 'developer';
-    if (!isAuthorized) {
-      throw new Error('Unauthorized: Only Admin Office is authorized to record attendance corrections.');
+    const classId = session ? session.classId : 'class-10-a';
+    const date = session ? session.date : new Date().toISOString().split('T')[0];
+
+    // Duplicate pending request check
+    const hasPending = store.attendanceCorrections.some(
+      c => c.studentId === input.studentId && c.date === date && c.status === 'pending_principal'
+    );
+    if (hasPending) {
+      throw new Error('A pending attendance correction request already exists for this student on this date.');
     }
 
     const correction: AttendanceCorrection = {
-      id: `corr-${Date.now()}`,
+      id: `corr-${Date.now()}-${Math.floor(Math.random() * 1000)}`,
       sessionId: input.sessionId,
       classId,
-      classLabel: session ? session.classLabel : 'Class 10-A',
-      date: session ? session.date : new Date().toISOString().split('T')[0],
+      classLabel: session ? session.classLabel : (cls ? cls.label : 'Class 10-A'),
+      section: input.section || cls?.section || (session?.classLabel ? session.classLabel.split('-')[1]?.trim() : ''),
+      admissionNumber: input.admissionNumber || student?.admissionNumber || student?.id || '',
+      date,
       studentId: input.studentId,
       studentName: student ? student.fullName : input.studentId,
       previousState: input.previousState,
       requestedState: input.requestedState,
-      mandatoryReason: input.mandatoryReason,
+      mandatoryReason: input.mandatoryReason.trim(),
       requestedByStaffId: actor.id,
       requestedByStaffName: actor.name,
       requestedAt: new Date().toISOString(),
@@ -984,7 +1142,7 @@ class DemoRepository implements DataProvider {
       actorId: actor.id,
       actorName: actor.name,
       actorRole: actor.role,
-      action: 'attendance_corrected',
+      action: 'attendance_correction_requested',
       resource: 'attendanceCorrections',
       targetId: correction.id,
       summary: `Requested attendance correction for ${correction.studentName} (${input.previousState} -> ${input.requestedState}): ${input.mandatoryReason}`,
@@ -1001,42 +1159,101 @@ class DemoRepository implements DataProvider {
     approved: boolean,
     remarks?: string
   ): Promise<void> {
-    if (actor.role === 'principal') {
-      throw new Error('Unauthorized: Principal cannot approve attendance corrections in this pilot.');
-    }
     const store = this.loadStore();
     const corr = store.attendanceCorrections.find(c => c.id === correctionId);
-    if (!corr) return;
+    if (!corr) {
+      throw new Error('Attendance correction request not found.');
+    }
 
-    corr.status = approved ? 'approved' : 'rejected';
-    corr.reviewedByStaffId = actor.id;
-    corr.reviewedByStaffName = actor.name;
-    corr.reviewedAt = new Date().toISOString();
-    corr.reviewRemarks = remarks;
+    if (corr.status !== 'pending_principal') {
+      throw new Error(`Cannot review attendance correction: current status is "${corr.status}".`);
+    }
+
+    // Role and dual-custody check
+    if (!Permissions.canApproveAttendanceCorrection(actor, corr)) {
+      if (actor.role === 'admin') {
+        throw new Error('Unauthorized: Admin Office cannot approve or reject attendance corrections.');
+      }
+      if (corr.requestedByStaffId === actor.id) {
+        throw new Error('Unauthorized: Dual custody violation (SEC-201). Requester cannot review their own correction request.');
+      }
+      throw new Error('Unauthorized: You do not have permission to review attendance corrections.');
+    }
 
     if (approved) {
       const session = store.attendanceSessions.find(s => s.id === corr.sessionId);
-      if (session) {
-        const rec = session.records.find(r => r.studentId === corr.studentId);
-        if (rec) {
-          rec.state = corr.requestedState;
+      if (!session) {
+        throw new Error('Attendance session not found for this correction.');
+      }
+      const rec = session.records.find(r => r.studentId === corr.studentId);
+      if (!rec) {
+        throw new Error(`Student record ${corr.studentId} not found in attendance session.`);
+      }
+      if (rec.state !== corr.previousState) {
+        throw new Error(`Record mismatch: student status in session is currently "${rec.state}", but correction expected "${corr.previousState}".`);
+      }
+
+      rec.state = corr.requestedState;
+      session.presentCount = session.records.filter(r => r.state === 'present').length;
+      session.absentCount = session.records.filter(r => r.state === 'absent').length;
+      session.totalPresent = session.presentCount;
+      session.totalAbsent = session.absentCount;
+      session.status = 'corrected';
+
+      corr.status = 'approved';
+      corr.reviewedByStaffId = actor.id;
+      corr.reviewedByStaffName = actor.name;
+      corr.reviewedAt = new Date().toISOString();
+      corr.reviewRemarks = remarks || '';
+
+      const student = store.students.find(s => s.id === corr.studentId);
+      if (student) {
+        try {
+          const job = await WhatsAppNotificationService.enqueueCorrectionNotification(corr, student);
+          corr.notificationJobId = job.id;
+          corr.notificationStatus = job.deliveryStatus;
+          if (job.error) corr.notificationError = job.error;
+        } catch (err: any) {
+          corr.notificationStatus = 'failed';
+          corr.notificationError = err?.message || 'Notification failed';
         }
       }
-    }
 
-    store.auditEvents.unshift({
-      id: `aud-${Date.now()}`,
-      timestamp: new Date().toISOString(),
-      actorId: actor.id,
-      actorName: actor.name,
-      actorRole: actor.role,
-      action: 'attendance_corrected',
-      resource: 'attendanceCorrections',
-      targetId: correctionId,
-      summary: `${approved ? 'Approved' : 'Rejected'} attendance correction for ${corr.studentName} (${corr.previousState} -> ${corr.requestedState})`,
-      details: { remarks },
-      clientIp: '192.168.1.1',
-    });
+      store.auditEvents.unshift({
+        id: `aud-${Date.now()}`,
+        timestamp: new Date().toISOString(),
+        actorId: actor.id,
+        actorName: actor.name,
+        actorRole: actor.role,
+        action: 'attendance_corrected',
+        resource: 'attendanceCorrections',
+        targetId: correctionId,
+        summary: `Approved attendance correction for ${corr.studentName} (${corr.previousState} -> ${corr.requestedState}). Single-parent correction notification enqueued.`,
+        clientIp: '192.168.1.1',
+      });
+    } else {
+      if (!remarks || !remarks.trim()) {
+        throw new Error('A rejection reason or remarks is required when rejecting a correction request.');
+      }
+      corr.status = 'rejected';
+      corr.reviewedByStaffId = actor.id;
+      corr.reviewedByStaffName = actor.name;
+      corr.reviewedAt = new Date().toISOString();
+      corr.reviewRemarks = remarks.trim();
+
+      store.auditEvents.unshift({
+        id: `aud-${Date.now()}`,
+        timestamp: new Date().toISOString(),
+        actorId: actor.id,
+        actorName: actor.name,
+        actorRole: actor.role,
+        action: 'attendance_correction_rejected',
+        resource: 'attendanceCorrections',
+        targetId: correctionId,
+        summary: `Rejected attendance correction for ${corr.studentName} (${corr.previousState} -> ${corr.requestedState}): ${remarks.trim()}`,
+        clientIp: '192.168.1.1',
+      });
+    }
 
     this.saveStore(store);
   }

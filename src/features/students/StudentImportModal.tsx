@@ -435,17 +435,17 @@ export const StudentImportModal: React.FC<StudentImportModalProps> = ({
                 <FileSpreadsheet size={24} style={{ color: '#2563EB', flexShrink: 0, marginTop: '2px' }} />
                 <div>
                   <h4 style={{ margin: '0 0 6px 0', fontSize: '0.95rem', fontWeight: 600, color: '#1E40AF' }}>
-                    Approved 10-Column Student Schema
+                    Approved 7-Column Student Schema
                   </h4>
                   <p style={{ margin: 0, fontSize: '0.85rem', color: '#1E3A8A', lineHeight: 1.5 }}>
-                    Download the official template before uploading. The spreadsheet must include all 10 columns matching our institutional database schema.
+                    Download the official template before uploading. The spreadsheet must include exactly the 7 columns matching our single source of truth template.
                   </p>
                 </div>
               </div>
 
               <div style={{ marginBottom: '24px' }}>
                 <h4 style={{ fontSize: '0.9rem', fontWeight: 600, color: '#334155', marginBottom: '12px' }}>
-                  Required & Optional Fields in Official Template:
+                  The 7 Fixed Columns in Official Template:
                 </h4>
                 <div
                   style={{
@@ -455,16 +455,13 @@ export const StudentImportModal: React.FC<StudentImportModalProps> = ({
                   }}
                 >
                   {[
-                    { name: "Student's Full Name", req: 'Mandatory', desc: "Legal student name (e.g. Aarav Sharma)" },
-                    { name: 'Admission Number', req: 'Mandatory & Unique', desc: 'Primary key (e.g. ADM/2026/101)' },
-                    { name: 'Class', req: 'Mandatory', desc: 'Grade 1 through 10 (e.g. 10)' },
-                    { name: 'Section', req: 'Mandatory', desc: 'Section A or B (e.g. A)' },
-                    { name: 'Parent/Guardian Mobile Number', req: 'Mandatory', desc: '10-digit Indian mobile for WhatsApp' },
-                    { name: "Father's Full Name", req: 'Recommended', desc: "Father's legal name for records" },
-                    { name: "Mother's Name / Guardian Name", req: 'Recommended', desc: "Mother's or guardian's name" },
-                    { name: 'Date of Birth', req: 'Recommended', desc: 'YYYY-MM-DD or DD/MM/YYYY' },
-                    { name: 'Roll Number', req: 'Optional', desc: 'Class register roll number (1, 2, 3...)' },
-                    { name: 'Complete Residential Address', req: 'Optional', desc: 'Full address with city/locality' },
+                    { name: 'Admission Number (SR No.)', req: 'Mandatory & Unique', desc: 'Primary student identifier (e.g. 2024/0101)' },
+                    { name: 'Roll Number', req: 'Mandatory', desc: 'Class attendance register position (1, 2, 3...)' },
+                    { name: 'Student Full Name', req: 'Mandatory', desc: 'Official student name (e.g. Aarav Sharma)' },
+                    { name: 'Class', req: 'Mandatory', desc: 'Enrolled class (e.g. Class 10 or 10)' },
+                    { name: 'Section', req: 'Mandatory', desc: 'Assigned section (e.g. A or B)' },
+                    { name: 'Gender', req: 'Mandatory', desc: 'Male, Female, or Other' },
+                    { name: 'WhatsApp Mobile Number', req: 'Mandatory', desc: '10-digit mobile number for WhatsApp alerts' },
                   ].map((col, idx) => (
                     <div
                       key={idx}

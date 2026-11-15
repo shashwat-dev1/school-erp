@@ -544,7 +544,7 @@ function generateTodayAttendanceSessions(): AttendanceSession[] {
   const today = getSchoolLocalDate();
   return initialClasses.map((cls, idx) => {
     const classStudents = initialStudents.filter(s => s.classId === cls.id);
-    const isSubmitted = idx < 16 || cls.id === 'class-10-a'; // Keep the dual-role teacher's section recorded; Class 10-B remains the draft edge case.
+    const isSubmitted = cls.id !== 'class-10-b' && (idx < 16 || cls.id === 'class-10-a'); // Keep the dual-role teacher's section recorded; Class 10-B remains the draft edge case.
     
     const records: DailyAttendanceRecord[] = classStudents.map((s, rIdx) => {
       let state: 'present' | 'absent' | 'late' | 'excused' = 'present';

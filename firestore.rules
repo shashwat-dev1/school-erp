@@ -12,7 +12,7 @@ service cloud.firestore {
     }
 
     function hasRole(role) {
-      return isAuthenticated() && getUserData().role == role && getUserData().status == 'active';
+      return isAuthenticated() && getUserData().role == role && (getUserData().status == 'active' || !('status' in getUserData()));
     }
 
     function isPrincipal() {
@@ -28,10 +28,17 @@ service cloud.firestore {
       allow read, write: if false;
     }
 
-    // School Settings: Read by authenticated staff; Principal is strictly read-only
+    // School Settings & System Configuration: Read by authenticated staff; Developer can configure
     match /schoolSettings/{settingId} {
       allow read: if isAuthenticated() && (isPrincipal() || isAdmin());
-      allow write: if false;
+      allow create, update: if isAuthenticated() && hasRole('developer');
+      allow delete: if false;
+    }
+
+    match /systemSettings/{settingId} {
+      allow read: if isAuthenticated() && (isPrincipal() || isAdmin());
+      allow create, update: if isAuthenticated() && hasRole('developer');
+      allow delete: if false;
     }
 
     // Academic Years: Read by authenticated staff
@@ -91,10 +98,11 @@ service cloud.firestore {
     }
 
     // Attendance Correction Records:
-    // Admin Office can record corrections. Principal has read-only audit oversight.
+    // Admin Office can request corrections. Principal approves or rejects. Developer has oversight.
     match /attendanceCorrections/{correctionId} {
       allow read: if isAuthenticated() && (isPrincipal() || isAdmin());
-      allow create, update: if isAuthenticated() && isAdmin();
+      allow create: if isAuthenticated() && isAdmin();
+      allow update: if isAuthenticated() && (isPrincipal() || hasRole('developer'));
       allow delete: if false;
     }
 

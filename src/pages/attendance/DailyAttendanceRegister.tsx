@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useMemo } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
+import { useParams, useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import { useData } from '../../context/DataContext';
 import { PageHeader } from '../../components/layout/PageHeader';
@@ -10,7 +10,7 @@ import { Modal } from '../../components/ui/Modal';
 import { Permissions } from '../../domain/permissions';
 import { getSchoolLocalDate } from '../../domain/policy';
 import { downloadAttendanceRegisterXlsx, type AttendanceRegisterExportRow } from '../../utils/exportUtils';
-import type { ClassSection, AttendanceSession, StudentRecord } from '../../domain/types';
+import type { ClassSection, AttendanceSession, StudentRecord, AttendanceCorrection, AttendanceState } from '../../domain/types';
 import { WhatsAppNotificationService } from '../../services/whatsapp/whatsappService';
 import type { WhatsAppNotificationJob } from '../../services/whatsapp/types';
 import { PHASE_CONFIG } from '../../config/phase';
@@ -28,6 +28,9 @@ import {
   X as XIcon,
   ShieldCheck,
   AlertCircle,
+  ArrowRight,
+  RotateCw,
+  Lock,
 } from 'lucide-react';
 
 interface AttendanceDraftRow {
@@ -55,7 +58,8 @@ export const DailyAttendanceRegister: React.FC = () => {
 
   // Master Data
   const [classes, setClasses] = useState<ClassSection[]>([]);
-  const initialClassId = paramClassId || currentUser?.assignedClassId || (currentUser?.role === 'principal' ? 'class-10-a' : '');
+  const [isLoadingClasses, setIsLoadingClasses] = useState<boolean>(true);
+  const initialClassId = paramClassId || currentUser?.assignedClassId || 'class-10-a';
   const [selectedClassId, setSelectedClassId] = useState<string>(initialClassId);
   const [selectedDate, setSelectedDate] = useState<string>(getSchoolLocalDate());
   const [activeClass, setActiveClass] = useState<ClassSection | null>(null);
@@ -101,26 +105,45 @@ export const DailyAttendanceRegister: React.FC = () => {
   useEffect(() => {
     let isMounted = true;
     async function fetchMaster() {
+      setIsLoadingClasses(true);
       try {
         const clsList = await provider.getClasses();
         if (isMounted) {
           setClasses(clsList);
+          // Auto-select valid class if selectedClassId is empty or not in class list
+          setSelectedClassId(prev => {
+            if (paramClassId) return paramClassId;
+            if (prev && clsList.some(c => c.id === prev)) return prev;
+            return clsList[0]?.id || prev || 'class-10-a';
+          });
         }
       } catch (err: unknown) {
         console.error('Error fetching classes:', err);
+      } finally {
+        if (isMounted) {
+          setIsLoadingClasses(false);
+        }
       }
     }
     fetchMaster();
     return () => {
       isMounted = false;
     };
-  }, [provider]);
+  }, [provider, paramClassId]);
 
   // Section clearance check: Admin Office marks all sections; Principal has read-only oversight
   const isPrincipal = currentUser?.role === 'principal';
   const isAdmin = currentUser?.role === 'admin' || currentUser?.role === 'developer';
-  const canMark = Permissions.canMarkAttendance(currentUser, selectedClassId);
-  const canView = Permissions.canAccessSection(currentUser, selectedClassId);
+  const canView = Permissions.canViewAttendance(currentUser);
+
+  // Corrections & locking state
+  const [corrections, setCorrections] = useState<AttendanceCorrection[]>([]);
+  const [correctionTargetRow, setCorrectionTargetRow] = useState<AttendanceDraftRow | null>(null);
+  const [correctionTargetState, setCorrectionTargetState] = useState<'present' | 'absent'>('present');
+  const [correctionReason, setCorrectionReason] = useState<string>('');
+  const [isSubmittingCorrection, setIsSubmittingCorrection] = useState<boolean>(false);
+  const [correctionModalError, setCorrectionModalError] = useState<string | null>(null);
+  const [correctionToast, setCorrectionToast] = useState<string | null>(null);
 
   const availableClasses = useMemo(() => {
     if (!currentUser) return [];
@@ -139,16 +162,18 @@ export const DailyAttendanceRegister: React.FC = () => {
       setError(null);
       setValidationError(null);
       try {
-        const [cls, students, session] = await Promise.all([
+        const [cls, students, session, corrs] = await Promise.all([
           provider.getClassById(selectedClassId),
           provider.getClassStudents(selectedClassId),
           provider.getAttendanceSession(selectedClassId, selectedDate),
+          provider.getAttendanceCorrections(selectedClassId),
         ]);
 
         if (!isMounted) return;
         setActiveClass(cls);
         setRawStudents(students);
         setExistingSession(session);
+        setCorrections(corrs);
 
         // Map students to Phase 1 draft rows:
         // Strictly Present or Absent. Unmarked is null.
@@ -240,6 +265,48 @@ export const DailyAttendanceRegister: React.FC = () => {
   const isSessionActuallySaved = Boolean(
     existingSession && (existingSession.status === 'submitted' || existingSession.status === 'corrected')
   );
+  const canMark = Permissions.canMarkAttendance(currentUser, selectedClassId) && !isSessionActuallySaved;
+  const canRequestCorrection = Permissions.canRequestAttendanceCorrection(currentUser, selectedClassId) && isSessionActuallySaved;
+
+  const handleOpenCorrectionModal = (row: AttendanceDraftRow) => {
+    setCorrectionTargetRow(row);
+    const opposite = row.state === 'present' ? 'absent' : 'present';
+    setCorrectionTargetState(opposite);
+    setCorrectionReason('');
+    setCorrectionModalError(null);
+  };
+
+  const handleConfirmCorrectionRequest = async () => {
+    if (!correctionTargetRow || !currentUser || !existingSession) return;
+    if (!correctionReason.trim()) {
+      setCorrectionModalError('Mandatory justification / remarks are required.');
+      return;
+    }
+    setIsSubmittingCorrection(true);
+    setCorrectionModalError(null);
+    try {
+      const created = await provider.requestAttendanceCorrection(
+        {
+          sessionId: existingSession.id,
+          studentId: correctionTargetRow.studentId,
+          section: activeClass?.section || '',
+          admissionNumber: correctionTargetRow.admissionNumber,
+          previousState: (correctionTargetRow.state || 'present') as AttendanceState,
+          requestedState: correctionTargetState as AttendanceState,
+          mandatoryReason: correctionReason.trim(),
+        },
+        currentUser
+      );
+      setCorrections(prev => [created, ...prev]);
+      setCorrectionToast(`Correction requested for ${correctionTargetRow.name}. Awaiting Principal review.`);
+      setCorrectionTargetRow(null);
+    } catch (err: unknown) {
+      const msg = err instanceof Error ? err.message : 'Failed to submit correction request.';
+      setCorrectionModalError(msg);
+    } finally {
+      setIsSubmittingCorrection(false);
+    }
+  };
 
   const presentCount = attendanceRows.filter(r => r.state === 'present').length;
   const absentCount = attendanceRows.filter(r => r.state === 'absent').length;
@@ -499,12 +566,20 @@ export const DailyAttendanceRegister: React.FC = () => {
     }
   };
 
-  if (!currentUser || !selectedClassId || !canView) {
+  if (!currentUser || !canView) {
     return (
       <AccessDenied
         title="Attendance Access Restricted"
-        message="Only the Admin Office is authorized to enter attendance registers. Principal has read-only oversight."
+        message="You do not have authorization to view attendance registers. Please contact your System Administrator."
       />
+    );
+  }
+
+  if (isLoadingClasses && classes.length === 0) {
+    return (
+      <div style={{ padding: '64px 0', display: 'flex', justifyContent: 'center' }}>
+        <LoadingState message="Loading attendance register and class rosters..." />
+      </div>
     );
   }
 
@@ -512,6 +587,47 @@ export const DailyAttendanceRegister: React.FC = () => {
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: '16px', maxWidth: '100%' }}>
+      {/* Principal Executive Oversight Banner */}
+      {isPrincipal && (
+        <div
+          style={{
+            padding: '12px 18px',
+            borderRadius: '10px',
+            backgroundColor: '#EFF6FF',
+            border: '1px solid #BFDBFE',
+            color: '#1E40AF',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'space-between',
+            gap: '12px',
+            flexWrap: 'wrap',
+            fontSize: '0.85rem',
+          }}
+        >
+          <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+            <ShieldCheck size={18} color="#2563EB" />
+            <span>
+              <strong>Executive Oversight Mode (Read-Only):</strong> You have whole-school attendance visibility across all classes, sections, and dates. Daily roll call entry and marking are operated centrally by the Admin Office.
+            </span>
+          </div>
+          <Link
+            to="/attendance/corrections"
+            style={{
+              padding: '6px 14px',
+              backgroundColor: '#2563EB',
+              color: '#FFFFFF',
+              borderRadius: '6px',
+              fontSize: '0.80rem',
+              fontWeight: 600,
+              textDecoration: 'none',
+              whiteSpace: 'nowrap',
+            }}
+          >
+            Review Correction Approvals
+          </Link>
+        </div>
+      )}
+
       {/* Page Header */}
       <PageHeader
         title={`Attendance Register — ${classDisplayName}`}
@@ -621,6 +737,26 @@ export const DailyAttendanceRegister: React.FC = () => {
       )}
       {exportError && <ErrorBanner title="Export Error" message={exportError} />}
 
+      {correctionToast && (
+        <div
+          style={{
+            padding: '12px 18px',
+            borderRadius: 'var(--hhs-radius-base)',
+            backgroundColor: '#ECFDF5',
+            border: '1.5px solid #10B981',
+            color: '#065F46',
+            display: 'flex',
+            alignItems: 'center',
+            gap: '12px',
+            fontSize: '0.88rem',
+            fontWeight: 600,
+          }}
+        >
+          <CheckCircle2 size={20} color="#059669" style={{ flexShrink: 0 }} />
+          <span>{correctionToast}</span>
+        </div>
+      )}
+
       {/* ========================================================================= */}
       {/* MODE 1: DAILY ROLL CALL REGISTER (PHASE 1 CORE WORKFLOW) */}
       {/* ========================================================================= */}
@@ -632,36 +768,62 @@ export const DailyAttendanceRegister: React.FC = () => {
               style={{
                 padding: '14px 18px',
                 borderRadius: 'var(--hhs-radius-base)',
-                backgroundColor: 'var(--pop-apple-green-tint)',
-                border: '1.5px solid var(--pop-apple-green)',
-                color: '#14532d',
+                backgroundColor: '#F0FDF4',
+                border: '1.5px solid #10B981',
+                color: '#14532D',
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'space-between',
                 flexWrap: 'wrap',
-                gap: '10px',
+                gap: '12px',
                 fontSize: '0.88rem',
               }}
             >
               <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-                <CheckCircle2 size={20} color="var(--pop-apple-green)" />
-                <span>
-                  <strong>Register Saved:</strong> Attendance for <strong>{activeClass?.label}</strong> on{' '}
-                  <strong className="tnum">{selectedDate}</strong> is recorded and saved in database.
+                <Lock size={20} color="#10B981" />
+                <div>
+                  <div>
+                    <strong>Attendance Register Submitted & Locked:</strong> Attendance for <strong>{activeClass?.label}</strong> on{' '}
+                    <strong className="tnum">{selectedDate}</strong> is locked against direct edits.
+                  </div>
+                  <div style={{ fontSize: '0.78rem', color: '#15803D', marginTop: '2px' }}>
+                    To correct a student's status, use the <strong>Request Correction</strong> action in their row for Principal approval.
+                  </div>
+                </div>
+              </div>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                <Link
+                  to="/attendance/corrections"
+                  style={{
+                    padding: '6px 14px',
+                    borderRadius: '6px',
+                    fontSize: '0.78rem',
+                    fontWeight: 600,
+                    backgroundColor: '#FFFFFF',
+                    border: '1px solid #86EFAC',
+                    color: '#14532D',
+                    textDecoration: 'none',
+                    display: 'inline-flex',
+                    alignItems: 'center',
+                    gap: '4px',
+                  }}
+                >
+                  <span>Corrections Ledger</span>
+                  <ArrowRight size={13} />
+                </Link>
+                <span
+                  style={{
+                    padding: '4px 12px',
+                    borderRadius: '12px',
+                    fontSize: '0.75rem',
+                    fontWeight: 700,
+                    backgroundColor: '#10B981',
+                    color: '#FFFFFF',
+                  }}
+                >
+                  Locked
                 </span>
               </div>
-              <span
-                style={{
-                  padding: '4px 12px',
-                  borderRadius: '12px',
-                  fontSize: '0.75rem',
-                  fontWeight: 700,
-                  backgroundColor: 'var(--pop-apple-green)',
-                  color: '#FFFFFF',
-                }}
-              >
-                Submitted
-              </span>
             </div>
           ) : (
             <div
@@ -950,12 +1112,17 @@ export const DailyAttendanceRegister: React.FC = () => {
                       <th style={{ width: '260px', padding: '0 18px', fontSize: '0.72rem', fontWeight: 700, color: '#64748B', textTransform: 'uppercase', letterSpacing: '0.05em', textAlign: 'center' }}>
                         ATTENDANCE STATUS
                       </th>
+                      {isSessionActuallySaved && (
+                        <th style={{ width: '220px', padding: '0 18px', fontSize: '0.72rem', fontWeight: 700, color: '#64748B', textTransform: 'uppercase', letterSpacing: '0.05em', textAlign: 'center' }}>
+                          CORRECTION
+                        </th>
+                      )}
                     </tr>
                   </thead>
                   <tbody>
                     {displayedRows.length === 0 ? (
                       <tr>
-                        <td colSpan={3} style={{ padding: '36px', textAlign: 'center', color: '#64748B' }}>
+                        <td colSpan={isSessionActuallySaved ? 4 : 3} style={{ padding: '36px', textAlign: 'center', color: '#64748B' }}>
                           No students match the selected filter.
                         </td>
                       </tr>
@@ -1074,6 +1241,83 @@ export const DailyAttendanceRegister: React.FC = () => {
                                 </button>
                               </div>
                             </td>
+
+                            {/* ATTENDANCE CORRECTION COLUMN */}
+                            {isSessionActuallySaved && (
+                              <td style={{ padding: '10px 18px', textAlign: 'center' }}>
+                                {(() => {
+                                  const activeCorr = corrections.find(
+                                    c => c.studentId === row.studentId && c.date === selectedDate
+                                  );
+                                  if (activeCorr) {
+                                    return (
+                                      <div style={{ display: 'inline-flex', flexDirection: 'column', alignItems: 'center', gap: '3px' }}>
+                                        {activeCorr.status === 'pending_principal' && (
+                                          <span style={{ padding: '3px 8px', borderRadius: '4px', fontSize: '0.74rem', fontWeight: 700, backgroundColor: '#FEF3C7', color: '#B45309' }}>
+                                            Pending ({activeCorr.requestedState.toUpperCase()})
+                                          </span>
+                                        )}
+                                        {activeCorr.status === 'approved' && (
+                                          <span style={{ padding: '3px 8px', borderRadius: '4px', fontSize: '0.74rem', fontWeight: 700, backgroundColor: '#DCFCE7', color: '#15803D' }}>
+                                            Corrected ({activeCorr.requestedState.toUpperCase()})
+                                          </span>
+                                        )}
+                                        {activeCorr.status === 'rejected' && (
+                                          <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+                                            <span style={{ padding: '3px 8px', borderRadius: '4px', fontSize: '0.74rem', fontWeight: 700, backgroundColor: '#FEE2E2', color: '#B91C1C' }} title={activeCorr.reviewRemarks}>
+                                              Rejected
+                                            </span>
+                                            {canRequestCorrection && (
+                                              <button
+                                                type="button"
+                                                onClick={() => handleOpenCorrectionModal(row)}
+                                                style={{
+                                                  marginTop: '2px',
+                                                  background: 'none',
+                                                  border: 'none',
+                                                  color: '#0A1931',
+                                                  fontSize: '0.72rem',
+                                                  textDecoration: 'underline',
+                                                  cursor: 'pointer',
+                                                }}
+                                              >
+                                                Re-request
+                                              </button>
+                                            )}
+                                          </div>
+                                        )}
+                                      </div>
+                                    );
+                                  }
+                                  if (canRequestCorrection) {
+                                    return (
+                                      <button
+                                        type="button"
+                                        onClick={() => handleOpenCorrectionModal(row)}
+                                        style={{
+                                          padding: '5px 12px',
+                                          borderRadius: '6px',
+                                          border: '1px solid #CBD5E1',
+                                          backgroundColor: '#FFFFFF',
+                                          color: '#0A1931',
+                                          fontSize: '0.76rem',
+                                          fontWeight: 600,
+                                          cursor: 'pointer',
+                                          display: 'inline-flex',
+                                          alignItems: 'center',
+                                          gap: '4px',
+                                        }}
+                                        onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = '#F8FAFC')}
+                                        onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = '#FFFFFF')}
+                                      >
+                                        Request Correction
+                                      </button>
+                                    );
+                                  }
+                                  return <span style={{ color: '#94A3B8', fontSize: '0.74rem' }}>Locked</span>;
+                                })()}
+                              </td>
+                            )}
                           </tr>
                         );
                       })
@@ -1130,59 +1374,91 @@ export const DailyAttendanceRegister: React.FC = () => {
               </div>
             </div>
 
-            <div style={{ display: 'flex', gap: '10px', alignItems: 'center' }}>
-              <button
-                type="button"
-                onClick={handleInitiateSubmit}
-                style={{
-                  backgroundColor: '#FFFFFF',
-                  border: '1px solid #CBD5E1',
-                  color: '#0A1931',
-                  borderRadius: '8px',
-                  padding: '9px 18px',
-                  minHeight: '42px',
-                  fontSize: '0.84rem',
-                  fontWeight: 600,
-                  cursor: 'pointer',
-                  transition: 'all 0.15s ease',
-                }}
-                onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = '#F8FAFC')}
-                onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = '#FFFFFF')}
-              >
-                Save Draft
-              </button>
+            {isSessionActuallySaved ? (
+              <div style={{ display: 'flex', gap: '10px', alignItems: 'center' }}>
+                <span style={{ fontSize: '0.82rem', color: '#15803D', fontWeight: 700, display: 'inline-flex', alignItems: 'center', gap: '6px' }}>
+                  <CheckCircle2 size={16} color="#10B981" />
+                  <span>Register Submitted & Locked</span>
+                </span>
+                <Link
+                  to="/attendance/corrections"
+                  style={{
+                    backgroundColor: '#0A1931',
+                    color: '#FFFFFF',
+                    borderRadius: '8px',
+                    padding: '9px 18px',
+                    fontSize: '0.84rem',
+                    fontWeight: 600,
+                    textDecoration: 'none',
+                    display: 'inline-flex',
+                    alignItems: 'center',
+                    gap: '6px',
+                  }}
+                >
+                  <span>Attendance Corrections</span>
+                  <ArrowRight size={14} />
+                </Link>
+              </div>
+            ) : isPrincipal ? (
+              <div style={{ display: 'flex', alignItems: 'center', gap: '8px', color: '#64748B', fontSize: '0.86rem', fontWeight: 500 }}>
+                <Lock size={15} color="#64748B" />
+                <span>Executive Read-Only: Daily roll call entry and submission are managed centrally by the Admin Office.</span>
+              </div>
+            ) : (
+              <div style={{ display: 'flex', gap: '10px', alignItems: 'center' }}>
+                <button
+                  type="button"
+                  onClick={handleInitiateSubmit}
+                  style={{
+                    backgroundColor: '#FFFFFF',
+                    border: '1px solid #CBD5E1',
+                    color: '#0A1931',
+                    borderRadius: '8px',
+                    padding: '9px 18px',
+                    minHeight: '42px',
+                    fontSize: '0.84rem',
+                    fontWeight: 600,
+                    cursor: 'pointer',
+                    transition: 'all 0.15s ease',
+                  }}
+                  onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = '#F8FAFC')}
+                  onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = '#FFFFFF')}
+                >
+                  Save Draft
+                </button>
 
-              <button
-                type="button"
-                onClick={handleInitiateSubmit}
-                disabled={!canMark || isSubmitting}
-                style={{
-                  backgroundColor: '#F5A623',
-                  border: 'none',
-                  color: '#0A1931',
-                  borderRadius: '8px',
-                  padding: '9px 24px',
-                  minHeight: '42px',
-                  fontSize: '0.86rem',
-                  fontWeight: 800,
-                  display: 'inline-flex',
-                  alignItems: 'center',
-                  gap: '8px',
-                  cursor: canMark ? 'pointer' : 'not-allowed',
-                  boxShadow: '0 2px 10px rgba(245, 166, 35, 0.35)',
-                  transition: 'all 0.15s ease',
-                }}
-                onMouseEnter={(e) => {
-                  if (canMark) (e.currentTarget.style.backgroundColor = '#D97706');
-                }}
-                onMouseLeave={(e) => {
-                  if (canMark) (e.currentTarget.style.backgroundColor = '#F5A623');
-                }}
-              >
-                <Save size={16} />
-                <span>Submit Attendance</span>
-              </button>
-            </div>
+                <button
+                  type="button"
+                  onClick={handleInitiateSubmit}
+                  disabled={!canMark || isSubmitting}
+                  style={{
+                    backgroundColor: '#F5A623',
+                    border: 'none',
+                    color: '#0A1931',
+                    borderRadius: '8px',
+                    padding: '9px 24px',
+                    minHeight: '42px',
+                    fontSize: '0.86rem',
+                    fontWeight: 800,
+                    display: 'inline-flex',
+                    alignItems: 'center',
+                    gap: '8px',
+                    cursor: canMark ? 'pointer' : 'not-allowed',
+                    boxShadow: '0 2px 10px rgba(245, 166, 35, 0.35)',
+                    transition: 'all 0.15s ease',
+                  }}
+                  onMouseEnter={(e) => {
+                    if (canMark) (e.currentTarget.style.backgroundColor = '#D97706');
+                  }}
+                  onMouseLeave={(e) => {
+                    if (canMark) (e.currentTarget.style.backgroundColor = '#F5A623');
+                  }}
+                >
+                  <Save size={16} />
+                  <span>Submit Attendance</span>
+                </button>
+              </div>
+            )}
           </div>
 {/* ========================================================================= */}
                     {/* WhatsApp Parent Notification Confirmation (Runs in background) */}
@@ -1383,6 +1659,164 @@ export const DailyAttendanceRegister: React.FC = () => {
               >
                 <Save size={15} />
                 <span>{isSubmitting ? 'Recording & Enqueueing...' : 'Confirm & Save Attendance'}</span>
+              </button>
+            </div>
+          </div>
+        </Modal>
+      )}
+
+      {/* Attendance Correction Request Modal */}
+      {correctionTargetRow && (
+        <Modal
+          isOpen={true}
+          onClose={() => !isSubmittingCorrection && setCorrectionTargetRow(null)}
+          title={`Request Attendance Correction — ${correctionTargetRow.name}`}
+          maxWidth="540px"
+        >
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+            {correctionModalError && (
+              <ErrorBanner title="Correction Request Error" message={correctionModalError} />
+            )}
+
+            <div style={{ fontSize: '0.82rem', color: '#64748B' }}>
+              Attendance for this register is submitted and locked. Submit a correction request with mandatory justification for Principal approval.
+            </div>
+
+            {/* Student & Class Details Card */}
+            <div
+              style={{
+                padding: '12px 16px',
+                backgroundColor: '#F8FAFC',
+                borderRadius: '8px',
+                border: '1px solid #E2E8F0',
+                display: 'grid',
+                gridTemplateColumns: '1fr 1fr',
+                gap: '8px',
+                fontSize: '0.84rem',
+              }}
+            >
+              <div>
+                <span style={{ color: '#64748B', fontSize: '0.76rem' }}>Student</span>
+                <div style={{ fontWeight: 700, color: '#0A1931' }}>{correctionTargetRow.name}</div>
+              </div>
+              <div>
+                <span style={{ color: '#64748B', fontSize: '0.76rem' }}>Admission No / Roll</span>
+                <div style={{ fontWeight: 600 }}>{correctionTargetRow.admissionNumber || '—'} (Roll #{correctionTargetRow.rollNumber})</div>
+              </div>
+              <div>
+                <span style={{ color: '#64748B', fontSize: '0.76rem' }}>Class & Date</span>
+                <div style={{ fontWeight: 600 }}>{activeClass?.label} • {selectedDate}</div>
+              </div>
+              <div>
+                <span style={{ color: '#64748B', fontSize: '0.76rem' }}>Currently Recorded</span>
+                <div
+                  style={{
+                    fontWeight: 700,
+                    textTransform: 'uppercase',
+                    color: correctionTargetRow.state === 'present' ? '#15803D' : '#B91C1C',
+                  }}
+                >
+                  {correctionTargetRow.state || 'Unmarked'}
+                </div>
+              </div>
+            </div>
+
+            {/* Target State Selector */}
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
+              <label style={{ fontSize: '0.82rem', fontWeight: 600, color: '#334155' }}>
+                Target Corrected Status
+              </label>
+              <select
+                value={correctionTargetState}
+                onChange={e => setCorrectionTargetState(e.target.value as 'present' | 'absent')}
+                style={{
+                  padding: '8px 12px',
+                  borderRadius: '6px',
+                  border: '1px solid #CBD5E1',
+                  fontSize: '0.84rem',
+                }}
+              >
+                <option value="present">Present</option>
+                <option value="absent">Absent</option>
+              </select>
+            </div>
+
+            {/* Mandatory Reason */}
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
+              <label style={{ fontSize: '0.82rem', fontWeight: 600, color: '#334155' }}>
+                Mandatory Reason / Justification <span style={{ color: '#EF4444' }}>*</span>
+              </label>
+              <textarea
+                value={correctionReason}
+                onChange={e => setCorrectionReason(e.target.value)}
+                placeholder="E.g. Parent informed student arrived late due to medical appointment; marked absent by mistake during morning roll call."
+                rows={3}
+                required
+                style={{
+                  width: '100%',
+                  padding: '10px',
+                  borderRadius: '6px',
+                  border: '1px solid #CBD5E1',
+                  fontSize: '0.84rem',
+                  resize: 'vertical',
+                }}
+              />
+            </div>
+
+            {/* Dual Custody Rule Explanation */}
+            <div
+              style={{
+                fontSize: '0.78rem',
+                color: '#64748B',
+                backgroundColor: '#FFFBEB',
+                border: '1px solid #FDE68A',
+                borderRadius: '6px',
+                padding: '10px 12px',
+              }}
+            >
+              <strong>Dual Custody Process:</strong> Your request will be forwarded to the Principal's Approval Dashboard. The attendance register and WhatsApp notification to parent will be triggered automatically upon Principal authorization.
+            </div>
+
+            {/* Modal Actions */}
+            <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '10px', marginTop: '6px' }}>
+              <button
+                type="button"
+                onClick={() => setCorrectionTargetRow(null)}
+                disabled={isSubmittingCorrection}
+                style={{
+                  padding: '8px 16px',
+                  borderRadius: '6px',
+                  border: '1px solid #CBD5E1',
+                  backgroundColor: '#FFFFFF',
+                  color: '#475569',
+                  fontSize: '0.84rem',
+                  fontWeight: 600,
+                  cursor: 'pointer',
+                }}
+              >
+                Cancel
+              </button>
+              <button
+                type="button"
+                onClick={handleConfirmCorrectionRequest}
+                disabled={isSubmittingCorrection}
+                style={{
+                  padding: '8px 18px',
+                  borderRadius: '6px',
+                  border: 'none',
+                  backgroundColor: '#0A1931',
+                  color: '#FFFFFF',
+                  fontSize: '0.84rem',
+                  fontWeight: 700,
+                  cursor: isSubmittingCorrection ? 'not-allowed' : 'pointer',
+                  opacity: isSubmittingCorrection ? 0.7 : 1,
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  gap: '6px',
+                }}
+              >
+                {isSubmittingCorrection && <RotateCw size={14} className="animate-spin" />}
+                <span>Submit to Principal</span>
               </button>
             </div>
           </div>
