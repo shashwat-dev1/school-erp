@@ -357,6 +357,9 @@ class DemoRepository implements DataProvider {
 
   public async createStaffMember(input: Partial<StaffUser>, actor: StaffUser): Promise<StaffUser> {
     if (!actor || actor.role !== 'developer') {
+      if (actor && actor.role === 'principal') {
+        throw new Error('Unauthorized: Principal has strictly read-only access; only Developer accounts can provision staff users.');
+      }
       throw new Error('Unauthorized: Only Developer accounts can provision staff users.');
     }
     if (input.role === 'developer' && actor.role !== 'developer') {
@@ -1762,6 +1765,11 @@ class DemoRepository implements DataProvider {
     const store = this.loadStore();
     const docs = store.studentDocuments?.[studentId] || [];
     return docs.filter(d => d.isPresent !== false);
+  }
+
+  public async getAllStudentDocuments(): Promise<Record<string, StudentDocumentRecord[]>> {
+    const store = this.loadStore();
+    return store.studentDocuments || {};
   }
 
   public async uploadStudentDocument(

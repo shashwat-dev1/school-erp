@@ -204,6 +204,7 @@ export interface DataProvider {
 
   // Student Document Management (9 Required Slots)
   getStudentDocuments(studentId: string): Promise<StudentDocumentRecord[]>;
+  getAllStudentDocuments?(): Promise<Record<string, StudentDocumentRecord[]>>;
   uploadStudentDocument(
     studentId: string,
     documentType: StudentDocumentType,

@@ -52,6 +52,7 @@ import { vercelBlobStorage } from '../../services/storage/vercelBlobStorage';
 import { WhatsAppNotificationService } from '../../services/whatsapp/whatsappService';
 import {
   collection,
+  collectionGroup,
   doc,
   getDoc,
   getDocs,
@@ -1145,6 +1146,26 @@ export class FirestoreRepository implements DataProvider {
       }
     });
     return records;
+  }
+
+  public async getAllStudentDocuments(): Promise<Record<string, StudentDocumentRecord[]>> {
+    ensureFirebaseReady();
+    const result: Record<string, StudentDocumentRecord[]> = {};
+    try {
+      const snap = await getDocs(collectionGroup(db!, 'documents'));
+      snap.forEach(d => {
+        const data = d.data() as StudentDocumentRecord;
+        if (data && data.isPresent !== false && data.studentId) {
+          if (!result[data.studentId]) {
+            result[data.studentId] = [];
+          }
+          result[data.studentId].push(data);
+        }
+      });
+    } catch (err) {
+      console.warn('Failed to fetch all documents via collectionGroup:', err);
+    }
+    return result;
   }
 
   public async uploadStudentDocument(

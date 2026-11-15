@@ -17,7 +17,6 @@
 
 import type {
   StaffUser,
-  StaffRole,
   StudentRecord,
   AttendanceCorrection,
   PermissionModule,
@@ -433,7 +432,7 @@ export const Permissions = {
  */
 export function applyPermissionPreset(
   preset: PermissionPreset,
-  module: PermissionModule
+  _module: PermissionModule
 ): ModulePermissions {
   if (preset === 'read_only') {
     return { view: true, download: true, export: true };

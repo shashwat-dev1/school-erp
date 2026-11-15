@@ -29,7 +29,7 @@ import type {
   RolePermissions,
   PermissionPreset,
 } from '../../domain/types';
-import { Permissions, applyPermissionPreset } from '../../domain/permissions';
+import { Permissions, applyPermissionPreset, DEFAULT_ROLE_PERMISSIONS } from '../../domain/permissions';
 import {
   Terminal,
   ShieldCheck,
@@ -53,6 +53,9 @@ import {
   Search,
   Undo2,
   ShieldAlert,
+  Save,
+  Sliders,
+  KeyRound,
 } from 'lucide-react';
 
 type ConsoleTab =
@@ -677,6 +680,7 @@ export const DeveloperConsole: React.FC = () => {
           { key: 'overview', label: 'Overview', icon: <Activity size={16} /> },
           { key: 'import', label: 'Student Data Import', icon: <UploadCloud size={16} />, highlight: true },
           { key: 'users', label: 'User & Role Management', icon: <Users size={16} /> },
+          { key: 'permissions', label: 'Permissions Matrix', icon: <Sliders size={16} /> },
           { key: 'classes', label: 'Classes & Sections', icon: <Layers size={16} /> },
           { key: 'quality', label: 'Data Quality', icon: <ShieldCheck size={16} /> },
           { key: 'database', label: 'Database & Backups', icon: <Database size={16} /> },
@@ -1386,23 +1390,60 @@ export const DeveloperConsole: React.FC = () => {
                         {staff.employeeCode || '-'}
                       </td>
                       <td style={{ padding: '10px 14px', textAlign: 'right' }}>
-                        <button
-                          onClick={() => handleToggleStaffStatus(staff)}
-                          disabled={isLastDev && staff.status === 'active'}
-                          title={isLastDev && staff.status === 'active' ? 'Cannot deactivate last active Developer' : ''}
-                          style={{
-                            backgroundColor: staff.status === 'active' ? '#FEF2F2' : '#ECFDF5',
-                            color: staff.status === 'active' ? '#DC2626' : '#059669',
-                            border: `1px solid ${staff.status === 'active' ? '#FECACA' : '#A7F3D0'}`,
-                            borderRadius: '6px',
-                            padding: '4px 10px',
-                            fontSize: '0.72rem',
-                            fontWeight: 700,
-                            cursor: isLastDev && staff.status === 'active' ? 'not-allowed' : 'pointer',
-                          }}
-                        >
-                          {staff.status === 'active' ? 'Deactivate' : 'Activate'}
-                        </button>
+                        <div style={{ display: 'inline-flex', gap: '6px', alignItems: 'center' }}>
+                          <button
+                            type="button"
+                            onClick={() => handleInitiatePasswordRecovery(staff)}
+                            title="Initiate password recovery for staff account"
+                            style={{
+                              backgroundColor: '#F8FAFC',
+                              color: '#334155',
+                              border: '1px solid #CBD5E1',
+                              borderRadius: '6px',
+                              padding: '4px 8px',
+                              fontSize: '0.72rem',
+                              fontWeight: 600,
+                              cursor: 'pointer',
+                            }}
+                          >
+                            Password
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => handleRevokeStaffSession(staff)}
+                            title="Revoke active sessions for staff account"
+                            style={{
+                              backgroundColor: '#FFFBEB',
+                              color: '#92400E',
+                              border: '1px solid #FDE68A',
+                              borderRadius: '6px',
+                              padding: '4px 8px',
+                              fontSize: '0.72rem',
+                              fontWeight: 600,
+                              cursor: 'pointer',
+                            }}
+                          >
+                            Revoke
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => handleToggleStaffStatus(staff)}
+                            disabled={isLastDev && staff.status === 'active'}
+                            title={isLastDev && staff.status === 'active' ? 'Cannot deactivate last active Developer' : ''}
+                            style={{
+                              backgroundColor: staff.status === 'active' ? '#FEF2F2' : '#ECFDF5',
+                              color: staff.status === 'active' ? '#DC2626' : '#059669',
+                              border: `1px solid ${staff.status === 'active' ? '#FECACA' : '#A7F3D0'}`,
+                              borderRadius: '6px',
+                              padding: '4px 10px',
+                              fontSize: '0.72rem',
+                              fontWeight: 700,
+                              cursor: isLastDev && staff.status === 'active' ? 'not-allowed' : 'pointer',
+                            }}
+                          >
+                            {staff.status === 'active' ? 'Deactivate' : 'Activate'}
+                          </button>
+                        </div>
                       </td>
                     </tr>
                   );
@@ -1500,6 +1541,251 @@ export const DeveloperConsole: React.FC = () => {
                 </button>
               </div>
             </form>
+          </div>
+        </div>
+      )}
+
+      {/* Password Recovery Result Modal */}
+      {recoveryModal && recoveryModal.isOpen && (
+        <div style={{ position: 'fixed', inset: 0, backgroundColor: 'rgba(0,0,0,0.5)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 60 }}>
+          <div style={{ backgroundColor: '#FFFFFF', borderRadius: '14px', width: '90%', maxWidth: '440px', padding: '24px', boxShadow: '0 20px 25px -5px rgba(0,0,0,0.2)' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '14px' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                <KeyRound size={20} color="#0A1931" />
+                <h3 style={{ margin: 0, fontSize: '1.1rem', fontWeight: 800, color: '#0A1931' }}>
+                  Password Recovery
+                </h3>
+              </div>
+              <button
+                type="button"
+                onClick={() => setRecoveryModal(null)}
+                style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#64748B' }}
+              >
+                <X size={18} />
+              </button>
+            </div>
+            <p style={{ fontSize: '0.84rem', color: '#475569', marginBottom: '16px' }}>
+              {recoveryModal.message}
+            </p>
+            <div style={{ backgroundColor: '#F8FAFC', padding: '12px 16px', borderRadius: '8px', border: '1px solid #E2E8F0', marginBottom: '18px' }}>
+              <div style={{ fontSize: '0.72rem', fontWeight: 700, color: '#64748B', textTransform: 'uppercase', marginBottom: '4px' }}>
+                Staff Member
+              </div>
+              <div style={{ fontSize: '0.88rem', fontWeight: 700, color: '#0A1931', marginBottom: '10px' }}>
+                {recoveryModal.staffName} ({recoveryModal.email})
+              </div>
+              <div style={{ fontSize: '0.72rem', fontWeight: 700, color: '#64748B', textTransform: 'uppercase', marginBottom: '4px' }}>
+                Temporary Security Token
+              </div>
+              <div style={{ fontFamily: 'monospace', fontSize: '0.92rem', color: '#0369A1', fontWeight: 700, wordBreak: 'break-all' }}>
+                {recoveryModal.tempToken}
+              </div>
+            </div>
+            <button
+              type="button"
+              onClick={() => setRecoveryModal(null)}
+              style={{
+                width: '100%',
+                backgroundColor: '#0A1931',
+                color: '#FFFFFF',
+                border: 'none',
+                borderRadius: '8px',
+                padding: '10px',
+                fontSize: '0.86rem',
+                fontWeight: 700,
+                cursor: 'pointer',
+              }}
+            >
+              Close
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* ==================================================================== */}
+      {/* TAB: GRANULAR ROLE PERMISSION MATRIX */}
+      {/* ==================================================================== */}
+      {activeTab === 'permissions' && (
+        <div style={{ backgroundColor: '#FFFFFF', borderRadius: '12px', border: '1px solid #E2E8F0', padding: '24px 28px' }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px', flexWrap: 'wrap', gap: '12px' }}>
+            <div>
+              <h2 style={{ fontSize: '1.25rem', fontWeight: 800, color: '#0A1931', margin: '0 0 4px 0' }}>
+                Granular Role Permission Matrix
+              </h2>
+              <p style={{ fontSize: '0.84rem', color: '#64748B', margin: 0 }}>
+                Configure live module-level permissions for Admin Office and Principal without code redeployment.
+              </p>
+            </div>
+            <div style={{ display: 'flex', gap: '10px', alignItems: 'center' }}>
+              <div style={{ display: 'inline-flex', backgroundColor: '#F1F5F9', padding: '3px', borderRadius: '8px' }}>
+                <button
+                  type="button"
+                  onClick={() => setSelectedPermissionRole('admin')}
+                  style={{
+                    padding: '6px 14px',
+                    borderRadius: '6px',
+                    border: 'none',
+                    fontSize: '0.80rem',
+                    fontWeight: 700,
+                    cursor: 'pointer',
+                    backgroundColor: selectedPermissionRole === 'admin' ? '#0A1931' : 'transparent',
+                    color: selectedPermissionRole === 'admin' ? '#FFFFFF' : '#475569',
+                  }}
+                >
+                  Admin Office
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setSelectedPermissionRole('principal')}
+                  style={{
+                    padding: '6px 14px',
+                    borderRadius: '6px',
+                    border: 'none',
+                    fontSize: '0.80rem',
+                    fontWeight: 700,
+                    cursor: 'pointer',
+                    backgroundColor: selectedPermissionRole === 'principal' ? '#0A1931' : 'transparent',
+                    color: selectedPermissionRole === 'principal' ? '#FFFFFF' : '#475569',
+                  }}
+                >
+                  Principal
+                </button>
+              </div>
+
+              <button
+                type="button"
+                onClick={handleSaveRolePermissions}
+                disabled={isSavingPermissions}
+                style={{
+                  backgroundColor: '#F5A623',
+                  color: '#0A1931',
+                  border: 'none',
+                  borderRadius: '8px',
+                  padding: '9px 18px',
+                  fontSize: '0.84rem',
+                  fontWeight: 800,
+                  cursor: isSavingPermissions ? 'not-allowed' : 'pointer',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '6px',
+                }}
+              >
+                <Save size={16} />
+                <span>{isSavingPermissions ? 'Saving...' : 'Save & Apply'}</span>
+              </button>
+            </div>
+          </div>
+
+          {/* Matrix Table */}
+          <div style={{ border: '1px solid #E2E8F0', borderRadius: '8px', overflowX: 'auto' }}>
+            <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '0.82rem' }}>
+              <thead>
+                <tr style={{ backgroundColor: '#F8FAFC', borderBottom: '1px solid #E2E8F0', textAlign: 'left' }}>
+                  <th style={{ padding: '12px 16px', minWidth: '160px' }}>Module</th>
+                  <th style={{ padding: '12px 16px', minWidth: '180px' }}>Quick Presets</th>
+                  <th style={{ padding: '12px 16px' }}>Actions & Capabilities</th>
+                </tr>
+              </thead>
+              <tbody>
+                {(Object.keys(DEFAULT_ROLE_PERMISSIONS[selectedPermissionRole]) as PermissionModule[]).map(mod => {
+                  const currentModPerms = rolePermissions[selectedPermissionRole]?.[mod] || {};
+                  const allowedActions: PermissionAction[] = [
+                    'view', 'create', 'edit', 'delete', 'upload', 'download',
+                    'approve', 'reject', 'revoke', 'send_whatsapp', 'export', 'manage'
+                  ];
+
+                  return (
+                    <tr key={mod} style={{ borderBottom: '1px solid #F1F5F9' }}>
+                      <td style={{ padding: '12px 16px', fontWeight: 700, color: '#0A1931', textTransform: 'capitalize' }}>
+                        {mod.replace(/_/g, ' ')}
+                      </td>
+                      <td style={{ padding: '12px 16px' }}>
+                        <div style={{ display: 'flex', gap: '6px' }}>
+                          <button
+                            type="button"
+                            onClick={() => handleApplyPreset(mod, 'read_only')}
+                            style={{
+                              padding: '3px 8px',
+                              borderRadius: '4px',
+                              border: '1px solid #CBD5E1',
+                              backgroundColor: '#FFFFFF',
+                              fontSize: '0.70rem',
+                              fontWeight: 600,
+                              cursor: 'pointer',
+                            }}
+                          >
+                            Read-Only
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => handleApplyPreset(mod, 'read_write')}
+                            style={{
+                              padding: '3px 8px',
+                              borderRadius: '4px',
+                              border: '1px solid #CBD5E1',
+                              backgroundColor: '#FFFFFF',
+                              fontSize: '0.70rem',
+                              fontWeight: 600,
+                              cursor: 'pointer',
+                            }}
+                          >
+                            Read-Write
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => handleApplyPreset(mod, 'full')}
+                            style={{
+                              padding: '3px 8px',
+                              borderRadius: '4px',
+                              border: '1px solid #CBD5E1',
+                              backgroundColor: '#FFFFFF',
+                              fontSize: '0.70rem',
+                              fontWeight: 600,
+                              cursor: 'pointer',
+                            }}
+                          >
+                            Full
+                          </button>
+                        </div>
+                      </td>
+                      <td style={{ padding: '12px 16px' }}>
+                        <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px' }}>
+                          {allowedActions.map(action => {
+                            const isChecked = Boolean(currentModPerms[action]);
+                            return (
+                              <label
+                                key={action}
+                                style={{
+                                  display: 'inline-flex',
+                                  alignItems: 'center',
+                                  gap: '4px',
+                                  padding: '3px 8px',
+                                  borderRadius: '6px',
+                                  backgroundColor: isChecked ? '#EFF6FF' : '#F8FAFC',
+                                  border: `1px solid ${isChecked ? '#BFDBFE' : '#E2E8F0'}`,
+                                  fontSize: '0.74rem',
+                                  fontWeight: isChecked ? 700 : 500,
+                                  color: isChecked ? '#1D4ED8' : '#64748B',
+                                  cursor: 'pointer',
+                                }}
+                              >
+                                <input
+                                  type="checkbox"
+                                  checked={isChecked}
+                                  onChange={() => handleTogglePermission(mod, action)}
+                                  style={{ cursor: 'pointer' }}
+                                />
+                                <span style={{ textTransform: 'capitalize' }}>{action.replace(/_/g, ' ')}</span>
+                              </label>
+                            );
+                          })}
+                        </div>
+                      </td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
           </div>
         </div>
       )}
