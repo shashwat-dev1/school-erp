@@ -7,7 +7,7 @@ export const AppShell: React.FC = () => {
   const [isMobileSidebarOpen, setIsMobileSidebarOpen] = useState(false);
 
   return (
-    <div style={{ display: 'flex', minHeight: '100vh', backgroundColor: 'var(--hhs-canvas)' }}>
+    <div style={{ display: 'flex', minHeight: '100dvh', backgroundColor: 'var(--hhs-canvas)' }}>
       {/* Responsive Left Sidebar */}
       <Sidebar
         isMobileOpen={isMobileSidebarOpen}

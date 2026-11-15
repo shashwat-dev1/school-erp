@@ -56,7 +56,10 @@ import {
   Save,
   Sliders,
   KeyRound,
+  Code,
 } from 'lucide-react';
+import { SwaggerPortal } from '../../components/developer/SwaggerPortal';
+import { DatabaseExplorer } from '../../components/developer/DatabaseExplorer';
 
 type ConsoleTab =
   | 'overview'
@@ -66,6 +69,8 @@ type ConsoleTab =
   | 'classes'
   | 'quality'
   | 'database'
+  | 'db_schema'
+  | 'api_docs'
   | 'storage'
   | 'whatsapp'
   | 'health'
@@ -684,6 +689,8 @@ export const DeveloperConsole: React.FC = () => {
           { key: 'classes', label: 'Classes & Sections', icon: <Layers size={16} /> },
           { key: 'quality', label: 'Data Quality', icon: <ShieldCheck size={16} /> },
           { key: 'database', label: 'Database & Backups', icon: <Database size={16} /> },
+          { key: 'db_schema', label: 'Database Schema & Dictionary', icon: <Layers size={16} />, highlight: true },
+          { key: 'api_docs', label: 'Swagger UI & OpenAPI', icon: <Code size={16} />, highlight: true },
           { key: 'storage', label: 'Document Storage', icon: <HardDrive size={16} /> },
           { key: 'whatsapp', label: 'Attendance & WhatsApp', icon: <MessageSquare size={16} /> },
           { key: 'health', label: 'System Health', icon: <Terminal size={16} /> },
@@ -2414,6 +2421,12 @@ HanuJai High School
           </div>
         </div>
       )}
+
+      {/* TAB: DATABASE SCHEMA & DATA DICTIONARY */}
+      {activeTab === 'db_schema' && <DatabaseExplorer />}
+
+      {/* TAB: SWAGGER UI & OPENAPI 3.0 EXPLORER */}
+      {activeTab === 'api_docs' && <SwaggerPortal />}
 
     </div>
   );

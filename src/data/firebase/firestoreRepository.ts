@@ -45,7 +45,6 @@ import type {
 } from '../../domain/types';
 import { Permissions } from '../../domain/permissions';
 import { getSchoolLocalDate } from '../../domain/policy';
-import { initialStaff, defaultDeveloperUser } from '../demo/seedData';
 
 import { db, auth, isFirebaseConfigured } from '../../config/firebase';
 import { vercelBlobStorage } from '../../services/storage/vercelBlobStorage';
@@ -105,59 +104,22 @@ export class FirestoreRepository implements DataProvider {
 
   public async getCurrentStaffUser(userId: string): Promise<StaffUser | null> {
     ensureFirebaseReady();
+    // 1. Authoritative lookup by authenticated Firebase UID in canonical collection /staff/{uid}
     const docRef = doc(db!, 'staff', userId);
     const snap = await getDoc(docRef);
     if (snap.exists()) {
       return snap.data() as StaffUser;
     }
 
-    // Dynamic UID-to-staff profile linker:
-    // If the authenticated user does not have a /staff/{authUid} document yet, lookup by email
-    const userEmail = auth?.currentUser?.email?.toLowerCase().trim();
-    if (userEmail) {
-      const q = query(collection(db!, 'staff'), where('email', '==', userEmail));
-      const snapByEmail = await getDocs(q);
-      if (!snapByEmail.empty) {
-        const staffData = snapByEmail.docs[0].data() as StaffUser;
-        try {
-          // Mirror to /staff/${userId} so security rules can resolve request.auth.uid
-          await setDoc(docRef, { ...staffData, authUid: userId }, { merge: true });
-        } catch {
-          // Non-blocking if rules prevent write
-        }
-        return staffData;
-      }
-
-      // Authoritative fallback: match against initialStaff directory
-      const seedMatch = initialStaff.find(s => s.email.toLowerCase() === userEmail);
-      if (seedMatch) {
-        try {
-          await setDoc(docRef, { ...seedMatch, authUid: userId }, { merge: true });
-          await setDoc(doc(db!, 'staff', seedMatch.id), seedMatch, { merge: true });
-        } catch {
-          // Non-blocking
-        }
-        return seedMatch;
-      }
-
-      // Resilient role resolver for custom Firebase Auth accounts
-      let resolvedPersona = initialStaff.find(s => s.role === 'admin' && s.status === 'active') || initialStaff[1];
-      if (userEmail.includes('developer') || userEmail.includes('dev')) {
-        resolvedPersona = defaultDeveloperUser;
-      } else if (userEmail.includes('principal') || userEmail.includes('director') || userEmail.includes('head')) {
-        resolvedPersona = initialStaff.find(s => s.role === 'principal' && s.status === 'active') || initialStaff[0];
-      }
-      const linkedUser: StaffUser = {
-        ...resolvedPersona,
-        email: userEmail,
-      };
-      try {
-        await setDoc(docRef, { ...linkedUser, authUid: userId }, { merge: true });
-      } catch {
-        // Non-blocking
-      }
-      return linkedUser;
+    // 2. Secondary lookup for records where document ID is a staff slug and authUid matches
+    const qByUid = query(collection(db!, 'staff'), where('authUid', '==', userId));
+    const snapByUid = await getDocs(qByUid);
+    if (!snapByUid.empty) {
+      return snapByUid.docs[0].data() as StaffUser;
     }
+
+    // 3. Fail-closed: No authoritative record exists for this Firebase Auth UID
+    console.warn(`[HanuJai Auth] No authoritative staff record found for Firebase UID: ${userId}`);
     return null;
   }
 

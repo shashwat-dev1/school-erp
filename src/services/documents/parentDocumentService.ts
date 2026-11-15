@@ -337,8 +337,9 @@ export class ParentDocumentService {
   /**
    * Direct Bearer Token Exchange (NO OTP):
    * Parent opens URL `/parent-upload#t=TOKEN`.
-   * Evaluates token hash, validates status & expiry, and immediately issues a scoped
-   * short-lived ParentUploadSession without any OTP, SMS, or secondary login screen.
+   * Evaluates token hash via dedicated serverless API (or demo local cache),
+   * validates status & expiry, and immediately issues a scoped short-lived
+   * ParentUploadSession without any OTP, SMS, or secondary login screen.
    */
   public static async exchangeTokenForUploadSession(rawToken: string): Promise<{
     valid: boolean;
@@ -347,6 +348,41 @@ export class ParentDocumentService {
   }> {
     if (!rawToken || rawToken.trim().length < 16) {
       return { valid: false, error: 'Invalid or missing document upload invitation token.' };
+    }
+
+    // In live web environment, query dedicated trusted Serverless API
+    if (typeof window !== 'undefined' && !isDemoMode() && isFirebaseConfigured()) {
+      try {
+        const res = await fetch('/api/documents/parent-verify', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ token: rawToken.trim() }),
+        });
+        const data = await res.json().catch(() => ({}));
+        if (res.ok && data.valid && data.session) {
+          const session: ParentUploadSession = {
+            sessionId: `sess_${generateSecureToken()}`,
+            tokenHash: data.session.tokenHash,
+            uploadSessionToken: data.session.uploadSessionToken,
+            studentId: data.session.studentId,
+            studentName: data.session.studentName,
+            admissionNumber: data.session.admissionNumber,
+            classId: data.session.classId || '',
+            classLabel: data.session.classLabel,
+            guardianPhone: data.session.maskedPhone || '',
+            requestedSlots: data.session.requestedSlots,
+            authorizedSlots: data.session.requestedSlots,
+            expiresAt: data.session.expiresAt,
+            createdAt: new Date().toISOString(),
+          };
+
+          return { valid: true, session };
+        } else {
+          return { valid: false, error: data.error || 'Document upload link is invalid, expired, or revoked.' };
+        }
+      } catch (apiErr) {
+        console.warn('[Parent Document Service] API token verify error, falling back to local evaluation:', apiErr);
+      }
     }
 
     const tokenHash = await sha256(rawToken.trim());
@@ -402,19 +438,62 @@ export class ParentDocumentService {
       createdAt: new Date().toISOString(),
     };
 
-    try {
-      if (typeof window !== 'undefined') {
-        window.sessionStorage?.setItem('hanujai_parent_active_session', JSON.stringify(session));
-        const sessionsRaw = window.localStorage?.getItem(SESSIONS_STORAGE_KEY);
-        const sessions = sessionsRaw ? JSON.parse(sessionsRaw) : [];
-        sessions.unshift(session);
-        window.localStorage?.setItem(SESSIONS_STORAGE_KEY, JSON.stringify(sessions.slice(0, 50)));
-      }
-    } catch {
-      // Ignored
+    return { valid: true, session };
+  }
+
+  /**
+   * Uploads a student document via the dedicated parent upload serverless architecture.
+   * Eliminates any synthetic staff account requirement and enforces server-side validation.
+   */
+  public static async uploadParentDocument(
+    sessionTokenOrRawToken: string,
+    studentId: string,
+    slotType: StudentDocumentType,
+    file: File | Blob,
+    onProgress?: (progressPercent: number) => void
+  ): Promise<{ url?: string; pathname?: string; success: boolean }> {
+    if (!sessionTokenOrRawToken) {
+      throw new Error('Authentication required. Missing parent upload invitation or session token.');
     }
 
-    return { valid: true, session };
+    if (!isDemoMode()) {
+      const fileName = (file as File).name || `${slotType}.pdf`;
+      const targetPath = `students/${studentId}/documents/${slotType}/${Date.now()}_${fileName.replace(/[^a-zA-Z0-9._-]/g, '_')}`;
+
+      const { upload } = await import('@vercel/blob/client');
+      const blob = await upload(targetPath, file, {
+        access: 'private',
+        handleUploadUrl: '/api/documents/parent-upload',
+        headers: {
+          'x-parent-session-token': sessionTokenOrRawToken,
+          'x-parent-token': sessionTokenOrRawToken,
+        },
+        clientPayload: JSON.stringify({
+          token: sessionTokenOrRawToken,
+          studentId,
+          documentType: slotType,
+          originalFileName: fileName,
+          fileSize: file.size,
+          contentType: file.type || 'application/octet-stream',
+        }),
+      });
+
+      if (onProgress) onProgress(100);
+      return { url: blob.url, pathname: blob.pathname, success: true };
+    }
+
+    // Demo Mode simulation
+    if (onProgress) {
+      onProgress(40);
+      setTimeout(() => onProgress(80), 50);
+      setTimeout(() => onProgress(100), 100);
+    }
+
+    return {
+      url: `https://demo-blob.hanujai.local/students/${studentId}/documents/${slotType}/${Date.now()}.pdf`,
+      pathname: `students/${studentId}/documents/${slotType}/${Date.now()}.pdf`,
+      success: true,
+    };
   }
 
   /**
@@ -762,17 +841,6 @@ ${uploadUrl}
       expiresAt,
       createdAt: new Date().toISOString(),
     };
-
-    // Save session
-    try {
-      sessionStorage.setItem('hanujai_parent_active_session', JSON.stringify(session));
-      const sessionsRaw = localStorage.getItem(SESSIONS_STORAGE_KEY);
-      const sessions = sessionsRaw ? JSON.parse(sessionsRaw) : [];
-      sessions.unshift(session);
-      localStorage.setItem(SESSIONS_STORAGE_KEY, JSON.stringify(sessions.slice(0, 50)));
-    } catch {
-      // Ignored
-    }
 
     return { valid: true, success: true, session };
   }

@@ -18,13 +18,13 @@ import type {
   ParentUploadSession,
   DocumentSlotDefinition,
 } from '../../domain/types';
-import { useData } from '../../context/DataContext';
 
 export const ParentDocumentUpload: React.FC = () => {
-  const { provider } = useData();
-
   const [phase, setPhase] = useState<'verifying_link' | 'upload_ready' | 'success_complete' | 'error'>('verifying_link');
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
+
+  // Raw token saved securely in component state
+  const [rawToken, setRawToken] = useState<string>('');
 
   // Student & Invitation metadata
   const [requestedSlots, setRequestedSlots] = useState<StudentDocumentType[]>([]);
@@ -59,6 +59,7 @@ export const ParentDocumentUpload: React.FC = () => {
       return;
     }
 
+    setRawToken(token);
     initiateVerification(token);
   }, []);
 
@@ -91,7 +92,7 @@ export const ParentDocumentUpload: React.FC = () => {
   };
 
   const handleSlotFileSelect = async (slotType: StudentDocumentType, file: File) => {
-    if (!session) return;
+    if (!session || !rawToken) return;
 
     // Validate size and mime
     const validation = validateDocumentFile(slotType, {
@@ -118,31 +119,13 @@ export const ParentDocumentUpload: React.FC = () => {
     }));
 
     try {
-      // Synthetic staff representation for parent upload
-      const parentActor = {
-        id: `parent_${session.guardianPhone.replace(/[^0-9]/g, '')}`,
-        name: `Parent of ${session.studentName}`,
-        email: 'parent@hanujai.local',
-        role: 'admin' as const, // Technical authorization to write document metadata
-        status: 'active' as const,
-        employeeCode: 'PARENT-PORTAL',
-        designation: 'Parent / Guardian',
-        department: 'Parent Portal',
-        phone: session.guardianPhone,
-        createdAt: new Date().toISOString(),
-      };
-
-      await provider.uploadStudentDocument(
+      // Execute upload via dedicated server-side parent upload architecture (using scoped uploadSessionToken)
+      const uploadAuthToken = session.uploadSessionToken || rawToken;
+      await ParentDocumentService.uploadParentDocument(
+        uploadAuthToken,
         session.studentId,
         slotType,
         file,
-        {
-          originalFileName: file.name,
-          contentType: file.type,
-          fileSize: file.size,
-          notes: 'Uploaded by parent via secure portal link',
-        },
-        parentActor,
         (percent: number) => {
           setUploadedSlots(prev => ({
             ...prev,

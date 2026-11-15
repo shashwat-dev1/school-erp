@@ -21,6 +21,7 @@ export const ACTIVE_ROLES: StaffRole[] = ['principal', 'admin', 'developer'];
 
 export interface StaffUser {
   id: string; // Firebase Auth UID or Synthetic Demo ID
+  authUid?: string;               // Firebase Auth UID reference
   email: string;
   name: string;
   displayName?: string;           // Convenient alias
@@ -570,6 +571,7 @@ export interface ParentDocumentInvitation {
 export interface ParentUploadSession {
   sessionId: string;
   tokenHash: string;
+  uploadSessionToken?: string;
   studentId: string;
   studentName: string;
   admissionNumber: string;

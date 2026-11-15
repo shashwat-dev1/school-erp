@@ -110,6 +110,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     setIsLoading(true);
     setError(null);
     try {
+      localStorage.removeItem('hanujai_demo_user_override');
       const cleanEmail = email.trim().toLowerCase();
       if (!cleanEmail || !pass.trim()) {
         throw new Error('Please enter both your institutional email and password.');
@@ -127,7 +128,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       }
 
       if (isDemoMode()) {
-        if (cleanEmail === 'developer@hanujai.edu.in') {
+        if (cleanEmail === 'developer@hanujai.edu.in' || cleanEmail.includes('developer')) {
           setCurrentUser(normalizeStaffUser(defaultDeveloperUser));
           localStorage.setItem('hanujai_demo_user_id', defaultDeveloperUser.id);
           return;
@@ -137,7 +138,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         );
         if (found) {
           if (found.status === 'deactivated' || found.role === 'class_teacher' || found.role === 'subject_teacher') {
-            throw new Error('Classroom teacher accounts are deactivated in this operating phase. Only Principal and Admin Office accounts are authorized.');
+            throw new Error('Classroom teacher accounts are deactivated in this operating phase. Only Principal, Admin Office, and Developer accounts are authorized.');
           }
           setCurrentUser(normalizeStaffUser(found));
           localStorage.setItem('hanujai_demo_user_id', found.id);
@@ -153,7 +154,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         }
         if (staffDoc.status === 'deactivated' || staffDoc.role === 'class_teacher' || staffDoc.role === 'subject_teacher') {
           await firebaseSignOut(auth);
-          throw new Error('Classroom teacher accounts are deactivated in this operating phase. Only Principal and Admin Office accounts are authorized.');
+          throw new Error('Classroom teacher accounts are deactivated in this operating phase. Only Principal, Admin Office, and Developer accounts are authorized.');
         }
         setCurrentUser(normalizeStaffUser(staffDoc));
       } else {
@@ -172,6 +173,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     setIsLoading(true);
     try {
       localStorage.removeItem('hanujai_demo_user_id');
+      localStorage.removeItem('hanujai_demo_user_override');
       if (auth) {
         await firebaseSignOut(auth);
       }

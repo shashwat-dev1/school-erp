@@ -7,7 +7,7 @@
 import React, { useState } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
-import { initialStaff } from '../../data/demo/seedData';
+import { initialStaff, defaultDeveloperUser } from '../../data/demo/seedData';
 import { Eye, EyeOff, ShieldCheck, ArrowRight, AlertCircle } from 'lucide-react';
 import hanujaiLogo from '../../assets/hanujai_logo.png';
 
@@ -55,6 +55,7 @@ export const StaffLogin: React.FC = () => {
     >
       {/* Outer Regal Academic Container */}
       <div
+        className="hhs-login-card-container"
         style={{
           width: '100%',
           maxWidth: '920px',
@@ -69,10 +70,30 @@ export const StaffLogin: React.FC = () => {
       >
         <style>{`
           @media (max-width: 820px) {
-            div[style*="gridTemplateColumns: 1.05fr 1.2fr"] {
+            .hhs-login-card-container {
               grid-template-columns: 1fr !important;
+              max-width: 440px !important;
+              margin: 0 auto !important;
+              box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05) !important;
             }
             .hhs-login-brand-panel {
+              display: none !important;
+            }
+            .hhs-login-mobile-brand-header {
+              display: flex !important;
+            }
+            .hhs-login-form-panel {
+              padding: 24px 20px !important;
+            }
+            .hhs-login-persona-grid {
+              grid-template-columns: 1fr !important;
+            }
+            .hhs-input, .hhs-select, .hhs-textarea {
+              font-size: 16px !important; /* Prevents iOS Safari auto-zoom */
+            }
+          }
+          @media (min-width: 821px) {
+            .hhs-login-mobile-brand-header {
               display: none !important;
             }
           }
@@ -141,21 +162,70 @@ export const StaffLogin: React.FC = () => {
         </div>
 
         {/* Right: Authentication Form & Quick Persona Selector */}
-        <div style={{ padding: '40px 36px', display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
+        <div
+          className="hhs-login-form-panel"
+          style={{ padding: '40px 36px', display: 'flex', flexDirection: 'column', justifyContent: 'center' }}
+        >
+          {/* Mobile Brand Header (Visible only on <= 820px) */}
+          <div
+            className="hhs-login-mobile-brand-header"
+            style={{
+              alignItems: 'center',
+              gap: '12px',
+              marginBottom: '20px',
+              paddingBottom: '16px',
+              borderBottom: '1px solid #E2E8F0',
+            }}
+          >
+            <img
+              src={hanujaiLogo}
+              alt="HanuJai High School Crest"
+              style={{
+                height: '44px',
+                width: '44px',
+                objectFit: 'contain',
+              }}
+            />
+            <div>
+              <span
+                style={{
+                  fontFamily: "'Plus Jakarta Sans', sans-serif",
+                  fontWeight: 800,
+                  fontSize: '1.1rem',
+                  color: '#0A1931',
+                  lineHeight: 1.2,
+                  display: 'block',
+                }}
+              >
+                HanuJai High School
+              </span>
+              <span
+                style={{
+                  fontSize: '0.68rem',
+                  fontWeight: 700,
+                  color: '#D97706',
+                  letterSpacing: '0.06em',
+                  textTransform: 'uppercase',
+                }}
+              >
+                Endeavor to Excel • Jaipur
+              </span>
+            </div>
+          </div>
           
-          <div style={{ marginBottom: '24px' }}>
+          <div style={{ marginBottom: '20px' }}>
             <h2
               style={{
                 fontFamily: "'Plus Jakarta Sans', sans-serif",
-                fontSize: '1.4rem',
+                fontSize: '1.35rem',
                 fontWeight: 800,
                 color: '#0A1931',
-                margin: '0 0 6px 0',
+                margin: '0 0 4px 0',
               }}
             >
               Staff Authentication
             </h2>
-            <p style={{ fontSize: '0.84rem', color: '#64748B', margin: 0 }}>
+            <p style={{ fontSize: '0.82rem', color: '#64748B', margin: 0 }}>
               Enter your credentials to access your authorized workspace.
             </p>
           </div>
@@ -194,7 +264,7 @@ export const StaffLogin: React.FC = () => {
                 onChange={(e) => setEmail(e.target.value)}
                 placeholder="name@hanujai.edu.in"
                 className="hhs-input"
-                style={{ height: '42px', borderRadius: '8px', fontSize: '0.88rem' }}
+                style={{ height: '42px', borderRadius: '8px', width: '100%', boxSizing: 'border-box' }}
                 disabled={isLoading}
               />
             </div>
@@ -204,8 +274,8 @@ export const StaffLogin: React.FC = () => {
                 <label style={{ fontSize: '0.72rem', fontWeight: 700, color: '#64748B', textTransform: 'uppercase', letterSpacing: '0.04em' }}>
                   Password
                 </label>
-                <span style={{ fontSize: '0.72rem', color: '#64748B' }}>
-                  Default: <code style={{ backgroundColor: '#F1F5F9', padding: '2px 5px', borderRadius: '4px' }}>demo-password</code>
+                <span style={{ fontSize: '0.70rem', color: '#64748B' }}>
+                  Default: <code style={{ backgroundColor: '#F1F5F9', padding: '1px 5px', borderRadius: '4px', fontSize: '0.70rem' }}>demo-password</code>
                 </span>
               </div>
               <div style={{ position: 'relative' }}>
@@ -216,7 +286,7 @@ export const StaffLogin: React.FC = () => {
                   onChange={(e) => setPassword(e.target.value)}
                   placeholder="Enter security password"
                   className="hhs-input"
-                  style={{ height: '42px', borderRadius: '8px', fontSize: '0.88rem', paddingRight: '40px' }}
+                  style={{ height: '42px', borderRadius: '8px', width: '100%', boxSizing: 'border-box', paddingRight: '40px' }}
                   disabled={isLoading}
                 />
                 <button
@@ -294,12 +364,23 @@ export const StaffLogin: React.FC = () => {
               <span>Demo Quick Sign In:</span>
             </div>
 
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(140px, 1fr))', gap: '8px' }}>
-              {initialStaff
-                .filter(s => s.status === 'active' && (s.role === 'principal' || s.role === 'admin'))
-                .map((s) => {
+            <div
+              className="hhs-login-persona-grid"
+              style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(130px, 1fr))', gap: '8px' }}
+            >
+              {[
+                defaultDeveloperUser,
+                initialStaff.find(s => s.role === 'principal' && s.status === 'active'),
+                initialStaff.find(s => s.role === 'admin' && s.status === 'active'),
+              ]
+                .filter(Boolean)
+                .map((s: any) => {
                   const isSelected = email.toLowerCase() === s.email.toLowerCase();
-                  const roleBadge = s.role === 'principal' ? 'Principal' : 'Admin Office';
+                  const roleBadge = s.role === 'developer'
+                    ? 'Developer'
+                    : s.role === 'principal'
+                    ? 'Principal'
+                    : 'Admin Office';
 
                   return (
                     <button

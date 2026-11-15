@@ -7,7 +7,10 @@
  * - URL query parameter authentication is STRICTLY PROHIBITED to prevent token leakage in
  *   browser history, proxy logs, referrer headers, and server access logs.
  * - ID tokens are verified server-side against Google Identity Toolkit.
- * - Authoritative roles and account status are verified against Cloud Firestore ('staffUsers').
+ * - Authoritative roles and account status are verified against Cloud Firestore ('staff/{uid}').
+ * - Fail-closed: missing staff records, deactivated accounts, and unauthorized roles are rejected.
+ * - No email-prefix or string fallback heuristics.
+ * - Zero hardcoded test token bypasses in production code.
  * - Sensitive tokens and document URLs are NEVER logged.
  */
 
@@ -81,9 +84,16 @@ export function getFirebaseConfig(): { apiKey?: string; projectId?: string } {
 /**
  * Validates staff authentication and evaluates authoritative Phase 1 role permissions.
  * Allowed roles:
+ * - 'developer': Full access (upload, replace, delete, download, view).
  * - 'admin': Can upload, replace, and delete documents. Can view/download documents.
  * - 'principal': Can view and download documents (strictly read-only). CANNOT upload, replace, or delete.
- * - Teachers: Completely deactivated from document access.
+ * - Teachers / Others: Completely denied (HTTP 403).
+ *
+ * Strict Security Rules:
+ * - Reads authoritative document from `staff/{uid}`.
+ * - Fails closed on missing or deactivated records.
+ * - Zero email-string heuristic fallback.
+ * - Zero test bypass tokens in production code.
  */
 export async function verifyStaffAuth(
   req: IncomingMessage,
@@ -96,29 +106,6 @@ export async function verifyStaffAuth(
       valid: false,
       status: 401,
       error: 'Authentication required. Missing Authorization: Bearer <idToken> header.',
-    };
-  }
-
-  // Demo bypass for isolated developer unit testing environments only
-  if (process.env.NODE_ENV === 'test' && (token === 'demo-admin-token' || token === 'demo-principal-token')) {
-    const isPrincipal = token === 'demo-principal-token';
-    const role = isPrincipal ? 'principal' : 'admin';
-    if (requiredPermission === 'manage' && role !== 'admin') {
-      return {
-        valid: false,
-        status: 403,
-        error: 'Forbidden: Principal account is read-only. Document uploads and deletions require Admin Office role.',
-      };
-    }
-    return {
-      valid: true,
-      status: 200,
-      user: {
-        uid: isPrincipal ? 'staff-principal' : 'staff-admin',
-        email: isPrincipal ? 'principal@hanujai.edu.in' : 'admin@hanujai.edu.in',
-        displayName: isPrincipal ? 'Dr. Sunita Sharma' : 'Rajesh Verma (Admin Office)',
-        role,
-      },
     };
   }
 
@@ -148,55 +135,62 @@ export async function verifyStaffAuth(
     const uid = authUser.localId;
     const displayName = authUser.displayName || email.split('@')[0];
 
-    // Query Cloud Firestore REST API for authoritative staff role and account status
-    let role: 'principal' | 'admin' | 'developer' | 'unauthorized' = 'unauthorized';
-    let status: 'active' | 'deactivated' = 'active';
-
-    if (projectId) {
-      try {
-        const fsRes = await fetch(
-          `https://firestore.googleapis.com/v1/projects/${projectId}/databases/(default)/documents/staffUsers/${uid}`,
-          {
-            headers: { Authorization: `Bearer ${token}` },
-          }
-        );
-        if (fsRes.ok) {
-          const fsData = await fsRes.json().catch(() => ({}));
-          const staffRole = fsData.fields?.role?.stringValue;
-          const staffStatus = fsData.fields?.status?.stringValue;
-
-          if (staffStatus === 'deactivated') {
-            status = 'deactivated';
-          }
-
-          if (staffRole === 'principal') role = 'principal';
-          else if (staffRole === 'admin') role = 'admin';
-          else if (staffRole === 'developer') role = 'developer';
-          else if (staffRole === 'class_teacher' || staffRole === 'subject_teacher') {
-            role = 'unauthorized';
-          }
-        }
-      } catch {
-        // Fallback to verified email identity if Firestore REST check is temporarily unreachable
-      }
+    if (!projectId) {
+      console.error('[HanuJai Storage Auth] Firebase project ID is not configured.');
+      return {
+        valid: false,
+        status: 500,
+        error: 'Authentication configuration error: missing projectId.',
+      };
     }
 
-    // Email-based fallback if Firestore document read is unconfigured
-    if (role === 'unauthorized') {
-      if (email === 'principal@hanujai.edu.in' || email.startsWith('principal.')) {
-        role = 'principal';
-      } else if (email === 'admin@hanujai.edu.in' || email.startsWith('admin.')) {
-        role = 'admin';
+    // Query Cloud Firestore REST API for authoritative staff record at `staff/${uid}`
+    const fsRes = await fetch(
+      `https://firestore.googleapis.com/v1/projects/${projectId}/databases/(default)/documents/staff/${uid}`,
+      {
+        headers: { Authorization: `Bearer ${token}` },
       }
-    }
+    );
 
-    // Enforce active status
-    if (status === 'deactivated') {
+    if (!fsRes.ok) {
+      if (fsRes.status === 404) {
+        console.warn(`[HanuJai Storage Auth] Staff record not found at staff/${uid} for email ${email}`);
+        return {
+          valid: false,
+          status: 403,
+          error: 'Staff account record not found in authoritative school registry. Access denied.',
+        };
+      }
+
+      console.warn(`[HanuJai Storage Auth] Firestore staff verification failed with HTTP ${fsRes.status}`);
       return {
         valid: false,
         status: 403,
-        error: 'Account is deactivated. Access to school documents is suspended.',
+        error: `Authoritative staff verification failed (HTTP ${fsRes.status}). Access denied.`,
       };
+    }
+
+    const fsData = await fsRes.json().catch(() => ({}));
+    const staffRole = fsData.fields?.role?.stringValue;
+    const staffStatus = fsData.fields?.status?.stringValue || 'active';
+
+    // Enforce active status: deactivated or suspended accounts are rejected
+    if (staffStatus === 'deactivated' || staffStatus === 'suspended') {
+      return {
+        valid: false,
+        status: 403,
+        error: 'Account is deactivated or suspended. Access to school documents is suspended.',
+      };
+    }
+
+    // Resolve authoritative role
+    let role: 'principal' | 'admin' | 'developer' | 'unauthorized' = 'unauthorized';
+    if (staffRole === 'developer') {
+      role = 'developer';
+    } else if (staffRole === 'admin') {
+      role = 'admin';
+    } else if (staffRole === 'principal') {
+      role = 'principal';
     }
 
     // Reject teacher or unauthorized accounts
@@ -204,16 +198,16 @@ export async function verifyStaffAuth(
       return {
         valid: false,
         status: 403,
-        error: 'Teacher accounts are deactivated in this operating phase. Only Principal and Admin Office are authorized.',
+        error: 'Account role is not authorized for document operations. Teacher and unauthorized accounts are restricted.',
       };
     }
 
-    // Role-based permission validation
+    // Role-based permission validation: Principal is strictly read-only
     if (requiredPermission === 'manage' && role === 'principal') {
       return {
         valid: false,
         status: 403,
-        error: 'Permission Denied: Principal view is strictly read-only. Only Admin Office accounts can upload, replace, or delete student documents.',
+        error: 'Permission Denied: Principal view is strictly read-only. Only Admin Office and Developer accounts can upload, replace, or delete student documents.',
       };
     }
 
