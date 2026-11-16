@@ -159,6 +159,7 @@ export class BaileysManager {
 
       if (connection === 'close') {
         this.isConnected = false;
+        this.sock = null;
         const statusCode = (lastDisconnect?.error as any)?.output?.statusCode;
         const errMessage = lastDisconnect?.error?.message || 'Connection terminated';
         this.lastDisconnectReason = `Code ${statusCode}: ${errMessage}`;
@@ -243,18 +244,36 @@ export class BaileysManager {
     }
 
     const { version } = await fetchLatestBaileysVersion();
-    if (!this.sock) {
+    if (!this.sock || !this.isConnected) {
+      if (this.sock) {
+        try { this.sock.end(undefined); } catch {}
+        this.sock = null;
+      }
       await this.startSocket(version);
+      // Wait for socket handshake before requesting pairing code
+      await new Promise(r => setTimeout(r, 3000));
     }
-
-    // Wait 1.5 seconds for socket handshake before requesting pairing code
-    await new Promise(r => setTimeout(r, 1500));
 
     if (!this.sock || typeof this.sock.requestPairingCode !== 'function') {
       throw new Error('Baileys socket does not support requestPairingCode.');
     }
 
-    const rawCode = await this.sock.requestPairingCode(normalizedPhone);
+    let rawCode: string;
+    try {
+      rawCode = await this.sock.requestPairingCode(normalizedPhone);
+    } catch (err: any) {
+      console.warn(`[Baileys] Pairing code attempt encountered "${err.message}", reinitializing fresh socket...`);
+      if (this.sock) {
+        try { this.sock.end(undefined); } catch {}
+        this.sock = null;
+      }
+      await this.startSocket(version);
+      await new Promise(r => setTimeout(r, 3500));
+      if (!this.sock || typeof this.sock.requestPairingCode !== 'function') {
+        throw new Error('Baileys socket does not support requestPairingCode.');
+      }
+      rawCode = await this.sock.requestPairingCode(normalizedPhone);
+    }
     const code = rawCode.trim();
 
     // Store in-memory with 120-second TTL (NEVER LOGGED)
