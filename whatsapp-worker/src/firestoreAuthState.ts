@@ -113,9 +113,10 @@ export class DistributedLeaseManager {
   }
 
   /**
-   * Attempts to acquire the exclusive distributed lease via Firestore transaction
+   * Attempts to acquire the exclusive distributed lease via Firestore transaction.
+   * If force is true, claims the lease even if an older instance holds it (for Developer actions).
    */
-  public async acquire(): Promise<boolean> {
+  public async acquire(force = false): Promise<boolean> {
     const leaseRef = doc(this.db, 'whatsappWorkerLease', 'active');
     const now = Date.now();
     const expiresAt = new Date(now + this.leaseTtlMs).toISOString();
@@ -126,7 +127,7 @@ export class DistributedLeaseManager {
         if (snap.exists()) {
           const data = snap.data();
           const currentExpiry = data.expiresAt ? new Date(data.expiresAt).getTime() : 0;
-          if (data.status === 'active' && currentExpiry > now && data.ownerId !== this.workerId) {
+          if (data.status === 'active' && currentExpiry > now && data.ownerId !== this.workerId && !force) {
             console.warn(`[Lease] Active lease held by another worker: "${data.ownerId}" until ${data.expiresAt}`);
             return false;
           }

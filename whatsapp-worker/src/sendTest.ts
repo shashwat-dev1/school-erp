@@ -10,6 +10,7 @@
  *   or: npm run whatsapp:test -- --to=919829012345
  */
 
+import { doc, getDoc, setDoc } from 'firebase/firestore';
 import { loadWorkerConfig } from './config.ts';
 import { getWorkerDb } from './firebase.ts';
 import { BaileysManager } from './baileysManager.ts';
@@ -121,9 +122,50 @@ async function runTestSend() {
     return;
   }
 
-  // Live dispatch
-  console.log('Connecting to WhatsApp socket to dispatch test alert...');
   const db = getWorkerDb(config);
+
+  // Check if an active production worker is currently holding the exclusive lease
+  const leaseSnap = await getDoc(doc(db, 'whatsappWorkerLease', 'active'));
+  const leaseData = leaseSnap.exists() ? leaseSnap.data() : null;
+  const now = Date.now();
+  const currentExpiry = leaseData?.expiresAt ? new Date(leaseData.expiresAt).getTime() : 0;
+  const isAnotherWorkerActive = Boolean(
+    leaseData?.status === 'active' && currentExpiry > now
+  );
+
+  if (isAnotherWorkerActive && !args.direct) {
+    console.log(`ℹ️ An active WhatsApp worker is already running in production (${leaseData?.ownerId}).`);
+    console.log('Enqueuing test alert into Cloud Firestore queue for instantaneous dispatch...');
+
+    const jobId = `test_${Date.now()}`;
+    const cleanPhone = to.replace(/\D/g, '');
+    const jobDoc = {
+      id: jobId,
+      sessionId: 'manual_test',
+      classId: 'test',
+      classLabel: 'Test Mode',
+      date: new Date().toISOString().split('T')[0],
+      studentId: 'STU-TEST',
+      studentName: student,
+      guardianName: parent || 'Parent/Guardian',
+      recipientPhone: cleanPhone,
+      attendanceState: state,
+      templateType: state,
+      messageText,
+      provider: 'baileys',
+      deliveryStatus: 'pending',
+      retryCount: 0,
+      createdAt: new Date().toISOString(),
+    };
+
+    await setDoc(doc(db, 'attendanceNotifications', jobId), jobDoc);
+    console.log(`✅ Test alert enqueued in Cloud Firestore! (Job ID: ${jobId})`);
+    console.log(`The active production worker will claim and dispatch it to +${cleanPhone}.\n`);
+    return;
+  }
+
+  // Live direct socket dispatch
+  console.log('Connecting to WhatsApp socket to dispatch test alert...');
   const baileys = new BaileysManager(config, db);
   await baileys.initialize();
 

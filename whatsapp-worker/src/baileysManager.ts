@@ -93,6 +93,13 @@ export class BaileysManager {
     if (!acquiredLease) {
       console.warn('[Baileys] Another worker currently holds the active WhatsApp lease. Standing by in secondary mode.');
       await this.publishStatusDoc();
+      // Retry takeover every 15 seconds so rolling deploys take over automatically
+      setTimeout(() => {
+        if (!this.leaseManager.hasLease() && !this.isShuttingDown) {
+          console.log('[Baileys] Standby worker attempting lease takeover...');
+          this.initialize().catch(err => console.error('[Baileys] Standby takeover error:', err));
+        }
+      }, 15000);
       return;
     }
 
@@ -224,11 +231,19 @@ export class BaileysManager {
 
     console.log(`[Baileys] Initiating 8-digit Pairing Code request for target phone: +${normalizedPhone}...`);
 
-    // Ensure lease is held
+    // Ensure lease is held (with retry and developer override)
     if (!this.leaseManager.hasLease()) {
-      const acquired = await this.leaseManager.acquire();
+      let acquired = await this.leaseManager.acquire(false);
       if (!acquired) {
-        throw new Error('Could not acquire exclusive worker lease. Another instance is active.');
+        await new Promise(r => setTimeout(r, 2000));
+        acquired = await this.leaseManager.acquire(false);
+      }
+      if (!acquired) {
+        console.log(`[Lease] Manual developer pairing code request: claiming exclusive lease for ${this.workerId}`);
+        acquired = await this.leaseManager.acquire(true);
+      }
+      if (!acquired) {
+        throw new Error('Could not acquire exclusive worker lease. Please retry in a few moments.');
       }
     }
 
