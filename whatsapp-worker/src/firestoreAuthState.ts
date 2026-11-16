@@ -352,6 +352,12 @@ export async function useFirestoreAuthState(
     if (rawKeyStore.clear) {
       await rawKeyStore.clear();
     }
+    // Cleanly wipe in-memory credentials and regenerate fresh auth credentials
+    const freshCreds = initAuthCreds();
+    for (const key of Object.keys(creds)) {
+      delete (creds as any)[key];
+    }
+    Object.assign(creds, freshCreds);
   };
 
   return {

@@ -2664,7 +2664,7 @@ export const DeveloperConsole: React.FC = () => {
                           Baileys 8-Digit Device Pairing Code (Expires in {pairingCountdown}s)
                         </div>
                         <div style={{ fontSize: '2.1rem', fontWeight: 900, letterSpacing: '0.25em', color: '#38BDF8', fontFamily: 'monospace', marginTop: '4px' }}>
-                          {pairingCode}
+                          {pairingCode.length === 8 ? `${pairingCode.slice(0, 4)}-${pairingCode.slice(4)}` : pairingCode}
                         </div>
                       </div>
 
@@ -2696,7 +2696,7 @@ export const DeveloperConsole: React.FC = () => {
                         <li>Open WhatsApp &gt; <strong>Linked Devices</strong>.</li>
                         <li>Tap <strong>Link a Device</strong>.</li>
                         <li>Tap <strong>"Link with phone number instead"</strong> at the bottom of the camera screen.</li>
-                        <li>Type the 8-digit code <strong>{pairingCode}</strong>.</li>
+                        <li>Type the 8-digit code <strong>{pairingCode.length === 8 ? `${pairingCode.slice(0, 4)}-${pairingCode.slice(4)}` : pairingCode}</strong>.</li>
                       </ol>
                     </div>
                   </div>

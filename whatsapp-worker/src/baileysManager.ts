@@ -114,7 +114,7 @@ export class BaileysManager {
     this.authState = state;
     this.saveCredsFn = saveCreds;
     this.clearAuthStateFn = clearAuthState;
-    this.isRegistered = Boolean(state.creds.registered || (state.creds as any).me);
+    this.isRegistered = Boolean(state.creds.registered);
 
     const { version, isLatest } = await fetchLatestBaileysVersion();
     console.log(`[Baileys] Core Engine v${version.join('.')} (Latest: ${isLatest})`);
@@ -131,13 +131,13 @@ export class BaileysManager {
     await this.startSocket(version);
   }
 
-  private async startSocket(version: [number, number, number]): Promise<void> {
-    if (!this.authState) return;
+  private async startSocket(version: [number, number, number]): Promise<WASocket | null> {
+    if (!this.authState) return null;
 
     // Silent pino logger keeps standard out clean for operational logs
     const logger = pino({ level: 'silent' });
 
-    this.sock = makeWASocket({
+    const newSock = makeWASocket({
       version,
       logger,
       auth: this.authState,
@@ -149,15 +149,17 @@ export class BaileysManager {
       browser: Browsers.ubuntu('Chrome'),
     });
 
+    this.sock = newSock;
+
     if (this.saveCredsFn) {
-      this.sock.ev.on('creds.update', async () => {
+      newSock.ev.on('creds.update', async () => {
         if (this.saveCredsFn) {
           await this.saveCredsFn();
         }
       });
     }
 
-    this.sock.ev.on('connection.update', async (update: Partial<ConnectionState>) => {
+    newSock.ev.on('connection.update', async (update: Partial<ConnectionState>) => {
       const { connection, lastDisconnect, qr } = update;
 
       // Ensure NO QR is ever rendered or printed
@@ -166,8 +168,14 @@ export class BaileysManager {
       }
 
       if (connection === 'close') {
+        // ONLY update state if this event comes from the active socket
+        if (this.sock !== newSock) {
+          return;
+        }
+
         this.isConnected = false;
         this.sock = null;
+
         const statusCode = (lastDisconnect?.error as any)?.output?.statusCode;
         const errMessage = lastDisconnect?.error?.message || 'Connection terminated';
         this.lastDisconnectReason = `Code ${statusCode}: ${errMessage}`;
@@ -179,6 +187,7 @@ export class BaileysManager {
           console.error('\n⚠️  WHATSAPP SESSION HAS BEEN REVOKED OR LOGGED OUT BY WHATSAPP!');
           this.isRegistered = false;
           this.userJid = null;
+          this.pairingCodeState = null;
           if (this.clearAuthStateFn) {
             await this.clearAuthStateFn();
           }
@@ -190,7 +199,7 @@ export class BaileysManager {
           } catch (err: any) {
             console.error('[Baileys] Immediate restart failed:', err);
           }
-        } else if (!this.isShuttingDown) {
+        } else if (!this.isShuttingDown && this.isRegistered) {
           this.reconnectAttempts++;
           // Exponential backoff with jitter
           const baseDelay = Math.min(30000, 3000 * Math.pow(1.5, Math.min(this.reconnectAttempts, 5)));
@@ -202,12 +211,16 @@ export class BaileysManager {
             this.initialize().catch(err => console.error('[Baileys] Reconnect failed:', err));
           }, totalDelayMs);
           await this.publishStatusDoc();
+        } else if (!this.isRegistered) {
+          console.log('[Baileys] Unregistered socket closed. Awaiting Developer pairing code request.');
+          this.pairingCodeState = null;
+          await this.publishStatusDoc();
         }
       } else if (connection === 'open') {
         this.isConnected = true;
         this.isRegistered = true;
         this.reconnectAttempts = 0;
-        this.userJid = this.sock?.user?.id || 'Connected Device';
+        this.userJid = newSock?.user?.id || 'Connected Device';
         this.pairingCodeState = null; // Clear active pairing code upon connection
 
         console.log('================================================================================');
@@ -219,6 +232,8 @@ export class BaileysManager {
         await this.publishStatusDoc();
       }
     });
+
+    return newSock;
   }
 
   /**
@@ -255,7 +270,29 @@ export class BaileysManager {
       }
     }
 
-    // Load auth state if needed
+    // Return existing pairing code if active and valid for the same number on an open socket
+    const active = this.getActivePairingCode();
+    if (active && active.phoneNumber === normalizedPhone && this.sock && (this.sock.ws as any)?.isOpen) {
+      console.log('[Baileys] Returning still-active pairing code for presentation.');
+      return active.code;
+    }
+
+    const { version } = await fetchLatestBaileysVersion();
+
+    // Cleanly tear down any pre-existing socket to avoid racing listeners
+    if (this.sock) {
+      const oldSock = this.sock;
+      this.sock = null;
+      try { oldSock.end(undefined); } catch {}
+      await new Promise(r => setTimeout(r, 600));
+    }
+
+    // Unregistered state: reset to pristine auth state so WhatsApp receives fresh ephemeral Noise keys
+    if (!this.isRegistered && this.clearAuthStateFn) {
+      await this.clearAuthStateFn();
+    }
+
+    // Ensure auth state is initialized
     if (!this.authState) {
       const { state, saveCreds, clearAuthState } = await useFirestoreAuthState(
         this.db,
@@ -266,37 +303,54 @@ export class BaileysManager {
       this.clearAuthStateFn = clearAuthState;
     }
 
-    const { version } = await fetchLatestBaileysVersion();
-    if (!this.sock || !this.isConnected) {
-      if (this.sock) {
-        try { this.sock.end(undefined); } catch {}
-        this.sock = null;
-      }
-      await this.startSocket(version);
-      // Wait for socket handshake before requesting pairing code
-      await new Promise(r => setTimeout(r, 3000));
+    // Start fresh socket
+    const currentSock = await this.startSocket(version);
+    if (!currentSock) {
+      throw new Error('Failed to initialize WhatsApp connection socket.');
     }
 
-    if (!this.sock || typeof this.sock.requestPairingCode !== 'function') {
-      throw new Error('Baileys socket does not support requestPairingCode.');
+    // Wait for the websocket connection to WhatsApp servers to open
+    try {
+      if (typeof currentSock.waitForSocketOpen === 'function') {
+        await currentSock.waitForSocketOpen();
+      }
+    } catch (err: any) {
+      console.warn(`[Baileys] Socket open wait note: ${err?.message}`);
+    }
+
+    // Allow 2000ms for Baileys handshake negotiation to settle
+    await new Promise(r => setTimeout(r, 2000));
+
+    // Confirm socket remains active
+    if (!this.sock || this.sock !== currentSock) {
+      throw new Error('WhatsApp connection is initializing. Please tap Generate 8-Digit Code again in a few seconds.');
     }
 
     let rawCode: string;
     try {
-      rawCode = await this.sock.requestPairingCode(normalizedPhone);
+      rawCode = await currentSock.requestPairingCode(normalizedPhone);
     } catch (err: any) {
-      console.warn(`[Baileys] Pairing code attempt encountered "${err.message}", reinitializing fresh socket...`);
+      console.warn(`[Baileys] Initial pairing code request failed: "${err.message}". Retrying on clean socket...`);
       if (this.sock) {
-        try { this.sock.end(undefined); } catch {}
+        const s = this.sock;
         this.sock = null;
+        try { s.end(undefined); } catch {}
       }
-      await this.startSocket(version);
-      await new Promise(r => setTimeout(r, 3500));
-      if (!this.sock || typeof this.sock.requestPairingCode !== 'function') {
-        throw new Error('Baileys socket does not support requestPairingCode.');
+      await new Promise(r => setTimeout(r, 1000));
+      const retrySock = await this.startSocket(version);
+      if (!retrySock) {
+        throw new Error('WhatsApp socket could not be restarted. Please retry in a few moments.');
       }
-      rawCode = await this.sock.requestPairingCode(normalizedPhone);
+      if (typeof retrySock.waitForSocketOpen === 'function') {
+        try { await retrySock.waitForSocketOpen(); } catch {}
+      }
+      await new Promise(r => setTimeout(r, 2500));
+      if (!this.sock || this.sock !== retrySock) {
+        throw new Error('WhatsApp connection is initializing. Please tap Generate 8-Digit Code again in a few seconds.');
+      }
+      rawCode = await retrySock.requestPairingCode(normalizedPhone);
     }
+
     const code = rawCode.trim();
 
     // Store in-memory with 120-second TTL (NEVER LOGGED)
