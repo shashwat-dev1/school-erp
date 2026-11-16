@@ -97,8 +97,8 @@ async function runTestSend() {
   });
 
   const messageText = state === 'present'
-    ? `${salutationEn},\n\nThis is to inform you that ${student} has been marked PRESENT at HanuJai High School on ${todayStr}.\n\nIf you believe this record is incorrect, please contact the school.\n\nRegards,\nHanuJai High School\n\n---\n\n${salutationHi},\n\nआपको सूचित किया जाता है कि आपकी संतान ${student} को दिनांक ${todayStr} को हनुजाई हाई स्कूल में उपस्थित (PRESENT) दर्ज किया गया है।\n\nयदि आपको लगता है कि उपस्थिति का यह रिकॉर्ड गलत है, तो कृपया विद्यालय से संपर्क करें।\n\nसादर,\nहनुजाई हाई स्कूल`
-    : `${salutationEn},\n\nThis is to inform you that ${student} has been marked ABSENT at HanuJai High School on ${todayStr}.\n\nIf you believe this record is incorrect, please contact the school.\n\nRegards,\nHanuJai High School\n\n---\n\n${salutationHi},\n\nआपको सूचित किया जाता है कि आपकी संतान ${student} को दिनांक ${todayStr} को हनुजाई हाई स्कूल में अनुपस्थित (ABSENT) दर्ज किया गया है।\n\nयदि आपको लगता है कि उपस्थिति का यह रिकॉर्ड गलत है, तो कृपया विद्यालय से संपर्क करें।\n\nसादर,\nहनुजाई हाई स्कूल`;
+    ? `Dear Parent\n\nAttendance for your ward Master ${student} has been marked PRESENT at HanuJai High School on ${todayStr}.\n\nRegards,\nHanuJai High School\nSchool Administration\n\nआदरणीय अभिभावक\n\nआपको सूचित किया जाता है की ${student} कि दिनांक ${todayStr} को हनुजय हाई स्कूल में उपस्थिति (PRESENT) दर्ज कि गई है।\n\nसादर,\nहनुजय हाई स्कूल\nविद्यालय प्रशासन`
+    : `Dear Parent\n\nAttendance for your ward Master ${student} has been marked ABSENT at HanuJai High School on ${todayStr}. Please share the leave application/ medical certificate.\n\nRegards,\nHanuJai High School\nSchool Administration\n\nआदरणीय अभिभावक\n\nआपको सूचित किया जाता है की ${student} कि दिनांक ${todayStr} को हनुजय हाई स्कूल में अनुपस्थिति (ABSENT) दर्ज कि गई है। लीव एप्लिकेशन/ मेडिकल सर्टिफिकेट जमा करें।\n\nसादर,\nहनुजय हाई स्कूल\nविद्यालय प्रशासन`;
 
   console.log(`📍 Recipient Mobile : ${to}`);
   console.log(`📍 Status Type      : ${state.toUpperCase()}`);

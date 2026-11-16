@@ -29,6 +29,7 @@ export interface WhatsAppNotificationJob {
   guardianName: string;
   recipientPhone: string;
   attendanceState: AttendanceState;
+  templateType?: 'present' | 'absent' | 'correction';
   messageText: string;
   provider: 'dry_run' | 'baileys' | 'cloud_api';
   deliveryStatus: NotificationDeliveryStatus;

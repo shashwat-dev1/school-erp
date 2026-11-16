@@ -29,6 +29,7 @@ export interface NotificationJobDoc {
   guardianName: string;
   recipientPhone: string;
   attendanceState: 'present' | 'absent';
+  templateType?: 'present' | 'absent' | 'correction';
   messageText: string;
   provider: string;
   deliveryStatus: 'pending' | 'processing' | 'sent' | 'failed' | 'skipped';

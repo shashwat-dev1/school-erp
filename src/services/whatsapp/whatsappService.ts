@@ -24,6 +24,7 @@ import type {
   WhatsAppProvider,
 } from './types';
 import { DryRunWhatsAppProvider } from './providers/dryRunProvider';
+import { generateAttendanceNotificationMessage } from './attendanceNotificationTemplates';
 
 const LOCAL_STORAGE_KEY = 'hanujai_whatsapp_notifications_v1';
 
@@ -95,10 +96,12 @@ export class WhatsAppNotificationService {
       // Deterministic idempotency key: session + student + state
       const jobId = `att_${session.id}_${record.studentId}`;
 
-      // Build respectful school notification message text
-      const messageText = state === 'present'
-        ? PHASE_CONFIG.whatsapp.templates.present(studentName, formattedDate, guardianName)
-        : PHASE_CONFIG.whatsapp.templates.absent(studentName, formattedDate, guardianName);
+      // Build authoritative Principal-approved bilingual notification message text
+      const { messageText, templateType } = generateAttendanceNotificationMessage({
+        studentName,
+        date: formattedDate,
+        status: state,
+      });
 
       // Initial validation of phone
       const cleanPhone = rawPhone.trim();
@@ -115,6 +118,7 @@ export class WhatsAppNotificationService {
         guardianName,
         recipientPhone: cleanPhone,
         attendanceState: state,
+        templateType,
         messageText,
         provider: PHASE_CONFIG.whatsapp.provider,
         deliveryStatus: isMissingPhone ? 'skipped' : 'pending',

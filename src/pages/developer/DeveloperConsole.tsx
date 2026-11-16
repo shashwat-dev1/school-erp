@@ -67,6 +67,10 @@ import {
   Radio,
 } from 'lucide-react';
 import { WhatsAppNotificationService } from '../../services/whatsapp/whatsappService';
+import {
+  generatePresentAttendanceMessage,
+  generateAbsentAttendanceMessage,
+} from '../../services/whatsapp/attendanceNotificationTemplates';
 import { SwaggerPortal } from '../../components/developer/SwaggerPortal';
 import { DatabaseExplorer } from '../../components/developer/DatabaseExplorer';
 
@@ -2737,31 +2741,36 @@ export const DeveloperConsole: React.FC = () => {
               </div>
             </div>
 
-            {/* Bilingual Message Preview Card */}
-            <div style={{ padding: '20px', borderRadius: '10px', backgroundColor: '#F0FDF4', border: '1px solid #BBF7D0' }}>
-              <div style={{ fontSize: '0.76rem', fontWeight: 800, color: '#166534', textTransform: 'uppercase', marginBottom: '8px' }}>
-                Official Bilingual Attendance Notification Template (English + Hindi)
+            {/* Principal-Approved Bilingual Message Preview Cards */}
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(360px, 1fr))', gap: '16px' }}>
+              {/* 1. PRESENT Attendance Template */}
+              <div style={{ padding: '20px', borderRadius: '10px', backgroundColor: '#F0FDF4', border: '1px solid #BBF7D0' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
+                  <div style={{ fontSize: '0.76rem', fontWeight: 800, color: '#166534', textTransform: 'uppercase' }}>
+                    1. PRESENT Attendance Notification (English + Hindi)
+                  </div>
+                  <span style={{ fontSize: '0.68rem', backgroundColor: '#DCFCE7', color: '#15803D', padding: '2px 8px', borderRadius: '4px', fontWeight: 700 }}>
+                    Official Approved
+                  </span>
+                </div>
+                <div style={{ fontFamily: 'monospace', fontSize: '0.78rem', color: '#14532D', whiteSpace: 'pre-line', lineHeight: 1.5, backgroundColor: '#FFFFFF', padding: '14px', borderRadius: '8px', border: '1px solid #DCFCE7' }}>
+                  {generatePresentAttendanceMessage('{studentName}', '{date}')}
+                </div>
               </div>
-              <div style={{ fontFamily: 'monospace', fontSize: '0.80rem', color: '#14532D', whiteSpace: 'pre-line', lineHeight: 1.6, backgroundColor: '#FFFFFF', padding: '14px', borderRadius: '8px', border: '1px solid #DCFCE7' }}>
-{`Dear Parent,
 
-This is to inform you that [Student Name] has been marked [PRESENT/ABSENT] at HanuJai High School on [Date].
-
-If you believe this record is incorrect, please contact the school.
-
-Regards,
-HanuJai High School
-
----
-
-अभिभावक महोदय,
-
-आपको सूचित किया जाता है कि आपकी संतान [Student Name] को दिनांक [Date] को हनुजाई हाई स्कूल में [उपस्थित/अनुपस्थित] दर्ज किया गया है।
-
-यदि आपको लगता है कि उपस्थिति का यह रिकॉर्ड गलत है, तो कृपया विद्यालय से संपर्क करें।
-
- सादर,
-हनुजाई हाई स्कूल`}
+              {/* 2. ABSENT Attendance Template */}
+              <div style={{ padding: '20px', borderRadius: '10px', backgroundColor: '#FEF2F2', border: '1px solid #FECACA' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
+                  <div style={{ fontSize: '0.76rem', fontWeight: 800, color: '#991B1B', textTransform: 'uppercase' }}>
+                    2. ABSENT Attendance Notification (English + Hindi)
+                  </div>
+                  <span style={{ fontSize: '0.68rem', backgroundColor: '#FEE2E2', color: '#B91C1C', padding: '2px 8px', borderRadius: '4px', fontWeight: 700 }}>
+                    Official Approved
+                  </span>
+                </div>
+                <div style={{ fontFamily: 'monospace', fontSize: '0.78rem', color: '#7F1D1D', whiteSpace: 'pre-line', lineHeight: 1.5, backgroundColor: '#FFFFFF', padding: '14px', borderRadius: '8px', border: '1px solid #FEE2E2' }}>
+                  {generateAbsentAttendanceMessage('{studentName}', '{date}')}
+                </div>
               </div>
             </div>
           </div>

@@ -174,19 +174,17 @@ describe('HanuJai ERP — Phase 1: Attendance & WhatsApp Notifications', () => {
     expect(retried.deliveryStatus).toBe('sent');
   });
 
-  it('renders "Dear Parent" / "अभिभावक महोदय" when parentName is omitted or generic', () => {
+  it('renders official Principal-approved bilingual templates with complete sign-offs', () => {
     const presentMsg = PHASE_CONFIG.whatsapp.templates.present('Aarav Sharma', '14 Nov 2026');
-    expect(presentMsg).toContain('Dear Parent,');
-    expect(presentMsg).toContain('अभिभावक महोदय,');
-    expect(presentMsg).not.toContain('Mr./Mrs. [Parent Name]');
-    expect(presentMsg).not.toContain('[अभिभावक का नाम]');
+    expect(presentMsg).toContain('Dear Parent\n\nAttendance for your ward Master Aarav Sharma has been marked PRESENT at HanuJai High School on 14 Nov 2026.');
+    expect(presentMsg).toContain('Regards,\nHanuJai High School\nSchool Administration');
+    expect(presentMsg).toContain('आदरणीय अभिभावक\n\nआपको सूचित किया जाता है की Aarav Sharma कि दिनांक 14 Nov 2026 को हनुजय हाई स्कूल में उपस्थिति (PRESENT) दर्ज कि गई है।');
+    expect(presentMsg).toContain('सादर,\nहनुजय हाई स्कूल\nविद्यालय प्रशासन');
 
     const absentMsg = PHASE_CONFIG.whatsapp.templates.absent('Diya Patel', '14 Nov 2026');
-    expect(absentMsg).toContain('Dear Parent,');
-    expect(absentMsg).toContain('अभिभावक महोदय,');
-
-    const customPresentMsg = PHASE_CONFIG.whatsapp.templates.present('Aarav Sharma', '14 Nov 2026', 'Ramesh Sharma');
-    expect(customPresentMsg).toContain('Mr./Mrs. Ramesh Sharma,');
-    expect(customPresentMsg).toContain('श्री/श्रीमती Ramesh Sharma,');
+    expect(absentMsg).toContain('Dear Parent\n\nAttendance for your ward Master Diya Patel has been marked ABSENT at HanuJai High School on 14 Nov 2026. Please share the leave application/ medical certificate.');
+    expect(absentMsg).toContain('Regards,\nHanuJai High School\nSchool Administration');
+    expect(absentMsg).toContain('आदरणीय अभिभावक\n\nआपको सूचित किया जाता है की Diya Patel कि दिनांक 14 Nov 2026 को हनुजय हाई स्कूल में अनुपस्थिति (ABSENT) दर्ज कि गई है। लीव एप्लिकेशन/ मेडिकल सर्टिफिकेट जमा करें।');
+    expect(absentMsg).toContain('सादर,\nहनुजय हाई स्कूल\nविद्यालय प्रशासन');
   });
 });

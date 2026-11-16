@@ -10,6 +10,11 @@
  * Non-destructive: Phase 2+ features remain intact in code but are hidden from the active Phase 1 UI.
  */
 
+import {
+  generatePresentAttendanceMessage,
+  generateAbsentAttendanceMessage,
+} from '../services/whatsapp/attendanceNotificationTemplates';
+
 export interface PhaseConfig {
   currentPhase: number;
   phase1Only: boolean;
@@ -78,19 +83,11 @@ export const PHASE_CONFIG: PhaseConfig = {
       .map((s: string) => s.trim().replace(/\D/g, ''))
       .filter(Boolean),
     templates: {
-      present: (studentName: string, dateStr: string, parentName?: string) => {
-        const trimmed = parentName?.trim();
-        const hasParent = trimmed && trimmed !== 'Parent/Guardian' && trimmed !== '[Parent Name]';
-        const salutationEn = hasParent ? `Mr./Mrs. ${trimmed}` : 'Dear Parent';
-        const salutationHi = hasParent ? `श्री/श्रीमती ${trimmed}` : 'अभिभावक महोदय';
-        return `${salutationEn},\n\nThis is to inform you that ${studentName} has been marked PRESENT at HanuJai High School on ${dateStr}.\n\nIf you believe this record is incorrect, please contact the school.\n\nRegards,\nHanuJai High School\n\n---\n\n${salutationHi},\n\nआपको सूचित किया जाता है कि आपकी संतान ${studentName} को दिनांक ${dateStr} को हनुजाई हाई स्कूल में उपस्थित (PRESENT) दर्ज किया गया है।\n\nयदि आपको लगता है कि उपस्थिति का यह रिकॉर्ड गलत है, तो कृपया विद्यालय से संपर्क करें।\n\nसादर,\nहनुजाई हाई स्कूल`;
+      present: (studentName: string, dateStr: string, _parentName?: string) => {
+        return generatePresentAttendanceMessage(studentName, dateStr);
       },
-      absent: (studentName: string, dateStr: string, parentName?: string) => {
-        const trimmed = parentName?.trim();
-        const hasParent = trimmed && trimmed !== 'Parent/Guardian' && trimmed !== '[Parent Name]';
-        const salutationEn = hasParent ? `Mr./Mrs. ${trimmed}` : 'Dear Parent';
-        const salutationHi = hasParent ? `श्री/श्रीमती ${trimmed}` : 'अभिभावक महोदय';
-        return `${salutationEn},\n\nThis is to inform you that ${studentName} has been marked ABSENT at HanuJai High School on ${dateStr}.\n\nIf you believe this record is incorrect, please contact the school.\n\nRegards,\nHanuJai High School\n\n---\n\n${salutationHi},\n\nआपको सूचित किया जाता है कि आपकी संतान ${studentName} को दिनांक ${dateStr} को हनुजाई हाई स्कूल में अनुपस्थित (ABSENT) दर्ज किया गया है।\n\nयदि आपको लगता है कि उपस्थिति का यह रिकॉर्ड गलत है, तो कृपया विद्यालय से संपर्क करें।\n\nसादर,\nहनुजाई हाई स्कूल`;
+      absent: (studentName: string, dateStr: string, _parentName?: string) => {
+        return generateAbsentAttendanceMessage(studentName, dateStr);
       },
       correction: (
         studentName: string,

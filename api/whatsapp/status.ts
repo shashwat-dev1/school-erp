@@ -124,3 +124,4 @@ export default async function handler(req: IncomingMessage, res: ServerResponse)
     serverTime: new Date().toISOString(),
   });
 }
+
