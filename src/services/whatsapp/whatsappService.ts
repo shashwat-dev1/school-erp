@@ -411,12 +411,12 @@ export class WhatsAppNotificationService {
       }
     }
     if (typeof window !== 'undefined') {
-      const demoId = localStorage.getItem('hanujai_demo_user_id');
-      if (demoId === 'staff-dev') {
+      const demoId = localStorage.getItem('hanujai_demo_user_id') || localStorage.getItem('hanujai_current_user_role');
+      if (demoId === 'staff-dev' || demoId === 'developer') {
         headers['Authorization'] = 'Bearer demo-developer-token';
-      } else if (demoId === 'staff-principal') {
+      } else if (demoId === 'staff-principal' || demoId === 'principal') {
         headers['Authorization'] = 'Bearer demo-principal-token';
-      } else if (demoId === 'staff-admin') {
+      } else if (demoId === 'staff-admin' || demoId === 'admin') {
         headers['Authorization'] = 'Bearer demo-admin-token';
       }
     }
@@ -545,7 +545,7 @@ export class WhatsAppNotificationService {
     }
 
     // Direct Firestore fallback in browser if serverless endpoint is offline
-    if (db && !isDemoMode() && isFirebaseConfigured()) {
+    if (db && isFirebaseConfigured()) {
       try {
         const snap = await getDoc(doc(db, 'whatsappWorkerStatus', 'current'));
         if (snap.exists()) {

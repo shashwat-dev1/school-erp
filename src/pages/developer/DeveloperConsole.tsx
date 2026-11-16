@@ -178,7 +178,7 @@ export const DeveloperConsole: React.FC = () => {
 
   // 6. WhatsApp Zero-Cost Worker & Pairing State
   const [workerStatus, setWorkerStatus] = useState<any>(null);
-  const [isLoadingWorkerStatus, setIsLoadingWorkerStatus] = useState<boolean>(false);
+  const [isLoadingWorkerStatus, setIsLoadingWorkerStatus] = useState<boolean>(true);
   const [isWakingWorker, setIsWakingWorker] = useState<boolean>(false);
   const [pairingPhone, setPairingPhone] = useState<string>('919509489381');
   const [pairingCode, setPairingCode] = useState<string | null>(null);
@@ -2487,18 +2487,19 @@ export const DeveloperConsole: React.FC = () => {
 
             {/* Worker Status & Health Banner */}
             {(() => {
-              const isConnected = workerStatus?.baileys?.connected || workerStatus?.connected;
-              const isRegistered = workerStatus?.baileys?.isRegistered || workerStatus?.isRegistered;
+              const isLoading = isLoadingWorkerStatus && !workerStatus;
+              const isConnected = Boolean(workerStatus?.baileys?.connected ?? workerStatus?.connected);
+              const isRegistered = Boolean(workerStatus?.baileys?.isRegistered ?? workerStatus?.isRegistered);
               const userJid = workerStatus?.baileys?.userJid || workerStatus?.userJid;
-              const workerStatusState = isConnected ? 'online' : isRegistered ? 'sleeping' : 'unlinked';
+              const workerStatusState = isLoading ? 'checking' : isConnected ? 'online' : isRegistered ? 'sleeping' : 'unlinked';
 
               return (
                 <div
                   style={{
                     padding: '18px 20px',
                     borderRadius: '10px',
-                    backgroundColor: isConnected ? '#ECFDF5' : isRegistered ? '#FFFBEB' : '#FEF2F2',
-                    border: `1px solid ${isConnected ? '#A7F3D0' : isRegistered ? '#FDE68A' : '#FECACA'}`,
+                    backgroundColor: isLoading ? '#F1F5F9' : isConnected ? '#ECFDF5' : isRegistered ? '#FFFBEB' : '#FEF2F2',
+                    border: `1px solid ${isLoading ? '#CBD5E1' : isConnected ? '#A7F3D0' : isRegistered ? '#FDE68A' : '#FECACA'}`,
                     display: 'flex',
                     justifyContent: 'space-between',
                     alignItems: 'center',
@@ -2513,20 +2514,22 @@ export const DeveloperConsole: React.FC = () => {
                         width: '42px',
                         height: '42px',
                         borderRadius: '50%',
-                        backgroundColor: isConnected ? '#10B981' : isRegistered ? '#F59E0B' : '#EF4444',
+                        backgroundColor: isLoading ? '#64748B' : isConnected ? '#10B981' : isRegistered ? '#F59E0B' : '#EF4444',
                         color: '#FFFFFF',
                         display: 'flex',
                         alignItems: 'center',
                         justifyContent: 'center',
                       }}
                     >
-                      {isConnected ? <Wifi size={22} /> : isRegistered ? <Radio size={22} /> : <WifiOff size={22} />}
+                      {isLoading ? <RefreshCw size={22} className="animate-spin" /> : isConnected ? <Wifi size={22} /> : isRegistered ? <Radio size={22} /> : <WifiOff size={22} />}
                     </div>
 
                     <div>
                       <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
                         <span style={{ fontSize: '0.98rem', fontWeight: 800, color: '#0A1931' }}>
-                          {isConnected
+                          {isLoading
+                            ? 'Checking WhatsApp worker status...'
+                            : isConnected
                             ? 'WhatsApp Socket: Connected & Ready'
                             : isRegistered
                             ? 'Worker Asleep / Idle (Render Free Tier)'
@@ -2538,8 +2541,8 @@ export const DeveloperConsole: React.FC = () => {
                             fontWeight: 800,
                             padding: '2px 8px',
                             borderRadius: '12px',
-                            backgroundColor: isConnected ? '#D1FAE5' : isRegistered ? '#FEF3C7' : '#FEE2E2',
-                            color: isConnected ? '#065F46' : isRegistered ? '#92400E' : '#991B1B',
+                            backgroundColor: isLoading ? '#E2E8F0' : isConnected ? '#D1FAE5' : isRegistered ? '#FEF3C7' : '#FEE2E2',
+                            color: isLoading ? '#475569' : isConnected ? '#065F46' : isRegistered ? '#92400E' : '#991B1B',
                             textTransform: 'uppercase',
                           }}
                         >
@@ -2547,7 +2550,9 @@ export const DeveloperConsole: React.FC = () => {
                         </span>
                       </div>
                       <div style={{ fontSize: '0.78rem', color: '#475569', marginTop: '3px' }}>
-                        {isConnected
+                        {isLoading
+                          ? 'Synchronizing operational telemetry from Cloud Firestore and Render...'
+                          : isConnected
                           ? `Linked Device JID: ${userJid || 'Connected'} • Session stored in Cloud Firestore`
                           : isRegistered
                           ? 'Session keys persisted in Cloud Firestore. Container wakes automatically on attendance submission.'
@@ -2556,7 +2561,7 @@ export const DeveloperConsole: React.FC = () => {
                     </div>
                   </div>
 
-                  {isRegistered && (
+                  {!isLoading && isRegistered && (
                     <button
                       type="button"
                       onClick={handleUnlinkWhatsApp}
@@ -2580,7 +2585,7 @@ export const DeveloperConsole: React.FC = () => {
             })()}
 
             {/* Zero-Cost 8-Digit Baileys Pairing Interface (Developer-Only) */}
-            {(!workerStatus?.baileys?.isRegistered && !workerStatus?.isRegistered) && (
+            {(!isLoadingWorkerStatus && workerStatus && !workerStatus?.baileys?.isRegistered && !workerStatus?.isRegistered) && (
               <div
                 style={{
                   padding: '24px',
