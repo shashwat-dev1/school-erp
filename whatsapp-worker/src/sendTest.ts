@@ -11,6 +11,7 @@
  */
 
 import { loadWorkerConfig } from './config.ts';
+import { getWorkerDb } from './firebase.ts';
 import { BaileysManager } from './baileysManager.ts';
 
 function parseArgs() {
@@ -122,7 +123,8 @@ async function runTestSend() {
 
   // Live dispatch
   console.log('Connecting to WhatsApp socket to dispatch test alert...');
-  const baileys = new BaileysManager(config);
+  const db = getWorkerDb(config);
+  const baileys = new BaileysManager(config, db);
   await baileys.initialize();
 
   // Wait up to 15s for connection
