@@ -293,10 +293,14 @@ export async function useFirestoreAuthState(
     set: async (dataset: SignalDataSet) => {
       const operations: Array<{ type: 'set' | 'delete'; ref: any; data?: any }> = [];
       const nowIso = new Date().toISOString();
+      const datasetMap = dataset as Record<string, Record<string, any> | undefined>;
 
-      for (const category in dataset) {
-        for (const id in dataset[category]) {
-          const value = dataset[category][id];
+      for (const category of Object.keys(datasetMap)) {
+        const categoryData = datasetMap[category];
+        if (!categoryData) continue;
+
+        for (const id of Object.keys(categoryData)) {
+          const value = categoryData[id];
           const docId = toFirestoreDocId(category, id);
           const keyRef = doc(db, 'whatsappAuthKeys', docId);
 

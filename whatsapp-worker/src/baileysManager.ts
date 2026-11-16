@@ -332,9 +332,9 @@ export class BaileysManager {
     } catch (err: any) {
       console.warn(`[Baileys] Initial pairing code request failed: "${err.message}". Retrying on clean socket...`);
       if (this.sock) {
-        const s = this.sock;
+        const sockToClose: any = this.sock;
         this.sock = null;
-        try { s.end(undefined); } catch {}
+        try { sockToClose.end?.(undefined); } catch {}
       }
       await new Promise(r => setTimeout(r, 1000));
       const retrySock = await this.startSocket(version);
