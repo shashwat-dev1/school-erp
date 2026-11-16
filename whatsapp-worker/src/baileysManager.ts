@@ -16,6 +16,7 @@ import * as crypto from 'crypto';
 import makeWASocket, {
   DisconnectReason,
   fetchLatestBaileysVersion,
+  Browsers,
   type WASocket,
   type ConnectionState,
   type AuthenticationState,
@@ -113,7 +114,7 @@ export class BaileysManager {
     this.authState = state;
     this.saveCredsFn = saveCreds;
     this.clearAuthStateFn = clearAuthState;
-    this.isRegistered = Boolean(state.creds.registered);
+    this.isRegistered = Boolean(state.creds.registered || (state.creds as any).me);
 
     const { version, isLatest } = await fetchLatestBaileysVersion();
     console.log(`[Baileys] Core Engine v${version.join('.')} (Latest: ${isLatest})`);
@@ -145,7 +146,7 @@ export class BaileysManager {
       keepAliveIntervalMs: 25000,
       defaultQueryTimeoutMs: 60000,
       syncFullHistory: false,
-      browser: ['HanuJai ERP Dispatcher', 'Chrome', '120.0.0.0'],
+      browser: Browsers.ubuntu('Chrome'),
     });
 
     if (this.saveCredsFn) {
@@ -182,6 +183,13 @@ export class BaileysManager {
             await this.clearAuthStateFn();
           }
           await this.publishStatusDoc();
+        } else if (statusCode === DisconnectReason.restartRequired || statusCode === 515) {
+          console.log('[Baileys] 🔄 WhatsApp pairing/handshake requires immediate restart (515). Reconnecting immediately...');
+          try {
+            await this.startSocket(version);
+          } catch (err: any) {
+            console.error('[Baileys] Immediate restart failed:', err);
+          }
         } else if (!this.isShuttingDown) {
           this.reconnectAttempts++;
           // Exponential backoff with jitter
