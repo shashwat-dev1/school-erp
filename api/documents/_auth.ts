@@ -78,6 +78,10 @@ export function getFirebaseConfig(): { apiKey?: string; projectId?: string } {
     }
   }
 
+  // Canonical fallback to prevent serverless function crashes when env vars are missing
+  apiKey = apiKey || 'AIzaSyC45xxyybCp03KlJ7fWsyxE8AVQY6tm988';
+  projectId = projectId || 'hanujai-erp-demo';
+
   return { apiKey, projectId };
 }
 

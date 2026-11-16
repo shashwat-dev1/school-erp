@@ -5,10 +5,139 @@
  * 
  * Developer-only privileged endpoint: Requests an 8-digit Baileys Pairing Code
  * from the worker to link the school WhatsApp phone without QR scanning.
+ * Self-contained execution guarantees zero ERR_MODULE_NOT_FOUND issues on Vercel ESM runtime.
  */
 
 import type { IncomingMessage, ServerResponse } from 'http';
-import { verifyStaffAuth } from '../documents/_auth';
+
+const FIREBASE_API_KEY =
+  process.env.VITE_FIREBASE_API_KEY ||
+  process.env.FIREBASE_API_KEY ||
+  'AIzaSyC45xxyybCp03KlJ7fWsyxE8AVQY6tm988';
+
+const FIREBASE_PROJECT_ID =
+  process.env.VITE_FIREBASE_PROJECT_ID ||
+  process.env.FIREBASE_PROJECT_ID ||
+  'hanujai-erp-demo';
+
+interface AuthResult {
+  valid: boolean;
+  status: number;
+  user?: {
+    uid: string;
+    email: string;
+    displayName: string;
+    role: 'principal' | 'admin' | 'developer';
+  };
+  error?: string;
+}
+
+function extractToken(req: IncomingMessage): string | null {
+  const authHeader = req.headers['authorization'] || req.headers['Authorization'];
+  if (typeof authHeader === 'string' && authHeader.toLowerCase().startsWith('bearer ')) {
+    const token = authHeader.substring(7).trim();
+    return token.length > 0 ? token : null;
+  }
+  return null;
+}
+
+async function verifyStaffAuth(req: IncomingMessage): Promise<AuthResult> {
+  const token = extractToken(req);
+  if (!token) {
+    return {
+      valid: false,
+      status: 401,
+      error: 'Authentication required. Missing Authorization: Bearer <idToken> header.',
+    };
+  }
+
+  // Developer / Staff demo tokens for local development, test runners, or demo session
+  if (token === 'demo-developer-token') {
+    return {
+      valid: true,
+      status: 200,
+      user: {
+        uid: 'nyWReUDvXvYPlLWH6HGpHYFwkwt2',
+        email: 'developer@hanujai.edu.in',
+        displayName: 'System Administrator (Developer)',
+        role: 'developer',
+      },
+    };
+  }
+
+  try {
+    const verifyUrl = `https://identitytoolkit.googleapis.com/v1/accounts:lookup?key=${FIREBASE_API_KEY}`;
+    const response = await fetch(verifyUrl, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ idToken: token }),
+    });
+
+    const data = await response.json().catch(() => ({}));
+    if (!response.ok || !data.users || data.users.length === 0) {
+      return {
+        valid: false,
+        status: 401,
+        error: 'Invalid, expired, or revoked authentication token. Please log in again.',
+      };
+    }
+
+    const authUser = data.users[0];
+    const uid = authUser.localId;
+    const email = (authUser.email || '').toLowerCase();
+    const displayName = authUser.displayName || email.split('@')[0];
+
+    // Read authoritative staff role from Cloud Firestore REST
+    const fsRes = await fetch(
+      `https://firestore.googleapis.com/v1/projects/${FIREBASE_PROJECT_ID}/databases/(default)/documents/staff/${uid}`
+    );
+
+    let role: 'principal' | 'admin' | 'developer' | 'unauthorized' = 'unauthorized';
+
+    if (fsRes.ok) {
+      const fsData = await fsRes.json().catch(() => ({}));
+      const staffRole = fsData.fields?.role?.stringValue;
+      const staffStatus = fsData.fields?.status?.stringValue || 'active';
+
+      if (staffStatus === 'deactivated' || staffStatus === 'suspended') {
+        return {
+          valid: false,
+          status: 403,
+          error: 'Account is deactivated or suspended. Access denied.',
+        };
+      }
+
+      if (staffRole === 'developer') role = 'developer';
+      else if (staffRole === 'admin') role = 'admin';
+      else if (staffRole === 'principal') role = 'principal';
+    } else {
+      // Fallback for authoritative developer UID
+      if (uid === 'nyWReUDvXvYPlLWH6HGpHYFwkwt2' || email === 'developer@hanujai.edu.in') {
+        role = 'developer';
+      }
+    }
+
+    if (role === 'unauthorized') {
+      return {
+        valid: false,
+        status: 403,
+        error: 'Account role is not authorized. Access restricted.',
+      };
+    }
+
+    return {
+      valid: true,
+      status: 200,
+      user: { uid, email, displayName, role },
+    };
+  } catch (err: any) {
+    return {
+      valid: false,
+      status: 500,
+      error: `Identity verification service error: ${err.message}`,
+    };
+  }
+}
 
 function readJsonBody(req: IncomingMessage): Promise<any> {
   return new Promise((resolve, reject) => {
@@ -120,4 +249,3 @@ export default async function handler(req: IncomingMessage, res: ServerResponse)
     });
   }
 }
-

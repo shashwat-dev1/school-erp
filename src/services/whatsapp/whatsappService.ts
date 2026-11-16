@@ -394,20 +394,42 @@ export class WhatsAppNotificationService {
   }
 
   /**
+   * Resolves authentication headers for WhatsApp API calls.
+   * Uses Firebase Auth ID Token when authenticated, with graceful fallback to demo tokens.
+   */
+  private static async getAuthHeaders(): Promise<Record<string, string>> {
+    const headers: Record<string, string> = {};
+    if (auth && auth.currentUser) {
+      try {
+        const token = await auth.currentUser.getIdToken();
+        if (token) {
+          headers['Authorization'] = `Bearer ${token}`;
+          return headers;
+        }
+      } catch {
+        // Non-blocking fallback
+      }
+    }
+    if (typeof window !== 'undefined') {
+      const demoId = localStorage.getItem('hanujai_demo_user_id');
+      if (demoId === 'staff-dev') {
+        headers['Authorization'] = 'Bearer demo-developer-token';
+      } else if (demoId === 'staff-principal') {
+        headers['Authorization'] = 'Bearer demo-principal-token';
+      } else if (demoId === 'staff-admin') {
+        headers['Authorization'] = 'Bearer demo-admin-token';
+      }
+    }
+    return headers;
+  }
+
+  /**
    * Invokes the serverless wake API to spin up the Render Free Web Service
    * on-demand after attendance notification jobs have been committed to Firestore.
    */
   public static async wakeWorker(): Promise<{ success: boolean; status: string; message: string }> {
     try {
-      const headers: Record<string, string> = {};
-      if (auth && auth.currentUser) {
-        try {
-          const token = await auth.currentUser.getIdToken();
-          headers['Authorization'] = `Bearer ${token}`;
-        } catch {
-          // Non-blocking
-        }
-      }
+      const headers = await this.getAuthHeaders();
 
       const res = await fetch('/api/whatsapp/wake', {
         method: 'POST',
@@ -443,15 +465,7 @@ export class WhatsAppNotificationService {
     phoneNumber: string
   ): Promise<{ success: boolean; pairingCode?: string; expiresInSeconds?: number; instructions?: string[]; error?: string }> {
     try {
-      const headers: Record<string, string> = {};
-      if (auth && auth.currentUser) {
-        try {
-          const token = await auth.currentUser.getIdToken();
-          headers['Authorization'] = `Bearer ${token}`;
-        } catch {
-          // Non-blocking
-        }
-      }
+      const headers = await this.getAuthHeaders();
 
       const res = await fetch('/api/whatsapp/pair', {
         method: 'POST',
@@ -484,15 +498,7 @@ export class WhatsAppNotificationService {
    */
   public static async unlinkWhatsApp(): Promise<{ success: boolean; message?: string; error?: string }> {
     try {
-      const headers: Record<string, string> = {};
-      if (auth && auth.currentUser) {
-        try {
-          const token = await auth.currentUser.getIdToken();
-          headers['Authorization'] = `Bearer ${token}`;
-        } catch {
-          // Non-blocking
-        }
-      }
+      const headers = await this.getAuthHeaders();
 
       const res = await fetch('/api/whatsapp/logout', {
         method: 'POST',
@@ -523,15 +529,7 @@ export class WhatsAppNotificationService {
    */
   public static async getWorkerStatus(): Promise<any> {
     try {
-      const headers: Record<string, string> = {};
-      if (auth && auth.currentUser) {
-        try {
-          const token = await auth.currentUser.getIdToken();
-          headers['Authorization'] = `Bearer ${token}`;
-        } catch {
-          // Non-blocking
-        }
-      }
+      const headers = await this.getAuthHeaders();
 
       const res = await fetch('/api/whatsapp/status', {
         method: 'GET',

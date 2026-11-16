@@ -309,16 +309,45 @@ export const Topbar: React.FC<TopbarProps> = ({ onToggleSidebar }) => {
               height: '32px',
               padding: '0 12px',
               borderRadius: '9999px',
-              backgroundColor: currentUser.role === 'principal' ? '#F3E8FF' : '#E0E7FF',
-              border: `1px solid ${currentUser.role === 'principal' ? '#D8B4FE' : '#C7D2FE'}`,
-              color: currentUser.role === 'principal' ? '#6B21A8' : '#3730A3',
+              backgroundColor:
+                currentUser.role === 'principal'
+                  ? '#F3E8FF'
+                  : currentUser.role === 'developer'
+                  ? '#FEF3C7'
+                  : '#E0E7FF',
+              border: `1px solid ${
+                currentUser.role === 'principal'
+                  ? '#D8B4FE'
+                  : currentUser.role === 'developer'
+                  ? '#FCD34D'
+                  : '#C7D2FE'
+              }`,
+              color:
+                currentUser.role === 'principal'
+                  ? '#6B21A8'
+                  : currentUser.role === 'developer'
+                  ? '#B45309'
+                  : '#3730A3',
               fontWeight: 700,
               fontSize: '0.78rem',
             }}
           >
-            <Shield size={14} color={currentUser.role === 'principal' ? '#6B21A8' : '#3730A3'} />
+            <Shield
+              size={14}
+              color={
+                currentUser.role === 'principal'
+                  ? '#6B21A8'
+                  : currentUser.role === 'developer'
+                  ? '#B45309'
+                  : '#3730A3'
+              }
+            />
             <span style={{ whiteSpace: 'nowrap' }}>
-              {currentUser.role === 'principal' ? 'Principal' : 'Admin Office'}
+              {currentUser.role === 'principal'
+                ? 'Principal'
+                : currentUser.role === 'developer'
+                ? 'Developer'
+                : 'Admin Office'}
             </span>
           </div>
         )}
