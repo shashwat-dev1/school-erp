@@ -167,70 +167,102 @@ export function startStatusServer(
       return;
     }
 
-    // 4. POST /pair — Authenticated pairing code generation for Developer Console
-    if (url === '/pair' && method === 'POST') {
-      const isAuthorized = verifyAuthSecret(req, config.wakeSecret);
-      if (!isAuthorized) {
-        res.writeHead(401, { 'Content-Type': 'application/json' });
-        res.end(JSON.stringify({ error: 'Unauthorized: Invalid or missing x-worker-wake-secret.' }));
+    // 4. /pair — Authenticated pairing code generation for Developer Console
+    if (url === '/pair') {
+      if (method === 'GET') {
+        res.writeHead(405, { 'Content-Type': 'application/json' });
+        res.end(
+          JSON.stringify({
+            error: 'Method Not Allowed. /pair requires an authenticated HTTP POST request.',
+            usage: 'Please use the HanuJai ERP Developer Console (https://hanujai-erp.vercel.app/developer > WhatsApp Tab) to generate an 8-digit pairing code with 1 click.',
+            api: {
+              method: 'POST',
+              endpoint: '/pair',
+              headers: { 'Content-Type': 'application/json', 'x-worker-wake-secret': '<WHATSAPP_WAKE_SECRET>' },
+              body: { phoneNumber: '919509489381' },
+            },
+          })
+        );
         return;
       }
 
-      try {
-        const body = await readJsonBody(req);
-        const phoneNumber = body.phoneNumber;
-        if (!phoneNumber) {
-          res.writeHead(400, { 'Content-Type': 'application/json' });
-          res.end(JSON.stringify({ error: 'Missing required field: phoneNumber (e.g. 919509489381).' }));
+      if (method === 'POST') {
+        const isAuthorized = verifyAuthSecret(req, config.wakeSecret);
+        if (!isAuthorized) {
+          res.writeHead(401, { 'Content-Type': 'application/json' });
+          res.end(JSON.stringify({ error: 'Unauthorized: Invalid or missing x-worker-wake-secret.' }));
           return;
         }
 
-        const pairingCode = await baileys.requestPairingCode(phoneNumber);
-        res.writeHead(200, { 'Content-Type': 'application/json' });
-        res.end(
-          JSON.stringify({
-            success: true,
-            pairingCode,
-            phoneNumber: phoneNumber.replace(/\D/g, ''),
-            expiresInSeconds: 120,
-            instructions: [
-              '1. Open WhatsApp on the target mobile device.',
-              '2. Go to Settings > Linked Devices > Link a Device.',
-              '3. Tap "Link with phone number instead" at the bottom of the screen.',
-              '4. Enter the 8-digit pairing code shown above.',
-            ],
-          })
-        );
-      } catch (err: any) {
-        res.writeHead(400, { 'Content-Type': 'application/json' });
-        res.end(JSON.stringify({ success: false, error: err.message || 'Pairing code generation failed.' }));
+        try {
+          const body = await readJsonBody(req);
+          const phoneNumber = body.phoneNumber;
+          if (!phoneNumber) {
+            res.writeHead(400, { 'Content-Type': 'application/json' });
+            res.end(JSON.stringify({ error: 'Missing required field: phoneNumber (e.g. 919509489381).' }));
+            return;
+          }
+
+          const pairingCode = await baileys.requestPairingCode(phoneNumber);
+          res.writeHead(200, { 'Content-Type': 'application/json' });
+          res.end(
+            JSON.stringify({
+              success: true,
+              pairingCode,
+              phoneNumber: phoneNumber.replace(/\D/g, ''),
+              expiresInSeconds: 120,
+              instructions: [
+                '1. Open WhatsApp on the target mobile device.',
+                '2. Go to Settings > Linked Devices > Link a Device.',
+                '3. Tap "Link with phone number instead" at the bottom of the screen.',
+                '4. Enter the 8-digit pairing code shown above.',
+              ],
+            })
+          );
+        } catch (err: any) {
+          res.writeHead(400, { 'Content-Type': 'application/json' });
+          res.end(JSON.stringify({ success: false, error: err.message || 'Pairing code generation failed.' }));
+        }
+        return;
       }
-      return;
     }
 
-    // 5. POST /logout — Authenticated session unlink and credential wipe
-    if (url === '/logout' && method === 'POST') {
-      const isAuthorized = verifyAuthSecret(req, config.wakeSecret);
-      if (!isAuthorized) {
-        res.writeHead(401, { 'Content-Type': 'application/json' });
-        res.end(JSON.stringify({ error: 'Unauthorized: Invalid or missing x-worker-wake-secret.' }));
+    // 5. /logout — Authenticated session unlink and credential wipe
+    if (url === '/logout') {
+      if (method === 'GET') {
+        res.writeHead(405, { 'Content-Type': 'application/json' });
+        res.end(
+          JSON.stringify({
+            error: 'Method Not Allowed. /logout requires an authenticated HTTP POST request.',
+            usage: 'Use the HanuJai ERP Developer Console at /developer to unlink the WhatsApp session.',
+          })
+        );
         return;
       }
 
-      try {
-        await baileys.logout();
-        res.writeHead(200, { 'Content-Type': 'application/json' });
-        res.end(
-          JSON.stringify({
-            success: true,
-            message: 'WhatsApp session unlinked and Firestore credentials wiped cleanly.',
-          })
-        );
-      } catch (err: any) {
-        res.writeHead(500, { 'Content-Type': 'application/json' });
-        res.end(JSON.stringify({ success: false, error: err.message || 'Logout failed.' }));
+      if (method === 'POST') {
+        const isAuthorized = verifyAuthSecret(req, config.wakeSecret);
+        if (!isAuthorized) {
+          res.writeHead(401, { 'Content-Type': 'application/json' });
+          res.end(JSON.stringify({ error: 'Unauthorized: Invalid or missing x-worker-wake-secret.' }));
+          return;
+        }
+
+        try {
+          await baileys.logout();
+          res.writeHead(200, { 'Content-Type': 'application/json' });
+          res.end(
+            JSON.stringify({
+              success: true,
+              message: 'WhatsApp session unlinked and Firestore credentials wiped cleanly.',
+            })
+          );
+        } catch (err: any) {
+          res.writeHead(500, { 'Content-Type': 'application/json' });
+          res.end(JSON.stringify({ success: false, error: err.message || 'Logout failed.' }));
+        }
+        return;
       }
-      return;
     }
 
     // 6. Deprecated /qr endpoint
