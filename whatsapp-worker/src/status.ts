@@ -23,11 +23,20 @@ async function checkStatus() {
   console.log('  HANUJAI HIGH SCHOOL ERP — WHATSAPP WORKER STATUS AUDIT');
   console.log('================================================================================');
 
-  // 1. Local Auth Check
+  // 1. Auth State Check (Cloud Firestore & Local)
   const credsFile = path.resolve(config.authDir, 'creds.json');
-  const hasCreds = fs.existsSync(credsFile);
+  const hasLocalCreds = fs.existsSync(credsFile);
   console.log(`📁 Auth Directory    : ${config.authDir}`);
-  console.log(`🔑 Credentials File  : ${hasCreds ? '✓ EXISTS (.baileys_auth/creds.json)' : '❌ NOT FOUND (Requires QR scan)'}`);
+  console.log(`🔑 Local Cache File   : ${hasLocalCreds ? '✓ EXISTS (.baileys_auth/creds.json)' : 'NOT PRESENT (Ephemeral on Render)'}`);
+
+  try {
+    const db = getWorkerDb(config);
+    const snap = await getDocs(collection(db, 'whatsappAuthState'));
+    const hasFirestoreCreds = !snap.empty;
+    console.log(`☁️  Firestore Auth    : ${hasFirestoreCreds ? '✓ ENCRYPTED STATE PRESENT (Zero-Cost Persistent)' : '❌ NOT FOUND (Pairing Required via Developer Console)'}`);
+  } catch (err: any) {
+    console.log(`☁️  Firestore Auth    : Check skipped (${err.message})`);
+  }
 
   // 2. Active Worker HTTP Health Probe
   console.log(`\n🌐 Probing Active Worker HTTP Server (Port ${config.workerPort})...`);

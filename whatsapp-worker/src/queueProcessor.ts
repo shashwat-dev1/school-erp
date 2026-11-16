@@ -1,13 +1,14 @@
 /**
- * HanuJai High School ERP — Durable Queue Processor
+ * HanuJai High School ERP — Durable Queue Processor (Zero-Cost Architecture)
  * Campus: HanuJai High School, Jaipur, Rajasthan, India
  * 
  * Polls Cloud Firestore attendanceNotifications collection,
- * applies safety filters and test allowlists, executes idempotent dispatch,
- * and records authoritative outcomes.
+ * applies crash recovery for stalled jobs, executes idempotent dispatch,
+ * and records authoritative outcomes and operational metrics.
  */
 
 import type { Firestore } from 'firebase/firestore';
+import { doc, setDoc } from 'firebase/firestore';
 import type { WorkerConfig } from './config.ts';
 import type { BaileysManager } from './baileysManager.ts';
 import {
@@ -17,6 +18,7 @@ import {
   markJobFailed,
   markJobSkipped,
   verifyLegitimateSession,
+  recoverStalledJobs,
   type NotificationJobDoc,
 } from './firebase.ts';
 
@@ -28,10 +30,22 @@ export class QueueProcessor {
   private pollTimer: NodeJS.Timeout | null = null;
   private inFlightJobIds = new Set<string>();
 
+  // Operational metrics
+  private totalProcessed = 0;
+  private totalFailed = 0;
+  private totalSkipped = 0;
+  private lastSuccessfulMessage: string | null = null;
+  private lastWakeUpTime: string | null = null;
+
   constructor(db: Firestore, config: WorkerConfig, baileys: BaileysManager) {
     this.db = db;
     this.config = config;
     this.baileys = baileys;
+    this.lastWakeUpTime = new Date().toISOString();
+  }
+
+  public recordWakeUp(): void {
+    this.lastWakeUpTime = new Date().toISOString();
   }
 
   public start(intervalMs = 5000): void {
@@ -48,16 +62,22 @@ export class QueueProcessor {
     }
   }
 
-  public async processBatch(): Promise<void> {
-    if (this.isProcessing) return;
-    if (!this.baileys.isReady()) return;
+  public async processBatch(): Promise<{ processedCount: number; pendingCount: number }> {
+    if (this.isProcessing) return { processedCount: 0, pendingCount: 0 };
+    if (!this.baileys.isReady()) return { processedCount: 0, pendingCount: 0 };
 
     this.isProcessing = true;
+    let cycleProcessed = 0;
+
     try {
+      // 1. Crash recovery: recover any jobs stuck in 'processing' for > 5 minutes
+      await recoverStalledJobs(this.db, 300000);
+
+      // 2. Fetch pending jobs
       const pendingJobs = await getPendingJobs(this.db, 25);
       if (pendingJobs.length === 0) {
-        this.isProcessing = false;
-        return;
+        await this.publishMetricsDoc(0);
+        return { processedCount: 0, pendingCount: 0 };
       }
 
       console.log(`[Queue] Discovered ${pendingJobs.length} pending notification job(s)...`);
@@ -68,12 +88,17 @@ export class QueueProcessor {
 
         try {
           await this.processSingleJob(job);
+          cycleProcessed++;
         } finally {
           this.inFlightJobIds.delete(job.id);
         }
       }
+
+      await this.publishMetricsDoc(Math.max(0, pendingJobs.length - cycleProcessed));
+      return { processedCount: cycleProcessed, pendingCount: Math.max(0, pendingJobs.length - cycleProcessed) };
     } catch (err: any) {
       console.error('[Queue] Error during batch queue cycle:', err.message);
+      return { processedCount: cycleProcessed, pendingCount: 0 };
     } finally {
       this.isProcessing = false;
     }
@@ -92,6 +117,7 @@ export class QueueProcessor {
         'missing_phone',
         'Parent/guardian primary mobile number is missing or invalid in student master record.'
       );
+      this.totalSkipped++;
       return;
     }
 
@@ -105,6 +131,7 @@ export class QueueProcessor {
         'unverified_session',
         'Attendance register is not in submitted state.'
       );
+      this.totalSkipped++;
       return;
     }
 
@@ -122,6 +149,7 @@ export class QueueProcessor {
         'not_in_test_allowlist',
         'Recipient number is not on the verified test allowlist.'
       );
+      this.totalSkipped++;
       return;
     }
 
@@ -133,6 +161,7 @@ export class QueueProcessor {
         'unverified_session',
         'Live message sending is disabled in worker configuration.'
       );
+      this.totalSkipped++;
       return;
     }
 
@@ -144,11 +173,45 @@ export class QueueProcessor {
     const result = await this.baileys.sendMessage(rawPhone, job.messageText);
 
     if (result.success) {
-      await markJobSent(this.db, job.id, result.externalId || `ext_${Date.now()}`, this.config.provider);
-      console.log(`[Queue] ✓ Job ${job.id} completed. External ID: ${result.externalId}`);
+      const extId = result.externalId || `ext_${Date.now()}`;
+      await markJobSent(this.db, job.id, extId, this.config.provider);
+      this.totalProcessed++;
+      this.lastSuccessfulMessage = new Date().toISOString();
+      console.log(`[Queue] ✓ Job ${job.id} completed. External ID: ${extId}`);
     } else {
       console.error(`[Queue] ❌ Job ${job.id} failed: ${result.error}`);
       await markJobFailed(this.db, job.id, result.error || 'Dispatch failed', job.retryCount || 0);
+      this.totalFailed++;
+    }
+  }
+
+  public getMetrics() {
+    return {
+      totalProcessed: this.totalProcessed,
+      totalFailed: this.totalFailed,
+      totalSkipped: this.totalSkipped,
+      lastSuccessfulMessage: this.lastSuccessfulMessage,
+      lastWakeUpTime: this.lastWakeUpTime,
+    };
+  }
+
+  /**
+   * Publishes sanitized queue metrics to Cloud Firestore document: whatsappWorkerStatus/current
+   */
+  public async publishMetricsDoc(queueDepth = 0): Promise<void> {
+    try {
+      const statusRef = doc(this.db, 'whatsappWorkerStatus', 'current');
+      await setDoc(statusRef, {
+        queueDepth,
+        totalProcessed: this.totalProcessed,
+        totalFailed: this.totalFailed,
+        totalSkipped: this.totalSkipped,
+        lastSuccessfulMessage: this.lastSuccessfulMessage,
+        lastWakeUpTime: this.lastWakeUpTime,
+        lastHeartbeat: new Date().toISOString(),
+      }, { merge: true });
+    } catch (err: any) {
+      console.warn('[Queue] Error updating metrics doc:', err.message);
     }
   }
 }

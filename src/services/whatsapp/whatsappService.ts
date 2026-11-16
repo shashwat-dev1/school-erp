@@ -15,7 +15,7 @@ import {
   where,
   writeBatch,
 } from 'firebase/firestore';
-import { db, isFirebaseConfigured, isDemoMode } from '../../config/firebase';
+import { db, auth, isFirebaseConfigured, isDemoMode } from '../../config/firebase';
 import { PHASE_CONFIG } from '../../config/phase';
 import type { AttendanceSession, StudentRecord, AttendanceCorrection } from '../../domain/types';
 import type {
@@ -387,6 +387,182 @@ export class WhatsAppNotificationService {
       }
     }
     this.saveToLocalStorage(jobs);
+  }
+
+  /**
+   * Invokes the serverless wake API to spin up the Render Free Web Service
+   * on-demand after attendance notification jobs have been committed to Firestore.
+   */
+  public static async wakeWorker(): Promise<{ success: boolean; status: string; message: string }> {
+    try {
+      const headers: Record<string, string> = {};
+      if (auth && auth.currentUser) {
+        try {
+          const token = await auth.currentUser.getIdToken();
+          headers['Authorization'] = `Bearer ${token}`;
+        } catch {
+          // Non-blocking
+        }
+      }
+
+      const res = await fetch('/api/whatsapp/wake', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          ...headers,
+        },
+      });
+
+      if (res.ok) {
+        return await res.json();
+      }
+      return {
+        success: false,
+        status: 'error',
+        message: `Wake request failed with HTTP ${res.status}`,
+      };
+    } catch (err: any) {
+      console.warn('[WhatsApp Service] Worker wake non-blocking dispatch note:', err.message);
+      return {
+        success: true,
+        status: 'waking',
+        message: 'Wake request dispatched. Worker cold-starting.',
+      };
+    }
+  }
+
+  /**
+   * Requests an 8-digit Baileys Pairing Code for the target phone number.
+   * Developer-only privileged action.
+   */
+  public static async requestPairingCode(
+    phoneNumber: string
+  ): Promise<{ success: boolean; pairingCode?: string; expiresInSeconds?: number; instructions?: string[]; error?: string }> {
+    try {
+      const headers: Record<string, string> = {};
+      if (auth && auth.currentUser) {
+        try {
+          const token = await auth.currentUser.getIdToken();
+          headers['Authorization'] = `Bearer ${token}`;
+        } catch {
+          // Non-blocking
+        }
+      }
+
+      const res = await fetch('/api/whatsapp/pair', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          ...headers,
+        },
+        body: JSON.stringify({ phoneNumber }),
+      });
+
+      const data = await res.json().catch(() => ({}));
+      if (res.ok && data.success) {
+        return data;
+      }
+      return {
+        success: false,
+        error: data.error || `Pairing code generation failed (HTTP ${res.status})`,
+      };
+    } catch (err: any) {
+      return {
+        success: false,
+        error: `Failed to contact pairing endpoint: ${err.message}`,
+      };
+    }
+  }
+
+  /**
+   * Unlinks WhatsApp account and clears session credentials.
+   * Developer-only privileged action.
+   */
+  public static async unlinkWhatsApp(): Promise<{ success: boolean; message?: string; error?: string }> {
+    try {
+      const headers: Record<string, string> = {};
+      if (auth && auth.currentUser) {
+        try {
+          const token = await auth.currentUser.getIdToken();
+          headers['Authorization'] = `Bearer ${token}`;
+        } catch {
+          // Non-blocking
+        }
+      }
+
+      const res = await fetch('/api/whatsapp/logout', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          ...headers,
+        },
+      });
+
+      const data = await res.json().catch(() => ({}));
+      if (res.ok && data.success) {
+        return data;
+      }
+      return {
+        success: false,
+        error: data.error || `Unlink failed (HTTP ${res.status})`,
+      };
+    } catch (err: any) {
+      return {
+        success: false,
+        error: `Failed to contact logout endpoint: ${err.message}`,
+      };
+    }
+  }
+
+  /**
+   * Retrieves operational health, connection status, and queue depth.
+   */
+  public static async getWorkerStatus(): Promise<any> {
+    try {
+      const headers: Record<string, string> = {};
+      if (auth && auth.currentUser) {
+        try {
+          const token = await auth.currentUser.getIdToken();
+          headers['Authorization'] = `Bearer ${token}`;
+        } catch {
+          // Non-blocking
+        }
+      }
+
+      const res = await fetch('/api/whatsapp/status', {
+        method: 'GET',
+        headers: {
+          ...headers,
+        },
+      });
+      if (res.ok) {
+        return await res.json();
+      }
+    } catch {
+      // Fallback
+    }
+
+    // Direct Firestore fallback in browser if serverless endpoint is offline
+    if (db && !isDemoMode() && isFirebaseConfigured()) {
+      try {
+        const snap = await getDoc(doc(db, 'whatsappWorkerStatus', 'current'));
+        if (snap.exists()) {
+          return {
+            source: 'firestore_direct',
+            ...snap.data(),
+          };
+        }
+      } catch {
+        // Fallback
+      }
+    }
+
+    return {
+      workerStatus: 'sleeping',
+      connected: false,
+      isRegistered: false,
+      message: 'Worker is sleeping. Wakes on-demand when attendance is submitted.',
+    };
   }
 
   private static loadAllFromLocalStorage(): Record<string, WhatsAppNotificationJob> {

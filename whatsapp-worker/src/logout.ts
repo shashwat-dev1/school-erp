@@ -2,8 +2,8 @@
  * HanuJai High School ERP — WhatsApp Worker Logout & Session Reset
  * Campus: HanuJai High School, Jaipur, Rajasthan, India
  * 
- * Safely removes stored session credentials from ./.baileys_auth/
- * so that a fresh QR code pairing session can be initiated.
+ * Safely removes stored session credentials from Cloud Firestore and local directory
+ * so that a fresh 8-digit Pairing Code linking session can be initiated.
  * 
  * USAGE:
  *   npm run logout (in whatsapp-worker)
@@ -13,38 +13,48 @@
 import * as fs from 'fs';
 import * as path from 'path';
 import { loadWorkerConfig } from './config.ts';
+import { getWorkerDb } from './firebase.ts';
+import { useFirestoreAuthState, DistributedLeaseManager } from './firestoreAuthState.ts';
 
-function resetSession() {
+async function resetSession() {
   const config = loadWorkerConfig();
   console.log('================================================================================');
   console.log('  HANUJAI HIGH SCHOOL ERP — WHATSAPP SESSION RESET');
   console.log('================================================================================');
-  console.log(`Target Session Directory: ${config.authDir}\n`);
 
-  if (!fs.existsSync(config.authDir)) {
-    console.log('✓ Session directory does not exist. No credentials to remove.');
-    return;
+  // 1. Wipe Firestore Auth State
+  try {
+    const db = getWorkerDb(config);
+    console.log('[Firestore] Clearing encrypted auth credentials and Signal keys...');
+    const { clearAuthState } = await useFirestoreAuthState(db, config.authEncryptionKey);
+    await clearAuthState();
+
+    const lease = new DistributedLeaseManager(db, 'logout_cli');
+    await lease.release();
+    console.log('[Firestore] ✓ Cloud Firestore WhatsApp auth state and leases cleared.');
+  } catch (err: any) {
+    console.warn('[Firestore] Note on clearing Firestore auth:', err.message);
   }
 
-  const files = fs.readdirSync(config.authDir);
-  if (files.length === 0) {
-    console.log('✓ Session directory is already empty.');
-    return;
-  }
-
-  console.log(`Found ${files.length} session file(s). Removing credentials safely...`);
-  for (const file of files) {
-    const fullPath = path.resolve(config.authDir, file);
-    try {
-      fs.unlinkSync(fullPath);
-    } catch (e: any) {
-      console.warn(`Could not delete ${file}: ${e.message}`);
+  // 2. Clean local directory if present
+  if (fs.existsSync(config.authDir)) {
+    const files = fs.readdirSync(config.authDir);
+    for (const file of files) {
+      try {
+        fs.unlinkSync(path.resolve(config.authDir, file));
+      } catch {
+        // ignore
+      }
     }
   }
 
   console.log('\n✅ WhatsApp session credentials have been completely cleared.');
-  console.log('On next worker start (npm run whatsapp:worker), a fresh QR code will be generated for scanning.');
+  console.log('Open Developer Console -> Attendance & WhatsApp to generate a fresh 8-digit Pairing Code.');
   console.log('================================================================================\n');
+  process.exit(0);
 }
 
-resetSession();
+resetSession().catch(err => {
+  console.error('Logout error:', err);
+  process.exit(1);
+});

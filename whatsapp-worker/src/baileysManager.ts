@@ -1,161 +1,138 @@
 /**
- * HanuJai High School ERP — Baileys WhatsApp Socket Manager
+ * HanuJai High School ERP — Baileys WhatsApp Socket Manager (Zero-Cost Architecture)
  * Campus: HanuJai High School, Jaipur, Rajasthan, India
  * 
- * Manages the persistent WebSocket connection, QR code pairing,
- * credential persistence in ./.baileys_auth/, and safe message dispatching.
+ * Manages the persistent WebSocket connection, 8-digit Pairing Code registration,
+ * Cloud Firestore AES-256-GCM authentication persistence, and safe message dispatching.
+ * 
+ * Zero-Cost Architecture Guarantees:
+ * - NO QR codes generated or displayed.
+ * - Complete auth state (credentials and Signal keys) saved in Cloud Firestore.
+ * - Survives Render Free sleep and cold starts without requiring re-pairing.
+ * - Single-instance enforcement via DistributedLeaseManager.
  */
 
-import * as fs from 'fs';
-import * as path from 'path';
+import * as crypto from 'crypto';
 import makeWASocket, {
-  useMultiFileAuthState,
   DisconnectReason,
   fetchLatestBaileysVersion,
   type WASocket,
   type ConnectionState,
+  type AuthenticationState,
 } from '@whiskeysockets/baileys';
 import pino from 'pino';
-import qrcode from 'qrcode-terminal';
-import QRCode from 'qrcode';
+import type { Firestore } from 'firebase/firestore';
+import { doc, setDoc } from 'firebase/firestore';
 import type { WorkerConfig } from './config.ts';
+import {
+  useFirestoreAuthState,
+  DistributedLeaseManager,
+} from './firestoreAuthState.ts';
 
 export interface BaileysStatus {
   connected: boolean;
+  isRegistered: boolean;
   userJid: string | null;
-  qrAvailable: boolean;
   reconnectAttempts: number;
   lastDisconnectReason: string | null;
-  authDirExists: boolean;
+  activePairingCodeAvailable: boolean;
   hasCredentials: boolean;
+  hasLease: boolean;
+  workerId: string;
 }
 
 export class BaileysManager {
   private config: WorkerConfig;
+  private db: Firestore;
   private sock: WASocket | null = null;
   private isConnected = false;
-  private qrAvailable = false;
+  private isRegistered = false;
   private userJid: string | null = null;
-  private currentQr: string | null = null;
-  private currentQrSvg: string | null = null;
   private reconnectAttempts = 0;
   private lastDisconnectReason: string | null = null;
   private reconnectTimeout: NodeJS.Timeout | null = null;
   private isShuttingDown = false;
+  private authState: AuthenticationState | null = null;
+  private saveCredsFn: (() => Promise<void>) | null = null;
+  private clearAuthStateFn: (() => Promise<void>) | null = null;
+  private leaseManager: DistributedLeaseManager;
+  private workerId: string;
 
-  constructor(config: WorkerConfig) {
+  // In-memory short-lived pairing code (cleared on connection or 120s TTL)
+  private pairingCodeState: {
+    code: string;
+    phoneNumber: string;
+    expiresAt: number;
+  } | null = null;
+
+  constructor(config: WorkerConfig, db: Firestore) {
     this.config = config;
+    this.db = db;
+    this.workerId = `worker_render_${Date.now()}_${crypto.randomBytes(4).toString('hex')}`;
+    this.leaseManager = new DistributedLeaseManager(db, this.workerId, 60000);
   }
 
-  public getQrData(): { qr: string | null; qrSvg: string | null } {
-    return { qr: this.currentQr, qrSvg: this.currentQrSvg };
+  public getWorkerId(): string {
+    return this.workerId;
   }
 
-  private async updatePublicQrPage(qr: string | null, isConnected = false, userJid: string | null = null): Promise<void> {
-    try {
-      const publicDir = path.resolve(process.cwd(), 'public');
-      if (!fs.existsSync(publicDir)) {
-        fs.mkdirSync(publicDir, { recursive: true });
-      }
-      const htmlPath = path.resolve(publicDir, 'whatsapp-qr.html');
-
-      let htmlContent = '';
-      if (isConnected) {
-        htmlContent = `<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <title>HanuJai ERP — WhatsApp Connected</title>
-  <style>
-    body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: #0f172a; color: #f8fafc; display: flex; align-items: center; justify-content: center; min-height: 100vh; margin: 0; padding: 20px; }
-    .card { background: #1e293b; border: 1px solid #10b981; border-radius: 16px; padding: 40px; max-width: 440px; text-align: center; box-shadow: 0 10px 25px rgba(0,0,0,0.5); }
-    .icon { font-size: 48px; margin-bottom: 16px; }
-    h2 { color: #10b981; margin: 0 0 12px 0; font-size: 22px; }
-    p { color: #cbd5e1; font-size: 14px; margin: 0 0 20px 0; line-height: 1.5; }
-    .badge { background: #064e3b; color: #34d399; padding: 6px 14px; border-radius: 999px; font-size: 13px; font-weight: 600; font-family: monospace; }
-  </style>
-</head>
-<body>
-  <div class="card">
-    <div class="icon">✅</div>
-    <h2>WhatsApp Linked Successfully!</h2>
-    <p>The worker is authenticated and ready to dispatch attendance parent alerts.</p>
-    <div class="badge">JID: ${userJid || 'Connected'}</div>
-  </div>
-</body>
-</html>`;
-      } else if (qr && this.currentQrSvg) {
-        htmlContent = `<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <title>HanuJai ERP — WhatsApp Pairing QR</title>
-  <meta http-equiv="refresh" content="5">
-  <style>
-    body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: #0f172a; color: #f8fafc; display: flex; align-items: center; justify-content: center; min-height: 100vh; margin: 0; padding: 20px; }
-    .card { background: #1e293b; border: 1px solid #334155; border-radius: 16px; padding: 32px; max-width: 440px; text-align: center; box-shadow: 0 10px 25px rgba(0,0,0,0.5); }
-    .qr-box { background: #ffffff; padding: 16px; border-radius: 12px; margin: 20px auto; width: 260px; height: 260px; display: flex; align-items: center; justify-content: center; }
-    .qr-box svg { width: 100%; height: 100%; }
-    .badge { background: #0ea5e9; color: #ffffff; font-size: 11px; font-weight: 700; text-transform: uppercase; padding: 4px 10px; border-radius: 999px; letter-spacing: 0.05em; display: inline-block; margin-bottom: 12px; }
-    h2 { margin: 0 0 8px 0; font-size: 20px; }
-    p { color: #94a3b8; font-size: 13px; line-height: 1.5; margin: 0 0 16px 0; }
-    .phone-tag { color: #38bdf8; font-weight: 700; font-size: 15px; }
-    .steps { text-align: left; background: #0f172a; border-radius: 8px; padding: 12px 16px; font-size: 12px; color: #cbd5e1; }
-    .steps ol { margin: 0; padding-left: 20px; }
-    .steps li { margin: 4px 0; }
-  </style>
-</head>
-<body>
-  <div class="card">
-    <span class="badge">HanuJai High School ERP</span>
-    <h2>Scan with WhatsApp</h2>
-    <p>Designated Sender Phone: <span class="phone-tag">+91 95094 89381</span></p>
-    <div class="qr-box">${this.currentQrSvg}</div>
-    <div class="steps">
-      <strong>Instructions:</strong>
-      <ol>
-        <li>Open WhatsApp on phone <strong>9509489381</strong></li>
-        <li>Tap <strong>Settings</strong> (iOS) or <strong>⋮</strong> (Android) &gt; <strong>Linked Devices</strong></li>
-        <li>Tap <strong>Link a Device</strong> and point your camera here</li>
-      </ol>
-    </div>
-  </div>
-</body>
-</html>`;
-      }
-
-      if (htmlContent) {
-        fs.writeFileSync(htmlPath, htmlContent, 'utf-8');
-      }
-    } catch (err: any) {
-      console.warn('[Baileys] Error updating public/whatsapp-qr.html:', err.message);
-    }
-  }
-
+  /**
+   * Initializes the Baileys connection using Firestore-backed state.
+   */
   public async initialize(): Promise<void> {
     if (this.config.provider === 'dry_run') {
       console.log('📍 Worker operating in Dry-Run mode. Baileys socket initialization bypassed.');
+      this.isRegistered = true;
+      this.isConnected = true;
+      await this.publishStatusDoc();
       return;
     }
 
-    // Ensure auth directory exists
-    if (!fs.existsSync(this.config.authDir)) {
-      fs.mkdirSync(this.config.authDir, { recursive: true });
+    // 1. Acquire distributed lease to prevent multiple workers from running simultaneously
+    const acquiredLease = await this.leaseManager.acquire();
+    if (!acquiredLease) {
+      console.warn('[Baileys] Another worker currently holds the active WhatsApp lease. Standing by in secondary mode.');
+      await this.publishStatusDoc();
+      return;
     }
 
-    const { state, saveCreds } = await useMultiFileAuthState(this.config.authDir);
+    // 2. Load Firestore-backed Authentication State
+    console.log('[Baileys] Loading encrypted authentication state from Cloud Firestore...');
+    const { state, saveCreds, clearAuthState } = await useFirestoreAuthState(
+      this.db,
+      this.config.authEncryptionKey
+    );
+
+    this.authState = state;
+    this.saveCredsFn = saveCreds;
+    this.clearAuthStateFn = clearAuthState;
+    this.isRegistered = Boolean(state.creds.registered);
+
     const { version, isLatest } = await fetchLatestBaileysVersion();
+    console.log(`[Baileys] Core Engine v${version.join('.')} (Latest: ${isLatest})`);
+    console.log(`[Baileys] Stored Session Registered: ${this.isRegistered ? '🟢 YES (Existing Session)' : '🟡 NO (Pairing Required)'}`);
 
-    // Use silent pino logger to keep terminal readable for QR and attendance notifications
+    // If not registered and no active pairing requested, don't open socket until requested
+    // to prevent unsolicited QR attempts or unnecessary keep-alives.
+    if (!this.isRegistered && !this.pairingCodeState) {
+      console.log('[Baileys] Account not yet registered. Awaiting Developer Pairing Code request.');
+      await this.publishStatusDoc();
+      return;
+    }
+
+    await this.startSocket(version);
+  }
+
+  private async startSocket(version: [number, number, number]): Promise<void> {
+    if (!this.authState) return;
+
+    // Silent pino logger keeps standard out clean for operational logs
     const logger = pino({ level: 'silent' });
-
-    console.log(`Baileys Core Engine v${version.join('.')} (Latest: ${isLatest})`);
-    console.log(`Authentication storage: ${this.config.authDir}\n`);
 
     this.sock = makeWASocket({
       version,
       logger,
-      auth: state,
+      auth: this.authState,
       printQRInTerminal: false,
       connectTimeoutMs: 60000,
       keepAliveIntervalMs: 25000,
@@ -164,36 +141,24 @@ export class BaileysManager {
       browser: ['HanuJai ERP Dispatcher', 'Chrome', '120.0.0.0'],
     });
 
-    this.sock.ev.on('creds.update', saveCreds);
+    if (this.saveCredsFn) {
+      this.sock.ev.on('creds.update', async () => {
+        if (this.saveCredsFn) {
+          await this.saveCredsFn();
+        }
+      });
+    }
 
     this.sock.ev.on('connection.update', async (update: Partial<ConnectionState>) => {
       const { connection, lastDisconnect, qr } = update;
 
+      // Ensure NO QR is ever rendered or printed
       if (qr) {
-        this.currentQr = qr;
-        this.qrAvailable = true;
-        try {
-          this.currentQrSvg = await QRCode.toString(qr, { type: 'svg', margin: 2 });
-          await this.updatePublicQrPage(qr, false);
-        } catch {
-          // ignore
-        }
-
-        console.log('\n================================================================================');
-        console.log('  📲 SCAN THIS QR CODE WITH AUTHORIZED HANUJAI HIGH SCHOOL WHATSAPP:');
-        console.log('  Target Sender Mobile Phone: +91 95094 89381');
-        console.log('  1. Open WhatsApp on phone 9509489381');
-        console.log('  2. Tap Settings (iOS) or More Options ⋮ (Android) > Linked Devices');
-        console.log('  3. Tap "Link a Device" and point camera at the QR code below:');
-        console.log('  (You can also view it in browser at: http://localhost:5173/whatsapp-qr.html)');
-        console.log('================================================================================\n');
-        qrcode.generate(qr, { small: true });
-        console.log('\nWaiting for pairing scan from phone 9509489381...\n');
+        // QR emitted by Baileys is intentionally ignored in pairing-code mode
       }
 
       if (connection === 'close') {
         this.isConnected = false;
-        this.qrAvailable = false;
         const statusCode = (lastDisconnect?.error as any)?.output?.statusCode;
         const errMessage = lastDisconnect?.error?.message || 'Connection terminated';
         this.lastDisconnectReason = `Code ${statusCode}: ${errMessage}`;
@@ -202,30 +167,124 @@ export class BaileysManager {
         console.warn(`[Baileys] Socket closed (${this.lastDisconnectReason}). Logged out: ${isLoggedOut}`);
 
         if (isLoggedOut) {
-          console.error('\n⚠️  WHATSAPP ACCOUNT HAS LOGGED OUT OR SESSION REVOKED!');
-          console.error('To reconnect, run: npm run whatsapp:logout and restart the worker to scan a new QR code.\n');
+          console.error('\n⚠️  WHATSAPP SESSION HAS BEEN REVOKED OR LOGGED OUT BY WHATSAPP!');
+          this.isRegistered = false;
+          this.userJid = null;
+          if (this.clearAuthStateFn) {
+            await this.clearAuthStateFn();
+          }
+          await this.publishStatusDoc();
         } else if (!this.isShuttingDown) {
           this.reconnectAttempts++;
-          const delaySec = Math.min(30, 5 * Math.pow(1.5, Math.min(this.reconnectAttempts, 5)));
-          console.log(`[Baileys] Reconnecting in ${Math.round(delaySec)}s (Attempt #${this.reconnectAttempts})...`);
+          // Exponential backoff with jitter
+          const baseDelay = Math.min(30000, 3000 * Math.pow(1.5, Math.min(this.reconnectAttempts, 5)));
+          const jitter = Math.floor(Math.random() * 2000);
+          const totalDelayMs = baseDelay + jitter;
+
+          console.log(`[Baileys] Temporary disconnect. Reconnecting in ${Math.round(totalDelayMs / 1000)}s (Attempt #${this.reconnectAttempts})...`);
           this.reconnectTimeout = setTimeout(() => {
             this.initialize().catch(err => console.error('[Baileys] Reconnect failed:', err));
-          }, delaySec * 1000);
+          }, totalDelayMs);
+          await this.publishStatusDoc();
         }
       } else if (connection === 'open') {
         this.isConnected = true;
-        this.qrAvailable = false;
+        this.isRegistered = true;
         this.reconnectAttempts = 0;
         this.userJid = this.sock?.user?.id || 'Connected Device';
-        await this.updatePublicQrPage(null, true, this.userJid);
+        this.pairingCodeState = null; // Clear active pairing code upon connection
 
         console.log('================================================================================');
-        console.log('  ✅ HANUJAI WHATSAPP DISPATCHER SUCCESSFULLY CONNECTED TO WHATSAPP!');
-        console.log(`  Linked JID   : ${this.userJid}`);
-        console.log(`  Session State: Persisted in ${this.config.authDir}`);
+        console.log('  ✅ HANUJAI WHATSAPP DISPATCHER SUCCESSFULLY CONNECTED!');
+        console.log(`  Linked JID      : ${this.userJid}`);
+        console.log('  Session State   : Securely Encrypted & Persisted in Cloud Firestore');
         console.log('================================================================================\n');
+
+        await this.publishStatusDoc();
       }
     });
+  }
+
+  /**
+   * Generates an 8-character Baileys Pairing Code for linking without QR
+   */
+  public async requestPairingCode(phoneNumber: string): Promise<string> {
+    if (this.isRegistered && this.isConnected) {
+      throw new Error('WhatsApp account is already registered and active. To link a different number, unlink/log out first.');
+    }
+
+    // Clean Indian / international phone number: digits only with country code
+    const cleanNumber = phoneNumber.replace(/\D/g, '');
+    if (!cleanNumber || cleanNumber.length < 10) {
+      throw new Error(`Invalid phone number "${phoneNumber}". Provide full mobile number including country code (e.g. 919509489381).`);
+    }
+
+    const normalizedPhone = cleanNumber.length === 10 ? `91${cleanNumber}` : cleanNumber;
+
+    console.log(`[Baileys] Initiating 8-digit Pairing Code request for target phone: +${normalizedPhone}...`);
+
+    // Ensure lease is held
+    if (!this.leaseManager.hasLease()) {
+      const acquired = await this.leaseManager.acquire();
+      if (!acquired) {
+        throw new Error('Could not acquire exclusive worker lease. Another instance is active.');
+      }
+    }
+
+    // Load auth state if needed
+    if (!this.authState) {
+      const { state, saveCreds, clearAuthState } = await useFirestoreAuthState(
+        this.db,
+        this.config.authEncryptionKey
+      );
+      this.authState = state;
+      this.saveCredsFn = saveCreds;
+      this.clearAuthStateFn = clearAuthState;
+    }
+
+    const { version } = await fetchLatestBaileysVersion();
+    if (!this.sock) {
+      await this.startSocket(version);
+    }
+
+    // Wait 1.5 seconds for socket handshake before requesting pairing code
+    await new Promise(r => setTimeout(r, 1500));
+
+    if (!this.sock || typeof this.sock.requestPairingCode !== 'function') {
+      throw new Error('Baileys socket does not support requestPairingCode.');
+    }
+
+    const rawCode = await this.sock.requestPairingCode(normalizedPhone);
+    const code = rawCode.trim();
+
+    // Store in-memory with 120-second TTL (NEVER LOGGED)
+    this.pairingCodeState = {
+      code,
+      phoneNumber: normalizedPhone,
+      expiresAt: Date.now() + 120000,
+    };
+
+    console.log('[Baileys] ✓ 8-digit pairing code successfully generated and ready for developer presentation.');
+
+    await this.publishStatusDoc();
+    return code;
+  }
+
+  /**
+   * Returns active pairing code if still valid (< 120s)
+   */
+  public getActivePairingCode(): { code: string; phoneNumber: string; remainingSeconds: number } | null {
+    if (!this.pairingCodeState) return null;
+    const now = Date.now();
+    if (now > this.pairingCodeState.expiresAt) {
+      this.pairingCodeState = null;
+      return null;
+    }
+    return {
+      code: this.pairingCodeState.code,
+      phoneNumber: this.pairingCodeState.phoneNumber,
+      remainingSeconds: Math.max(0, Math.round((this.pairingCodeState.expiresAt - now) / 1000)),
+    };
   }
 
   /**
@@ -237,9 +296,9 @@ export class BaileysManager {
   ): Promise<{ success: boolean; externalId?: string; error?: string }> {
     if (this.config.dryRun || !this.config.sendEnabled) {
       console.log(`[Dry-Run Preview] Would send to ${rawPhone}:`);
-      console.log(`--------------------------------------------------------------------------------`);
+      console.log('--------------------------------------------------------------------------------');
       console.log(messageText);
-      console.log(`--------------------------------------------------------------------------------\n`);
+      console.log('--------------------------------------------------------------------------------\n');
       return {
         success: true,
         externalId: `sim_${Date.now()}`,
@@ -253,7 +312,6 @@ export class BaileysManager {
       };
     }
 
-    // Clean Indian phone number
     const digitsOnly = rawPhone.replace(/\D/g, '');
     if (!digitsOnly || digitsOnly.length < 10) {
       return {
@@ -262,7 +320,6 @@ export class BaileysManager {
       };
     }
 
-    // Normalize to Indian JID (91XXXXXXXXXX@s.whatsapp.net)
     const normalizedDigits = digitsOnly.length === 10
       ? `91${digitsOnly}`
       : digitsOnly.startsWith('91') && digitsOnly.length === 12
@@ -289,21 +346,80 @@ export class BaileysManager {
     }
   }
 
+  /**
+   * Unlinks WhatsApp account and wipes session credentials
+   */
+  public async logout(): Promise<void> {
+    console.log('[Baileys] Logging out WhatsApp session and wiping Firestore authentication state...');
+    this.isShuttingDown = true;
+    if (this.sock) {
+      try {
+        await this.sock.logout();
+      } catch {
+        try {
+          this.sock.end(undefined);
+        } catch {
+          // ignore
+        }
+      }
+      this.sock = null;
+    }
+
+    if (this.clearAuthStateFn) {
+      await this.clearAuthStateFn();
+    }
+
+    this.isConnected = false;
+    this.isRegistered = false;
+    this.userJid = null;
+    this.pairingCodeState = null;
+    this.isShuttingDown = false;
+
+    await this.publishStatusDoc();
+  }
+
   public getStatus(): BaileysStatus {
-    const credsFile = path.resolve(this.config.authDir, 'creds.json');
     return {
       connected: this.isConnected,
+      isRegistered: this.isRegistered,
       userJid: this.userJid,
-      qrAvailable: this.qrAvailable,
       reconnectAttempts: this.reconnectAttempts,
       lastDisconnectReason: this.lastDisconnectReason,
-      authDirExists: fs.existsSync(this.config.authDir),
-      hasCredentials: fs.existsSync(credsFile),
+      activePairingCodeAvailable: Boolean(this.getActivePairingCode()),
+      hasCredentials: Boolean(this.authState?.creds),
+      hasLease: this.leaseManager.hasLease(),
+      workerId: this.workerId,
     };
   }
 
   public isReady(): boolean {
     return this.config.dryRun || (this.isConnected && this.sock !== null);
+  }
+
+  /**
+   * Publishes sanitized worker state to Cloud Firestore document: whatsappWorkerStatus/current
+   */
+  public async publishStatusDoc(): Promise<void> {
+    try {
+      const statusRef = doc(this.db, 'whatsappWorkerStatus', 'current');
+      const status = this.getStatus();
+      await setDoc(statusRef, {
+        workerStatus: status.connected ? 'online' : status.isRegistered ? 'connecting' : 'awaiting_pairing',
+        connected: status.connected,
+        isRegistered: status.isRegistered,
+        userJid: status.userJid,
+        workerId: this.workerId,
+        hasLease: status.hasLease,
+        reconnectAttempts: status.reconnectAttempts,
+        lastDisconnectReason: status.lastDisconnectReason,
+        lastHeartbeat: new Date().toISOString(),
+        liveSendEnabled: this.config.sendEnabled,
+        dryRun: this.config.dryRun,
+        provider: this.config.provider,
+      }, { merge: true });
+    } catch (err: any) {
+      console.warn('[Baileys] Error updating whatsappWorkerStatus doc:', err.message);
+    }
   }
 
   public async shutdown(): Promise<void> {
@@ -318,5 +434,7 @@ export class BaileysManager {
       this.sock = null;
     }
     this.isConnected = false;
+    await this.leaseManager.release();
+    await this.publishStatusDoc();
   }
 }

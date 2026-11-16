@@ -59,7 +59,14 @@ import {
   Sliders,
   KeyRound,
   Code,
+  Phone,
+  Wifi,
+  WifiOff,
+  Copy,
+  Check,
+  Radio,
 } from 'lucide-react';
+import { WhatsAppNotificationService } from '../../services/whatsapp/whatsappService';
 import { SwaggerPortal } from '../../components/developer/SwaggerPortal';
 import { DatabaseExplorer } from '../../components/developer/DatabaseExplorer';
 
@@ -164,6 +171,17 @@ export const DeveloperConsole: React.FC = () => {
   // 5. System Health Diagnostics State
   const [healthProbes, setHealthProbes] = useState<SystemHealthProbeResult[]>([]);
   const [isProbing, setIsProbing] = useState<boolean>(false);
+
+  // 6. WhatsApp Zero-Cost Worker & Pairing State
+  const [workerStatus, setWorkerStatus] = useState<any>(null);
+  const [isLoadingWorkerStatus, setIsLoadingWorkerStatus] = useState<boolean>(false);
+  const [isWakingWorker, setIsWakingWorker] = useState<boolean>(false);
+  const [pairingPhone, setPairingPhone] = useState<string>('919509489381');
+  const [pairingCode, setPairingCode] = useState<string | null>(null);
+  const [pairingCountdown, setPairingCountdown] = useState<number>(0);
+  const [isRequestingPairing, setIsRequestingPairing] = useState<boolean>(false);
+  const [isUnlinkingWhatsApp, setIsUnlinkingWhatsApp] = useState<boolean>(false);
+  const [hasCopiedCode, setHasCopiedCode] = useState<boolean>(false);
 
   // Load Master Data
   const refreshAllData = async () => {
@@ -546,6 +564,111 @@ export const DeveloperConsole: React.FC = () => {
     } finally {
       setIsProbing(false);
     }
+  };
+
+  // ==========================================================================
+  // Tab 8: WhatsApp Zero-Cost Worker Actions
+  // ==========================================================================
+  const refreshWorkerStatus = async () => {
+    setIsLoadingWorkerStatus(true);
+    try {
+      const res = await WhatsAppNotificationService.getWorkerStatus();
+      setWorkerStatus(res);
+      if (res.baileys?.connected || res.connected) {
+        setPairingCode(null);
+        setPairingCountdown(0);
+      }
+    } catch {
+      // Ignored
+    } finally {
+      setIsLoadingWorkerStatus(false);
+    }
+  };
+
+  useEffect(() => {
+    if (activeTab === 'whatsapp') {
+      refreshWorkerStatus();
+      const interval = setInterval(refreshWorkerStatus, 5000);
+      return () => clearInterval(interval);
+    }
+  }, [activeTab]);
+
+  useEffect(() => {
+    if (pairingCountdown <= 0) {
+      if (pairingCode) {
+        setPairingCode(null);
+      }
+      return;
+    }
+    const timer = setInterval(() => {
+      setPairingCountdown(prev => Math.max(0, prev - 1));
+    }, 1000);
+    return () => clearInterval(timer);
+  }, [pairingCountdown, pairingCode]);
+
+  const handleWakeWorker = async () => {
+    setIsWakingWorker(true);
+    try {
+      const res = await WhatsAppNotificationService.wakeWorker();
+      setGlobalSuccess(res.message || 'Worker wake signal dispatched.');
+      setTimeout(refreshWorkerStatus, 2000);
+    } catch (err: any) {
+      setGlobalError(err.message || 'Failed to dispatch wake signal.');
+    } finally {
+      setIsWakingWorker(false);
+    }
+  };
+
+  const handleRequestPairingCode = async () => {
+    if (!pairingPhone || pairingPhone.replace(/\D/g, '').length < 10) {
+      setGlobalError('Please enter a valid phone number with country code (e.g. 919509489381).');
+      return;
+    }
+    setIsRequestingPairing(true);
+    setPairingCode(null);
+    setHasCopiedCode(false);
+    try {
+      const res = await WhatsAppNotificationService.requestPairingCode(pairingPhone);
+      if (res.success && res.pairingCode) {
+        setPairingCode(res.pairingCode);
+        setPairingCountdown(res.expiresInSeconds || 120);
+        setGlobalSuccess('8-digit pairing code generated! Enter it into WhatsApp > Linked Devices.');
+      } else {
+        setGlobalError(res.error || 'Failed to request pairing code.');
+      }
+    } catch (err: any) {
+      setGlobalError(err.message || 'Network error requesting pairing code.');
+    } finally {
+      setIsRequestingPairing(false);
+    }
+  };
+
+  const handleUnlinkWhatsApp = async () => {
+    if (!window.confirm('Are you sure you want to unlink the current WhatsApp account? This will clear session credentials in Cloud Firestore.')) {
+      return;
+    }
+    setIsUnlinkingWhatsApp(true);
+    try {
+      const res = await WhatsAppNotificationService.unlinkWhatsApp();
+      if (res.success) {
+        setGlobalSuccess('WhatsApp session unlinked successfully. You can now link a new phone.');
+        setPairingCode(null);
+        await refreshWorkerStatus();
+      } else {
+        setGlobalError(res.error || 'Failed to unlink WhatsApp session.');
+      }
+    } catch (err: any) {
+      setGlobalError(err.message || 'Failed to unlink WhatsApp session.');
+    } finally {
+      setIsUnlinkingWhatsApp(false);
+    }
+  };
+
+  const handleCopyPairingCode = () => {
+    if (!pairingCode) return;
+    navigator.clipboard.writeText(pairingCode);
+    setHasCopiedCode(true);
+    setTimeout(() => setHasCopiedCode(false), 3000);
   };
 
   // Filtered staff list (Strictly 3 Authorized Roles: Developer, Principal, Admin Office)
@@ -2294,25 +2417,332 @@ export const DeveloperConsole: React.FC = () => {
       )}
 
       {/* ==================================================================== */}
-      {/* TAB 8: ATTENDANCE & WHATSAPP DIAGNOSTICS */}
+      {/* TAB 8: ATTENDANCE & WHATSAPP ZERO-COST ARCHITECTURE */}
       {/* ==================================================================== */}
       {activeTab === 'whatsapp' && (
-        <div style={{ backgroundColor: '#FFFFFF', borderRadius: '12px', border: '1px solid #E2E8F0', padding: '24px 28px' }}>
-          <div style={{ marginBottom: '20px' }}>
-            <h2 style={{ fontSize: '1.25rem', fontWeight: 800, color: '#0A1931', margin: '0 0 4px 0' }}>
-              Attendance & WhatsApp Notification Diagnostics
-            </h2>
-            <p style={{ fontSize: '0.84rem', color: '#64748B', margin: 0 }}>
-              Operational queue inspection and verification of the official bilingual message template.
-            </p>
-          </div>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
+          <div style={{ backgroundColor: '#FFFFFF', borderRadius: '12px', border: '1px solid #E2E8F0', padding: '24px 28px' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', flexWrap: 'wrap', gap: '16px', marginBottom: '20px' }}>
+              <div>
+                <h2 style={{ fontSize: '1.25rem', fontWeight: 800, color: '#0A1931', margin: '0 0 4px 0', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                  <MessageSquare size={20} color="#0A1931" />
+                  <span>WhatsApp Zero-Cost Worker Architecture & Device Pairing</span>
+                </h2>
+                <p style={{ fontSize: '0.84rem', color: '#64748B', margin: 0 }}>
+                  Render Free Web Service with Cloud Firestore AES-256-GCM auth persistence and on-demand wake.
+                </p>
+              </div>
 
-          {/* Bilingual Message Preview Card */}
-          <div style={{ padding: '20px', borderRadius: '10px', backgroundColor: '#F0FDF4', border: '1px solid #BBF7D0', marginBottom: '24px' }}>
-            <div style={{ fontSize: '0.76rem', fontWeight: 800, color: '#166534', textTransform: 'uppercase', marginBottom: '8px' }}>
-              Official Bilingual Attendance Notification Template (English + Hindi)
+              <div style={{ display: 'flex', gap: '10px', alignItems: 'center' }}>
+                <button
+                  type="button"
+                  onClick={refreshWorkerStatus}
+                  disabled={isLoadingWorkerStatus}
+                  style={{
+                    backgroundColor: '#F8FAFC',
+                    color: '#334155',
+                    border: '1px solid #CBD5E1',
+                    borderRadius: '8px',
+                    padding: '8px 14px',
+                    fontSize: '0.80rem',
+                    fontWeight: 700,
+                    cursor: isLoadingWorkerStatus ? 'not-allowed' : 'pointer',
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '6px',
+                  }}
+                >
+                  <RefreshCw size={14} className={isLoadingWorkerStatus ? 'animate-spin' : ''} />
+                  <span>Refresh Status</span>
+                </button>
+
+                <button
+                  type="button"
+                  onClick={handleWakeWorker}
+                  disabled={isWakingWorker}
+                  style={{
+                    backgroundColor: '#0A1931',
+                    color: '#FFFFFF',
+                    border: 'none',
+                    borderRadius: '8px',
+                    padding: '8px 16px',
+                    fontSize: '0.80rem',
+                    fontWeight: 700,
+                    cursor: isWakingWorker ? 'not-allowed' : 'pointer',
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '6px',
+                    boxShadow: '0 2px 4px rgba(10, 25, 49, 0.2)',
+                  }}
+                >
+                  <Radio size={14} className={isWakingWorker ? 'animate-pulse' : ''} />
+                  <span>{isWakingWorker ? 'Waking Worker...' : 'Wake Worker'}</span>
+                </button>
+              </div>
             </div>
-            <div style={{ fontFamily: 'monospace', fontSize: '0.80rem', color: '#14532D', whiteSpace: 'pre-line', lineHeight: 1.6, backgroundColor: '#FFFFFF', padding: '14px', borderRadius: '8px', border: '1px solid #DCFCE7' }}>
+
+            {/* Worker Status & Health Banner */}
+            {(() => {
+              const isConnected = workerStatus?.baileys?.connected || workerStatus?.connected;
+              const isRegistered = workerStatus?.baileys?.isRegistered || workerStatus?.isRegistered;
+              const userJid = workerStatus?.baileys?.userJid || workerStatus?.userJid;
+              const workerStatusState = isConnected ? 'online' : isRegistered ? 'sleeping' : 'unlinked';
+
+              return (
+                <div
+                  style={{
+                    padding: '18px 20px',
+                    borderRadius: '10px',
+                    backgroundColor: isConnected ? '#ECFDF5' : isRegistered ? '#FFFBEB' : '#FEF2F2',
+                    border: `1px solid ${isConnected ? '#A7F3D0' : isRegistered ? '#FDE68A' : '#FECACA'}`,
+                    display: 'flex',
+                    justifyContent: 'space-between',
+                    alignItems: 'center',
+                    flexWrap: 'wrap',
+                    gap: '14px',
+                    marginBottom: '24px',
+                  }}
+                >
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '14px' }}>
+                    <div
+                      style={{
+                        width: '42px',
+                        height: '42px',
+                        borderRadius: '50%',
+                        backgroundColor: isConnected ? '#10B981' : isRegistered ? '#F59E0B' : '#EF4444',
+                        color: '#FFFFFF',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                      }}
+                    >
+                      {isConnected ? <Wifi size={22} /> : isRegistered ? <Radio size={22} /> : <WifiOff size={22} />}
+                    </div>
+
+                    <div>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                        <span style={{ fontSize: '0.98rem', fontWeight: 800, color: '#0A1931' }}>
+                          {isConnected
+                            ? 'WhatsApp Socket: Connected & Ready'
+                            : isRegistered
+                            ? 'Worker Asleep / Idle (Render Free Tier)'
+                            : 'WhatsApp Account Not Linked'}
+                        </span>
+                        <span
+                          style={{
+                            fontSize: '0.70rem',
+                            fontWeight: 800,
+                            padding: '2px 8px',
+                            borderRadius: '12px',
+                            backgroundColor: isConnected ? '#D1FAE5' : isRegistered ? '#FEF3C7' : '#FEE2E2',
+                            color: isConnected ? '#065F46' : isRegistered ? '#92400E' : '#991B1B',
+                            textTransform: 'uppercase',
+                          }}
+                        >
+                          {workerStatusState}
+                        </span>
+                      </div>
+                      <div style={{ fontSize: '0.78rem', color: '#475569', marginTop: '3px' }}>
+                        {isConnected
+                          ? `Linked Device JID: ${userJid || 'Connected'} • Session stored in Cloud Firestore`
+                          : isRegistered
+                          ? 'Session keys persisted in Cloud Firestore. Container wakes automatically on attendance submission.'
+                          : 'Pair official school dispatch mobile phone using the 8-digit Pairing Code below.'}
+                      </div>
+                    </div>
+                  </div>
+
+                  {isRegistered && (
+                    <button
+                      type="button"
+                      onClick={handleUnlinkWhatsApp}
+                      disabled={isUnlinkingWhatsApp}
+                      style={{
+                        backgroundColor: '#FFFFFF',
+                        color: '#DC2626',
+                        border: '1px solid #FECACA',
+                        borderRadius: '6px',
+                        padding: '6px 12px',
+                        fontSize: '0.76rem',
+                        fontWeight: 700,
+                        cursor: isUnlinkingWhatsApp ? 'not-allowed' : 'pointer',
+                      }}
+                    >
+                      {isUnlinkingWhatsApp ? 'Unlinking...' : 'Unlink WhatsApp'}
+                    </button>
+                  )}
+                </div>
+              );
+            })()}
+
+            {/* Zero-Cost 8-Digit Baileys Pairing Interface (Developer-Only) */}
+            {(!workerStatus?.baileys?.isRegistered && !workerStatus?.isRegistered) && (
+              <div
+                style={{
+                  padding: '24px',
+                  borderRadius: '10px',
+                  backgroundColor: '#F8FAFC',
+                  border: '1px solid #CBD5E1',
+                  marginBottom: '24px',
+                }}
+              >
+                <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '8px' }}>
+                  <Phone size={18} color="#0A1931" />
+                  <h3 style={{ fontSize: '1.05rem', fontWeight: 800, color: '#0A1931', margin: 0 }}>
+                    Link Official WhatsApp Device via 8-Digit Pairing Code
+                  </h3>
+                </div>
+                <p style={{ fontSize: '0.82rem', color: '#475569', margin: '0 0 16px 0', lineHeight: 1.5 }}>
+                  Connect the official school WhatsApp account without scanning QR codes. Enter the phone number with country code, generate the 8-digit code, and enter it in WhatsApp on the phone.
+                </p>
+
+                <div style={{ display: 'flex', gap: '10px', alignItems: 'center', flexWrap: 'wrap', marginBottom: '16px' }}>
+                  <div style={{ width: '280px' }}>
+                    <label style={{ fontSize: '0.72rem', fontWeight: 700, color: '#475569', display: 'block', marginBottom: '4px' }}>
+                      Mobile Number (with country code)
+                    </label>
+                    <input
+                      type="text"
+                      value={pairingPhone}
+                      onChange={(e) => setPairingPhone(e.target.value)}
+                      placeholder="e.g. 919509489381"
+                      style={{
+                        width: '100%',
+                        height: '38px',
+                        borderRadius: '6px',
+                        border: '1px solid #CBD5E1',
+                        padding: '0 10px',
+                        fontSize: '0.86rem',
+                        fontFamily: 'monospace',
+                        fontWeight: 700,
+                        color: '#0A1931',
+                      }}
+                    />
+                  </div>
+
+                  <button
+                    type="button"
+                    onClick={handleRequestPairingCode}
+                    disabled={isRequestingPairing}
+                    style={{
+                      marginTop: '18px',
+                      backgroundColor: '#0A1931',
+                      color: '#FFFFFF',
+                      border: 'none',
+                      borderRadius: '6px',
+                      padding: '9px 18px',
+                      fontSize: '0.82rem',
+                      fontWeight: 700,
+                      cursor: isRequestingPairing ? 'not-allowed' : 'pointer',
+                    }}
+                  >
+                    {isRequestingPairing ? 'Requesting Code...' : 'Generate 8-Digit Code'}
+                  </button>
+                </div>
+
+                {/* Prominent Pairing Code Presentation */}
+                {pairingCode && (
+                  <div
+                    style={{
+                      padding: '20px',
+                      borderRadius: '8px',
+                      backgroundColor: '#0A1931',
+                      color: '#FFFFFF',
+                      marginTop: '16px',
+                      display: 'flex',
+                      flexDirection: 'column',
+                      gap: '12px',
+                    }}
+                  >
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '10px' }}>
+                      <div>
+                        <div style={{ fontSize: '0.70rem', fontWeight: 700, color: '#94A3B8', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+                          Baileys 8-Digit Device Pairing Code (Expires in {pairingCountdown}s)
+                        </div>
+                        <div style={{ fontSize: '2.1rem', fontWeight: 900, letterSpacing: '0.25em', color: '#38BDF8', fontFamily: 'monospace', marginTop: '4px' }}>
+                          {pairingCode}
+                        </div>
+                      </div>
+
+                      <button
+                        type="button"
+                        onClick={handleCopyPairingCode}
+                        style={{
+                          backgroundColor: hasCopiedCode ? '#10B981' : '#1E293B',
+                          color: '#FFFFFF',
+                          border: '1px solid #334155',
+                          borderRadius: '6px',
+                          padding: '8px 14px',
+                          fontSize: '0.80rem',
+                          fontWeight: 700,
+                          cursor: 'pointer',
+                          display: 'flex',
+                          alignItems: 'center',
+                          gap: '6px',
+                        }}
+                      >
+                        {hasCopiedCode ? <Check size={14} /> : <Copy size={14} />}
+                        <span>{hasCopiedCode ? 'Copied!' : 'Copy Code'}</span>
+                      </button>
+                    </div>
+
+                    <div style={{ backgroundColor: '#1E293B', borderRadius: '6px', padding: '12px 16px', fontSize: '0.78rem', color: '#E2E8F0', lineHeight: 1.6 }}>
+                      <strong style={{ color: '#38BDF8' }}>Follow these steps on the phone (+{pairingPhone.replace(/\D/g, '')}):</strong>
+                      <ol style={{ margin: '6px 0 0 0', paddingLeft: '20px' }}>
+                        <li>Open WhatsApp &gt; <strong>Linked Devices</strong>.</li>
+                        <li>Tap <strong>Link a Device</strong>.</li>
+                        <li>Tap <strong>"Link with phone number instead"</strong> at the bottom of the camera screen.</li>
+                        <li>Type the 8-digit code <strong>{pairingCode}</strong>.</li>
+                      </ol>
+                    </div>
+                  </div>
+                )}
+              </div>
+            )}
+
+            {/* Operational Metrics Cards */}
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: '14px', marginBottom: '24px' }}>
+              <div style={{ padding: '14px', borderRadius: '8px', border: '1px solid #E2E8F0', backgroundColor: '#F8FAFC' }}>
+                <div style={{ fontSize: '0.70rem', fontWeight: 700, color: '#64748B', textTransform: 'uppercase' }}>Queue Depth</div>
+                <div style={{ fontSize: '1.4rem', fontWeight: 800, color: '#0A1931', marginTop: '4px' }}>
+                  {workerStatus?.metrics?.queueDepth ?? 0}
+                </div>
+                <div style={{ fontSize: '0.72rem', color: '#059669', marginTop: '2px' }}>Pending parent jobs</div>
+              </div>
+
+              <div style={{ padding: '14px', borderRadius: '8px', border: '1px solid #E2E8F0', backgroundColor: '#F8FAFC' }}>
+                <div style={{ fontSize: '0.70rem', fontWeight: 700, color: '#64748B', textTransform: 'uppercase' }}>Processed Messages</div>
+                <div style={{ fontSize: '1.4rem', fontWeight: 800, color: '#0A1931', marginTop: '4px' }}>
+                  {workerStatus?.metrics?.totalProcessed ?? 0}
+                </div>
+                <div style={{ fontSize: '0.72rem', color: '#059669', marginTop: '2px' }}>Successfully dispatched</div>
+              </div>
+
+              <div style={{ padding: '14px', borderRadius: '8px', border: '1px solid #E2E8F0', backgroundColor: '#F8FAFC' }}>
+                <div style={{ fontSize: '0.70rem', fontWeight: 700, color: '#64748B', textTransform: 'uppercase' }}>Failed Deliveries</div>
+                <div style={{ fontSize: '1.4rem', fontWeight: 800, color: '#0A1931', marginTop: '4px' }}>
+                  {workerStatus?.metrics?.totalFailed ?? 0}
+                </div>
+                <div style={{ fontSize: '0.72rem', color: '#DC2626', marginTop: '2px' }}>With automatic retry</div>
+              </div>
+
+              <div style={{ padding: '14px', borderRadius: '8px', border: '1px solid #E2E8F0', backgroundColor: '#F8FAFC' }}>
+                <div style={{ fontSize: '0.70rem', fontWeight: 700, color: '#64748B', textTransform: 'uppercase' }}>Last Wake-Up Time</div>
+                <div style={{ fontSize: '0.84rem', fontWeight: 700, color: '#0A1931', marginTop: '8px' }}>
+                  {workerStatus?.metrics?.lastWakeUpTime
+                    ? new Date(workerStatus.metrics.lastWakeUpTime).toLocaleTimeString('en-IN')
+                    : 'On Demand'}
+                </div>
+                <div style={{ fontSize: '0.72rem', color: '#64748B', marginTop: '2px' }}>Zero-cost sleep active</div>
+              </div>
+            </div>
+
+            {/* Bilingual Message Preview Card */}
+            <div style={{ padding: '20px', borderRadius: '10px', backgroundColor: '#F0FDF4', border: '1px solid #BBF7D0' }}>
+              <div style={{ fontSize: '0.76rem', fontWeight: 800, color: '#166534', textTransform: 'uppercase', marginBottom: '8px' }}>
+                Official Bilingual Attendance Notification Template (English + Hindi)
+              </div>
+              <div style={{ fontFamily: 'monospace', fontSize: '0.80rem', color: '#14532D', whiteSpace: 'pre-line', lineHeight: 1.6, backgroundColor: '#FFFFFF', padding: '14px', borderRadius: '8px', border: '1px solid #DCFCE7' }}>
 {`Dear Parent,
 
 This is to inform you that [Student Name] has been marked [PRESENT/ABSENT] at HanuJai High School on [Date].
@@ -2330,8 +2760,9 @@ HanuJai High School
 
 यदि आपको लगता है कि उपस्थिति का यह रिकॉर्ड गलत है, तो कृपया विद्यालय से संपर्क करें।
 
-सादर,
+ सादर,
 हनुजाई हाई स्कूल`}
+              </div>
             </div>
           </div>
         </div>

@@ -13,6 +13,9 @@ export interface WorkerConfig {
   authDir: string;
   testAllowlist: string[];
   workerPort: number;
+  wakeSecret: string;
+  authEncryptionKey: string;
+  workerUrl: string;
   firebase: {
     apiKey: string;
     authDomain: string;
@@ -77,6 +80,9 @@ export function loadWorkerConfig(): WorkerConfig {
   }
 
   const workerPort = parseInt(get('PORT') || get('WHATSAPP_WORKER_PORT', '5050'), 10) || 5050;
+  const wakeSecret = get('WHATSAPP_WAKE_SECRET', 'hanujai_whatsapp_wake_shared_secret_2026');
+  const authEncryptionKey = get('WHATSAPP_AUTH_ENCRYPTION_KEY', '');
+  const workerUrl = get('WHATSAPP_WORKER_URL', 'https://hanujai-whatsapp-worker.onrender.com');
 
   const firebase = {
     apiKey: get('VITE_FIREBASE_API_KEY'),
@@ -94,6 +100,9 @@ export function loadWorkerConfig(): WorkerConfig {
     authDir,
     testAllowlist: allowedPhoneNumbers,
     workerPort,
+    wakeSecret,
+    authEncryptionKey,
+    workerUrl,
     firebase,
   };
 }

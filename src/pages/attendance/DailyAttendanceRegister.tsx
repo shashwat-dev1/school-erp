@@ -385,6 +385,11 @@ export const DailyAttendanceRegister: React.FC = () => {
           (a.studentName || '').localeCompare(b.studentName || '', undefined, { sensitivity: 'base' })
         );
         setWhatsappJobs(sortedProcessedJobs);
+
+        // 3. Trigger on-demand wake for the zero-cost Render worker
+        WhatsAppNotificationService.wakeWorker().catch(wErr =>
+          console.warn('[Register] Worker wake dispatch note:', wErr)
+        );
       } catch (waErr) {
         console.error('WhatsApp notification dispatch error:', waErr);
       }
@@ -1461,23 +1466,84 @@ export const DailyAttendanceRegister: React.FC = () => {
             )}
           </div>
 {/* ========================================================================= */}
-                    {/* WhatsApp Parent Notification Confirmation (Runs in background) */}
+          {/* WhatsApp Parent Notification Confirmation & Live Queue State */}
           {isSessionActuallySaved && (
-            <div
-              style={{
-                padding: '14px 18px',
-                borderRadius: 'var(--hhs-radius-container)',
-                backgroundColor: '#ECFDF5',
-                border: '1px solid #A7F3D0',
-                display: 'flex',
-                alignItems: 'center',
-                gap: '10px',
-              }}
-            >
-              <CheckCircle2 size={18} color="#10B981" />
-              <span style={{ fontSize: '0.84rem', color: '#065F46', fontWeight: 600 }}>
-                Attendance register submitted successfully.
-              </span>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+              <div
+                style={{
+                  padding: '14px 18px',
+                  borderRadius: 'var(--hhs-radius-container)',
+                  backgroundColor: '#ECFDF5',
+                  border: '1px solid #A7F3D0',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '10px',
+                }}
+              >
+                <CheckCircle2 size={18} color="#10B981" />
+                <span style={{ fontSize: '0.84rem', color: '#065F46', fontWeight: 600 }}>
+                  Attendance register submitted successfully.
+                </span>
+              </div>
+
+              {whatsappJobs.length > 0 && (() => {
+                const pendingCount = whatsappJobs.filter(j => j.deliveryStatus === 'pending').length;
+                const processingCount = whatsappJobs.filter(j => j.deliveryStatus === 'processing').length;
+                const sentCount = whatsappJobs.filter(j => j.deliveryStatus === 'sent').length;
+                const failedCount = whatsappJobs.filter(j => j.deliveryStatus === 'failed').length;
+                const skippedCount = whatsappJobs.filter(j => j.deliveryStatus === 'skipped').length;
+
+                let statusLabel = 'Completed';
+                let statusBg = '#F0FDF4';
+                let statusBorder = '#BBF7D0';
+                let statusColor = '#166534';
+
+                if (processingCount > 0) {
+                  statusLabel = 'Processing (Dispatching WhatsApp Alerts)';
+                  statusBg = '#EFF6FF';
+                  statusBorder = '#BFDBFE';
+                  statusColor = '#1E40AF';
+                } else if (pendingCount > 0) {
+                  statusLabel = 'Queued (Worker Starting / Connecting to WhatsApp)';
+                  statusBg = '#FFFBEB';
+                  statusBorder = '#FDE68A';
+                  statusColor = '#92400E';
+                } else if (failedCount > 0) {
+                  statusLabel = 'Completed with Delivery Failures';
+                  statusBg = '#FEF2F2';
+                  statusBorder = '#FECACA';
+                  statusColor = '#991B1B';
+                }
+
+                return (
+                  <div
+                    style={{
+                      padding: '12px 18px',
+                      borderRadius: 'var(--hhs-radius-container)',
+                      backgroundColor: statusBg,
+                      border: `1px solid ${statusBorder}`,
+                      display: 'flex',
+                      justifyContent: 'space-between',
+                      alignItems: 'center',
+                      flexWrap: 'wrap',
+                      gap: '8px',
+                      fontSize: '0.82rem',
+                    }}
+                  >
+                    <div>
+                      <span style={{ fontWeight: 700, color: statusColor }}>WhatsApp Dispatch: </span>
+                      <span style={{ color: statusColor }}>{statusLabel}</span>
+                    </div>
+                    <div style={{ display: 'flex', gap: '12px', fontSize: '0.78rem', fontWeight: 600 }}>
+                      <span style={{ color: '#059669' }}>Sent: {sentCount}</span>
+                      {pendingCount > 0 && <span style={{ color: '#D97706' }}>Queued: {pendingCount}</span>}
+                      {processingCount > 0 && <span style={{ color: '#2563EB' }}>In-Flight: {processingCount}</span>}
+                      {skippedCount > 0 && <span style={{ color: '#64748B' }}>Skipped: {skippedCount}</span>}
+                      {failedCount > 0 && <span style={{ color: '#DC2626' }}>Failed: {failedCount}</span>}
+                    </div>
+                  </div>
+                );
+              })()}
             </div>
           )}
         </>

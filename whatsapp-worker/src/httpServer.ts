@@ -1,47 +1,106 @@
 /**
- * HanuJai High School ERP — Worker Status & Health Check HTTP Server
+ * HanuJai High School ERP — Worker Status & Authenticated Control HTTP Server
  * Campus: HanuJai High School, Jaipur, Rajasthan, India
+ * 
+ * Endpoints:
+ * - GET  /health   : Sanitized health check for monitors and keep-alive pings (200 OK)
+ * - GET  /status   : Operational metrics and connection status
+ * - POST /wake     : Authenticated wake-up endpoint invoked by ERP serverless function
+ * - POST /pair     : Authenticated endpoint to generate 8-digit Baileys Pairing Code
+ * - POST /logout   : Authenticated endpoint to unlink session and wipe credentials
  */
 
 import * as http from 'http';
 import type { WorkerConfig } from './config.ts';
 import type { BaileysManager } from './baileysManager.ts';
+import type { QueueProcessor } from './queueProcessor.ts';
+
+function readJsonBody(req: http.IncomingMessage, maxBytes = 10240): Promise<any> {
+  return new Promise((resolve, reject) => {
+    let body = '';
+    let bytesReceived = 0;
+
+    req.on('data', chunk => {
+      bytesReceived += chunk.length;
+      if (bytesReceived > maxBytes) {
+        reject(new Error('Request payload exceeds maximum permitted size.'));
+        req.destroy();
+        return;
+      }
+      body += chunk;
+    });
+
+    req.on('end', () => {
+      if (!body.trim()) {
+        resolve({});
+        return;
+      }
+      try {
+        resolve(JSON.parse(body));
+      } catch (err: any) {
+        reject(new Error(`Malformed JSON body: ${err.message}`));
+      }
+    });
+
+    req.on('error', err => reject(err));
+  });
+}
+
+function verifyAuthSecret(req: http.IncomingMessage, configSecret: string): boolean {
+  if (!configSecret) return false;
+
+  const headerSecret = req.headers['x-worker-wake-secret'] as string | undefined;
+  if (headerSecret && headerSecret === configSecret) return true;
+
+  const authHeader = req.headers['authorization'] as string | undefined;
+  if (authHeader && authHeader.startsWith('Bearer ')) {
+    const bearer = authHeader.substring(7).trim();
+    if (bearer === configSecret) return true;
+  }
+
+  return false;
+}
 
 export function startStatusServer(
   config: WorkerConfig,
-  baileys: BaileysManager
+  baileys: BaileysManager,
+  queue: QueueProcessor
 ): http.Server {
   const startTime = Date.now();
 
-  const server = http.createServer((req, res) => {
+  const server = http.createServer(async (req, res) => {
     const url = req.url || '/';
+    const method = req.method?.toUpperCase() || 'GET';
 
-    // CORS headers for local inspection
+    // CORS headers for secure ERP and local inspection
     res.setHeader('Access-Control-Allow-Origin', '*');
-    res.setHeader('Access-Control-Allow-Methods', 'GET, OPTIONS');
-    res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
+    res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
+    res.setHeader('Access-Control-Allow-Headers', 'Content-Type, x-worker-wake-secret, Authorization');
 
-    if (req.method === 'OPTIONS') {
+    if (method === 'OPTIONS') {
       res.writeHead(204);
       res.end();
       return;
     }
 
-    if (url === '/health' || url === '/') {
+    // 1. GET /health or GET /
+    if ((url === '/health' || url === '/') && method === 'GET') {
       const baileysStatus = baileys.getStatus();
-      const isHealthy = config.dryRun || baileysStatus.connected;
+      const isHealthy = config.dryRun || baileysStatus.connected || baileysStatus.isRegistered;
 
-      // Always return 200 so ping/waker monitors keep the instance awake
       res.writeHead(200, { 'Content-Type': 'application/json' });
       res.end(
         JSON.stringify(
           {
             service: 'HanuJai High School WhatsApp Worker',
-            status: isHealthy ? 'healthy' : 'awaiting_connection',
+            status: isHealthy ? 'healthy' : 'awaiting_pairing',
             provider: config.provider,
             liveSendEnabled: config.sendEnabled,
             dryRun: config.dryRun,
             connected: baileysStatus.connected,
+            isRegistered: baileysStatus.isRegistered,
+            hasLease: baileysStatus.hasLease,
+            workerId: baileysStatus.workerId,
             uptimeSeconds: Math.floor((Date.now() - startTime) / 1000),
             timestamp: new Date().toISOString(),
           },
@@ -52,8 +111,10 @@ export function startStatusServer(
       return;
     }
 
-    if (url === '/status') {
+    // 2. GET /status
+    if (url === '/status' && method === 'GET') {
       const baileysStatus = baileys.getStatus();
+      const metrics = queue.getMetrics();
       res.writeHead(200, { 'Content-Type': 'application/json' });
       res.end(
         JSON.stringify(
@@ -64,8 +125,8 @@ export function startStatusServer(
             liveSendEnabled: config.sendEnabled,
             dryRun: config.dryRun,
             testAllowlistCount: config.testAllowlist.length,
-            testAllowlist: config.testAllowlist.map(s => `${s.slice(0, 3)}****${s.slice(-3)}`),
             baileys: baileysStatus,
+            metrics,
             uptimeSeconds: Math.floor((Date.now() - startTime) / 1000),
             serverTime: new Date().toISOString(),
           },
@@ -76,30 +137,119 @@ export function startStatusServer(
       return;
     }
 
+    // 3. POST /wake — Authenticated on-demand wake from ERP attendance submission
+    if (url === '/wake' && (method === 'POST' || method === 'GET')) {
+      const isAuthorized = verifyAuthSecret(req, config.wakeSecret);
+      if (!isAuthorized) {
+        res.writeHead(401, { 'Content-Type': 'application/json' });
+        res.end(JSON.stringify({ error: 'Unauthorized: Invalid or missing x-worker-wake-secret.' }));
+        return;
+      }
+
+      console.log('[HTTP Server] Received authenticated /wake request from ERP.');
+      queue.recordWakeUp();
+
+      // Trigger immediate background batch queue cycle
+      const queueCyclePromise = queue.processBatch();
+
+      res.writeHead(200, { 'Content-Type': 'application/json' });
+      res.end(
+        JSON.stringify({
+          status: 'awake',
+          workerId: baileys.getWorkerId(),
+          timestamp: new Date().toISOString(),
+          message: 'WhatsApp worker is awake. Queue processor cycle initiated.',
+        })
+      );
+
+      // Await queue cycle in background
+      queueCyclePromise.catch(err => console.error('[Wake] Queue cycle error:', err));
+      return;
+    }
+
+    // 4. POST /pair — Authenticated pairing code generation for Developer Console
+    if (url === '/pair' && method === 'POST') {
+      const isAuthorized = verifyAuthSecret(req, config.wakeSecret);
+      if (!isAuthorized) {
+        res.writeHead(401, { 'Content-Type': 'application/json' });
+        res.end(JSON.stringify({ error: 'Unauthorized: Invalid or missing x-worker-wake-secret.' }));
+        return;
+      }
+
+      try {
+        const body = await readJsonBody(req);
+        const phoneNumber = body.phoneNumber;
+        if (!phoneNumber) {
+          res.writeHead(400, { 'Content-Type': 'application/json' });
+          res.end(JSON.stringify({ error: 'Missing required field: phoneNumber (e.g. 919509489381).' }));
+          return;
+        }
+
+        const pairingCode = await baileys.requestPairingCode(phoneNumber);
+        res.writeHead(200, { 'Content-Type': 'application/json' });
+        res.end(
+          JSON.stringify({
+            success: true,
+            pairingCode,
+            phoneNumber: phoneNumber.replace(/\D/g, ''),
+            expiresInSeconds: 120,
+            instructions: [
+              '1. Open WhatsApp on the target mobile device.',
+              '2. Go to Settings > Linked Devices > Link a Device.',
+              '3. Tap "Link with phone number instead" at the bottom of the screen.',
+              '4. Enter the 8-digit pairing code shown above.',
+            ],
+          })
+        );
+      } catch (err: any) {
+        res.writeHead(400, { 'Content-Type': 'application/json' });
+        res.end(JSON.stringify({ success: false, error: err.message || 'Pairing code generation failed.' }));
+      }
+      return;
+    }
+
+    // 5. POST /logout — Authenticated session unlink and credential wipe
+    if (url === '/logout' && method === 'POST') {
+      const isAuthorized = verifyAuthSecret(req, config.wakeSecret);
+      if (!isAuthorized) {
+        res.writeHead(401, { 'Content-Type': 'application/json' });
+        res.end(JSON.stringify({ error: 'Unauthorized: Invalid or missing x-worker-wake-secret.' }));
+        return;
+      }
+
+      try {
+        await baileys.logout();
+        res.writeHead(200, { 'Content-Type': 'application/json' });
+        res.end(
+          JSON.stringify({
+            success: true,
+            message: 'WhatsApp session unlinked and Firestore credentials wiped cleanly.',
+          })
+        );
+      } catch (err: any) {
+        res.writeHead(500, { 'Content-Type': 'application/json' });
+        res.end(JSON.stringify({ success: false, error: err.message || 'Logout failed.' }));
+      }
+      return;
+    }
+
+    // 6. Deprecated /qr endpoint
     if (url === '/qr') {
-      const baileysStatus = baileys.getStatus();
-      const qrData = baileys.getQrData();
-      if (baileysStatus.connected) {
-        res.writeHead(200, { 'Content-Type': 'text/html' });
-        res.end(`<!DOCTYPE html><html><body style="font-family:sans-serif;background:#0f172a;color:#10b981;text-align:center;padding:50px;"><h2>✅ WhatsApp Connected!</h2><p>Linked JID: ${baileysStatus.userJid}</p></body></html>`);
-        return;
-      }
-      if (qrData.qrSvg) {
-        res.writeHead(200, { 'Content-Type': 'text/html' });
-        res.end(`<!DOCTYPE html><html><head><meta http-equiv="refresh" content="5"></head><body style="font-family:sans-serif;background:#0f172a;color:#f8fafc;display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:100vh;margin:0;"><div style="background:#1e293b;border:1px solid #334155;border-radius:16px;padding:32px;text-align:center;"><h2 style="margin:0 0 8px;">Scan with WhatsApp</h2><p style="color:#94a3b8;font-size:14px;margin:0 0 16px;">Target Sender Phone: <strong style="color:#38bdf8;">+91 95094 89381</strong></p><div style="background:#fff;padding:16px;border-radius:12px;margin:0 auto 16px;width:260px;height:260px;">${qrData.qrSvg}</div><p style="color:#cbd5e1;font-size:12px;">Open WhatsApp on 9509489381 &gt; Linked Devices &gt; Link a Device</p></div></body></html>`);
-        return;
-      }
-      res.writeHead(200, { 'Content-Type': 'text/html' });
-      res.end(`<!DOCTYPE html><html><head><meta http-equiv="refresh" content="3"></head><body style="font-family:sans-serif;background:#0f172a;color:#f8fafc;text-align:center;padding:50px;"><h2>⏳ Generating QR Code...</h2><p>Please wait a moment...</p></body></html>`);
+      res.writeHead(410, { 'Content-Type': 'application/json' });
+      res.end(
+        JSON.stringify({
+          error: 'QR code pairing is deprecated. Use the 8-digit Pairing Code via Developer Console.',
+        })
+      );
       return;
     }
 
     res.writeHead(404, { 'Content-Type': 'application/json' });
-    res.end(JSON.stringify({ error: 'Endpoint not found. Available: /health, /status, /qr' }));
+    res.end(JSON.stringify({ error: 'Endpoint not found. Available: /health, /status, /wake, /pair, /logout' }));
   });
 
   server.listen(config.workerPort, '0.0.0.0', () => {
-    console.log(`[HTTP Server] Health & status monitor listening on port ${config.workerPort} (/health, /status, /qr)`);
+    console.log(`[HTTP Server] Health & control server listening on port ${config.workerPort} (/health, /status, /wake, /pair, /logout)`);
   });
 
   return server;

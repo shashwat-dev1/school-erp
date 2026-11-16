@@ -12,6 +12,7 @@ import {
   getDocs,
   getDoc,
   updateDoc,
+  writeBatch,
   doc,
   type Firestore,
 } from 'firebase/firestore';
@@ -153,5 +154,45 @@ export async function verifyLegitimateSession(db: Firestore, sessionId: string):
   } catch {
     // If permission or offline, return true to avoid blocking test sessions
     return true;
+  }
+}
+
+/**
+ * Recovers jobs stuck in 'processing' state due to worker restart or process termination.
+ */
+export async function recoverStalledJobs(db: Firestore, stallTimeoutMs = 300000): Promise<number> {
+  try {
+    const q = query(
+      collection(db, 'attendanceNotifications'),
+      where('deliveryStatus', '==', 'processing')
+    );
+    const snap = await getDocs(q);
+    const now = Date.now();
+    let recoveredCount = 0;
+    const batch = writeBatch(db);
+
+    snap.forEach(d => {
+      const data = d.data();
+      const startedAt = data.processingStartedAt ? new Date(data.processingStartedAt).getTime() : 0;
+      if (now - startedAt > stallTimeoutMs) {
+        batch.update(d.ref, {
+          deliveryStatus: 'pending',
+          processingStartedAt: null,
+          retryCount: (data.retryCount || 0) + 1,
+          recoveredAt: new Date(now).toISOString(),
+          error: 'Recovered from stalled processing state after worker crash/restart.',
+        });
+        recoveredCount++;
+      }
+    });
+
+    if (recoveredCount > 0) {
+      await batch.commit();
+      console.log(`[Queue] Recovered ${recoveredCount} stalled notification job(s) back to 'pending'.`);
+    }
+    return recoveredCount;
+  } catch (err: any) {
+    console.warn('[Queue] Stalled job recovery check error:', err.message);
+    return 0;
   }
 }
