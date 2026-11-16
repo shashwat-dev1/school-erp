@@ -145,6 +145,7 @@ export interface DataProvider {
   getStaffMemberById(staffId: string): Promise<StaffUser | null>;
   createStaffMember(input: Partial<StaffUser>, actor: StaffUser): Promise<StaffUser>;
   updateStaffMember(staffId: string, updates: Partial<StaffUser>, actor: StaffUser): Promise<StaffUser>;
+  deleteStaffMember?(staffId: string, actor: StaffUser): Promise<void>;
   getCurrentStaffUser(userId: string): Promise<StaffUser | null>;
   revokeStaffSessions(staffId: string, actor: StaffUser): Promise<void>;
   initiatePasswordRecovery(staffId: string, actor: StaffUser): Promise<{ tempToken?: string; message: string }>;

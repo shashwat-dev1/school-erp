@@ -7,7 +7,7 @@
 import React, { useState } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
-import { initialStaff, defaultDeveloperUser } from '../../data/demo/seedData';
+import { initialStaff } from '../../data/demo/seedData';
 import { Eye, EyeOff, ShieldCheck, ArrowRight, AlertCircle } from 'lucide-react';
 import hanujaiLogo from '../../assets/hanujai_logo.png';
 
@@ -369,7 +369,6 @@ export const StaffLogin: React.FC = () => {
               style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(130px, 1fr))', gap: '8px' }}
             >
               {[
-                defaultDeveloperUser,
                 initialStaff.find(s => s.role === 'principal' && s.status === 'active'),
                 initialStaff.find(s => s.role === 'admin' && s.status === 'active'),
               ]

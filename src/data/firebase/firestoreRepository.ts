@@ -801,6 +801,41 @@ export class FirestoreRepository implements DataProvider {
     return updated;
   }
 
+  public async deleteStaffMember(staffId: string, _actor: StaffUser): Promise<void> {
+    if (!_actor || _actor.role !== 'developer') {
+      throw new Error('Unauthorized: Only Developer accounts can delete staff accounts.');
+    }
+    ensureFirebaseReady();
+    const ref = doc(db!, 'staff', staffId);
+    const snap = await getDoc(ref);
+    if (!snap.exists()) return;
+    const existing = snap.data() as StaffUser;
+    if (existing.role === 'developer') {
+      const devSnap = await getDocs(query(collection(db!, 'staff'), where('role', '==', 'developer'), where('status', '==', 'active')));
+      if (devSnap.size <= 1) {
+        throw new Error('Action blocked: Cannot delete the last active Developer account.');
+      }
+    }
+    await deleteDoc(ref);
+
+    try {
+      const auditRef = collection(db!, 'auditEvents');
+      await addDoc(auditRef, {
+        timestamp: new Date().toISOString(),
+        actorId: _actor.id,
+        actorName: _actor.displayName || _actor.name,
+        actorRole: _actor.role,
+        action: 'user_deleted',
+        resource: 'staff',
+        targetId: staffId,
+        summary: `Deleted staff profile for ${existing.name} (${existing.email})`,
+        clientIp: '192.168.1.1',
+      });
+    } catch {
+      // Non-blocking
+    }
+  }
+
   public async revokeStaffSessions(staffId: string, _actor: StaffUser): Promise<void> {
     if (!_actor || _actor.role !== 'developer') {
       throw new Error('Unauthorized: Only Developer accounts can revoke user sessions.');

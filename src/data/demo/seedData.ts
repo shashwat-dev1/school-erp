@@ -766,6 +766,7 @@ export const initialAuditEvents: AuditEvent[] = [
 // Provisioned Root Developer User for privileged administrative workflows
 export const defaultDeveloperUser: StaffUser = {
   id: 'staff-dev',
+  authUid: 'nyWReUDvXvYPlLWH6HGpHYFwkwt2',
   email: 'developer@hanujai.edu.in',
   name: 'System Administrator',
   displayName: 'System Administrator (Developer)',

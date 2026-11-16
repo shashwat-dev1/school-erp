@@ -509,6 +509,39 @@ class DemoRepository implements DataProvider {
     };
   }
 
+  public async deleteStaffMember(staffId: string, actor: StaffUser): Promise<void> {
+    if (!actor || actor.role !== 'developer') {
+      throw new Error('Unauthorized: Only Developer accounts can delete staff accounts.');
+    }
+    const store = this.loadStore();
+    const staff = store.staff.find(s => s.id === staffId);
+    if (!staff) return;
+
+    if (staff.role === 'developer') {
+      const devCount = store.staff.filter(s => s.role === 'developer' && s.status === 'active').length;
+      if (devCount <= 1) {
+        throw new Error('Action blocked: Cannot delete the last active Developer account.');
+      }
+    }
+
+    store.staff = store.staff.filter(s => s.id !== staffId);
+
+    store.auditEvents.unshift({
+      id: `aud-${Date.now()}`,
+      timestamp: new Date().toISOString(),
+      actorId: actor.id,
+      actorName: actor.name,
+      actorRole: actor.role,
+      action: 'user_deleted',
+      resource: 'staff',
+      targetId: staffId,
+      summary: `Deleted staff profile for ${staff.name} (${staff.email})`,
+      clientIp: '192.168.1.1',
+    });
+
+    this.saveStore(store);
+  }
+
   public async getRolePermissions(): Promise<RolePermissions> {
     return Permissions.getRolePermissions();
   }

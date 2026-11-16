@@ -414,6 +414,7 @@ export type AuditAction =
   | 'document_rejected'
   | 'user_created'
   | 'user_updated'
+  | 'user_deleted'
   | 'user_status_changed'
   | 'user_role_changed'
   | 'user_session_revoked'

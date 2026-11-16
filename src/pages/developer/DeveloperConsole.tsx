@@ -8,6 +8,8 @@
 import React, { useState, useEffect, useMemo, useRef } from 'react';
 import { useAuth } from '../../context/AuthContext';
 import { useData } from '../../context/DataContext';
+import { getDataProvider } from '../../data';
+import { defaultDeveloperUser } from '../../data/demo/seedData';
 import {
   DeveloperService,
   type ImportValidationSummary,
@@ -313,6 +315,31 @@ export const DeveloperConsole: React.FC = () => {
     }
   };
 
+  const handleDeleteStaff = async (staff: StaffUser) => {
+    if (!currentUser) return;
+    if (staff.role === 'developer') {
+      const activeDevs = staffList.filter(s => s.role === 'developer' && s.status === 'active');
+      if (activeDevs.length <= 1) {
+        setGlobalError('Action blocked: Cannot delete the primary Developer account.');
+        return;
+      }
+    }
+    if (!window.confirm(`Permanently delete the staff record for "${staff.name}" (${staff.email})? This action cannot be undone.`)) {
+      return;
+    }
+    try {
+      const prov = getDataProvider();
+      if (prov.deleteStaffMember) {
+        await prov.deleteStaffMember(staff.id, currentUser);
+      }
+      setStaffList(prev => prev.filter(s => s.id !== staff.id && s.email.toLowerCase() !== staff.email.toLowerCase()));
+      setGlobalSuccess(`Staff record for "${staff.name}" has been permanently deleted.`);
+      await refreshAllData();
+    } catch (err) {
+      setGlobalError(err instanceof Error ? err.message : 'Failed to delete staff member.');
+    }
+  };
+
   const handleChangeStaffRole = async (staff: StaffUser, newRole: StaffRole) => {
     if (!currentUser || staff.role === newRole) return;
 
@@ -521,10 +548,34 @@ export const DeveloperConsole: React.FC = () => {
     }
   };
 
-  // Filtered staff list
+  // Filtered staff list (Strictly 3 Authorized Roles: Developer, Principal, Admin Office)
   const filteredStaff = useMemo(() => {
     const q = staffSearch.toLowerCase().trim();
-    return staffList.filter(s =>
+    const authorizedRoles = new Set(['developer', 'principal', 'admin']);
+    const authorizedEmails = new Set([
+      'developer@hanujai.edu.in',
+      'principal@hanujai.edu.in',
+      'admin@hanujai.edu.in',
+    ]);
+    const seenEmails = new Set<string>();
+    const uniqueStaff: StaffUser[] = [];
+
+    // Ensure developer account is present in list for administration
+    const listToProcess = [...staffList];
+    if (!listToProcess.some(s => s.role === 'developer')) {
+      listToProcess.unshift(defaultDeveloperUser);
+    }
+
+    for (const s of listToProcess) {
+      if (s.status !== 'active') continue; // Exclude all deactivated historical teacher entries
+      const lowerEmail = (s.email || '').toLowerCase().trim();
+      if (!authorizedEmails.has(lowerEmail) && !authorizedRoles.has(s.role)) continue;
+      if (seenEmails.has(lowerEmail)) continue;
+      seenEmails.add(lowerEmail);
+      uniqueStaff.push(s);
+    }
+
+    return uniqueStaff.filter(s =>
       !q ||
       s.name.toLowerCase().includes(q) ||
       s.email.toLowerCase().includes(q) ||
@@ -1449,6 +1500,25 @@ export const DeveloperConsole: React.FC = () => {
                             }}
                           >
                             {staff.status === 'active' ? 'Deactivate' : 'Activate'}
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => handleDeleteStaff(staff)}
+                            disabled={isLastDev && staff.status === 'active'}
+                            title={isLastDev && staff.status === 'active' ? 'Cannot delete last active Developer' : 'Permanently delete staff record'}
+                            style={{
+                              backgroundColor: '#FEF2F2',
+                              color: '#991B1B',
+                              border: '1px solid #FECACA',
+                              borderRadius: '6px',
+                              padding: '4px 8px',
+                              fontSize: '0.72rem',
+                              fontWeight: 700,
+                              cursor: isLastDev && staff.status === 'active' ? 'not-allowed' : 'pointer',
+                              opacity: isLastDev && staff.status === 'active' ? 0.4 : 1,
+                            }}
+                          >
+                            Delete
                           </button>
                         </div>
                       </td>
